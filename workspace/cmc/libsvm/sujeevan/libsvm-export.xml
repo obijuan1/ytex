@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<entry key="kernel.name">doc</entry>
+<entry key="kernel.name">cmc-suj</entry>
 <entry key="test.instance.query"><![CDATA[
 	select d.documentId, d.labelid, case when cd.code is not null then 1 else 0 end
 	from
@@ -22,5 +22,5 @@
 	  ) d
 	  left join cmcdocumentcode cd on d.documentId = cd.documentId and d.code = cd.code
 ]]></entry>
-<entry key="outdir">processedData</entry>
+<entry key="outdir"></entry>
 </properties>
