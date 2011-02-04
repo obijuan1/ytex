@@ -1,11 +1,15 @@
 <project name="Libsvm">
 	<taskdef resource="net/sf/antcontrib/antlib.xml" />
+	<property name="ytex.home" value="../.."/>
+	<property name="ytex.properties" value="${ytex.home}/config/desc/ytex.properties" />
+	<property file="${ytex.properties}" />	
 	<property name="libsvm.home" value="c:/java/libsvm-3.0" />
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
 	<property name="ytex.kernel.cp" value="${ytex.home}/ytex.kernel/bin" />
-	<property name="experiment" value="cmc-ctakes" />
+	<property name="experiment" value="cmc-suj" />
 	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
 	<property name="costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
+	<property name="mysql.line" value="--user=${db.username} --password=${db.password} ${db.schema}" />
 	<!-- property name="classLabels" value="25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45" / -->
 	<property name="classLabels" value="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45" />
 	<!--
