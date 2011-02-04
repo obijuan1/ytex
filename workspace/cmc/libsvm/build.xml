@@ -37,6 +37,8 @@
 		</antcall>
 	</target>
 	-->
+	<target name="export.cv.all" depends="export.data,cv.all,cv.consolidateResult.all"/>
+	
 	<target name="export.data" description="export gram matrices">
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="libsvm.cp" dir="${processedData}" fork="yes">
 			<arg value="libsvm-export.xml"/>
@@ -307,5 +309,15 @@
 		</script>
 		<echo append="yes" file="${test.outfile}">${test.classLabel}	${test.metrics}
 </echo>
+	</target>
+	<target name="test.loadResults" description="consolidate the results of all the cross-validation runs into a single file, import into weka_results table">
+		<copy file="${basedir}/test_results.template.sql" tofile="${processedData}/test_results.sql" overwrite="yes">
+			<filterset>
+				<filter token="EXPERIMENT" value="${experiment}" />
+			</filterset>
+		</copy>
+		<exec executable="${mysql.bin.home}/mysql" dir="${processedData}">
+			<arg line="${mysql.line} -e &quot;source test_results.sql&quot;" />
+		</exec>
 	</target>
 </project>
