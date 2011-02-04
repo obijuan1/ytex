@@ -156,6 +156,7 @@ public class CTakesDBKernelImpl implements CMCKernel {
 
 	public class ConvolutionKernel implements Kernel {
 		private KeyGenerator keyGenerator;
+		private int pow = 1;
 
 		public double evaluate(Object c1, Object c2) {
 			Node n1 = (Node) c1;
@@ -178,6 +179,10 @@ public class CTakesDBKernelImpl implements CMCKernel {
 
 		public ConvolutionKernel(KeyGenerator keyGenerator) {
 			this.keyGenerator = keyGenerator;
+		}
+		public ConvolutionKernel(KeyGenerator keyGenerator, int pow) {
+			this.keyGenerator = keyGenerator;
+			this.pow = pow;
 		}
 
 		public ConvolutionKernel() {

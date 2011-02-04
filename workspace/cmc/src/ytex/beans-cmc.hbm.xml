@@ -20,6 +20,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<value>ytex/model/DocumentAnnotation.hbm.xml</value>
 				<value>ytex/model/NamedEntityRegex.hbm.xml</value>
 				<value>ytex/model/SegmentRegex.hbm.xml</value>
+				<value>model/LexicalUnit.hbm.xml</value>				
 			</list>
 		</property>
 		<property name="hibernateProperties" ref="hibernateProperties" />

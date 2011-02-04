@@ -37,6 +37,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="documentLoader" class="ytex.cmc.DocumentLoaderImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
+	<!-- 
 	<bean id="cTakesXpathKernel" class="ytex.cmc.CTakesXPathKernelImpl"
 		init-method="init">
 		<property name="sessionFactory" ref="sessionFactory" />
@@ -55,8 +56,26 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="sessionFactory" ref="sessionFactory" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
 		<property name="kernel" ref="cTakesDBKernel" />
+		<property name="name" ref="cmc-ctakes" />
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
+	-->
+	<bean id="sujKernel" class="ytex.cmc.SujKernelImpl"
+		init-method="init">
+		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="dataSource" ref="dataSource" />
+	</bean>	
+
+	<bean id="cmcEvaluator" class="ytex.cmc.CMCEvaluatorImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
+		<property name="kernel" ref="sujKernel" />
+		<property name="name" value="cmc-suj" />
+		<property name="transactionManager" ref="transactionManager" />
+	</bean>	
 	
 	<bean id="ehcacheConfigURL"
 		class="org.springframework.beans.factory.config.PropertyPathFactoryBean">

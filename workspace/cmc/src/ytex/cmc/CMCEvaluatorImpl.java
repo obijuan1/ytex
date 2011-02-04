@@ -22,6 +22,7 @@ public class CMCEvaluatorImpl implements CMCEvaluator {
 	CMCKernel kernel;
 	PlatformTransactionManager transactionManager;
 	TransactionTemplate txTemplate;
+	String name;
 
 	public PlatformTransactionManager getTransactionManager() {
 		return transactionManager;
@@ -77,7 +78,7 @@ public class CMCEvaluatorImpl implements CMCEvaluator {
 				.createQuery(
 						"select documentId from CMCDocument where documentSet = 'test' order by documentId asc");
 		Set<String> names = new HashSet<String>(1);
-		names.add("cmc-ctakes");
+		names.add(name);
 		List<Integer> testDocumentIds = qtest.list();
 		// Map<KernelEvalKey, Double> mapKernelEval = kernelEvaluationDao
 		// .getAllKernelEvaluations("cmc-ctakes");
@@ -86,8 +87,11 @@ public class CMCEvaluatorImpl implements CMCEvaluator {
 			int instanceId1 = documentIds.get(i);
 			// list of instance ids right hand side of kernel evaluation
 			SortedSet<Integer> rightDocumentIDs = new TreeSet<Integer>(
-					documentIds.subList(i + 1, documentIds.size() - 1));
-			rightDocumentIDs.addAll(testDocumentIds);
+					testDocumentIds);
+			if (i < (documentIds.size() - 1)) {
+				rightDocumentIDs.addAll(documentIds.subList(i + 1,
+						documentIds.size() - 1));
+			}
 			// remove instances already evaluated
 			for (KernelEvaluation kEval : this.kernelEvaluationDao
 					.getAllKernelEvaluationsForInstance(names, instanceId1)) {
@@ -107,7 +111,7 @@ public class CMCEvaluatorImpl implements CMCEvaluator {
 					txTemplate.execute(new TransactionCallback() {
 						@Override
 						public Object doInTransaction(TransactionStatus arg0) {
-							kernelEvaluationDao.storeKernel("cmc-ctakes", i1,
+							kernelEvaluationDao.storeKernel(name, i1,
 									i2, kernel.calculateSimilarity(i1, i2));
 							return null;
 						}
@@ -116,5 +120,13 @@ public class CMCEvaluatorImpl implements CMCEvaluator {
 				}
 			}
 		}
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

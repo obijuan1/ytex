@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="model">
+	<class name="ConceptSimilarity" table="concept_sim">
+		<id name="conceptSimilarityId" column="concept_sim_id">
+			<generator class="native">
+			</generator>
+		</id>
+		<property name="cui1"/>
+		<property name="cui2"/>
+		<property name="lin"/>
+		<property name="lch"/>
+		<property name="score"/>
+		<property name="pathLength" column="path"/>
+		<property name="leastCommonSubsumer" column="lcs"/>
+	</class>
+	<query name="getSimilarity"><![CDATA[
+		from ConceptSimilarity
+		where cui1 = :cui1
+		and cui2 = :cui2
+	]]></query>
+</hibernate-mapping>
