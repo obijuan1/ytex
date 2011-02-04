@@ -38,6 +38,166 @@ public class SujKernelImpl implements CMCKernel {
 	DataSource dataSource;
 
 	Map<String, Set<String>> cuiTuiMap;
+	Map<String, Set<Integer>> cuiMainSuiMap;
+
+	public static int getMainSem(int sui) {
+		switch (sui) {
+		case 52:
+		case 53:
+		case 56:
+		case 51:
+		case 64:
+		case 55:
+		case 66:
+		case 57:
+		case 54:
+			return 0;
+		case 17:
+		case 29:
+		case 23:
+		case 30:
+		case 31:
+		case 22:
+		case 25:
+		case 26:
+		case 18:
+		case 21:
+		case 24:
+			return 1;
+		case 116:
+		case 195:
+		case 123:
+		case 122:
+		case 118:
+		case 103:
+		case 120:
+		case 104:
+		case 200:
+		case 111:
+		case 196:
+		case 126:
+		case 131:
+		case 125:
+		case 129:
+		case 130:
+		case 197:
+		case 119:
+		case 124:
+		case 114:
+		case 109:
+		case 115:
+		case 121:
+		case 192:
+		case 110:
+		case 127:
+			return 2;
+		case 185:
+		case 77:
+		case 169:
+		case 102:
+		case 78:
+		case 170:
+		case 171:
+		case 80:
+		case 81:
+		case 89:
+		case 82:
+		case 79:
+			return 3;
+		case 203:
+		case 74:
+		case 75:
+			return 4;
+		case 20:
+		case 190:
+		case 49:
+		case 19:
+		case 47:
+		case 50:
+		case 33:
+		case 37:
+		case 48:
+		case 191:
+		case 46:
+		case 184:
+			return 5;
+		case 87:
+		case 88:
+		case 28:
+		case 85:
+		case 86:
+			return 6;
+		case 83:
+			return 7;
+		case 100:
+		case 3:
+		case 11:
+		case 8:
+		case 194:
+		case 7:
+		case 12:
+		case 99:
+		case 13:
+		case 4:
+		case 96:
+		case 16:
+		case 9:
+		case 15:
+		case 1:
+		case 101:
+		case 2:
+		case 98:
+		case 97:
+		case 14:
+		case 6:
+		case 10:
+		case 204: // vng missing sui
+		case 5:
+			return 8;
+		case 71:
+		case 168:
+		case 73:
+		case 72:
+		case 167:
+			return 9;
+		case 91:
+		case 90:
+			return 10;
+		case 93:
+		case 92:
+		case 94:
+		case 95:
+			return 11;
+		case 38:
+		case 69:
+		case 68:
+		case 34:
+		case 70:
+		case 67:
+			return 12;
+		case 43:
+		case 201:
+		case 45:
+		case 41:
+		case 44:
+		case 42:
+		case 32:
+		case 40:
+		case 39:
+			return 13;
+		case 60:
+		case 65:
+		case 58:
+		case 59:
+		case 63:
+		case 62:
+		case 61:
+			return 14;
+		default:
+			break;
+		}
+		return -1;
+	}
 
 	public DataSource getDataSource() {
 		return dataSource;
@@ -56,7 +216,7 @@ public class SujKernelImpl implements CMCKernel {
 			new CMCDocumentKeyGenerator()));
 	Kernel lexicalUnitKernel = new NormKernel(new ConvolutionKernel(
 			new DefaultKeyGenerator()));
-	Kernel normTermKernel = new NormTermKernel();
+	Kernel normTermKernel = new NormKernel(new NormTermKernel());
 	Kernel conceptKernel = new ConceptKernel();
 
 	public SessionFactory getSessionFactory() {
@@ -112,7 +272,7 @@ public class SujKernelImpl implements CMCKernel {
 				+ "inner join anno_dockey k on ab.anno_base_id = k.anno_base_id "
 				+ "inner join suj_lexical_unit lu on ab.document_id = lu.document_id "
 				+ "inner join suj_norm_term nt on lu.lexical_unit_id = nt.lexical_unit_id "
-//				+ "where uid in (97634811, 97636670) "
+				// + "where uid in (97634811, 97636670) "
 				+ "order by uid, document_type_id, ab.document_id, lu.lexical_unit_id, nt.normTerm ";
 		return simpleJdbcTemplate.queryForList(query);
 	}
@@ -455,7 +615,7 @@ public class SujKernelImpl implements CMCKernel {
 				return new StringBuilder(c2).append("-").append(c1).toString();
 			}
 		}
-
+		
 		@Override
 		public double evaluate(Object o1, Object o2) {
 			double d = 0;
@@ -464,9 +624,11 @@ public class SujKernelImpl implements CMCKernel {
 			if (c1.equals(c2)) {
 				d = 1;
 			} else {
-				Set<String> tuis1 = cuiTuiMap.get(c1);
-				Set<String> tuis2 = cuiTuiMap.get(c2);
-				//only compare the two if they have a common semantic type
+//				Set<String> tuis1 = cuiTuiMap.get(c1);
+//				Set<String> tuis2 = cuiTuiMap.get(c2);
+				Set<Integer> tuis1 = cuiMainSuiMap.get(c1);
+				Set<Integer> tuis2 = cuiMainSuiMap.get(c2);
+				// only compare the two if they have a common semantic type
 				if (tuis1 != null && tuis2 != null
 						&& !Collections.disjoint(tuis1, tuis2)) {
 					// look in cache
@@ -494,6 +656,14 @@ public class SujKernelImpl implements CMCKernel {
 
 	}
 
+	public Set<Integer> tuiToMainSui(Set<String> tuis) {
+		Set<Integer> mainSui = new HashSet<Integer>(tuis.size());
+		for(String tui : tuis) {
+			mainSui.add(getMainSem(Integer.parseInt(tui.substring(1))));
+		}
+		return mainSui;
+	}
+	
 	public void initCuiTuiMap() {
 		String query = "select m.cui, m.tui from umls.MRSTY m inner join (select distinct cui from suj_concept)s  on s.cui = m.cui";
 		List<Map<String, Object>> results = simpleJdbcTemplate
@@ -508,6 +678,10 @@ public class SujKernelImpl implements CMCKernel {
 				cuiTuiMap.put(cui, tuis);
 			}
 			tuis.add(tui);
+		}
+		this.cuiMainSuiMap = new HashMap<String, Set<Integer>>(cuiTuiMap.size());
+		for(Map.Entry<String, Set<String>> cuiTui : cuiTuiMap.entrySet()) {
+			cuiMainSuiMap.put(cuiTui.getKey(), tuiToMainSui(cuiTui.getValue()));			
 		}
 	}
 
