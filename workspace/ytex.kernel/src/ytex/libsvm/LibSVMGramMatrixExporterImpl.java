@@ -102,6 +102,8 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 		String testInstanceQuery = props.getProperty("test.instance.query");
 		String trainInstanceQuery = props.getProperty("train.instance.query");
 		String outdir = props.getProperty("outdir");
+		if(outdir == null || outdir.length() == 0)
+			outdir = ".";
 		exportGramMatrices(name, testInstanceQuery, trainInstanceQuery, outdir);
 	}
 

@@ -181,25 +181,28 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		List<CorpusTerm> terms = corpusDao.getTerms(corpusName);
 		Corpus corpus = terms.get(0).getCorpus();
 		double totalFreq = 0;
+		//map of cui to term
 		Map<String, CorpusTerm> conceptIdToTermMap = new HashMap<String, CorpusTerm>(
 				terms.size());
 		for (CorpusTerm t : terms) {
 			conceptIdToTermMap.put(t.getConceptId(), t);
 		}
+		//map of cui to cumulative frequency
 		Map<String, Double> conceptFreq = new HashMap<String, Double>(cg
 				.getConceptMap().size());
+		//recurse through the tree
 		for (String conceptId : cg.getRoots()) {
 			totalFreq += getFrequency(cg.getConceptMap().get(conceptId),
 					conceptFreq, conceptIdToTermMap);
 		}
+		//update information content
 		for (Map.Entry<String, Double> cfreq : conceptFreq.entrySet()) {
 			InfoContent ic = new InfoContent();
 			if (cfreq.getValue() > 0) {
 				ic.setConceptId(cfreq.getKey());
 				ic.setCorpus(corpus);
 				ic.setFrequency(cfreq.getValue());
-				ic.setInformationContent(-Math
-						.log(cfreq.getValue() / totalFreq));
+				ic.setInformationContent(-Math.log(cfreq.getValue() / totalFreq));
 				corpusDao.addInfoContent(ic);
 			}
 		}
@@ -225,5 +228,16 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 
 	public CorpusDao getCorpusDao() {
 		return corpusDao;
+	}
+
+	public static void main(String args[]) {
+		if (args.length >= 2) {
+			ConceptSimilarityService s = (ConceptSimilarityService) SimSvcContextHolder
+					.getApplicationContext()
+					.getBean("conceptSimilarityService");
+			if (args[0].equals("-updateIC")) {
+				s.updateInformationContent(args[1]);
+			}
+		}
 	}
 }

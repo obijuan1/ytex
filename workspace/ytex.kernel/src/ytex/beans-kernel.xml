@@ -7,20 +7,16 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
 
-	<!--
-		the transactional advice (what 'happens'; see the <aop:advisor/> bean
-		below)
-	-->
+	<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
+		below) -->
 	<tx:advice id="txAdvice" transaction-manager="transactionManager">
 		<!-- the transactional semantics... -->
 		<tx:attributes>
 			<tx:method name="*" propagation="REQUIRED" />
 		</tx:attributes>
 	</tx:advice>
-	<!--
-		ensure that the above transactional advice runs for any execution of
-		an operation defined by the FooService interface
-	-->
+	<!-- ensure that the above transactional advice runs for any execution of 
+		an operation defined by the FooService interface -->
 	<aop:config>
 		<aop:pointcut id="daoOperation"
 			expression="execution(* ytex.kernel.dao.*Dao.*(..))" />
@@ -32,12 +28,15 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:pointcut id="wekaImporter"
 			expression="execution(* ytex.weka.WekaResultsImporterImpl.*(..))" />
 		<aop:pointcut id="mapperOperation" expression="execution(* ytex.uima.mapper.*.*(..))" />
+		<aop:pointcut id="treeOperation"
+			expression="execution(* ytex.kernel.tree.*Tree*.*.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="gramOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="wekaOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="mapperOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="wekaImporter" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="daoOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="umlsDaoOperation" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="treeOperation" />
 	</aop:config>
 
 
@@ -73,20 +72,46 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="corpusDao" class="ytex.kernel.dao.CorpusDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-	<bean id="conceptSimilarityService" class="ytex.kernel.ConceptSimilarityServiceImpl"
-		init-method="init">
-		<property name="transactionManager" ref="transactionManager" />
-		<property name="conceptDao" ref="conceptDao" />
-		<property name="corpusDao" ref="corpusDao" />
-		<property name="corpusNames">
-			<list>
-				<value>cmc-ctakes</value>
-			</list>
-		</property>
-	</bean>
+	<!-- <bean id="conceptSimilarityService" class="ytex.kernel.ConceptSimilarityServiceImpl" 
+		init-method="init"> <property name="transactionManager" ref="transactionManager" 
+		/> <property name="conceptDao" ref="conceptDao" /> <property name="corpusDao" 
+		ref="corpusDao" /> <property name="corpusNames"> <list> <value>cmc-ctakes</value> 
+		</list> </property> </bean> -->
 	<bean id="libSVMGramMatrixExporter" class="ytex.libsvm.LibSVMGramMatrixExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
+	<bean id="treeBuilder" class="ytex.kernel.tree.TreeBuilderImpl">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="instanceTreeBuilder" class="ytex.kernel.tree.InstanceTreeBuilderImpl">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="abstractNormKernel" abstract="true"
+		class="ytex.kernel.evaluator.NormKernel" init-method="init">
+		<property name="cacheManager" ref="cacheManager" />
+	</bean>
+	<bean id="equalityKernel" class="ytex.kernel.evaluator.EqualityKernel">
+	</bean>
+	<bean id="ehcacheConfigURL"
+		class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
+		<property name="targetObject">
+			<bean class="org.springframework.core.io.ClassPathResource">
+				<constructor-arg value="/ytex/kernel/ehcache.xml" />
+			</bean>
+		</property>
+		<property name="propertyPath" value="URL" />
+	</bean>
+
+	<bean id="cacheManager" class="net.sf.ehcache.CacheManager">
+		<constructor-arg ref="ehcacheConfigURL" />
+	</bean>
+
+	<bean id="abstractCorpusKernelEvaluator" class="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl">
+		<property name="dataSource" ref="dataSource" />
+		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
+		<property name="transactionManager" ref="transactionManager" />
+	</bean>
+
 </beans>

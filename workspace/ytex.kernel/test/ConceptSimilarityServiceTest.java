@@ -12,7 +12,7 @@ public class ConceptSimilarityServiceTest extends TestCase {
 	}
 
 	public void testUpdateInformationContent() {
-		// conceptSimilarityService.updateInformationContent("cmc-ctakes");
+		conceptSimilarityService.updateInformationContent("cmc-ctakes");
 	}
 
 	public void testLin() {

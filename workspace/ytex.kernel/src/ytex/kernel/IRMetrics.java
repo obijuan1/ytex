@@ -7,7 +7,6 @@ public class IRMetrics {
 
 		@Override
 		protected MessageFormat initialValue() {
-			// TODO Auto-generated method stub
 			return new MessageFormat("{0,number,#.###}");
 		}
 
@@ -67,16 +66,17 @@ public class IRMetrics {
 	}
 
 	public double getPrecision() {
-		return (double) (tp) / ((double) (tp + fp));
+
+		return (tp + fp) > 0 ? (double) (tp) / ((double) (tp + fp)) : 0;
 	}
 
 	public double getRecall() {
-		return (double) (tp) / ((double) (tp + fn));
+		return (tp + fn) > 0 ? (double) (tp) / ((double) (tp + fn)) : 0;
 	}
 
 	public double getF1() {
-		return 2 * getPrecision() * getRecall()
-				/ (getPrecision() + getRecall());
+		return (getPrecision() + getRecall()) > 0 ? 2 * getPrecision()
+				* getRecall() / (getPrecision() + getRecall()) : 0;
 	}
 
 	/**
@@ -86,10 +86,10 @@ public class IRMetrics {
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 		b.append(this.getTp()).append("\t").append(this.getFp()).append("\t")
-				.append(this.getTn()).append("\t").append(this.getFn()).append(
-						"\t").append(formatDouble(this.getPrecision())).append(
-						"\t").append(formatDouble(this.getRecall())).append(
-						"\t").append(formatDouble(this.getF1()));
+				.append(this.getTn()).append("\t").append(this.getFn())
+				.append("\t").append(formatDouble(this.getPrecision()))
+				.append("\t").append(formatDouble(this.getRecall()))
+				.append("\t").append(formatDouble(this.getF1()));
 		return b.toString();
 	}
 }
