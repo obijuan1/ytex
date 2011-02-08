@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<bean id="instanceKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+				<property name="delegateKernel" ref="documentKernel" />
+				<property name="pow" value="2" />
+			</bean>
+		</property>
+	</bean>
+	<bean id="documentKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="delegateKernels">
+					<list>
+						<bean class="ytex.kernel.evaluator.NodeAttributeKernel">
+							<property name="attributeName" value="document_type_id" />
+							<property name="delegateKernel" ref="equalityKernel" />
+						</bean>
+						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+							<property name="delegateKernel" ref="lexicalUnitKernel" />
+						</bean>
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="lexicalUnitKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+				<property name="delegateKernel" ref="normTermKernel" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="normTermKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.cmc.kernel.NormTermKernel">
+				<property name="delegateKernel" ref="compositeConceptKernel" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
+		<property name="attributeName" value="cui" />
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="delegateKernels">
+					<list>
+						<ref bean="semanticTypeKernel" />
+						<ref bean="conceptKernel" />
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+
+	<bean id="corpusKernelEvaluator" parent="abstractCorpusKernelEvaluator">
+		<property name="instanceKernel" ref="instanceKernel" />
+		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
+		<property name="kernelName" value="testTree" />
+		<property name="trainInstanceIDQuery">
+			<value><![CDATA[
+			select documentId from CMCDocument where documentSet = 'train' order by documentId asc
+			]]></value>
+		</property>
+		<property name="testInstanceIDQuery">
+			<value><![CDATA[
+			select documentId from CMCDocument where documentSet = 'test' order by documentId asc
+			]]></value>
+		</property>
+		<property name="instanceTreeQuery">
+			<value><![CDATA[
+			select uid instance_id, document_type_id, ab.document_id, lu.lexical_unit_id, nt.norm_term_id, nt.normTerm, sc.concept_id, sc.cui
+			from anno_base ab
+			inner join anno_dockey k on ab.anno_base_id = k.anno_base_id
+			inner join suj_lexical_unit lu on ab.document_id = lu.document_id
+			inner join suj_norm_term nt on lu.lexical_unit_id = nt.lexical_unit_id
+			left join suj_concept sc on sc.norm_term_id = nt.norm_term_id
+			where uid in (97634811, 97636670, 97634946, 97634957, 97635067, 97635659,97635718, 97635942, 97636018, 97636701, 97636837)
+			order by uid, document_type_id, ab.document_id, lu.lexical_unit_id, nt.norm_term_id	
+			]]></value>
+		</property>
+		<property name="instanceIDField" value="instance_id" />
+		<property name="nodeTypes">
+			<list>
+				<bean class="ytex.kernel.tree.NodeMappingInfo">
+					<property name="nodeType" value="instance" />
+					<property name="values">
+						<list>
+							<value>instance_id</value>
+						</list>
+					</property>
+				</bean>
+				<bean class="ytex.kernel.tree.NodeMappingInfo">
+					<property name="nodeType" value="doc" />
+					<property name="values">
+						<list>
+							<value>document_type_id</value>
+							<value>document_id</value>
+						</list>
+					</property>
+				</bean>
+				<bean class="ytex.kernel.tree.NodeMappingInfo">
+					<property name="nodeType" value="lexical_unit" />
+					<property name="values">
+						<list>
+							<value>lexical_unit_id</value>
+						</list>
+					</property>
+				</bean>
+				<bean class="ytex.kernel.tree.NodeMappingInfo">
+					<property name="nodeType" value="norm_term" />
+					<property name="values">
+						<list>
+							<value>norm_term_id</value>
+							<value>normTerm</value>
+						</list>
+					</property>
+				</bean>
+				<bean class="ytex.kernel.tree.NodeMappingInfo">
+					<property name="nodeType" value="concept" />
+					<property name="values">
+						<list>
+							<value>concept_id</value>
+							<value>cui</value>
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+</beans>

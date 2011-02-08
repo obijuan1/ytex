@@ -12,6 +12,7 @@
 				<value>ytex/beans-cmc.hbm.xml</value>
 				<value>ytex/beans-kernel.xml</value>
 				<value>ytex/beans-kernel-sim.xml</value>
+				<value>ytex/beans-cmc-kernel.xml</value>
 			</list>
 		</constructor-arg>
 	</bean>

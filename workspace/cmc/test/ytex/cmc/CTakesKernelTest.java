@@ -8,12 +8,13 @@ public class CTakesKernelTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		cTakesKernel = (CMCKernel)LoadCMC.cmcApplicationContext.getBean("cTakesDBKernel");
+//		cTakesKernel = (CMCKernel)LoadCMC.cmcApplicationContext.getBean("cTakesDBKernel");
+		cTakesKernel = (CMCKernel)LoadCMC.cmcApplicationContext.getBean("sujKernel");
 		cmcEvaluator = (CMCEvaluator)LoadCMC.cmcApplicationContext.getBean("cmcEvaluator");
 	}
 
 	public void testCalculateSimilarity() {
-		System.out.println(cTakesKernel.calculateSimilarity(97634811, 97634910));
+		System.out.println(cTakesKernel.calculateSimilarity(97634811, 97636670));
 	}
 	
 	public void testCMCAll() {

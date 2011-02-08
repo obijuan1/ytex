@@ -76,18 +76,4 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="name" value="cmc-suj" />
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>	
-	
-	<bean id="ehcacheConfigURL"
-		class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
-		<property name="targetObject">
-			<bean class="org.springframework.core.io.ClassPathResource">
-				<constructor-arg value="/ytex/cmc/ehcache.xml" />
-			</bean>
-		</property>
-		<property name="propertyPath" value="URL" />
-	</bean>
-
-	<bean id="cacheManager" class="net.sf.ehcache.CacheManager">
-		<constructor-arg ref="ehcacheConfigURL" />
-	</bean>
 </beans>
