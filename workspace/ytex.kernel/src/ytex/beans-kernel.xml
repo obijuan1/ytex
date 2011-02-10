@@ -82,9 +82,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
-	<bean id="treeBuilder" class="ytex.kernel.tree.TreeBuilderImpl">
-		<property name="dataSource" ref="dataSource" />
-	</bean>
 	<bean id="instanceTreeBuilder" class="ytex.kernel.tree.InstanceTreeBuilderImpl">
 		<property name="dataSource" ref="dataSource" />
 	</bean>

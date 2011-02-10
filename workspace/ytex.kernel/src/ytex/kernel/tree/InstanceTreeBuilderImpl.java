@@ -7,10 +7,13 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
-	private SimpleJdbcTemplate simpleJdbcTemplate;
+	static final Log log = LogFactory.getLog(InstanceTreeBuilderImpl.class);
+	SimpleJdbcTemplate simpleJdbcTemplate;
 	private DataSource dataSource;
 
 	public DataSource getDataSource() {
@@ -22,8 +25,7 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 		this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
 	}
 
-	private Node nodeFromRow(NodeMappingInfo nodeInfo,
-			Map<String, Object> nodeValues) {
+	Node nodeFromRow(NodeMappingInfo nodeInfo, Map<String, Object> nodeValues) {
 		Node n = null;
 		Map<String, Serializable> values = new HashMap<String, Serializable>(
 				nodeInfo.getValues().size());
@@ -42,6 +44,20 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 		return n;
 	}
 
+	public Map<Integer, Node> loadInstanceTrees(TreeMappingInfo mappingInfo) {
+		Map<NodeKey, Node> nodeKeyMap = new HashMap<NodeKey, Node>();
+		Map<Integer, Node> instanceMap = loadInstanceTrees(mappingInfo
+				.getInstanceIDField(), mappingInfo
+				.getInstanceQueryMappingInfo(), nodeKeyMap);
+		if (mappingInfo.getNodeQueryMappingInfos() != null) {
+			for (QueryMappingInfo qInfo : mappingInfo
+					.getNodeQueryMappingInfos()) {
+				this.addChildrenToNodes(nodeKeyMap, qInfo);
+			}
+		}
+		return instanceMap;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -49,22 +65,21 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 	 * ytex.kernel.tree.InstanceTreeBuilder#loadInstanceTrees(java.util.List,
 	 * java.lang.String, java.lang.String, java.util.Map)
 	 */
-	@Override
-	public Map<Integer, Node> loadInstanceTrees(
-			List<NodeMappingInfo> nodeTypes, String instanceIDField,
-			String query, Map<String, Object> queryArgs) {
-		Node[] currentPath = new Node[nodeTypes.size()];
+	public Map<Integer, Node> loadInstanceTrees(String instanceIDField,
+			QueryMappingInfo qInfo, Map<NodeKey, Node> nodeKeyMap) {
+		Node[] currentPath = new Node[qInfo.getNodeTypes().size()];
 		Map<Integer, Node> instanceMap = new HashMap<Integer, Node>();
 		List<Map<String, Object>> rowData = simpleJdbcTemplate.queryForList(
-				query, queryArgs);
+				qInfo.getQuery(), qInfo.getQueryArgs());
 		for (Map<String, Object> row : rowData) {
-			for (int i = 0; i < nodeTypes.size(); i++) {
-				Node newNode = this.nodeFromRow(nodeTypes.get(i), row);
+			for (int i = 0; i < qInfo.getNodeTypes().size(); i++) {
+				Node newNode = this.nodeFromRow(qInfo.getNodeTypes().get(i),
+						row);
 				if (newNode != null) {
 					if (!newNode.equals(currentPath[i])) {
 						if (i > 0) {
 							// add the node to the parent
-							currentPath[i-1].getChildren().add(newNode);
+							currentPath[i - 1].getChildren().add(newNode);
 						} else {
 							// this is a new root, i.e. a new instance
 							// add it to the instance map
@@ -76,11 +91,58 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 						// the path list
 						// because we only add to parents, not to children
 						currentPath[i] = newNode;
+						if (nodeKeyMap != null)
+							nodeKeyMap.put(new NodeKey(newNode), newNode);
 					}
 				}
 			}
 		}
 		return instanceMap;
+	}
+
+	public void addChildrenToNodes(Map<NodeKey, Node> nodeKeyMap,
+			QueryMappingInfo qInfo) {
+		// run query
+		List<Map<String, Object>> rowData = simpleJdbcTemplate.queryForList(
+				qInfo.getQuery(), qInfo.getQueryArgs());
+		// allocate array for holding node path corresponding to row
+		Node[] currentPath = new Node[qInfo.getNodeTypes().size()];
+		// iterate through rows, adding nodes as children of existing nodes
+		for (Map<String, Object> row : rowData) {
+			// get the root of this subtree - temporary node contains values
+			Node parentTmp = nodeFromRow(qInfo.getNodeTypes().get(0), row);
+			if (parentTmp != null) {
+				// get the node from the tree that correponds to this node
+				Node parent = nodeKeyMap.get(new NodeKey(parentTmp));
+				if (parent == null) {
+					if (log.isWarnEnabled()) {
+						log.warn("couldn't find node for key: " + parent);
+					}
+				} else {
+					// found the parent - add the subtree
+					currentPath[0] = parent;
+					for (int i = 1; i < qInfo.getNodeTypes().size(); i++) {
+						Node newNode = this.nodeFromRow(qInfo.getNodeTypes()
+								.get(i), row);
+						if (newNode != null) {
+							if (!newNode.equals(currentPath[i])) {
+								// add the node to the parent
+								currentPath[i - 1].getChildren().add(newNode);
+								// put the new node in the path
+								// we don't really care about nodes 'after' this
+								// one in the path list
+								// because we only add to parents, not to
+								// children
+								currentPath[i] = newNode;
+								if (nodeKeyMap != null)
+									nodeKeyMap.put(new NodeKey(newNode),
+											newNode);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 }
