@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="kernel.name">ctakes-tree</entry>
+<entry key="test.instance.query"><![CDATA[
+	select d.documentId, d.labelid, case when cd.code is not null then 1 else 0 end
+	from
+	  (
+	  select d.documentId, d.documentSet, l.*
+	  from cmcdocument d, cmcclasslabels l
+		where d.documentSet = 'test'
+	  ) d
+	  left join cmcdocumentcode cd on d.documentId = cd.documentId and d.code = cd.code
+]]></entry>
+<entry key="train.instance.query"><![CDATA[
+	select d.documentId, d.labelid, case when cd.code is not null then 1 else 0 end
+	from
+	  (
+	  select d.documentId, d.documentSet, l.*
+	  from cmcdocument d, cmcclasslabels l
+		where d.documentSet = 'train'
+	  ) d
+	  left join cmcdocumentcode cd on d.documentId = cd.documentId and d.code = cd.code
+]]></entry>
+<entry key="outdir"></entry>
+</properties>
