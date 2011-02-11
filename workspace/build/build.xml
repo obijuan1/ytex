@@ -108,8 +108,13 @@
 		</antcall>
 	</target>
 	<target name="build.ytex.kernel">
+		<path id="cp.ytex.kernel">
+			<path refid="cp.all" />
+			<fileset dir="${ytex.dist.home}/lib" includes="ytex.model.jar" />
+		</path>		
 		<antcall target="compile">
 			<param name="project.name" value="ytex.kernel" />
+			<param name="project.classpathref" value="cp.ytex.kernel" />
 		</antcall>
 	</target>	
 	<target name="build.ytex.model">
