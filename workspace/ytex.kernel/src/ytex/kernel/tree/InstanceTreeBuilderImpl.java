@@ -1,5 +1,13 @@
 package ytex.kernel.tree;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -44,11 +52,40 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 		return n;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<Integer, Node> loadInstanceTrees(String filename)
+			throws IOException, ClassNotFoundException {
+		ObjectInputStream os = null;
+		try {
+			os = new ObjectInputStream(new BufferedInputStream(
+					new FileInputStream(filename)));
+			return (Map<Integer, Node>) os.readObject();
+		} finally {
+			if (os != null)
+				os.close();
+		}
+	}
+
+	@Override
+	public void serializeInstanceTrees(TreeMappingInfo mappingInfo,
+			String filename) throws IOException {
+		ObjectOutputStream os = null;
+		try {
+			os = new ObjectOutputStream(new BufferedOutputStream(
+					new FileOutputStream(filename)));
+			os.writeObject(loadInstanceTrees(mappingInfo));
+		} finally {
+			if (os != null)
+				os.close();
+		}
+	}
+
 	public Map<Integer, Node> loadInstanceTrees(TreeMappingInfo mappingInfo) {
 		Map<NodeKey, Node> nodeKeyMap = new HashMap<NodeKey, Node>();
-		Map<Integer, Node> instanceMap = loadInstanceTrees(mappingInfo
-				.getInstanceIDField(), mappingInfo
-				.getInstanceQueryMappingInfo(), nodeKeyMap);
+		Map<Integer, Node> instanceMap = loadInstanceTrees(
+				mappingInfo.getInstanceIDField(),
+				mappingInfo.getInstanceQueryMappingInfo(), nodeKeyMap);
 		if (mappingInfo.getNodeQueryMappingInfos() != null) {
 			for (QueryMappingInfo qInfo : mappingInfo
 					.getNodeQueryMappingInfos()) {

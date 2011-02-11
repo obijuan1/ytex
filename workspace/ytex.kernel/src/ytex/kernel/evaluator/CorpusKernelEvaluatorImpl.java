@@ -20,6 +20,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -37,6 +39,7 @@ import ytex.kernel.tree.Node;
 import ytex.kernel.tree.TreeMappingInfo;
 
 public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
+	private static final Log log = LogFactory.getLog(CorpusKernelEvaluator.class);
 	protected class InstanceIDRowMapper implements RowMapper<Integer> {
 
 		@Override
@@ -45,6 +48,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		}
 
 	}
+
 	private static Options initOptions() {
 		Option oBeanref = OptionBuilder
 				.withArgName("classpath*:simSvcBeanRefContext.xml")
@@ -72,6 +76,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		options.addOption(oHelp);
 		return options;
 	}
+
 	public static void main(String args[]) throws Exception {
 		Options options = initOptions();
 
@@ -105,12 +110,15 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 			}
 		}
 	}
+
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp(
-				"java ytex.kernel.evaluator.CorpusKernelEvaluatorImpl",
-				options);
+		formatter
+				.printHelp(
+						"java ytex.kernel.evaluator.CorpusKernelEvaluatorImpl",
+						options);
 	}
+
 	private DataSource dataSource;
 	private Kernel instanceKernel;
 
@@ -127,7 +135,8 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	private TransactionTemplate txTemplate;
 
-	public void evaluateKernelOnCorpus() {
+	public void evaluateKernelOnCorpus(Map<Integer, Node> instanceIDMap,
+			int nMod, int nSlice) {
 		List<Integer> documentIds = txTemplate
 				.execute(new TransactionCallback<List<Integer>>() {
 					@Override
@@ -152,11 +161,20 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		}
 		Set<String> names = new HashSet<String>(1);
 		names.add(kernelName);
-		final Map<Integer, Node> instanceIDMap = instanceTreeBuilder
-				.loadInstanceTrees(treeMappingInfo);
-		for (int i = 0; i < documentIds.size(); i++) {
+		int nStart = 0;
+		int nEnd = documentIds.size();
+		if (nMod > 0) {
+			int total = documentIds.size();
+			int sliceSize = total / nMod;
+			nStart = sliceSize * (nSlice - 1);
+			if(nSlice != nMod)
+				nEnd = nStart + sliceSize;
+		}
+		for (int i = nStart; i < nEnd; i++) {
 			// left hand side of kernel evaluation
 			int instanceId1 = documentIds.get(i);
+			if(log.isInfoEnabled())
+				log.info("evaluating kernel for instance_id1 = " + instanceId1);
 			// list of instance ids right hand side of kernel evaluation
 			SortedSet<Integer> rightDocumentIDs = new TreeSet<Integer>(
 					testDocumentIds);
@@ -304,5 +322,12 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	public void setTreeMappingInfo(TreeMappingInfo treeMappingInfo) {
 		this.treeMappingInfo = treeMappingInfo;
+	}
+
+	@Override
+	public void evaluateKernelOnCorpus() {
+		final Map<Integer, Node> instanceIDMap = instanceTreeBuilder
+				.loadInstanceTrees(treeMappingInfo);
+		this.evaluateKernelOnCorpus(instanceIDMap, 0, 0);
 	}
 }
