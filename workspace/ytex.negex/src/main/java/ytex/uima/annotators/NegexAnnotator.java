@@ -17,30 +17,66 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.uima.analysis_engine.ResultSpecification;
-import org.apache.uima.analysis_engine.annotator.AnnotatorConfigurationException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorContext;
-import org.apache.uima.analysis_engine.annotator.AnnotatorInitializationException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorProcessException;
-import org.apache.uima.analysis_engine.annotator.JTextAnnotator_ImplBase;
+import org.apache.uima.UimaContext;
+import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.cas.FSIterator;
 import org.apache.uima.cas.text.AnnotationIndex;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceInitializationException;
 
 import edu.mayo.bmi.uima.context.type.NEContext;
 import edu.mayo.bmi.uima.core.ae.type.NamedEntity;
 import edu.mayo.bmi.uima.core.sentence.type.Sentence;
 
-public class NegexAnnotator extends JTextAnnotator_ImplBase {
+/**
+ * Negex adapted to cTAKES. Checks negation status of named entities. Loads
+ * negex triggers from classpath: /ytex/uima/annotators/negex_triggers.txt
+ * <p/>
+ * Default behavior: confidence attribute for negated terms, possibly affirmed,
+ * or possibly negated terms set to -1 Configure with following uima
+ * initialization parameters:
+ * <li>checkPossibilities : should we check for possibilities
+ * <li>negatePossibilities : should possibilities be negated, default = true? if
+ * true, negated: confidence=-1, certainty=0; possible: confidence=-1,
+ * certainty=-1; affirmed: confidence=0, certainty=0 if false, negated:
+ * confidence=-1, certainty=0; possible: confidence=0, certainty=-1; affirmed:
+ * confidence=0, certainty=0
+ * <li>storeAsInterval : combine certainty and negation status in a single
+ * value. negated: confidence = -1, possible: confidence = 0.5, affirmed:
+ * confidence = 1
+ * 
+ * @author vijay
+ * 
+ */
+public class NegexAnnotator extends JCasAnnotator_ImplBase {
 	private static final Log log = LogFactory.getLog(NegexAnnotator.class);
 	private List<NegexRule> listNegexRules = null;
+	private boolean negatePossibilities = true;
+	private boolean checkPossibilities = true;
+	private boolean storeAsInterval = false;
 
 	@Override
-	public void initialize(AnnotatorContext aContext)
-			throws AnnotatorInitializationException,
-			AnnotatorConfigurationException {
+	public void initialize(UimaContext aContext)
+			throws ResourceInitializationException {
 		super.initialize(aContext);
 		this.listNegexRules = this.initializeRules();
+		negatePossibilities = getBooleanConfigParam(aContext,
+				"negatePossibilities", negatePossibilities);
+		if (negatePossibilities) {
+			checkPossibilities = true;
+		} else {
+			checkPossibilities = getBooleanConfigParam(aContext,
+					"checkPossibilities", checkPossibilities);
+		}
+		storeAsInterval = getBooleanConfigParam(aContext, "storeAsInterval",
+				storeAsInterval);
+	}
+
+	private boolean getBooleanConfigParam(UimaContext aContext, String param,
+			boolean defaultVal) {
+		Boolean paramValue = (Boolean) aContext.getConfigParameterValue(param);
+		return paramValue == null ? defaultVal : paramValue;
+
 	}
 
 	private List<String> initalizeRuleList() {
@@ -48,7 +84,8 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new InputStreamReader(this.getClass()
-					.getResourceAsStream("/ytex/uima/annotators/negex_triggers.txt")));
+					.getResourceAsStream(
+							"/ytex/uima/annotators/negex_triggers.txt")));
 			String line = null;
 			try {
 				while ((line = reader.readLine()) != null)
@@ -84,8 +121,8 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 
 	private List<NegexRule> initializeRules() {
 		List<String> listRules = this.initalizeRuleList();
-		List<NegexRule> listNegexRules = new ArrayList<NegexRule>(listRules
-				.size());
+		List<NegexRule> listNegexRules = new ArrayList<NegexRule>(
+				listRules.size());
 		Iterator<String> iRule = listRules.iterator();
 		while (iRule.hasNext()) {
 			String rule = iRule.next();
@@ -133,8 +170,7 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 	}
 
 	@Override
-	public void process(JCas aJCas, ResultSpecification aResultSpec)
-			throws AnnotatorProcessException {
+	public void process(JCas aJCas) {
 		AnnotationIndex sentenceIdx = aJCas
 				.getAnnotationIndex(Sentence.typeIndexID);
 		AnnotationIndex neIdx = aJCas
@@ -145,14 +181,14 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 			FSIterator neIter = neIdx.subiterator(s);
 			while (neIter.hasNext()) {
 				NamedEntity ne = (NamedEntity) neIter.next();
-				checkNegation(aJCas, s, ne, true, false);
-//				checkNegation2(aJCas, s, ne);
+				checkNegation(aJCas, s, ne);
+				// checkNegation2(aJCas, s, ne);
 			}
 		}
 	}
 
 	public static class NegexRule {
-		
+
 		@Override
 		public String toString() {
 			return "NegexRule [rule=" + rule + ", tag=" + tag + "]";
@@ -234,11 +270,10 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 		private int end;
 		private NegexRule rule;
 
-
 		@Override
 		public String toString() {
-			return "NegexToken [start=" + start + ", end="
-					+ end + ", rule=" + rule +  "]";
+			return "NegexToken [start=" + start + ", end=" + end + ", rule="
+					+ rule + "]";
 		}
 
 		@Override
@@ -334,13 +369,23 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 
 	/**
 	 * check the negation status of the specfied term in the specified sentence
-	 * @param aJCas for adding annotations
-	 * @param s the sentence in which we will look
-	 * @param ne the named entity whose negation status will be checked.
-	 * @param checkPoss should possibility be checked?
-	 * @param negPoss should possiblities be negated?
+	 * 
+	 * @param aJCas
+	 *            for adding annotations
+	 * @param s
+	 *            the sentence in which we will look
+	 * @param ne
+	 *            the named entity whose negation status will be checked.
+	 * @param checkPoss
+	 *            should possibility be checked?
+	 * @param negPoss
+	 *            should possiblities be negated?
 	 */
-	private void checkNegation(JCas aJCas, Sentence s, NamedEntity ne, boolean checkPoss, boolean negPoss) {
+	private void checkNegation(JCas aJCas, Sentence s, NamedEntity ne) {
+		if (storeAsInterval) {
+			// default is affirmed, which is coded as confidence = 1
+			ne.setConfidence(1);
+		}
 		// need to add . on either side due to the way the regexs are built
 		String sentence = "." + s.getCoveredText() + ".";
 		// allocate array of tokens
@@ -384,35 +429,37 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 		NegexToken t = this.findTokenByTag("[PREN]", new String[] { "[CONJ]",
 				"[PSEU]", "[POST]", "[PREP]", "[POSP]" }, true, neRelStart,
 				neRelEnd, tokens);
-		if(t != null) {
-			//hit - negate the ne
-			annotateNegation(aJCas, s, ne, t, true);
+		if (t != null) {
+			// hit - negate the ne
+			annotateNegation(aJCas, s, ne, t, true, false);
 		} else {
-			//look for POST rule after the ne, without any intervening stop tags
-			t = this.findTokenByTag("[POST]", new String[] { "[CONJ]", "[PSEU]",
-					"[PREN]", "[PREP]", "[POSP]" }, false, neRelStart, neRelEnd,
-					tokens);
-			if(t!=null) {
-				annotateNegation(aJCas, s, ne, t, true);
-			} else if (checkPoss || negPoss) {
-				//check possibles
-				t = this.findTokenByTag("[PREP]", new String[] { "[CONJ]", "[PSEU]",
-						"[PREN]", "[POST]", "[POSP]" }, true, neRelStart, neRelEnd,
-						tokens);
-				if(t!=null) {
-					annotateNegation(aJCas, s, ne, t, negPoss);
+			// look for POST rule after the ne, without any intervening stop
+			// tags
+			t = this.findTokenByTag("[POST]", new String[] { "[CONJ]",
+					"[PSEU]", "[PREN]", "[PREP]", "[POSP]" }, false,
+					neRelStart, neRelEnd, tokens);
+			if (t != null) {
+				annotateNegation(aJCas, s, ne, t, true, false);
+			} else if (this.checkPossibilities || this.negatePossibilities) {
+				// check possibles
+				t = this.findTokenByTag("[PREP]", new String[] { "[CONJ]",
+						"[PSEU]", "[PREN]", "[POST]", "[POSP]" }, true,
+						neRelStart, neRelEnd, tokens);
+				if (t != null) {
+					annotateNegation(aJCas, s, ne, t, false, true);
 				} else {
-					t = this.findTokenByTag("[POSP]", new String[] { "[CONJ]", "[PSEU]",
-							"[PREN]", "[POST]", "[PREP]" }, false, neRelStart, neRelEnd,
-							tokens);
-					if(t!=null)
-						annotateNegation(aJCas, s, ne, t, negPoss);
+					t = this.findTokenByTag("[POSP]", new String[] { "[CONJ]",
+							"[PSEU]", "[PREN]", "[POST]", "[PREP]" }, false,
+							neRelStart, neRelEnd, tokens);
+					if (t != null)
+						annotateNegation(aJCas, s, ne, t, true, true);
 				}
 			}
-		} 
+		}
 	}
 
-	private void checkNegation2(JCas aJCas, Sentence s, NamedEntity ne, boolean negPoss) {
+	private void checkNegation2(JCas aJCas, Sentence s, NamedEntity ne,
+			boolean negPoss) {
 		// Sorter s = new Sorter();
 		String sToReturn = "";
 		String sScope = "";
@@ -437,7 +484,7 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 
 		// Process the sentence and tag each matched negation
 		// rule with correct negation rule tag.
-		// 
+		//
 		// At the same time check for the phrase that we want to decide
 		// the negation status for and
 		// tag the phrase with [PHRASE] ... [PHRASE]
@@ -630,7 +677,7 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 			}
 			sScope = sentence.substring(startOffset, endOffset + 1);
 		}
-		
+
 		// Get the scope of the negation for POST and POSP
 		if (sentence.contains("[POST]") || sentence.contains("[POSP]")) {
 			int endOffset = sentence.lastIndexOf("[POST]");
@@ -668,19 +715,33 @@ public class NegexAnnotator extends JTextAnnotator_ImplBase {
 	}
 
 	/**
-	 * set the certainty/confidence flag on a named entity, and add a negation context annotation.
-	 * @param aJCas 
-	 * @param s used to figure out text span
-	 * @param ne the certainty/confidence will be set to -1
-	 * @param t the token
-	 * @param fSetCertainty should we set the certainty (true) or confidence (false) 
+	 * set the certainty/confidence flag on a named entity, and add a negation
+	 * context annotation.
+	 * 
+	 * @param aJCas
+	 * @param s
+	 *            used to figure out text span
+	 * @param ne
+	 *            the certainty/confidence will be set to -1
+	 * @param t
+	 *            the token
+	 * @param fSetCertainty
+	 *            should we set the certainty (true) or confidence (false)
 	 */
 	private void annotateNegation(JCas aJCas, Sentence s, NamedEntity ne,
-			NegexToken t, boolean fSetCertainty) {
-		if(fSetCertainty)
-			ne.setCertainty(-1);
-		else
-			ne.setConfidence(-1);
+			NegexToken t, boolean negated, boolean possible) {
+		if (!storeAsInterval) {
+			if (possible)
+				ne.setCertainty(-1);
+			if (negated && (this.negatePossibilities && possible))
+				ne.setConfidence(-1);
+
+		} else {
+			float confidence = negated ? -1 : 1;
+			if (possible)
+				confidence *= 0.5;
+			ne.setConfidence(confidence);
+		}
 		NEContext nec = new NEContext(aJCas);
 		nec.setBegin(s.getBegin() + t.getStart() - 1);
 		nec.setEnd(s.getBegin() + t.getEnd() - 1);
