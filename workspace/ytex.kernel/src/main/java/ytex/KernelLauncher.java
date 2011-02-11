@@ -1,6 +1,5 @@
 package ytex;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
@@ -11,7 +10,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
