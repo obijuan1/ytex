@@ -107,6 +107,11 @@
 			<param name="project.name" value="ytex.negex" />
 		</antcall>
 	</target>
+	<target name="build.ytex.kernel">
+		<antcall target="compile">
+			<param name="project.name" value="ytex.kernel" />
+		</antcall>
+	</target>	
 	<target name="build.ytex.model">
 		<antcall target="compile">
 			<param name="project.name" value="ytex.model" />
@@ -257,5 +262,5 @@
 			<zipfileset dir="../libs.system" includes="${orcl.jdbc.dir}/*.*" excludes="**/.svn/**/*.*" />
 		</zip>
 	</target>
-	<target name="build.all" depends="clean.dist,build.ctakes-patches,build.ytex.model,build.ytex.negex,build.ytex.uima,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />
+	<target name="build.all" depends="clean.dist,build.ctakes-patches,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />
 </project>
