@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<bean name="kernelApplicationContext"
+		class="org.springframework.context.support.ClassPathXmlApplicationContext">
+		<constructor-arg>
+			<list>
+				<value>ytex/beans-datasource.xml</value>
+				<value>ytex/beans-kernel.hbm.xml</value>
+				<value>ytex/beans-kernel.xml</value>
+				<value>ytex/beans-kernel-sim.xml</value>
+			</list>
+		</constructor-arg>
+	</bean>
+</beans>

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="ytex.kernel.model">
+	<class name="KernelEvaluation" table="kernel_eval">
+		<id name="kernelEvaluationId" column="kernel_eval_id">
+			<generator class="native">
+				<param name="sequence">kernel_eval_id_sequence</param>
+			</generator>
+		</id>
+  		<property name="name"/>
+		<property name="instanceId1" column="instance_id1" />
+		<property name="instanceId2" column="instance_id2" />
+		<property name="similarity" column="similarity" />
+	</class>
+	<query name="getKernelEvaluation"><![CDATA[
+		from KernelEvaluation
+		where name = :name
+		and instanceId1 = :instanceId1
+		and  instanceId2 =  :instanceId2
+	]]></query>
+	<query name="deleteKernelEvaluation"><![CDATA[
+		delete from KernelEvaluation
+		where name = :name
+		and instanceId1 = :instanceId1
+		and  instanceId2 =  :instanceId2
+	]]></query>
+	<query name="getAllKernelEvaluations"><![CDATA[
+		from KernelEvaluation
+		where name = :name
+	]]></query>
+	<!-- 
+	2 separate indices for instanceId1 & instanceId2
+	use union so that mysql can use both indices
+	arggh! hibernate doesn't support union - run 2 queries
+	 -->
+	<query name="getAllKernelEvaluationsForInstance1"><![CDATA[
+		from KernelEvaluation
+		where name in (:names)
+		and instanceId1 = :instanceId 
+	]]></query>	
+	<query name="getAllKernelEvaluationsForInstance2"><![CDATA[
+		from KernelEvaluation
+		where name in (:names)
+		and instanceId2 = :instanceId 
+	]]></query>		
+</hibernate-mapping>
