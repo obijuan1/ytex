@@ -62,6 +62,8 @@ public class ConceptDaoImpl implements ConceptDao {
 		if (conceptGraph != null) {
 			return conceptGraph;
 		} else {
+			if (log.isInfoEnabled())
+				log.info("initializeConceptGraph(): file not found, initializing concept graph from database.");
 			Map<String, ConcRel> conceptMap = new HashMap<String, ConcRel>();
 			Set<String> roots = new HashSet<String>();
 			List<Object[]> conceptPairs = sourceVocabularies.length == 0 ? umlsDao
@@ -200,11 +202,17 @@ public class ConceptDaoImpl implements ConceptDao {
 		// if (cg != null) {
 		// initializeConceptGraph(cg);
 		// }
-		File f = new File(getConceptGraphDir()+"/conceptGraph");
-		if (f.exists())
+		File f = new File(getConceptGraphDir() + "/conceptGraph");
+		if (log.isInfoEnabled())
+			log.info("getConceptGraph() initializing concept graph from file: "
+					+ f.getPath());
+		if (f.exists()) {
+			if (log.isInfoEnabled())
+				log.info("getConceptGraph() file exists, reading concept graph");
 			return initializeConceptGraph(this.readConceptGraph());
-		else
+		} else {
 			return null;
+		}
 	}
 
 	private ConceptGraph initializeConceptGraph(ConceptGraph cg) {
