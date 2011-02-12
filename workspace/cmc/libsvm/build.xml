@@ -1,5 +1,4 @@
 <project name="Libsvm">
-	<taskdef resource="net/sf/antcontrib/antlib.xml" />
 	<property name="ytex.home" value="../.."/>
 	<property name="ytex.properties" value="${ytex.home}/config/desc/ytex.properties" />
 	<property file="${ytex.properties}" />	
@@ -21,6 +20,7 @@
 	-->
 
 	<path id="libsvm.cp">
+		<pathelement location="${ytex.home}/config/desc" />
 		<pathelement location="${libsvm.home}/java/libsvm.jar" />
 		<pathelement location="${ytex.home}/cmc/bin" />
 		<pathelement location="${ytex.home}/cmc/desc" />
@@ -29,6 +29,11 @@
 		<fileset dir="${ytex.home}/libs.system" includes="**/*.jar" excludes="ant-dependencies/**/*.jar"/>
 		<fileset dir="${ytex.home}/ytex.web/WebContent/WEB-INF/lib" includes="**/*.jar" />
 	</path>
+	<!-- taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="libsvm.cp"/ -->
+	<taskdef
+        name="for"
+        classname="net.sf.antcontrib.logic.ForTask"
+        onerror="ignore" classpathref="libsvm.cp"/>
 
 	<!-- property name="classLabels" value="1,2"/ -->
 	<!-- property name="costs" value="0.01,0.1" / -->
@@ -323,6 +328,7 @@
 		</exec>
 	</target>
 	<target name="kernel.storeInstanceMap">
+		<echo>${db.url}</echo>
 		<java classname="ytex.KernelLauncher" dir="${processedData}" fork="yes" classpathref="libsvm.cp">
 			<arg line="-beans ./beans-corpus-kernel.xml -storeInstanceMap instanceMap.obj"/>
 			<jvmarg value="-Xmx1g"/>
