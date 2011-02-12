@@ -50,6 +50,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="conceptDao" class="ytex.kernel.dao.ConceptDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 		<property name="umlsDao" ref="umlsDao" />
+		<property name="conceptGraphDir" value="${ytex.conceptGraphDir}" />
 	</bean>
 	<bean id="umlsDao" class="ytex.umls.dao.UMLSDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
