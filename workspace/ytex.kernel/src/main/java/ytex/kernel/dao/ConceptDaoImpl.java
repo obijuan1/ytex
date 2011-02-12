@@ -200,7 +200,7 @@ public class ConceptDaoImpl implements ConceptDao {
 		// if (cg != null) {
 		// initializeConceptGraph(cg);
 		// }
-		File f = new File("c:/temp/conceptGraph");
+		File f = new File(getConceptGraphDir()+"/conceptGraph");
 		if (f.exists())
 			return initializeConceptGraph(this.readConceptGraph());
 		else
