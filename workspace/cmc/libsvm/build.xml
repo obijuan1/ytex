@@ -24,12 +24,10 @@
 
 	<path id="libsvm.cp">
 		<pathelement location="${ytex.home}/config/desc" />
-		<pathelement location="${libsvm.home}/java/libsvm.jar" />
 		<pathelement location="${ytex.home}/cmc/bin" />
-		<pathelement location="${ytex.home}/cmc/desc" />
 		<pathelement location="${ytex.home}/ytex.kernel/bin" />
 		<pathelement location="${ytex.home}/ytex.model/bin" />
-		<fileset dir="${ytex.home}/libs.system" includes="**/*.jar" excludes="ant-dependencies/**/*.jar" />
+		<fileset dir="${ytex.home}/libs.system" includes="**/*.jar" />
 		<fileset dir="${ytex.home}/ytex.web/WebContent/WEB-INF/lib" includes="**/*.jar" />
 	</path>
 	<!-- 
