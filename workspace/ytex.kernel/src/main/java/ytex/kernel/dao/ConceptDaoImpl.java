@@ -103,11 +103,11 @@ public class ConceptDaoImpl implements ConceptDao {
 		}
 	}
 
-	private ConceptGraph readConceptGraph() {
+	private ConceptGraph readConceptGraph(File file) {
 		ObjectInputStream is = null;
 		try {
 			is = new ObjectInputStream(new BufferedInputStream(
-					new FileInputStream("c:/temp/conceptGraph")));
+					new FileInputStream(file)));
 			return (ConceptGraph) is.readObject();
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);
@@ -209,7 +209,7 @@ public class ConceptDaoImpl implements ConceptDao {
 		if (f.exists()) {
 			if (log.isInfoEnabled())
 				log.info("getConceptGraph() file exists, reading concept graph");
-			return initializeConceptGraph(this.readConceptGraph());
+			return initializeConceptGraph(this.readConceptGraph(f));
 		} else {
 			return null;
 		}
