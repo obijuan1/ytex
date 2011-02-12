@@ -26,6 +26,15 @@ public class ConceptDaoImpl implements ConceptDao {
 	private SessionFactory sessionFactory;
 	private static final Log log = LogFactory.getLog(ConceptDaoImpl.class);
 	private UMLSDao umlsDao;
+	private String conceptGraphDir;
+
+	public String getConceptGraphDir() {
+		return conceptGraphDir;
+	}
+
+	public void setConceptGraphDir(String conceptGraphDir) {
+		this.conceptGraphDir = conceptGraphDir;
+	}
 
 	public SessionFactory getSessionFactory() {
 		return sessionFactory;
@@ -56,8 +65,8 @@ public class ConceptDaoImpl implements ConceptDao {
 			Map<String, ConcRel> conceptMap = new HashMap<String, ConcRel>();
 			Set<String> roots = new HashSet<String>();
 			List<Object[]> conceptPairs = sourceVocabularies.length == 0 ? umlsDao
-					.getAllRelations()
-					: umlsDao.getRelationsForSABs(sourceVocabularies);
+					.getAllRelations() : umlsDao
+					.getRelationsForSABs(sourceVocabularies);
 			for (Object[] conceptPair : conceptPairs) {
 				addRelation(conceptMap, roots, conceptPair);
 			}
@@ -76,7 +85,8 @@ public class ConceptDaoImpl implements ConceptDao {
 		ObjectOutputStream os = null;
 		try {
 			os = new ObjectOutputStream(new BufferedOutputStream(
-					new FileOutputStream("c:/temp/conceptGraph")));
+					new FileOutputStream(this.getConceptGraphDir()
+							+ "/conceptGraph")));
 			os.writeObject(cg);
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);

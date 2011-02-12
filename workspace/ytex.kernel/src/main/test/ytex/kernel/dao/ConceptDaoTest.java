@@ -30,8 +30,5 @@ public class ConceptDaoTest extends TestCase {
 		System.out.println(pairLCS);
 	}
 
-	public void testGetConceptGraph() {
-		fail("Not yet implemented");
-	}
 
 }

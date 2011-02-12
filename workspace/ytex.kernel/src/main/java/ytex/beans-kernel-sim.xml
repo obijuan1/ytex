@@ -22,6 +22,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		init-method="init">
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
+		<property name="conceptGraphDir" value="${ytex.conceptGraphDir}" />
 	</bean>
 	<bean id="conceptKernel" class="ytex.kernel.evaluator.ConceptKernel"
 		init-method="init">
