@@ -8,7 +8,7 @@
 	<property name="experiment" value="ctakes-tree-neg" />
 	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
 	<property name="costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
-	<property name="mysql.line" value="--user=${db.username} --password=${db.password} ${db.schema}" />
+	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<property name="kernel.mod" value="2"/>
 	<property name="threads" value="2" />
 
@@ -45,7 +45,9 @@
 		</antcall>
 	</target>
 	-->
-	<target name="export.cv.all" depends="export.data,cv.all,cv.consolidateResult.all"/>
+	<target name="all" depends="kernel.evalAllSlices,cv.all"/>
+	
+	<target name="cv.all" depends="export.data,cv.all.folds,cv.consolidateResult.all"/>
 	
 	<target name="export.data" description="export gram matrices">
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="libsvm.cp" dir="${processedData}" fork="yes">
@@ -53,7 +55,7 @@
 			<jvmarg value="-Xmx1g"/>
 		</java>
 	</target>
-	<target name="cv.all">
+	<target name="cv.all.folds" description="generate all folds, evaluate libsvm">
 		<property name="iteration.target" value="cv.classWeightCost" />
 		<property name="iteration.parallel" value="true" />
 		<for list="${classLabels}" param="classLabel" parallel="${iteration.parallel}" threadCount="${threads}">
@@ -203,7 +205,8 @@
 			<arg line="${mysql.line} -e &quot;source select_params.sql&quot; -s" />
 		</exec>
 	</target>	
-	<target name="test.all">
+	<target name="test.all" depends="test.eval.all,test.loadResults"/>
+	<target name="test.eval.all">
 		<property name="test.outfile" value="${processedData}/test_results.txt" />
 		<delete file="test.outfile" quiet="yes" />
 		<for list="${classLabels}" param="classLabel">
@@ -334,13 +337,13 @@
 			<jvmarg value="-Xmx1g"/>
 		</java>
 	</target>
-	<target name="generateSliceList" description="create property kernel.slices for use in for loop">
+	<target name="kernel.generateSliceList" description="create property kernel.slices for use in for loop">
 		<script language="beanshell" classpathref="libsvm.cp">
 			<![CDATA[
 			int mod = Integer.parseInt(project.getProperty("kernel.mod"));
 			String slices = "";
 			for(int i = 1; i<=mod; i++) {
-				slices = slices +"i";
+				slices = slices + i;
 				if(i < mod)
 					slices = slices + ",";
 			}
@@ -348,8 +351,8 @@
 		]]>
 		</script>
 	</target>
-	<target name="kernel.evalAllSlices" depends="generateSliceList">
-		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${threads}">
+	<target name="kernel.evalAllSlices" depends="kernel.generateSliceList">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
 			<sequential>
 				<antcall target="kernel.evalSlice">
 					<param name="kernel.slice" value="@{kernel.slice}"/>
@@ -370,4 +373,5 @@
 			<jvmarg value="-Xmx1g"/>
 		</java>
 	</target>
+	<target name="kernel.all" depends="kernel.storeInstanceMap,kernel.evalAllSlices" />
 </project>
