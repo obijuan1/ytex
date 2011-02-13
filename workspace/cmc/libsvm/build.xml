@@ -57,7 +57,7 @@
 	</target>
 	<target name="export.data.cluster" if="ytex.cluster" description="export libsvm data on cluster">
 		<exec executable="qsub">
-			<arg line="-sync y ${ant.pbs} export.data.local" />
+			<arg line="-sync y ${ant.pbs} export.data.internal" />
 		</exec>
 	</target>
 	<target name="export.data.internal">
