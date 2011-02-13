@@ -8,6 +8,7 @@
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
 	<property name="experiment" value="ctakes-tree-neg" />
 	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
+	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<property name="costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<property name="kernel.mod" value="2" />
@@ -57,7 +58,7 @@
 			<jvmarg value="${log4j.param}" />
 		</java>
 	</target>
-	<target name="cv.all.folds" depends="cv.all.folds.cluster,cv.all.folds.local"/>
+	<target name="cv.all.folds" depends="cv.all.folds.cluster,cv.all.folds.local" />
 	<target name="cv.all.folds.cluster" description="on cluster, generate all folds, evaluate libsvm" if="ytex.cluster">
 		<exec executable="qsub">
 			<arg line="-sync y -t 1-${maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
@@ -80,11 +81,19 @@
 		</for>
 	</target>
 	<target name="cv.generateFolds" description="generate folds for label and evaluate locally">
-		<property name="cv.classLabel" value="20" />
+		<property name="cv.classLabel" value="10" />
+		<mkdir dir="${cv.tmpdir}" />
+		<echo>cv.tmpdir=${cv.tmpdir}</echo>
 		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="libsvm.cp" fork="no">
+			<arg value="-data" />
 			<arg value="${processedData}/training_gram_${cv.classLabel}.txt" />
+			<arg value="-outdir" />
+			<arg value="${cv.tmpdir}" />
+			<arg value="-folds" />
 			<arg value="10" />
+			<!--
 			<jvmarg value="${log4j.param}" />
+			-->
 		</java>
 		<for param="training.file">
 			<fileset dir="${processedData}" includes="training_gram_${cv.classLabel}_fold*_train.txt" />
@@ -95,7 +104,7 @@
 			</sequential>
 		</for>
 		<delete quiet="yes">
-			<fileset dir="${processedData}" includes="training_gram_${cv.classLabel}_fold*.*" />
+			<fileset dir="${cv.tmpdir}" includes="training_gram_${cv.classLabel}_fold*.*" />
 		</delete>
 	</target>
 	<target name="init.classWeights">
@@ -131,10 +140,10 @@
 		</for>
 	</target>
 	<target name="cv.classWeightCost">
-		<property name="cv.classLabel" value="1" />
+		<property name="cv.classLabel" value="10" />
 		<property name="cv.cost" value="1" />
 		<property name="cv.weight" value="1" />
-		<property name="cv.fold.base" value="training_gram_1_fold8" />
+		<property name="cv.fold.base" value="training_gram_10_fold8" />
 		<property name="cv.fold.train" value="${cv.fold.base}_train.txt" />
 		<property name="cv.fold.test" value="${cv.fold.base}_test.txt" />
 		<property name="cv.fold.model" value="${cv.fold.base}_model.txt" />
@@ -148,16 +157,15 @@
 		</java>
 		-->
 		<!-- train the svm -->
-		<exec executable="${libsvm.bin}/svm-train" dir="${processedData}">
+		<exec executable="${libsvm.bin}/svm-train" dir="${cv.tmpdir}">
 			<arg line="-q -b 1 -t 4 -w1 ${cv.weight} -c ${cv.cost} ${cv.fold.train} ${cv.fold.model}" />
 		</exec>
 		<!-- test the svm -->
-		<exec executable="${libsvm.bin}/svm-predict" dir="${processedData}">
+		<exec executable="${libsvm.bin}/svm-predict" dir="${cv.tmpdir}">
 			<arg line="-b 1 ${cv.fold.test} ${cv.fold.model} ${cv.fold.predict}" />
 		</exec>
 		<!-- extract results -->
-		<antcall target="cv.extractResults">
-		</antcall>
+		<antcall target="cv.extractResults"/>
 		<!--
 		<java classname="ytex.libsvm.CalculateMetrics" fork="no" classpathref="libsvm.cp" output="${cv.outfile}" append="yes">
 			<arg line="${processedData}/${cv.fold.test} ${processedData}/${cv.fold.predict} ${processedData}/${cv.fold.model}" />
@@ -178,14 +186,15 @@
 			<![CDATA[
 			import ytex.libsvm.*;
 			String processedDataDir = project.getProperty("processedData");
+			String cvTmpDir = project.getProperty("cv.tmpdir");
 			String testFile = project.getProperty("cv.fold.test");
 			String predictFile = project.getProperty("cv.fold.predict");
 			String modelFile = project.getProperty("cv.fold.model");
 			LibSVMParser p = new LibSVMParser();
 			ScutLibsvm scut = new ScutLibsvm(); 
-			int nSV = p.parseModel(processedDataDir+"/"+modelFile);
+			int nSV = p.parseModel(cvTmpDir+"/"+modelFile);
 			project.setProperty("cv.nsv", Integer.toString(nSV));
-			Object[] scutMetrics = scut.calculateScutLibsvm(processedDataDir+"/"+predictFile, processedDataDir+"/"+testFile);
+			Object[] scutMetrics = scut.calculateScutLibsvm(cvTmpDir+"/"+predictFile, cvTmpDir+"/"+testFile);
 			project.setProperty("cv.metrics", 
 				scutMetrics[1].toString() + "\t"
 				+ Double.toString(scutMetrics[0]) + "\t"
@@ -385,7 +394,7 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="kernel.evalAllSlices" depends="kernel.evalAllSlices.cluster,kernel.evalAllSlices.local"/>
+	<target name="kernel.evalAllSlices" depends="kernel.evalAllSlices.cluster,kernel.evalAllSlices.local" />
 	<target name="kernel.evalSlice">
 		<property name="kernel.slice" value="1" />
 		<java classname="ytex.KernelLauncher" dir="${processedData}" fork="yes" classpathref="libsvm.cp">
@@ -404,7 +413,7 @@
 	</target>
 	<target name="kernel.all" depends="kernel.storeInstanceMap,kernel.evalAllSlices" />
 	<target name="test">
-		<property resource="ytex.properties" prefix="tmp" classpathref="libsvm.cp"/>
+		<property resource="ytex.properties" prefix="tmp" classpathref="libsvm.cp" />
 		<echo>${tmp.ytex.conceptGraphDir}</echo>
 	</target>
 </project>
