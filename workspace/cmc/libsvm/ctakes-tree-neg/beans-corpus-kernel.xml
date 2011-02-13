@@ -193,12 +193,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="kernelName" value="ctakes-tree-neg" />
 		<property name="trainInstanceIDQuery">
 			<value><![CDATA[
-			select documentId from CMCDocument where documentSet = 'train' order by documentId asc
+			select documentId from cmcdocument where documentSet = 'train' order by documentId asc
 			]]></value>
 		</property>
 		<property name="testInstanceIDQuery">
 			<value><![CDATA[
-			select documentId from CMCDocument where documentSet = 'test' order by documentId asc
+			select documentId from cmcdocument where documentSet = 'test' order by documentId asc
 			]]></value>
 		</property>
 	</bean>
