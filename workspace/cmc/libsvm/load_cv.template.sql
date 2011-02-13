@@ -1,7 +1,13 @@
+/**
+ * need to use CHARACTER SET latin1 COLLATE latin1_swedish_ci
+ * with utf8_general_ci get following error:
+ * ERROR 1271 (HY000) at line 63 in file: 'load_cv.sql': Illegal mix of collations for operation '='
+ */
+
 delete from weka_results 
 where experiment = '@EXPERIMENT@';
 
-load data local infile 'E:/projects/ytex/cmc/libsvm/@EXPERIMENT@/cv.txt'
+load data local infile 'cv.txt'
 into table weka_results
 (label, cost, weight, measureNumSupportVectors, 
 num_true_positives, num_false_positives, num_true_negatives, num_false_negatives, IR_precision, IR_recall, F_measure,
@@ -15,7 +21,7 @@ drop table if exists best_f1;
 create temporary table best_f1 (
     label varchar(10),
     best_f1 double
-);
+) CHARACTER SET latin1 COLLATE latin1_swedish_ci;
 
 
 insert into best_f1 (label, best_f1)
@@ -37,7 +43,7 @@ create temporary table best_nsv (
     label varchar(10),
     best_f1 double,
     best_nsv int
-);
+) CHARACTER SET latin1 COLLATE latin1_swedish_ci;
 
 insert into best_nsv
 select p.label, p.best_f1, round(min(nsva)) min_nsv
@@ -58,7 +64,7 @@ create temporary table best_cost (
     best_nsv int,
     max_cost double,
     min_cost double
-);
+) CHARACTER SET latin1 COLLATE latin1_swedish_ci;
 
 insert into best_cost
 select p.label, p.best_f1, p.best_nsv, max(cost), min(cost)
