@@ -6,7 +6,6 @@
 	<property file="${ytex.properties}" />
 	<property name="libsvm.home" value="c:/java/libsvm-3.0" />
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
-	<property name="ytex.kernel.cp" value="${ytex.home}/ytex.kernel/bin" />
 	<property name="experiment" value="ctakes-tree-neg" />
 	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
 	<property name="costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
@@ -17,6 +16,7 @@
 
 	<!-- property name="classLabels" value="25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45" / -->
 	<property name="classLabels" value="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45" />
+	<property name="maxClassLabel" value="45" />
 	<!--
 	<property name="costs" value="1,10" />
 	<property name="classLabels" value="1,2" />
@@ -57,7 +57,18 @@
 			<jvmarg value="${log4j.param}" />
 		</java>
 	</target>
-	<target name="cv.all.folds" description="generate all folds, evaluate libsvm">
+	<target name="cv.all.folds" depends="cv.all.folds.cluster,cv.all.folds.local"/>
+	<target name="cv.all.folds.cluster" description="on cluster, generate all folds, evaluate libsvm" if="ytex.cluster">
+		<exec executable="qsub">
+			<arg line="-t 1-${maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
+		</exec>
+	</target>
+	<target name="cv.generateFolds.cluster" description="generate folds for label and evaluate on cluster">
+		<antcall target="cv.generateFolds">
+			<param name="cv.classLabel" value="${env.SGE_TASK_ID}" />
+		</antcall>
+	</target>
+	<target name="cv.all.folds.local" description="generate all folds, evaluate libsvm" unless="ytex.cluster">
 		<property name="iteration.target" value="cv.classWeightCost" />
 		<property name="iteration.parallel" value="true" />
 		<for list="${classLabels}" param="classLabel" parallel="${iteration.parallel}" threadCount="${threads}">
@@ -68,7 +79,7 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="cv.generateFolds">
+	<target name="cv.generateFolds" description="generate folds for label and evaluate locally">
 		<property name="cv.classLabel" value="20" />
 		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="libsvm.cp" fork="no">
 			<arg value="${processedData}/training_gram_${cv.classLabel}.txt" />
