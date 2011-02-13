@@ -2,6 +2,7 @@ package ytex.libsvm;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -16,41 +17,107 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 public class CreateStratifiedCVFolds {
-	// private static final Log log = LogFactory
-	// .getLog(CreateStratifiedCVFolds.class);
+	@SuppressWarnings("static-access")
+	private static Options initOptions() {
+		Option data = OptionBuilder.withArgName("data").hasArg()
+				.withDescription("input data").create("data");
+		Option outdir = OptionBuilder
+				.withArgName("outdir")
+				.hasArg()
+				.withDescription(
+						"output directory, default same directory as input data")
+				.create("outdir");
+		Option folds = OptionBuilder.withArgName("folds").hasArg()
+				.withDescription("# folds, default 10").create("folds");
+		Option seed = OptionBuilder.withArgName("seed").hasArg()
+				.withDescription("random seed").create("seed");
+		Option minClass = OptionBuilder
+				.withArgName("minClass")
+				.hasArg()
+				.withDescription(
+						"min instances per class.  for classes w/ few members, will result in overlapping folds")
+				.create("minClass");
+		Options options = new Options();
+		options.addOption(data);
+		options.addOption(outdir);
+		options.addOption(folds);
+		options.addOption(seed);
+		options.addOption(minClass);
+		return options;
+	}
+
+	private static void printHelp(Options options) {
+		HelpFormatter formatter = new HelpFormatter();
+		formatter
+				.printHelp(
+						"java ytex.libsvm.CreateStratifiedCVFolds splits svm training data into n training/test sets for n-fold cross validation",
+						options);
+	}
 
 	/**
 	 * @param args
 	 * @throws IOException
+	 * @throws ParseException
 	 */
-	public static void main(String[] args) throws IOException {
-		if (args.length < 1) {
-			System.out
-					.println("usage: java ytex.libsvm.CreateStratifiedCVFolds <gram matrix> [folds] [random seed] [min instances per class]");
+	public static void main(String[] args) throws IOException, ParseException {
+		Options options = initOptions();
+		CommandLineParser parser = new GnuParser();
+		CommandLine line = parser.parse(options, args);
+		if (args.length < 1 || line.getOptionValue("data") == null) {
+			printHelp(options);
 		} else {
-			String gramFile = args[0];
-			int nFolds = Integer.parseInt(args[1]);
-			int nSeed = 0;
-			int nMinPerClass = 2;
-			if (args.length > 2) {
-				nSeed = Integer.parseInt(args[2]);
-			}
-			if (args.length > 3) {
-				nMinPerClass = Integer.parseInt(args[3]);
-			}
+			String dataFile = line.getOptionValue("data");
+			String outdir = line.getOptionValue("outdir");
+			int nFolds = Integer.parseInt(line.getOptionValue("folds", "10"));
+			int nSeed = Integer.parseInt(line.getOptionValue("seed", "0"));
+			int nMinPerClass = Integer.parseInt(line.getOptionValue("minClass",
+					"0"));
 			Map<String, List<Integer>> mapLabelToLineNumbers = new HashMap<String, List<Integer>>();
 			List<String> lines = new ArrayList<String>();
 			// read input, create a map of class label to line numbers, and a
-			// list
-			// of each line
-			readGramMatrix(gramFile, mapLabelToLineNumbers, lines);
+			// list of each line
+			readGramMatrix(dataFile, mapLabelToLineNumbers, lines);
 			// split into folds
 			List<Set<Integer>> folds = createFolds(mapLabelToLineNumbers,
 					nFolds, nMinPerClass, nSeed);
 			// output folds
-			outputFolds(gramFile, folds, lines);
+			outputFolds(dataFile, folds, lines, outdir);
 		}
+	}
+
+	/**
+	 * 
+	 * @param gramFile
+	 * @return 0 - directory file is in, 1 - file base name, 2 - file suffix
+	 */
+	private static String[] splitFile(String gramFile) {
+		String base = "";
+		String suffix = "";
+		String dir = "";
+		String prefix = gramFile;
+		int nLastDot = gramFile.lastIndexOf(".");
+		if (nLastDot > -1) {
+			prefix = gramFile.substring(0, nLastDot);
+			suffix = gramFile.substring(nLastDot);
+		}
+		int nLastDirSep = prefix.lastIndexOf(File.separator);
+		if (nLastDirSep > -1) {
+			dir = prefix.substring(0, nLastDirSep);
+			base = prefix.substring(nLastDirSep + 1);
+		} else {
+			base = prefix;
+		}
+		return new String[] { dir, base, suffix };
 	}
 
 	/**
@@ -62,14 +129,16 @@ public class CreateStratifiedCVFolds {
 	 * @throws IOException
 	 */
 	private static void outputFolds(String gramFile, List<Set<Integer>> folds,
-			List<String> lines) throws IOException {
-		int nLastDot = gramFile.lastIndexOf(".");
-		String prefix = gramFile;
-		String suffix = "";
-		if (nLastDot >= 0) {
-			prefix = gramFile.substring(0, nLastDot);
-			suffix = gramFile.substring(nLastDot);
-		}
+			List<String> lines, String outdir) throws IOException {
+		String fileParts[] = splitFile(gramFile);
+		// if outdir specified, put the files there
+		String foldOutDir = outdir != null ? outdir : fileParts[0];
+		// add a / if needed
+		if (foldOutDir.length() > 0 && !foldOutDir.endsWith(File.separator))
+			foldOutDir += File.separator;
+		String base = fileParts[1];
+		String suffix = fileParts[2];
+		String prefix = foldOutDir + base;
 		for (int i = 0; i < folds.size(); i++) {
 			String trainFileName = prefix + "_fold" + (i + 1) + "_train"
 					+ suffix;
@@ -120,7 +189,7 @@ public class CreateStratifiedCVFolds {
 	private static List<Set<Integer>> createFolds(
 			Map<String, List<Integer>> mapLabelToLineNumbers, int nFolds,
 			int nMinPerClass, int nSeed) {
-		Random r = new Random(System.currentTimeMillis());
+		Random r = new Random(nSeed != 0 ? nSeed : System.currentTimeMillis());
 		List<Set<Integer>> folds = new ArrayList<Set<Integer>>(nFolds);
 		Map<String, List<Set<Integer>>> mapLabelFolds = new HashMap<String, List<Set<Integer>>>();
 		for (Map.Entry<String, List<Integer>> labelToLineNumber : mapLabelToLineNumbers
