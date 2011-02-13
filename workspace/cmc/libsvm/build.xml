@@ -105,7 +105,7 @@
 			-->
 		</java>
 		<for param="training.file">
-			<fileset dir="${processedData}" includes="training_gram_${cv.classLabel}_fold*_train.txt" />
+			<fileset dir="${cv.tmpdir}" includes="training_gram_${cv.classLabel}_fold*_train.txt" />
 			<sequential>
 				<antcall target="cv.classWeights">
 					<param name="cv.fold.training" value="@{training.file}" />
