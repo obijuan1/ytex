@@ -60,7 +60,7 @@
 	<target name="cv.all.folds" depends="cv.all.folds.cluster,cv.all.folds.local"/>
 	<target name="cv.all.folds.cluster" description="on cluster, generate all folds, evaluate libsvm" if="ytex.cluster">
 		<exec executable="qsub">
-			<arg line="-t 1-${maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
+			<arg line="-sync y -t 1-${maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
 		</exec>
 	</target>
 	<target name="cv.generateFolds.cluster" description="generate folds for label and evaluate on cluster">
@@ -390,7 +390,8 @@
 		<property name="kernel.slice" value="1" />
 		<java classname="ytex.KernelLauncher" dir="${processedData}" fork="yes" classpathref="libsvm.cp">
 			<arg line="-beans ./beans-corpus-kernel.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod} -slice ${kernel.slice}" />
-			<jvmarg value="-Xmx750m" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.param}" />
 		</java>
 	</target>
@@ -402,4 +403,8 @@
 		</java>
 	</target>
 	<target name="kernel.all" depends="kernel.storeInstanceMap,kernel.evalAllSlices" />
+	<target name="test">
+		<property resource="ytex.properties" prefix="tmp" classpathref="libsvm.cp"/>
+		<echo>${tmp.ytex.conceptGraphDir}</echo>
+	</target>
 </project>
