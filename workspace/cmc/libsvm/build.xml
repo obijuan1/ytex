@@ -51,7 +51,16 @@
 
 	<target name="cv.all" depends="export.data,cv.all.folds,cv.consolidateResult.all" />
 
-	<target name="export.data" description="export gram matrices">
+	<target name="export.data" description="export libsvm data" depends="export.data.cluster,export.data.local" />
+	<target name="export.data.local" unless="ytex.cluster" description="export libsvm data locally">
+		<antcall target="export.data.internal" />
+	</target>
+	<target name="export.data.cluster" if="ytex.cluster" description="export libsvm data on cluster">
+		<exec executable="qsub">
+			<arg line="-sync y ${ant.pbs} export.data.local" />
+		</exec>
+	</target>
+	<target name="export.data.internal">
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="libsvm.cp" dir="${processedData}" fork="yes">
 			<arg value="libsvm-export.xml" />
 			<jvmarg value="-Xmx1g" />
@@ -165,7 +174,7 @@
 			<arg line="-b 1 ${cv.fold.test} ${cv.fold.model} ${cv.fold.predict}" />
 		</exec>
 		<!-- extract results -->
-		<antcall target="cv.extractResults"/>
+		<antcall target="cv.extractResults" />
 		<!--
 		<java classname="ytex.libsvm.CalculateMetrics" fork="no" classpathref="libsvm.cp" output="${cv.outfile}" append="yes">
 			<arg line="${processedData}/${cv.fold.test} ${processedData}/${cv.fold.predict} ${processedData}/${cv.fold.model}" />
@@ -382,7 +391,7 @@
 	</target>
 	<target name="kernel.evalAllSlices.cluster" if="ytex.cluster" description="submit array job to cluster to evaluate kernel in parallel">
 		<exec executable="qsub">
-			<arg line="-t 1-${kernel.mod} ${ant.pbs} kernel.evalSlice.cluster" />
+			<arg line="-sync y -t 1-${kernel.mod} ${ant.pbs} kernel.evalSlice.cluster" />
 		</exec>
 	</target>
 	<target name="kernel.evalAllSlices.local" depends="kernel.generateSliceList" unless="ytex.cluster">
