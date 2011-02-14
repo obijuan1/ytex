@@ -111,6 +111,7 @@ public class CreateStratifiedCVFolds {
 			suffix = gramFile.substring(nLastDot);
 		}
 		int nLastDirSep = prefix.lastIndexOf(File.separator);
+		nLastDirSep = Math.max(nLastDirSep, prefix.lastIndexOf("/"));
 		if (nLastDirSep > -1) {
 			dir = prefix.substring(0, nLastDirSep);
 			base = prefix.substring(nLastDirSep + 1);

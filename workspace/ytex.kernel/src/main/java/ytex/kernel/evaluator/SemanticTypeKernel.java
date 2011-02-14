@@ -9,18 +9,43 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+/**
+ * before comparing semantic distance, use this kernel to filter by semantic type
+ * 
+ * Modes: <li>MAINSUI (default): concept's main semantic types must overlap <li>TUI:
+ * concept's TUIs must overlap
+ * 
+ * @author vijay
+ * 
+ */
 public class SemanticTypeKernel implements Kernel {
+	private static final Log log = LogFactory.getLog(SemanticTypeKernel.class);
+	private static final String MAINSUI = "MAINSUI";
+	private static final String TUI = "TUI";
+
 	private SimpleJdbcTemplate simpleJdbcTemplate;
 	private Map<String, Set<String>> cuiTuiMap;
 	private Map<String, Set<Integer>> cuiMainSuiMap;
 	private PlatformTransactionManager transactionManager;
 	private DataSource dataSource;
+	private String mode = "MAINSUI";
+
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
+
 	public DataSource getDataSource() {
 		return dataSource;
 	}
@@ -29,14 +54,13 @@ public class SemanticTypeKernel implements Kernel {
 		this.dataSource = dataSource;
 		this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
 	}
-	
-	
-	
+
 	public PlatformTransactionManager getTransactionManager() {
 		return transactionManager;
 	}
 
-	public void setTransactionManager(PlatformTransactionManager transactionManager) {
+	public void setTransactionManager(
+			PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
 	}
 
@@ -229,6 +253,29 @@ public class SemanticTypeKernel implements Kernel {
 	}
 
 	public double evaluate(Object o1, Object o2) {
+		if (this.getMode() == null || this.getMode().length() == 0
+				|| MAINSUI.equals(this.getMode()))
+			return mainSuiCheck(o1, o2);
+		else if (TUI.equals(this.getMode()))
+			return tuiCheck(o1, o2);
+		else {
+			log.error("invalid mode");
+			throw new RuntimeException("invalid mode");
+		}
+	}
+
+	private double tuiCheck(Object o1, Object o2) {
+		Set<String> tuis1 = this.cuiTuiMap.get((String) o1);
+		Set<String> tuis2 = this.cuiTuiMap.get((String) o2);
+		if (tuis1 != null && tuis2 != null
+				&& !Collections.disjoint(tuis1, tuis2)) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+	private double mainSuiCheck(Object o1, Object o2) {
 		Set<Integer> tuis1 = cuiMainSuiMap.get((String) o1);
 		Set<Integer> tuis2 = cuiMainSuiMap.get((String) o2);
 		// only compare the two if they have a common semantic type
@@ -239,6 +286,7 @@ public class SemanticTypeKernel implements Kernel {
 			return 0;
 		}
 	}
+
 	public void init() {
 		TransactionTemplate t = new TransactionTemplate(this.transactionManager);
 		t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
@@ -248,6 +296,6 @@ public class SemanticTypeKernel implements Kernel {
 				initCuiTuiMap();
 				return null;
 			}
-		});		
+		});
 	}
 }
