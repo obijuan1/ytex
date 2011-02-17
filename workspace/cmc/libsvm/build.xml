@@ -11,9 +11,9 @@
 	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<!--
-	<property name="costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
-	-->
 	<property name="costs" value="1" />
+	-->
+	<property name="costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
 	<!-- degrees to test polynomical kernel with -->
 	<property name="cv.poly.degrees" value="1,2,3" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
