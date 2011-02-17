@@ -77,14 +77,14 @@
 			<equals arg1="${kernel.type}" arg2="4" />
 		</condition>
 	</target>
-	<target name="export.data.gram" if="export.data.gram" description="export gram matrix">
+	<target name="export.data.gram" description="export gram matrix">
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="libsvm.cp" dir="${processedData}" fork="yes">
 			<arg value="libsvm-export.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.param}" />
 		</java>
 	</target>
-	<target name="export.data.bow" if="export.data.bow" description="export bag of words">
+	<target name="export.data.bow" description="export bag of words">
 		<java classname="ytex.KernelLauncher" classpathref="libsvm.cp" dir="${processedData}" fork="yes">
 			<arg value="-exportBagOfWords" />
 			<arg value="export-bow.xml" />
