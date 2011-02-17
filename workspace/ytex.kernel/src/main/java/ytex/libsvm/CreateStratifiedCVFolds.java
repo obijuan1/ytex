@@ -81,7 +81,7 @@ public class CreateStratifiedCVFolds {
 			int nFolds = Integer.parseInt(line.getOptionValue("folds", "10"));
 			int nSeed = Integer.parseInt(line.getOptionValue("seed", "0"));
 			int nMinPerClass = Integer.parseInt(line.getOptionValue("minClass",
-					"0"));
+					"1"));
 			Map<String, List<Integer>> mapLabelToLineNumbers = new HashMap<String, List<Integer>>();
 			List<String> lines = new ArrayList<String>();
 			// read input, create a map of class label to line numbers, and a
@@ -185,7 +185,7 @@ public class CreateStratifiedCVFolds {
 	 * @param nFolds
 	 * @param nMinPerClass
 	 * @param nSeed
-	 * @return
+	 * @return list with nFolds sets of line numbers corresponding to the folds
 	 */
 	private static List<Set<Integer>> createFolds(
 			Map<String, List<Integer>> mapLabelToLineNumbers, int nFolds,
