@@ -9,12 +9,15 @@ where experiment = '@EXPERIMENT@';
 
 load data local infile 'cv.txt'
 into table weka_results
-(label, cost, weight, measureNumSupportVectors, 
+(
+Key_Scheme, Key_Scheme_options, 
+kernel, label, cost, weight, gamma, degree, 
+measureNumSupportVectors, 
 num_true_positives, num_false_positives, num_true_negatives, num_false_negatives, IR_precision, IR_recall, F_measure,
 scutThreshold,
 scutTP, scutFP, scutTN, scutFN, scutPrecision, scutREcall, scutFMeasure
 )
-set experiment = '@EXPERIMENT@', key_scheme_options = 'libsvm'
+set experiment = '@EXPERIMENT@'
 ;
 
 drop table if exists best_f1;
