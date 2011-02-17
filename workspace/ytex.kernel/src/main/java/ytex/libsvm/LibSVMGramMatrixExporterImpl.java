@@ -49,11 +49,11 @@ import ytex.kernel.model.KernelEvaluation;
  * instance's class index for that label is set to 0.
  * <p/>
  * Output to outdir following files:
- * <li>training_gram_[label].txt - for each class label, a symmetric gram matrix
+ * <li>training_data_[label].txt - for each class label, a symmetric gram matrix
  * for training instances
  * <li>training_instance_ids.txt - instance ids corresponding to rows of training gram
  * matrix
- * <li>test_gram_[label].txt - for each class label, a rectangular matrix of the
+ * <li>test_data_[label].txt - for each class label, a rectangular matrix of the
  * test instances kernel evaluations wrt training instances
  * <li>test_instance_ids.txt - instance ids corresponding to rows of test gram
  * matrix
@@ -161,7 +161,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 			double[][] gramMatrix, String type) throws IOException {
 		StringBuilder bFileName = new StringBuilder(outdir).append(
 				File.separator).append(type).append(
-				"_gram_").append(label).append(".txt");
+				"_data_").append(label).append(".txt");
 		BufferedWriter w = null;
 		try {
 			w = new BufferedWriter(new FileWriter(bFileName.toString()));
