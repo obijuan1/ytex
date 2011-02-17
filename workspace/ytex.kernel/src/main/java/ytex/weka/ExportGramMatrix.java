@@ -1,6 +1,8 @@
-package ytex.kernel;
+package ytex.weka;
 
 import java.io.IOException;
+
+import ytex.kernel.KernelContextHolder;
 
 public class ExportGramMatrix {
 

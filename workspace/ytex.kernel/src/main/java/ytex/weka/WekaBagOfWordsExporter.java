@@ -3,11 +3,14 @@ package ytex.weka;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+import ytex.kernel.BagOfWordsDecorator;
+import ytex.kernel.BagOfWordsExporter;
+
 /**
  * @author vhacongarlav
  * 
  */
-public interface BagOfWordsExporter {
+public interface WekaBagOfWordsExporter extends BagOfWordsExporter {
 
 	/**
 	 * @param arffRelation
@@ -28,24 +31,6 @@ public interface BagOfWordsExporter {
 	public abstract void exportBagOfWords(String arffRelation,
 			String instanceClassQuery, String numericWordQuery,
 			String nominalWordQuery, BufferedWriter writer) throws IOException;
-
-	/**
-	 * 
-	 * @param propertyFile
-	 *            .xml/.properties file with following properties:
-	 *            <ul>
-	 *            <li>
-	 *            arffRelation (see exportBagOfWords)
-	 *            <li>instanceClassQuery (see exportBagOfWords)
-	 *            <li>
-	 *            numericWordQuery (see exportBagOfWords)
-	 *            <li>nominalWordQuery (see exportBagOfWords)
-	 *            <li>arffFile file name to write arff file to
-	 *            </ul>
-	 * @throws IOException
-	 */
-	public abstract void exportBagOfWords(String propertyFile)
-			throws IOException;
 
 	public abstract void exportBagOfWords(String propertyFile,
 			BagOfWordsDecorator bDecorator) throws IOException;

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/ytex.kernel/src/main/java/ytex/libsvm/CreateStratifiedCVFolds.java"/>
+<listEntry value="/ytex.kernel/src/main/java/ytex/KernelLauncher.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.libsvm.CreateStratifiedCVFolds"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-data ${workspace_loc:cmc/libsvm/ctakes-tree-neg}/training_gram_10.txt -outdir c:\temp"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.KernelLauncher"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-exportBagOfWords export-bow.xml -exportType libsvm"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ytex.kernel"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:cmc/libsvm/ctakes-bow}"/>
 </launchConfiguration>

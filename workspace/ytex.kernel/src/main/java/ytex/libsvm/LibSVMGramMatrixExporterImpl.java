@@ -64,6 +64,15 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	private KernelEvaluationDao kernelEvaluationDao = null;
 	private JdbcTemplate jdbcTemplate = null;
 	private PlatformTransactionManager transactionManager;
+	private LibSVMUtil libsvmUtil;
+
+	public LibSVMUtil getLibsvmUtil() {
+		return libsvmUtil;
+	}
+
+	public void setLibsvmUtil(LibSVMUtil libsvmUtil) {
+		this.libsvmUtil = libsvmUtil;
+	}
 
 	public KernelEvaluationDao getKernelEvaluationDao() {
 		return kernelEvaluationDao;
@@ -107,35 +116,6 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 		exportGramMatrices(name, testInstanceQuery, trainInstanceQuery, outdir);
 	}
 
-	/**
-	 * @param strQuery
-	 *            query to get instance id - class label
-	 * @param labels
-	 *            fill with distinct labels
-	 * @return Map[Instance ID, Map[Class Label, Class Id]]
-	 */
-	private SortedMap<Integer, Map<String, Integer>> loadClassLabels(
-			String strQuery, final Set<String> labels) {
-		final SortedMap<Integer, Map<String, Integer>> instanceLabelsMap = new TreeMap<Integer, Map<String, Integer>>();
-		jdbcTemplate.query(strQuery, new RowCallbackHandler() {
-
-			@Override
-			public void processRow(ResultSet rs) throws SQLException {
-				int instanceId = rs.getInt(1);
-				String label = rs.getString(2);
-				int classID = rs.getInt(3);
-				Map<String, Integer> instanceLabels = instanceLabelsMap
-						.get(instanceId);
-				if (instanceLabels == null) {
-					instanceLabels = new HashMap<String, Integer>(1);
-					instanceLabelsMap.put(instanceId, instanceLabels);
-				}
-				labels.add(label);
-				instanceLabels.put(label, classID);
-			}
-		});
-		return instanceLabelsMap;
-	}
 
 	/**
 	 * instantiate gram matrices, generate output files
@@ -149,14 +129,14 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	private void exportGramMatrices(String name, String testInstanceQuery,
 			String trainInstanceQuery, String outdir) throws IOException {
 		Set<String> labels = new HashSet<String>();
-		SortedMap<Integer, Map<String, Integer>> trainInstanceLabelMap = loadClassLabels(
+		SortedMap<Integer, Map<String, Integer>> trainInstanceLabelMap = libsvmUtil.loadClassLabels(
 				trainInstanceQuery, labels);
 		double[][] trainGramMatrix = new double[trainInstanceLabelMap.size()][trainInstanceLabelMap
 				.size()];
 		SortedMap<Integer, Map<String, Integer>> testInstanceLabelMap = null;
 		double[][] testGramMatrix = null;
 		if (testInstanceQuery != null) {
-			testInstanceLabelMap = loadClassLabels(testInstanceQuery, labels);
+			testInstanceLabelMap = libsvmUtil.loadClassLabels(testInstanceQuery, labels);
 			testGramMatrix = new double[testInstanceLabelMap.size()][trainInstanceLabelMap
 					.size()];
 		}
@@ -170,29 +150,11 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 						testGramMatrix, "test");
 			}
 		}
-		outputInstanceIds(name, outdir, trainInstanceLabelMap, "training");
+		libsvmUtil.outputInstanceIds(outdir, trainInstanceLabelMap, "training");
 		if (testInstanceLabelMap != null)
-			outputInstanceIds(name, outdir, testInstanceLabelMap, "test");
+			libsvmUtil.outputInstanceIds(outdir, testInstanceLabelMap, "test");
 	}
 
-	private void outputInstanceIds(String name, String outdir,
-			SortedMap<Integer, Map<String, Integer>> trainInstanceLabelMap,
-			String string) throws IOException {
-		StringBuilder bFileName = new StringBuilder(outdir).append(
-				File.separator).append(string).append("_instance_ids").append(
-				".txt");
-		BufferedWriter w = null;
-		try {
-			w = new BufferedWriter(new FileWriter(bFileName.toString()));
-			for (int instanceId : trainInstanceLabelMap.keySet()) {
-				w.write(Integer.toString(instanceId));
-				w.newLine();
-			}
-		} finally {
-			if (w != null)
-				w.close();
-		}
-	}
 
 	private void outputGramMatrix(String name, String outdir, String label,
 			SortedMap<Integer, Map<String, Integer>> instanceLabelMap,

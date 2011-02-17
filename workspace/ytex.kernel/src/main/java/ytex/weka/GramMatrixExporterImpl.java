@@ -1,4 +1,4 @@
-package ytex.kernel;
+package ytex.weka;
 
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -13,29 +13,29 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.kernel.BagOfWordsDecorator;
+import ytex.kernel.BagOfWordsExporter;
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.kernel.model.KernelEvaluation;
-import ytex.weka.BagOfWordsDecorator;
-import ytex.weka.BagOfWordsExporter;
-import ytex.weka.BagOfWordsExporterImpl;
 
-public class GramMatrixExporterImpl extends BagOfWordsExporterImpl implements
+public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implements
 		GramMatrixExporter {
 	private JdbcTemplate jdbcTemplate;
 	private KernelEvaluationDao kernelEvaluationDao;
-	private BagOfWordsExporter bagOfWordsExporter;
+	private WekaBagOfWordsExporter bagOfWordsExporter;
 	private PlatformTransactionManager transactionManager;
 
 	public enum GramMatrixType {
@@ -59,7 +59,7 @@ public class GramMatrixExporterImpl extends BagOfWordsExporterImpl implements
 		return bagOfWordsExporter;
 	}
 
-	public void setBagOfWordsExporter(BagOfWordsExporter bagOfWordsExporter) {
+	public void setBagOfWordsExporter(WekaBagOfWordsExporter bagOfWordsExporter) {
 		this.bagOfWordsExporter = bagOfWordsExporter;
 	}
 
@@ -92,15 +92,15 @@ public class GramMatrixExporterImpl extends BagOfWordsExporterImpl implements
 
 		@Override
 		public void decorateNumericInstanceWords(
-				Map<Integer, Map<String, Double>> instanceNumericWords,
-				Set<String> numericWords) {
+				Map<Integer, SortedMap<String, Double>> instanceNumericWords,
+				SortedSet<String> numericWords) {
 			for (Map.Entry<Integer, Integer> instanceIdToIndex : instanceIdToIndexMap
 					.entrySet()) {
 				int instanceId = instanceIdToIndex.getKey();
 				int index = instanceIdToIndex.getValue();
 				if (!instanceNumericWords.containsKey(instanceId)) {
 					instanceNumericWords.put(instanceId,
-							new HashMap<String, Double>());
+							new TreeMap<String, Double>());
 				}
 				instanceNumericWords.get(instanceId).put(INDEX_NAME,
 						(double) index);
@@ -113,8 +113,8 @@ public class GramMatrixExporterImpl extends BagOfWordsExporterImpl implements
 		 */
 		@Override
 		public void decorateNominalInstanceWords(
-				Map<Integer, Map<String, String>> instanceNominalWords,
-				Map<String, Set<String>> nominalWordValueMap) {
+				Map<Integer, SortedMap<String, String>> instanceNominalWords,
+				Map<String, SortedSet<String>> nominalWordValueMap) {
 		}
 	}
 

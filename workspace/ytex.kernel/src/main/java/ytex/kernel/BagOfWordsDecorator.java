@@ -1,7 +1,8 @@
-package ytex.weka;
+package ytex.kernel;
 
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 
 /**
  * Classes that delegate to the BagOfWordsExporter can pass this decorator in to
@@ -12,10 +13,10 @@ import java.util.Set;
  */
 public interface BagOfWordsDecorator {
 	public void decorateNumericInstanceWords(
-			Map<Integer, Map<String, Double>> instanceNumericWords,
-			Set<String> numericWords);
+			Map<Integer, SortedMap<String, Double>> instanceNumericWords,
+			SortedSet<String> numericWords);
 
 	public void decorateNominalInstanceWords(
-			Map<Integer, Map<String, String>> instanceNominalWords,
-			Map<String, Set<String>> nominalWordValueMap);
+			Map<Integer, SortedMap<String, String>> instanceNominalWords,
+			Map<String, SortedSet<String>> nominalWordValueMap);
 }

@@ -1,4 +1,4 @@
-package ytex.kernel;
+package ytex.weka;
 
 import java.io.IOException;
 

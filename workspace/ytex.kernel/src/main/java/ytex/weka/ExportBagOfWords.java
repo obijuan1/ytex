@@ -2,6 +2,7 @@ package ytex.weka;
 
 import java.io.IOException;
 
+import ytex.kernel.BagOfWordsExporter;
 import ytex.kernel.KernelContextHolder;
 
 /**

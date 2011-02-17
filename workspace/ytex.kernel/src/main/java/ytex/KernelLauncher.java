@@ -1,5 +1,6 @@
 package ytex;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
@@ -14,6 +15,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
+import ytex.kernel.BagOfWordsExporter;
 import ytex.kernel.evaluator.CorpusKernelEvaluator;
 import ytex.kernel.tree.InstanceTreeBuilder;
 import ytex.kernel.tree.Node;
@@ -31,15 +33,20 @@ public class KernelLauncher {
 				.withDescription(
 						"evaluate kernel specified in application context on the instances. If instanceMap is specified, load instance from file system, else from db.")
 				.create("evalKernel");
+		Option exportBagOfWords = OptionBuilder.withDescription(
+				"exportBagOfWords.  Must specify property file").hasArg()
+				.create("exportBagOfWords");
+		Option exportType = OptionBuilder.withDescription(
+				"exportType.  either libsvm or weka").hasArg().create(
+				"exportType");
 		Option oLoadInstanceMap = OptionBuilder
 				.withArgName("instanceMap.obj")
 				.hasArg()
 				.withDescription(
 						"load instanceMap from file system instead of from db.  Use after storing instance map.")
 				.create("loadInstanceMap");
-		Option oEvalMod = OptionBuilder
-				.withDescription(
-						"for parallelization, split the instances into mod slices")
+		Option oEvalMod = OptionBuilder.withDescription(
+				"for parallelization, split the instances into mod slices")
 				.hasArg().create("mod");
 		Option oEvalSlice = OptionBuilder
 				.withDescription(
@@ -67,6 +74,8 @@ public class KernelLauncher {
 		Options options = new Options();
 		options.addOption(oStoreInstanceMap);
 		options.addOption(oEvaluateKernel);
+		options.addOption(exportBagOfWords);
+		options.addOption(exportType);
 		options.addOption(oLoadInstanceMap);
 		options.addOption(oEvalMod);
 		options.addOption(oEvalSlice);
@@ -101,21 +110,29 @@ public class KernelLauncher {
 				String storeInstanceMap = line
 						.getOptionValue("storeInstanceMap");
 				boolean evalKernel = line.hasOption("evalKernel");
-				if ((evalKernel && storeInstanceMap != null)
-						|| (!evalKernel && storeInstanceMap == null)) {
+				String exportBagOfWords = line.getOptionValue("exportBagOfWords");
+				if (!evalKernel && storeInstanceMap == null
+						&& exportBagOfWords == null) {
 					System.out
-							.println("specify either -evalKernel or -storeInstanceMap");
+							.println("specify either -evalKernel, -storeInstanceMap, or -exportBagOfWords");
 					printHelp(options);
 				} else {
+
 					// parse the command line arguments
+					// by default use the kernelBeanRefContext
+					// when evaluating kernel, by default use the
+					// simSvcBeanRefContext.xml
+					// don't want to load that for other tasks as the simSvc
+					// loads the UMLS object graph which needs lots of memory
 					String beanRefContext = line.getOptionValue("beanref",
-							"classpath*:simSvcBeanRefContext.xml");
+							evalKernel ? "classpath*:simSvcBeanRefContext.xml"
+									: "classpath*:kernelBeanRefContext.xml");
 					String contextName = line.getOptionValue("appctx",
 							"kernelApplicationContext");
 					String beans = line.getOptionValue("beans");
 					ApplicationContext appCtx = (ApplicationContext) ContextSingletonBeanFactoryLocator
-							.getInstance(beanRefContext)
-							.useBeanFactory(contextName).getFactory();
+							.getInstance(beanRefContext).useBeanFactory(
+									contextName).getFactory();
 					ApplicationContext appCtxSource = appCtx;
 					if (beans != null) {
 						appCtxSource = new FileSystemXmlApplicationContext(
@@ -125,6 +142,8 @@ public class KernelLauncher {
 						storeInstanceMap(appCtxSource, storeInstanceMap, line);
 					} else if (evalKernel) {
 						evalKernel(appCtxSource, line);
+					} else if (exportBagOfWords != null) {
+						exportBagOfWords(appCtxSource, exportBagOfWords, line);
 					}
 				}
 			} catch (ParseException e) {
@@ -132,6 +151,16 @@ public class KernelLauncher {
 				throw e;
 			}
 		}
+	}
+
+	private static void exportBagOfWords(ApplicationContext appCtxSource,
+			String exportBagOfWords, CommandLine line) throws IOException {
+		String beanName = "wekaBagOfWordsExporter";
+		if("libsvm".equals(line.getOptionValue("exportType"))) {
+			beanName = "libsvmBagOfWordsExporter";
+		}
+		BagOfWordsExporter exporter = (BagOfWordsExporter)appCtxSource.getBean(beanName);
+		exporter.exportBagOfWords(exportBagOfWords);
 	}
 
 	private static void evalKernel(ApplicationContext appCtxSource,
@@ -159,8 +188,7 @@ public class KernelLauncher {
 			String storeInstanceMap, CommandLine line) throws Exception {
 		InstanceTreeBuilder builder = appCtxSource.getBean(
 				"instanceTreeBuilder", InstanceTreeBuilder.class);
-		builder.serializeInstanceTrees(
-				appCtxSource.getBean("treeMappingInfo", TreeMappingInfo.class),
-				storeInstanceMap);
+		builder.serializeInstanceTrees(appCtxSource.getBean("treeMappingInfo",
+				TreeMappingInfo.class), storeInstanceMap);
 	}
 }

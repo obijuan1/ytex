@@ -21,17 +21,14 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:pointcut id="daoOperation"
 			expression="execution(* ytex.kernel.dao.*Dao.*(..))" />
 		<aop:pointcut id="umlsDaoOperation" expression="execution(* ytex.umls.dao.*Dao.*(..))" />
-		<aop:pointcut id="gramOperation"
-			expression="execution(* ytex.kernel.GramMatrixExpoerter*.*(..))" />
-		<aop:pointcut id="wekaOperation"
-			expression="execution(* ytex.weka.BagOfWordsExporter.*(..))" />
+		<aop:pointcut id="exporterOperation"
+			expression="execution(* ytex.*.*Exporter*.*(..))" />
 		<aop:pointcut id="wekaImporter"
 			expression="execution(* ytex.weka.WekaResultsImporterImpl.*(..))" />
 		<aop:pointcut id="mapperOperation" expression="execution(* ytex.uima.mapper.*.*(..))" />
 		<aop:pointcut id="treeOperation"
 			expression="execution(* ytex.kernel.tree.*Tree*.*.*(..))" />
-		<aop:advisor advice-ref="txAdvice" pointcut-ref="gramOperation" />
-		<aop:advisor advice-ref="txAdvice" pointcut-ref="wekaOperation" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="exporterOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="mapperOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="wekaImporter" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="daoOperation" />
@@ -55,13 +52,17 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="umlsDao" class="ytex.umls.dao.UMLSDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-	<bean id="bagOfWordsExporter" class="ytex.weka.BagOfWordsExporterImpl">
+	<bean id="wekaBagOfWordsExporter" class="ytex.weka.WekaBagOfWordsExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
-	<bean id="gramMatrixExporter" class="ytex.kernel.GramMatrixExporterImpl">
+	<bean id="libsvmBagOfWordsExporter" class="ytex.libsvm.LibSVMBagOfWordsExporterImpl">
+		<property name="dataSource" ref="dataSource" />
+		<property name="libsvmUtil" ref="libsvmUtil" />
+	</bean>
+	<bean id="gramMatrixExporter" class="ytex.weka.GramMatrixExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
-		<property name="bagOfWordsExporter" ref="bagOfWordsExporter" />
+		<!--  property name="bagOfWordsExporter" ref="wekaBagOfWordsExporter" / -->
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="documentResultInstanceImporter" class="ytex.weka.DocumentResultInstanceImporter">
@@ -82,7 +83,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
 		<property name="transactionManager" ref="transactionManager" />
+		<property name="libsvmUtil" ref="libsvmUtil" />
 	</bean>
+	<bean id="libsvmUtil" class="ytex.libsvm.LibSVMUtilImpl">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
 	<bean id="instanceTreeBuilder" class="ytex.kernel.tree.InstanceTreeBuilderImpl">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
