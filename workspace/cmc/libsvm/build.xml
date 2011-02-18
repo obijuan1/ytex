@@ -7,7 +7,7 @@
 	<property file="${ytex.properties}" />
 	<property name="libsvm.home" value="c:/java/libsvm-3.0" />
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
-	<property name="experiment" value="ctakes-bow" />
+	<property name="experiment" value="ctakes-bocuis" />
 	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<!--
@@ -17,18 +17,17 @@
 	<!-- degrees to test polynomical kernel with -->
 	<property name="cv.poly.degrees" value="1,2,3" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
-	<!-- libsvm kernel type -->
-	<property name="kernel.type" value="2" />
+	<property name="ant.pbs" value="${user.home}/ant.pbs" />
+	<!-- machine specific settings -->
 	<property name="kernel.mod" value="2" />
 	<property name="threads" value="1" />
-	<property name="ant.pbs" value="${user.home}/ant.pbs" />
-
-	<property name="classLabels" value="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45" />
-	<property name="maxClassLabel" value="45" />
+	<!-- libsvm kernel type -->
+	<property name="kernel.types" value="0,1,2" />
 	<!--
-	<property name="costs" value="1,10" />
 	<property name="classLabels" value="1,2" />
 	-->
+	<property name="classLabels" value="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45" />
+	<property name="maxClassLabel" value="45" />
 	
 	<path id="libsvm.cp">
 		<pathelement location="${config.local}" />
@@ -71,9 +70,9 @@
 	<target name="export.data.internal" depends="export.data.initType" description="for precomputed kernel export gram matrix, else export bag of words">
 		<antcall target="${export.target}" />
 	</target>
-	<target name="export.data.initType" description="select the export procedure based on kernel type.">
+	<target name="export.data.initType" description="select the export procedure based on kernel types. precomputed kernel presupposes type 4">
 		<condition property="export.target" value="export.data.gram" else="export.data.bow">
-			<equals arg1="${kernel.type}" arg2="4" />
+			<equals arg1="${kernel.types}" arg2="4" />
 		</condition>
 	</target>
 	<target name="export.data.gram" description="export gram matrix">
@@ -133,7 +132,7 @@
 		<for param="training.file">
 			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*_train.txt" />
 			<sequential>
-				<antcall target="cv.iter.weight">
+				<antcall target="cv.iter.kernel">
 					<param name="cv.fold.training" value="@{training.file}" />
 				</antcall>
 			</sequential>
@@ -141,6 +140,16 @@
 		<delete quiet="yes">
 			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*.*" />
 		</delete>
+	</target>
+	<target name="cv.iter.kernel" description="run cross-validation with all specified kernels, delegate to cv.iter.weight">
+		<for list="${kernel.types}" param="kernel.type">
+			<sequential>
+				<echo>kernel.type = @{kernel.type}</echo>
+				<antcall target="cv.iter.weight">
+					<param name="kernel.type" value="@{kernel.type}"/>
+				</antcall>
+			</sequential>
+		</for>
 	</target>
 	<target name="cv.init.classWeights" description="load property with class weights to iterate over for the given class label">
 		<property name="cv.classLabel" value="1" />
@@ -154,6 +163,7 @@
 			</filterchain>
 		</loadfile>
 		<!-- for precomputed gram matrix or linear kernel, iterate over cost params -->
+		<echo>kernel.type = ${kernel.type}</echo>
 		<condition property="cv.iter.target" value="cv.iter.cost">
 			<or>
 				<equals arg1="${kernel.type}" arg2="4" />
