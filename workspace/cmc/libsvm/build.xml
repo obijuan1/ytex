@@ -18,19 +18,18 @@
 	<property name="cv.poly.degrees" value="1,2,3" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<!-- libsvm kernel type -->
-	<property name="kernel.type" value="0" />
+	<property name="kernel.type" value="2" />
 	<property name="kernel.mod" value="2" />
-	<property name="threads" value="2" />
+	<property name="threads" value="1" />
 	<property name="ant.pbs" value="${user.home}/ant.pbs" />
 
-	<!-- property name="classLabels" value="25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45" / -->
 	<property name="classLabels" value="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45" />
 	<property name="maxClassLabel" value="45" />
 	<!--
 	<property name="costs" value="1,10" />
 	<property name="classLabels" value="1,2" />
 	-->
-
+	
 	<path id="libsvm.cp">
 		<pathelement location="${config.local}" />
 		<pathelement location="${ytex.home}/config/desc" />
@@ -117,7 +116,7 @@
 		</for>
 	</target>
 	<target name="cv.generateFolds" description="generate folds for label and evaluate locally">
-		<property name="cv.classLabel" value="1" />
+		<property name="cv.classLabel" value="20" />
 		<mkdir dir="${cv.tmpdir}" />
 		<echo>cv.tmpdir=${cv.tmpdir}</echo>
 		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="libsvm.cp" fork="no">
@@ -176,6 +175,7 @@
 		<for list="${classWeights}" param="classWeight">
 			<sequential>
 				<antcall target="${cv.iter.target}">
+					<param name="cv.weight" value="@{classWeight}" />
 					<param name="cv.libsvm.line" value="-w1 @{classWeight}" />
 				</antcall>
 			</sequential>
@@ -205,6 +205,7 @@
 		<for list="${costs}" param="cost">
 			<sequential>
 				<antcall target="cv.evaluate">
+					<param name="cv.cost" value="@{cost}" />
 					<param name="cv.libsvm.line" value="${cv.libsvm.line} -c @{cost}" />
 				</antcall>
 			</sequential>
@@ -290,7 +291,7 @@
 			<arg line="${mysql.line} -e &quot;source load_cv.sql&quot;" />
 		</exec>
 	</target>
-	<target name="generateOptimalParams" description="generate optimal parameters for running test evaluation">
+	<target name="test.generateOptimalParams" description="generate optimal parameters for running test evaluation">
 		<copy file="${basedir}/select_params.template.sql" tofile="${processedData}/select_params.sql" overwrite="yes">
 			<filterset>
 				<filter token="EXPERIMENT" value="${experiment}" />
@@ -300,8 +301,8 @@
 			<arg line="${mysql.line} -e &quot;source select_params.sql&quot; -s" />
 		</exec>
 	</target>
-	<target name="test.all" depends="test.eval.all,test.loadResults" />
-	<target name="test.eval.all">
+	<target name="test.all" depends="test.generateOptimalParams,test.eval.all,test.loadResults" description="train on all training sets, test on all test sets, save results in db"/>
+	<target name="test.eval.all" description="test on all test sets">
 		<property name="test.outfile" value="${processedData}/test_results.txt" />
 		<delete file="test.outfile" quiet="yes" />
 		<for list="${classLabels}" param="classLabel">
@@ -312,15 +313,15 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="test.evaluate" depends="init.test.evaluate">
+	<target name="test.evaluate" depends="test.evaluate.init" description="train svm on training set, test on test set, extract results">
 		<!-- train the svm -->
 		<property name="test.classLabel" value="1" />
 		<property name="test.train" value="training_data_${test.classLabel}.txt" />
 		<property name="test.test" value="test_data_${test.classLabel}.txt" />
-		<property name="test.model" value="model_${cv.fold.base}.txt" />
-		<property name="test.predict" value="predict_${cv.fold.base}.txt" />
+		<property name="test.model" value="model_${test.classLabel}.txt" />
+		<property name="test.predict" value="predict_${test.classLabel}.txt" />
 		<exec executable="${libsvm.bin}/svm-train" dir="${processedData}">
-			<arg line="-q -b 1 -t 4 -w1 ${weight} -c ${cost} ${test.train} ${test.model}" />
+			<arg line="-q -b 1 -t ${kernel} -w1 ${weight} -c ${cost} ${gammaParam} ${degreeParam} ${test.train} ${test.model}" />
 		</exec>
 		<!-- test the svm -->
 		<exec executable="${libsvm.bin}/svm-predict" dir="${processedData}">
@@ -330,7 +331,7 @@
 		<antcall target="test.extractResults">
 		</antcall>
 	</target>
-	<target name="init.test.evaluate">
+	<target name="test.evaluate.init" description="load optimal params for the given class label">
 		<property name="test.classLabel" value="20" />
 		<loadproperties srcfile="${processedData}/optimalParams.properties">
 			<filterchain>
@@ -340,7 +341,19 @@
 				<replacestring from="${test.classLabel}." to="" />
 			</filterchain>
 		</loadproperties>
-		<echo>${cost} ${weight} ${scut}</echo>
+		<echo>${cost} ${weight} ${scut} ${degree} ${gamma} ${kernel}</echo>
+		<!-- set the degree parameter if it has been defined -->
+		<condition property="degreeParam" value="-d ${degree}" else="">
+			<not>
+				<equals arg1="${degree}" arg2="0"/>
+			</not>
+		</condition>
+		<!-- set the gamma parameter if it has been defined -->
+		<condition property="gammaParam" value="-g ${gamma}" else="">
+			<not>
+				<equals arg1="${gamma}" arg2="0"/>
+			</not>
+		</condition>
 	</target>
 	<target name="test.extractResults" description="calculate IR metrics, calculate optimal threshold, output to cv_${cv.classLabel}.txt">
 		<!-- train the svm -->
