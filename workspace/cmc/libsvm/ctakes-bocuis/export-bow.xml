@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="outdir"></entry>
+	<entry key="test.instance.query"><![CDATA[
+	select d.documentId, d.labelid, case when cd.code is not null then 1 else 0 end
+	from
+	  (
+	  select d.documentId, d.documentSet, l.*
+	  from cmcdocument d, cmcclasslabels l
+		where d.documentSet = 'test'
+	  ) d
+	  left join cmcdocumentcode cd on d.documentId = cd.documentId and d.code = cd.code
+]]></entry>
+	<entry key="train.instance.query"><![CDATA[
+	select d.documentId, d.labelid, case when cd.code is not null then 1 else 0 end
+	from
+	  (
+	  select d.documentId, d.documentSet, l.*
+	  from cmcdocument d, cmcclasslabels l
+		where d.documentSet = 'train'
+	  ) d
+	  left join cmcdocumentcode cd on d.documentId = cd.documentId and d.code = cd.code
+]]></entry>
+	<!--  perform tf-idf transformation on raw term frequencies -->
+	<entry key="numericWordQuery"><![CDATA[
+	/* query to get stemmed words */
+	select tf.uid, tf.canonical_form, (freq / dl.length) * (log(d.doccount) - log(1+f.numdocs)) tfidf
+	from
+	(
+	  select k.uid, w.canonical_form, count(*) freq
+		from ytex.document d
+		inner join ytex.anno_base ak on ak.document_id = d.document_id
+		inner join ytex.anno_dockey k on ak.anno_base_id = k.anno_base_id
+		inner join ytex.anno_base an on an.document_id = ak.document_id
+		inner join ytex.anno_word_token w on w.anno_base_id = an.anno_base_id
+		where canonical_form is not null
+		and analysis_batch = 'cmc-word'
+		and w.canonical_form not in (select stopword from stopword)
+	  group by k.uid, w.canonical_form
+	) tf
+	inner join tfidf_doclength dl on tf.uid = dl.instance_id and dl.name = 'cmc-word'
+	inner join tfidf_docfreq f on f.term = tf.canonical_form and dl.name = 'cmc-word'
+	inner join
+	(
+	  select count(*) doccount from cmcdocument
+	) d
+	union
+	/* query to get cuis */
+	select tf.uid, tf.code, (freq / dl.length) * (log(d.doccount) - log(1+f.numdocs)) tfidf
+	from
+	(
+		select k.uid, c.code, count(*) freq
+		from ytex.document d
+		inner join ytex.anno_base ak on ak.document_id = d.document_id
+		inner join ytex.anno_dockey k on ak.anno_base_id = k.anno_base_id
+		inner join ytex.anno_base an on an.document_id = ak.document_id
+		inner join anno_ontology_concept c on c.anno_base_id = an.anno_base_id
+		where analysis_batch = 'cmc-word'
+		group by k.uid, c.code
+	) tf
+	inner join tfidf_doclength dl on tf.uid = dl.instance_id and dl.name = 'cmc-cui'
+	inner join tfidf_docfreq f on f.term = tf.code and dl.name = 'cmc-cui'
+	inner join
+	(
+	  select count(*) doccount from cmcdocument
+	) d	
+]]></entry>
+</properties>
