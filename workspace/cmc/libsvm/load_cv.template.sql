@@ -186,13 +186,6 @@ from
 group by p.kernel, p.label, p.best_f1
 ;
 
-select label, round(best_f1, 3), best_nsv, kernel
-from libsvm_cv_best
-where experiment = '@EXPERIMENT@'
-order by label, best_f1 desc, best_nsv
-;
-
-
 -- select the 'simplest' kernel from the best performers
 -- prefer linear (0), then poly (1), then rbg (2), then precomputed (3)
 drop table if exists tmp_best;
@@ -245,10 +238,9 @@ and sf1diff > 0.05
 and lcb.experiment = '@EXPERIMENT@'
 ;
 
-/*
-select avg(best_f1)
+
+select round(avg(best_f1),2) avgf1
 from libsvm_cv_best
 where experiment = '@EXPERIMENT@'
 and kernel = best_kernel
 ;
-*/
