@@ -13,31 +13,45 @@ scutTP, scutFP, scutTN, scutFN, scutPrecision, scutRecall, scutFMeasure
 set experiment = '@EXPERIMENT@-test'
 ;
 
-select 
-	round(avg(ir_precision),2) macro_precision, 
-	round(avg(ir_recall),2) macro_recall, 
-	round(2*avg(ir_precision)*avg(ir_recall)/(avg(ir_precision)+avg(ir_recall)),2) macro_f,
-	round(avg(scutPrecision),2) scut_macro_precision, 
-	round(avg(scutRecall),2) scut_macro_recall, 
-	round(2*avg(scutPrecision)*avg(scutRecall)/(avg(scutPrecision)+avg(scutRecall)),2) scut_macro_f
+select 'macro' metric, s.*
+from
+(
+select
+  experiment,
+	round(avg(ir_precision),2) prec,
+	round(avg(ir_recall),2) recall,
+	round(2*avg(ir_precision)*avg(ir_recall)/(avg(ir_precision)+avg(ir_recall)),2) f,
+	round(avg(scutPrecision),2) scuc_prec,
+	round(avg(scutRecall),2) scut_recall,
+	round(2*avg(scutPrecision)*avg(scutRecall)/(avg(scutPrecision)+avg(scutRecall)),2) scut_f
 from weka_results
-where experiment = '@EXPERIMENT@-test'
-;
+where experiment like '%-test'
+group by experiment
+) s
 
-select 'micro', micro_precision, micro_recall, 2*micro_recall*micro_precision/(micro_recall+micro_precision) micro_f,
-scut_micro_precision, scut_micro_recall, 2*scut_micro_recall*scut_micro_precision/(scut_micro_recall+scut_micro_precision) micro_f
+union
+
+select 'micro', experiment,
+  round(prec, 2),
+  round(recall, 2),
+  round(2*recall*prec/(recall+prec),2) f,
+  round(scut_prec,2),
+  round(scut_recall,2),
+  round(2*scut_recall*scut_prec/(scut_recall+scut_prec),2) scut_f
 from
 (
-select TP/(TP + FP) micro_precision, TP/(TP+FN) micro_recall,
-scutTP/(scutTP + scutFP) scut_micro_precision, scutTP/(scutTP+scutFN) scut_micro_recall
+select experiment, TP/(TP + FP) prec, TP/(TP+FN) recall,
+scutTP/(scutTP + scutFP) scut_prec, scutTP/(scutTP+scutFN) scut_recall
 from
 (
-select sum(Num_true_positives) tp, sum(Num_false_positives) fp, sum(Num_false_negatives) fn,
+select experiment, sum(Num_true_positives) tp, sum(Num_false_positives) fp, sum(Num_false_negatives) fn,
 sum(scutTP) scutTP, sum(scutFP) scutFP, sum(scutFN) scutFN
 from weka_results
-where experiment = '@EXPERIMENT@-test'
+where experiment like '%-test'
+group by experiment
 ) s
 ) s
+order by metric, f desc
 ;
 
 /*
