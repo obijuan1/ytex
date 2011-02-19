@@ -171,8 +171,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			<value><![CDATA[
 			select documentId from cmcdocument where documentSet = 'train' 
 			and documentId
-		in (97634811, 97636670, 97634946, 97634957, 97635067,
-		97635659,97635718, 97635942, 97636018, 97636701, 97636837)
 			order by documentId asc
 			]]></value>
 		</property>
@@ -180,8 +178,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			<value><![CDATA[
 			select documentId from cmcdocument where documentSet = 'test'
 			and documentId
-		in (97634811, 97636670, 97634946, 97634957, 97635067,
-		97635659,97635718, 97635942, 97636018, 97636701, 97636837)
 			order by documentId asc
 			]]></value>
 		</property>
