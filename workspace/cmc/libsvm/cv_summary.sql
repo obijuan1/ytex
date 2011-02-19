@@ -1,6 +1,6 @@
 /*
  * generate table with micro and macro scores
- * for the optimal cross-validation parameter settings 
+ * for the optimal cross-validation parameter settings
  */
 select 'micro' metric, experiment, round(prec,2) prec, round(recall,2) recall, round(2*recall*prec/(recall+prec),2) f,
 round(scut_prec,2) scut_prec, round(scut_recall,2) scut_recall, round(2*scut_recall*scut_prec/(scut_recall+scut_prec),2) scut_f
@@ -21,6 +21,7 @@ inner join libsvm_cv_best b
 	and r.label = b.label
 	and r.degree = b.degree
 	and r.gamma = b.gamma
+where b.kernel = b.best_kernel
 group by r.experiment
 ) s
 ) s
@@ -47,6 +48,7 @@ inner join libsvm_cv_best b
 	and r.label = b.label
 	and r.degree = b.degree
 	and r.gamma = b.gamma
+where b.kernel = b.best_kernel
 group by r.experiment
 ) s
 order by metric, f desc

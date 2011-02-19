@@ -7,7 +7,7 @@
 	<property file="${ytex.properties}" />
 	<property name="libsvm.home" value="c:/java/libsvm-3.0" />
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
-	<property name="experiment" value="ctakes-bocuis" />
+	<property name="experiment" value="ctakes-tbocuis" />
 	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<!--
@@ -22,7 +22,7 @@
 	<property name="kernel.mod" value="2" />
 	<property name="threads" value="1" />
 	<!-- libsvm kernel type -->
-	<property name="kernel.types" value="0,1,2" />
+	<property name="kernel.types" value="4" />
 	<!--
 	<property name="classLabels" value="1,2" />
 	-->
@@ -400,7 +400,7 @@
 			<arg line="${mysql.line} -e &quot;source test_results.sql&quot;" />
 		</exec>
 	</target>
-	<target name="kernel.storeInstanceMap">
+	<target name="kernel.storeInstanceMap" description="generate map of instance trees">
 		<echo>${db.url}</echo>
 		<java classname="ytex.KernelLauncher" dir="${processedData}" fork="yes" classpathref="libsvm.cp">
 			<arg line="-beans ./beans-corpus-kernel.xml -storeInstanceMap instanceMap.obj" />

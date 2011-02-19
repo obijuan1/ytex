@@ -55,12 +55,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</bean>
 		</property>
 	</bean>
-	<bean id="tuiSemanticTypeKernel" class="ytex.kernel.evaluator.SemanticTypeKernel"
-		init-method="init">
-		<property name="mode" value="TUI" />
-		<property name="dataSource" ref="dataSource" />
-		<property name="transactionManager" ref="transactionManager" />
-	</bean>	
 	<!--
 		Check overlapping main semantic type. Concept kernel is lin * lch
 	-->
