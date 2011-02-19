@@ -172,7 +172,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="instanceKernel" ref="instanceKernel" />
 		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
 		<property name="treeMappingInfo" ref="treeMappingInfo" />
-		<property name="kernelName" value="ctakes-tbolch" />
+		<property name="kernelName" value="ctakes-tboclch" />
 		<property name="trainInstanceIDQuery">
 			<value><![CDATA[
 			select documentId from cmcdocument where documentSet = 'train' 

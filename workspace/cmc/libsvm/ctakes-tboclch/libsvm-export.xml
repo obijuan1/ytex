@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<entry key="kernel.name">ctakes-tbolch</entry>
+<entry key="kernel.name">ctakes-tboclch</entry>
 <entry key="test.instance.query"><![CDATA[
 	select d.documentId, d.labelid, case when cd.code is not null then 1 else 0 end
 	from
