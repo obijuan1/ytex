@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<!-- top level kernel - norm of inner product on child concepts and words -->
+	<bean id="instanceKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.SumKernel">
+				<property name="delegateKernels">
+					<list>
+						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+							<property name="nodeType" value="concept" />
+							<property name="delegateKernel" ref="conceptKernel" />
+						</bean>
+						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+							<property name="nodeType" value="word" />
+							<property name="delegateKernel" ref="wordKernel" />
+						</bean>
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<!-- wordKernel - simply multiply the tfidf's of matching words -->
+	<bean id="wordKernel" class="ytex.kernel.evaluator.ProductKernel">
+		<property name="delegateKernels">
+			<list>
+				<bean class="ytex.kernel.evaluator.NodeAttributeKernel">
+					<property name="attributeName" value="canonical_form" />
+					<property name="delegateKernel" ref="equalityKernel" />
+				</bean>
+				<bean class="ytex.kernel.evaluator.NodeAttributeKernel">
+					<property name="attributeName" value="tfidf" />
+					<property name="delegateKernel" ref="atttributeProductKernel" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<!--
+		conceptKernel - simply multiply the tfidf's of matching concepts
+	-->
+	<bean id="conceptKernel" class="ytex.kernel.evaluator.ProductKernel">
+		<property name="delegateKernels">
+			<list>
+				<bean class="ytex.kernel.evaluator.NodeAttributeKernel">
+					<property name="attributeName" value="code" />
+					<property name="delegateKernel" ref="equalityKernel" />
+				</bean>
+				<bean class="ytex.kernel.evaluator.NodeAttributeKernel">
+					<property name="attributeName" value="tfidf" />
+					<property name="delegateKernel" ref="atttributeProductKernel" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<!-- define node info for mapping queries -->
+	<bean name="nodeInstanceInfo" class="ytex.kernel.tree.NodeMappingInfo">
+		<property name="nodeType" value="instance" />
+		<property name="values">
+			<list>
+				<value>instance_id</value>
+			</list>
+		</property>
+	</bean>
+	<bean name="nodeConceptInfo" class="ytex.kernel.tree.NodeMappingInfo">
+		<property name="nodeType" value="concept" />
+		<property name="values">
+			<list>
+				<value>code</value>
+				<value>tfidf</value>
+			</list>
+		</property>
+	</bean>
+	<bean name="nodeWordInfo" class="ytex.kernel.tree.NodeMappingInfo">
+		<property name="nodeType" value="word" />
+		<property name="values">
+			<list>
+				<value>canonical_form</value>
+				<value>tfidf</value>
+			</list>
+		</property>
+	</bean>
+	<!--
+		First query instantiates instances down to named entities 2nd query
+		adds word nodes to document nodes for debugging add to query: and uid
+		in (97634811, 97636670, 97634946, 97634957, 97635067,
+		97635659,97635718, 97635942, 97636018, 97636701, 97636837)
+	-->
+	<bean name="treeMappingInfo" class="ytex.kernel.tree.TreeMappingInfo">
+		<property name="instanceIDField" value="instance_id" />
+		<property name="instanceQueryMappingInfo">
+			<bean class="ytex.kernel.tree.QueryMappingInfo">
+				<property name="query">
+					<value><![CDATA[
+	select tf.uid instance_id, tf.code, (freq / dl.length) * (log(d.doccount) - log(1+f.numdocs)) tfidf
+	from
+	(
+		select k.uid, c.code, count(*) freq
+		from ytex.document d
+		inner join ytex.anno_base ak on ak.document_id = d.document_id
+		inner join ytex.anno_dockey k on ak.anno_base_id = k.anno_base_id
+		inner join ytex.anno_base an on an.document_id = ak.document_id
+		inner join anno_ontology_concept c on c.anno_base_id = an.anno_base_id
+		where analysis_batch = 'cmc-word'
+		group by k.uid, c.code
+	) tf
+	inner join tfidf_doclength dl on tf.uid = dl.instance_id and dl.name = 'cmc-cui'
+	inner join tfidf_docfreq f on f.term = tf.code and dl.name = 'cmc-cui'
+	inner join
+	(
+	  select count(*) doccount from cmcdocument
+	) d
+					]]></value>
+				</property>
+				<property name="nodeTypes">
+					<list>
+						<ref bean="nodeInstanceInfo" />
+						<ref bean="nodeConceptInfo" />
+					</list>
+				</property>
+			</bean>
+		</property>
+		<property name="nodeQueryMappingInfos">
+			<list>
+				<bean class="ytex.kernel.tree.QueryMappingInfo">
+					<property name="query">
+						<value><![CDATA[
+	select tf.uid instance_id, tf.canonical_form, (freq / dl.length) * (log(d.doccount) - log(1+f.numdocs)) tfidf
+	from
+	(
+	  select k.uid, w.canonical_form, count(*) freq
+		from ytex.document d
+		inner join ytex.anno_base ak on ak.document_id = d.document_id
+		inner join ytex.anno_dockey k on ak.anno_base_id = k.anno_base_id
+		inner join ytex.anno_base an on an.document_id = ak.document_id
+		inner join ytex.anno_word_token w on w.anno_base_id = an.anno_base_id
+		where canonical_form is not null
+		and analysis_batch = 'cmc-word'
+		and w.canonical_form not in (select stopword from stopword)
+	  group by k.uid, w.canonical_form
+	) tf
+	inner join tfidf_doclength dl on tf.uid = dl.instance_id and dl.name = 'cmc-word'
+	inner join tfidf_docfreq f on f.term = tf.canonical_form and dl.name = 'cmc-word'
+	inner join
+	(
+	  select count(*) doccount from cmcdocument
+	) d
+					]]></value>
+					</property>
+					<property name="nodeTypes">
+						<list>
+							<ref bean="nodeInstanceInfo" />
+							<ref bean="nodeWordInfo" />
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<bean id="corpusKernelEvaluator" parent="abstractCorpusKernelEvaluator">
+		<property name="instanceKernel" ref="instanceKernel" />
+		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
+		<property name="treeMappingInfo" ref="treeMappingInfo" />
+		<property name="kernelName" value="ctakes-tbocuis" />
+		<property name="trainInstanceIDQuery">
+			<value><![CDATA[
+			select documentId from cmcdocument where documentSet = 'train' 
+			and documentId
+		in (97634811, 97636670, 97634946, 97634957, 97635067,
+		97635659,97635718, 97635942, 97636018, 97636701, 97636837)
+			order by documentId asc
+			]]></value>
+		</property>
+		<property name="testInstanceIDQuery">
+			<value><![CDATA[
+			select documentId from cmcdocument where documentSet = 'test'
+			and documentId
+		in (97634811, 97636670, 97634946, 97634957, 97635067,
+		97635659,97635718, 97635942, 97636018, 97636701, 97636837)
+			order by documentId asc
+			]]></value>
+		</property>
+	</bean>
+</beans>
