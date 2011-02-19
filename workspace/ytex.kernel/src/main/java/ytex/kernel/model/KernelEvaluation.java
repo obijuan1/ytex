@@ -7,19 +7,19 @@ public class KernelEvaluation implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	int kernelEvaluationId;
+//	int kernelEvaluationId;
 	String name;
 	int instanceId1;
 	int instanceId2;
 	double similarity;
 
-	public int getKernelEvaluationId() {
-		return kernelEvaluationId;
-	}
-
-	public void setKernelEvaluationId(int kernelEvaluationId) {
-		this.kernelEvaluationId = kernelEvaluationId;
-	}
+//	public int getKernelEvaluationId() {
+//		return kernelEvaluationId;
+//	}
+//
+//	public void setKernelEvaluationId(int kernelEvaluationId) {
+//		this.kernelEvaluationId = kernelEvaluationId;
+//	}
 
 	public String getName() {
 		return name;

@@ -98,6 +98,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="equalityKernel" class="ytex.kernel.evaluator.EqualityKernel">
 	</bean>
+	<bean id="atttributeProductKernel" class="ytex.kernel.evaluator.AttributeProductKernel">
+	</bean>
 	<bean id="ehcacheConfigURL"
 		class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
 		<property name="targetObject">
