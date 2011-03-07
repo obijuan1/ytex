@@ -14,22 +14,9 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		an operation defined by the FooService interface
 	-->
 	<aop:config>
-		<aop:pointcut id="wekaOperation" expression="execution(* ytex.weka.BagOfWordsExporter.*(..))" />
-		<aop:pointcut id="wekaImporter" expression="execution(* ytex.weka.WekaResultsImporterImpl.*(..))" />
 		<aop:pointcut id="mapperOperation" expression="execution(* ytex.uima.mapper.*.*(..))" />
-		<aop:advisor advice-ref="txAdvice" pointcut-ref="wekaOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="mapperOperation" />
-		<aop:advisor advice-ref="txAdvice" pointcut-ref="wekaImporter" />
 	</aop:config>
-	<bean id="bagOfWordsExporter" class="ytex.weka.BagOfWordsExporterImpl">
-		<property name="dataSource" ref="dataSource" />
-	</bean>
-	<bean id="documentResultInstanceImporter" class="ytex.weka.DocumentResultInstanceImporter">
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
-	<bean id="wekaResultsImporter" class="ytex.weka.WekaResultsImporterImpl">
-		<property name="docResultInstanceImporter" ref="documentResultInstanceImporter" />
-	</bean>
 	<bean id="documentMapperService" class="ytex.uima.mapper.DocumentMapperServiceImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 		<property name="transactionManager" ref="transactionManager" />
