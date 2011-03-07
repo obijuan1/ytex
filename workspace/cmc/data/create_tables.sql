@@ -1,5 +1,5 @@
-drop table CMCDocument;
-create table CMCDocument (
+drop table cmcdocument;
+create table cmcdocument (
   	documentId int not null,
     documentSet varchar(50) not null,
 	clinicalHistory varchar(2000) not null,
@@ -11,8 +11,8 @@ create table CMCDocument (
 	)
 );
 
-drop table CMCDocumentCode;
-create table CMCDocumentCode (
+drop table cmcdocumentCode;
+create table cmcdocumentCode (
 	documentId int not null,
 	code varchar(50) not null,
 	CONSTRAINT PK_DocumentCode PRIMARY KEY
