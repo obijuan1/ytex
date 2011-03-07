@@ -1,0 +1,1 @@
+drop view if exists v_umls_fword_lookup;

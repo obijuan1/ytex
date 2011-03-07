@@ -9,3 +9,11 @@ create index codemapidx on umls_snomed_map (code);
 
 create index cuimapidx on umls_snomed_map (cui);
 
+
+alter table umls_aui_fword add primary key (aui);
+
+create index fwordidx on umls_aui_fword (fword);
+
+alter table umls.mrsty add primary key(cui, tui);
+create index cuiidx on umls.mrsty (cui);
+create index tuiidx on umls.mrsty (tui);
