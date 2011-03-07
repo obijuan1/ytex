@@ -9,8 +9,40 @@
 			<key-property name="rel"></key-property>
 			<key-property name="sab"></key-property>
 		</composite-id>
-		<property name="rela"/>
+		<property name="rela" />
 	</class>
+	<class name="MRCONSO" table="MRCONSO">
+		<id name="aui" column="aui" />
+		<property name="cui" />
+		<property name="lat" />
+		<property name="ts" />
+		<property name="lui" />
+		<property name="stt" />
+		<property name="sui" />
+		<property name="ispref" />
+		<property name="saui" />
+		<property name="scui" />
+		<property name="sdui" />
+		<property name="sab" />
+		<property name="tty" />
+		<property name="code" />
+		<property name="str" />
+		<property name="srl" />
+		<property name="suppress" />
+		<property name="cvf" />
+	</class>
+
+	<class name="MRSTY" table="MRSTY">
+		<composite-id>
+			<key-property name="cui"></key-property>
+			<key-property name="tui"></key-property>
+		</composite-id>
+		<property name="stn" />
+		<property name="sty" />
+		<property name="atui" />
+		<property name="cvf" />
+	</class>
+
 	<query name="getRelationsForSABs"><![CDATA[
 		select cui1, cui2
 		from MRREL
@@ -22,5 +54,16 @@
 		select cui1, cui2
 		from MRREL
 		where rel in ('PAR') and rela in ('inverse_isa')
+	]]></query>
+	<query name="getFirstAuiStr"><![CDATA[
+		select aui,str
+		from MRCONSO
+		order by aui
+	]]></query>
+	<query name="getNextAuiStr"><![CDATA[
+		select aui,str
+		from MRCONSO
+		where aui > :aui
+		order by aui
 	]]></query>
 </hibernate-mapping>

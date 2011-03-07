@@ -18,25 +18,27 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</list>
 		</property>
 	</bean>
-	<bean id="semanticTypeKernel" class="ytex.kernel.evaluator.SemanticTypeKernel"
-		init-method="init">
+	<bean id="abstractMainSuiSemanticTypeKernel" abstract="true"
+		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
+		<property name="corpusDao" ref="corpusDao" />
 	</bean>
-	<bean id="tuiSemanticTypeKernel" class="ytex.kernel.evaluator.SemanticTypeKernel"
-		init-method="init">
+	<bean id="abstractTuiSemanticTypeKernel" abstract="true"
+		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
 		<property name="mode" value="TUI" />
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
-	</bean>	
+		<property name="corpusDao" ref="corpusDao" />
+	</bean>
 	<bean id="conceptKernel" class="ytex.kernel.evaluator.ConceptKernel"
 		init-method="init">
-		<property name="conceptSimilarityService" ref="conceptSimilarityService"/>
+		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 		<property name="cacheManager" ref="cacheManager" />
 	</bean>
 	<bean id="lchKernel" class="ytex.kernel.evaluator.LCHKernel"
 		init-method="init">
-		<property name="conceptSimilarityService" ref="conceptSimilarityService"/>
+		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 		<property name="cacheManager" ref="cacheManager" />
 	</bean>
 </beans>

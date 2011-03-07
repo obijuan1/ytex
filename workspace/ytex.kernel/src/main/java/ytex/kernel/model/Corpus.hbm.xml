@@ -58,5 +58,11 @@
 		from InfoContent
 		where corpus.corpusName in (:corpusNames) 
 	]]></query>	
+	<query name="getCorpusCuiTuis"><![CDATA[
+		select s.cui, s.tui 
+		from CorpusTerm ct, MRSTY s
+		where ct.corpus.corpusName = :corpusName
+		and ct.conceptId = s.cui
+	]]></query>
 		
 </hibernate-mapping>

@@ -17,11 +17,21 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.kernel.dao.CorpusDao;
+
 /**
- * before comparing semantic distance, use this kernel to filter by semantic type
- * 
- * Modes: <li>MAINSUI (default): concept's main semantic types must overlap <li>TUI:
- * concept's TUIs must overlap
+ * Before comparing semantic distance, use this kernel to filter by semantic
+ * type.
+ * <p/>
+ * Modes:
+ * <li>MAINSUI (default): concept's main semantic types must overlap
+ * <li>TUI: concept's TUIs must overlap.
+ * <p/>
+ * The MAINSUI mode is taken from Sujeevan Aseervatham's semantic kernel. It
+ * maps all semantic types to a handful of semantic types.
+ * <p/>
+ * The corpusName parameter specifies the concepts for which cuis' semantic
+ * types will be loaded
  * 
  * @author vijay
  * 
@@ -36,7 +46,9 @@ public class SemanticTypeKernel implements Kernel {
 	private Map<String, Set<Integer>> cuiMainSuiMap;
 	private PlatformTransactionManager transactionManager;
 	private DataSource dataSource;
+	private String corpusName;
 	private String mode = "MAINSUI";
+	private CorpusDao corpusDao = null;
 
 	public String getMode() {
 		return mode;
@@ -231,14 +243,38 @@ public class SemanticTypeKernel implements Kernel {
 		return mainSui;
 	}
 
+	/**
+	 * load cui-tui for the specified corpus from the MRSTY table
+	 */
 	public void initCuiTuiMap() {
-		String query = "select m.cui, m.tui from umls.MRSTY m inner join (select distinct cui from suj_concept)s  on s.cui = m.cui";
-		List<Map<String, Object>> results = simpleJdbcTemplate
-				.queryForList(query);
+		// String query =
+		// "select m.cui, m.tui from umls.MRSTY m inner join (select distinct cui from suj_concept)s  on s.cui = m.cui";
+		// List<Map<String, Object>> results = simpleJdbcTemplate
+		// .queryForList(query);
+		// this.cuiTuiMap = new HashMap<String, Set<String>>();
+		// for (Map<String, Object> result : results) {
+		// String cui = (String) result.get("cui");
+		// String tui = (String) result.get("tui");
+		// Set<String> tuis = cuiTuiMap.get(cui);
+		// if (tuis == null) {
+		// tuis = new HashSet<String>();
+		// cuiTuiMap.put(cui, tuis);
+		// }
+		// tuis.add(tui);
+		// }
 		this.cuiTuiMap = new HashMap<String, Set<String>>();
-		for (Map<String, Object> result : results) {
-			String cui = (String) result.get("cui");
-			String tui = (String) result.get("tui");
+		// don't duplicate tui strings to save memory
+		Map<String, String> tuiMap = new HashMap<String, String>();
+		List<Object[]> listCuiTui = this.getCorpusDao().getCorpusCuiTuis(
+				this.getCorpusName());
+		for (Object[] cuiTui : listCuiTui) {
+			String cui = (String) cuiTui[0];
+			String tui = (String) cuiTui[1];
+			// get 'the' tui string
+			if (tuiMap.containsKey(tui))
+				tui = tuiMap.get(tui);
+			else
+				tuiMap.put(tui, tui);
 			Set<String> tuis = cuiTuiMap.get(cui);
 			if (tuis == null) {
 				tuis = new HashSet<String>();
@@ -252,6 +288,9 @@ public class SemanticTypeKernel implements Kernel {
 		}
 	}
 
+	/**
+	 * concepts have overlapping semantic types? yes return 1, else return 0
+	 */
 	public double evaluate(Object o1, Object o2) {
 		if (this.getMode() == null || this.getMode().length() == 0
 				|| MAINSUI.equals(this.getMode()))
@@ -264,6 +303,14 @@ public class SemanticTypeKernel implements Kernel {
 		}
 	}
 
+	/**
+	 * 
+	 * @param o1
+	 *            cui
+	 * @param o2
+	 *            cui
+	 * @return concepts have overlapping tuis, return 1, else return 0
+	 */
 	private double tuiCheck(Object o1, Object o2) {
 		Set<String> tuis1 = this.cuiTuiMap.get((String) o1);
 		Set<String> tuis2 = this.cuiTuiMap.get((String) o2);
@@ -275,6 +322,15 @@ public class SemanticTypeKernel implements Kernel {
 		}
 	}
 
+	/**
+	 * 
+	 * @param o1
+	 *            cui
+	 * @param o2
+	 *            cui
+	 * @return concepts have overlapping main semantic types, return 1, else
+	 *         return 0
+	 */
 	private double mainSuiCheck(Object o1, Object o2) {
 		Set<Integer> tuis1 = cuiMainSuiMap.get((String) o1);
 		Set<Integer> tuis2 = cuiMainSuiMap.get((String) o2);
@@ -297,5 +353,21 @@ public class SemanticTypeKernel implements Kernel {
 				return null;
 			}
 		});
+	}
+
+	public void setCorpusName(String corpusName) {
+		this.corpusName = corpusName;
+	}
+
+	public String getCorpusName() {
+		return corpusName;
+	}
+
+	public void setCorpusDao(CorpusDao corpusDao) {
+		this.corpusDao = corpusDao;
+	}
+
+	public CorpusDao getCorpusDao() {
+		return corpusDao;
 	}
 }

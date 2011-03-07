@@ -87,4 +87,10 @@ public class CorpusDaoImpl implements CorpusDao {
 		getTerms.setParameterList("corpusNames", corpusNames);
 		return getTerms.list();
 	}
+	
+	public List<Object[]> getCorpusCuiTuis(String corpusName) {
+		Query getCorpusCuiTuis = this.getSessionFactory().getCurrentSession().getNamedQuery("getCorpusCuiTuis");
+		getCorpusCuiTuis.setString("corpusName", corpusName);
+		return getCorpusCuiTuis.list();
+	}
 }
