@@ -3,7 +3,7 @@
 CREATE TABLE document(
 	document_id int AUTO_INCREMENT NOT NULL,
 	analysis_batch varchar(50) NOT NULL,
-	cas blob NULL,
+	cas longblob NULL,
 	doc_text text NULL,
 	CONSTRAINT PK_document PRIMARY KEY
 	(
@@ -84,7 +84,10 @@ create table anno_ontology_concept (
 	coding_scheme varchar(20),
 	code varchar(20),
 	oid varchar(10),
-	primary key (anno_ontology_concept_id)
+	primary key (anno_ontology_concept_id),
+	KEY `IX_anno_base_id` (`anno_base_id`),
+	KEY `IX_code` (`code`),
+	KEY `IX_anno_code` (`anno_base_id`,`code`)
 	/*,
 	foreign key (anno_base_id) references anno_named_entity(anno_base_id)  ON DELETE CASCADE
 	*/
@@ -211,7 +214,10 @@ create table anno_word_token (
 	PRIMARY KEY
 	(
 		anno_base_id ASC
-	)
+	),
+	KEY `IX_canonical_form` (`canonical_form`),
+	KEY `IX_anno_canonical_form` (`anno_base_id`,`canonical_form`)
+	
 	/*,
 	foreign key (anno_base_id)
 		references anno_base_token(anno_base_id)
@@ -224,3 +230,4 @@ create table anno_date (
 	primary key (anno_base_id) /*,
 	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE */
 ) engine=myisam;
+
