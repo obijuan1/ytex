@@ -153,7 +153,7 @@
 	</target>
 	<target name="cv.init.classWeights" description="load property with class weights to iterate over for the given class label">
 		<property name="cv.classLabel" value="1" />
-		<loadfile srcfile="${basedir}/classWeights.properties" property="classWeights">
+		<loadfile srcfile="${processedData}/classWeights.properties" property="classWeights">
 			<filterchain>
 				<linecontains>
 					<contains value="class.weight.${cv.classLabel}=" />
@@ -250,7 +250,7 @@
 		<antcall target="cv.extractResults" />
 	</target>
 	<target name="cv.extractResults" description="calculate IR metrics, calculate optimal threshold, output to cv_${cv.classLabel}.txt">
-		<property name="cv.classLabel" value="20" />
+		<property name="cv.classLabel" value="1" />
 		<property name="cv.cost" value="1" />
 		<property name="cv.weight" value="1" />
 		<property name="cv.gamma" value="" />
