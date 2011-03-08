@@ -157,3 +157,10 @@ CREATE TABLE  `weka_results` (
   KEY `explabel` (`experiment`,`label`),
   KEY `kernel` (`experiment`,`label`,`kernel`,`cost`,`degree`,`gamma`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `stopword`;
+CREATE TABLE  `stopword` (
+  `stopword` varchar(50) NOT NULL,
+  PRIMARY KEY (`stopword`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf-8;

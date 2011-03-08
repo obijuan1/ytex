@@ -1,15 +1,15 @@
 create view v_umls_fword_lookup
 as
 select c.fword, mrc.cui, mrc.str text
-from umls_fword_cui c
+from umls_aui_fword c
 inner join umls.MRCONSO mrc on c.aui = mrc.aui
-where  mrc.SAB = 'SNOMEDCT'
-and exists 
+where  mrc.SAB in ( 'SNOMEDCT', 'RXNORM', 'NCI', 'ICD9CM', 'ICD10CM')
+and exists
 (
-	select * 
-	from umls.MRSTY sty 
-	where c.cui = sty.cui 
-	and sty.tui in  
+	select *
+	from umls.MRSTY sty
+	where mrc.cui = sty.cui
+	and sty.tui in
 	(
 	'T021','T022','T023','T024','T025','T026','T029','T030','T031',
 	'T059','T060','T061',
@@ -18,3 +18,8 @@ and exists
 	)
 )
 ;
+
+drop table if exists umls_fword_lookup;
+create table umls_fword_lookup select * from v_umls_fword_lookup;
+create index idx_fword on umls_fword_lookup (fword);
+create index idx_cui on umls_fword_lookup (cui);
