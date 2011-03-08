@@ -82,6 +82,9 @@ create table $(db_schema).anno_ontology_concept (
 	foreign key (anno_base_id) references $(db_schema).anno_named_entity(anno_base_id)  ON DELETE CASCADE
 );
 
+create index IX_onto_concept_code on ${db_schema}.anno_ontology_concept (code);
+create index IX_onto_concept_anno_code on ${db_schema}.anno_ontology_concept (anno_base_id, code);
+
 create table $(db_schema).anno_umls_concept (
 	anno_ontology_concept_id int not null,
 	cui varchar(10),
@@ -198,6 +201,9 @@ create table $(db_schema).anno_word_token (
 		references $(db_schema).anno_base_token(anno_base_id)  
 		ON DELETE CASCADE
 );
+
+create index IX_word_stem on $(db_schema).anno_word_token (canonical_form);
+create index IX_word_anno_stem on $(db_schema).anno_word_token (anno_base_id, canonical_form);
 
 create table $(db_schema).anno_date (
 	anno_base_id int not null,
