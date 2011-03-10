@@ -74,6 +74,9 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="corpusDao" class="ytex.kernel.dao.CorpusDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
+	<bean id="classifierEvaluationDao" class="ytex.kernel.dao.ClassifierEvaluationDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
 	<!-- <bean id="conceptSimilarityService" class="ytex.kernel.ConceptSimilarityServiceImpl" 
 		init-method="init"> <property name="transactionManager" ref="transactionManager" 
 		/> <property name="conceptDao" ref="conceptDao" /> <property name="corpusDao" 

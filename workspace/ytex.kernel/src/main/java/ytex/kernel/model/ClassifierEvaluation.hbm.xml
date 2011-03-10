@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="ytex.kernel.model">
+	<class name="ClassifierEvaluation" table="classifier_eval">
+		<id name="classifierEvaluationId" column="classifier_eval_id">
+			<generator class="native">
+				<param name="sequence">classifier_eval_sequence</param>
+			</generator>
+		</id>
+		<property name="name" />
+		<property name="fold" />
+		<property name="algorithm" />
+		<property name="label" />
+		<property name="options" />
+		<map name="classifierInstanceEvaluations" inverse="true"
+			table="classifier_instance_eval">
+			<key column="classifier_eval_id" />
+			<map-key column="instance_id" type="int" />
+			<one-to-many class="ClassifierInstanceEvaluation" />
+		</map>
+		<joined-subclass name="LibSVMClassifierEvaluation"
+			table="classifier_eval_libsvm">
+			<key column="classifier_eval_id" />
+			<property name="cost" />
+			<property name="weight" />
+			<property name="degree" />
+			<property name="gamma" />
+			<property name="kernel" />
+			<property name="supportVectors" />
+		</joined-subclass>
+	</class>
+	<class name="ClassifierInstanceEvaluation" table="classifier_instance_eval">
+		<id name="classifierInstanceEvaluationId" column="classifier_instance_eval_id">
+			<generator class="native">
+				<param name="sequence">classifier_eval_sequence</param>
+			</generator>
+		</id>
+		<property name="instanceId" column="instance_id" />
+		<property name="classId" column="class_id" />
+		<many-to-one name="classifierEvaluation" class="ClassifierEvaluation"
+			column="classifier_eval_id" not-null="true" />
+		<map name="classifierInstanceProbabilities" table="classifier_instance_eval_prob">
+			<key column="classifier_instance_eval_id" />
+			<map-key column="class_id" type="int" />
+			<element column="probability" type="double" />
+		</map>
+	</class>
+</hibernate-mapping>

@@ -3,12 +3,12 @@ package ytex.libsvm;
 import java.util.List;
 
 public class LibSVMResults {
-	public List<String> getLabels() {
-		return labels;
+	public List<Integer> getClassIds() {
+		return classIds;
 	}
 
-	public void setLabels(List<String> labels) {
-		this.labels = labels;
+	public void setClassIds(List<Integer> labels) {
+		this.classIds = labels;
 	}
 
 	public List<LibSVMResult> getResults() {
@@ -19,21 +19,21 @@ public class LibSVMResults {
 		this.results = results;
 	}
 
-	public int[] getPredictedClassLabels() {
+	public int[] getPredictedClassIds() {
 		int predictedClassLabels[] = new int[getResults().size()];
 		int i = 0;
 		for (LibSVMResult result : getResults()) {
-			predictedClassLabels[i] = result.getPredictedClassIndex();
+			predictedClassLabels[i] = result.getPredictedClassId();
 			i++;
 		}
 		return predictedClassLabels;
 	}
 
-	public int[] getTargetClassLabels() {
+	public int[] getTargetClassIds() {
 		int targetClassLabels[] = new int[getResults().size()];
 		int i = 0;
 		for (LibSVMResult result : getResults()) {
-			targetClassLabels[i] = result.getTargetClassIndex();
+			targetClassLabels[i] = result.getTargetClassId();
 			i++;
 		}
 		return targetClassLabels;
@@ -49,6 +49,6 @@ public class LibSVMResults {
 		return probabilities;
 	}
 
-	private List<String> labels;
+	private List<Integer> classIds;
 	private List<LibSVMResult> results;
 }

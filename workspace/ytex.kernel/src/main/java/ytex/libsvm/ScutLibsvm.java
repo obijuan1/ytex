@@ -46,12 +46,12 @@ public class ScutLibsvm {
 		LibSVMResults results = p.parse(predictionFile, instanceFile);
 		int scutLabels[] = new int[results.getResults().size()];
 		double scutThreshold = scut.getScutThreshold(
-				results.getProbabilities(), results.getTargetClassLabels(), 1,
+				results.getProbabilities(), results.getTargetClassIds(), 1,
 				SCut.TargetStatistic.F1, scutLabels);
 		IRMetrics irRaw = MetricUtil.calculateIRMetrics(results
-				.getTargetClassLabels(), results.getPredictedClassLabels(), 1);
+				.getTargetClassIds(), results.getPredictedClassIds(), 1);
 		IRMetrics irScut = MetricUtil.calculateIRMetrics(results
-				.getTargetClassLabels(), scutLabels, 1);
+				.getTargetClassIds(), scutLabels, 1);
 		return new Object[] { scutThreshold, irRaw, irScut };
 	}
 
@@ -73,9 +73,9 @@ public class ScutLibsvm {
 		int scutLabels[] = scut.applyScutThreshold(results.getProbabilities(),
 				scutThreshold);
 		return new Object[] {
-				MetricUtil.calculateIRMetrics(results.getTargetClassLabels(),
-						results.getPredictedClassLabels(), 1),
-				MetricUtil.calculateIRMetrics(results.getTargetClassLabels(),
+				MetricUtil.calculateIRMetrics(results.getTargetClassIds(),
+						results.getPredictedClassIds(), 1),
+				MetricUtil.calculateIRMetrics(results.getTargetClassIds(),
 						scutLabels, 1) };
 	}
 

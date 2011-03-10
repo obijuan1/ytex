@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ytex.kernel.model.ClassifierInstanceEvaluation;
+import ytex.kernel.model.LibSVMClassifierEvaluation;
+
 public class LibSVMParser {
 	public static Pattern wsPattern = Pattern.compile("\\s");
 	public static Pattern wsDotPattern = Pattern.compile("\\s|\\.|\\z");
@@ -70,22 +73,24 @@ public class LibSVMParser {
 			String predictionLine = null;
 			int nLine = 0;
 			// 1st line in libSVMOutputReader lists labels
-			List<String> labels = null;
-			labels = parseLabels(predictionReader, labels);
-			if (labels.size() < 2)
-				throw new Exception("error parsing labels");
+
+			results.setClassIds(parseClassIds(predictionReader));
+			if (results.getClassIds().size() < 2)
+				throw new Exception("error parsing class ids");
 			while (((instanceLine = instanceReader.readLine()) != null)
 					&& ((predictionLine = predictionReader.readLine()) != null)) {
 				nLine++;
 				LibSVMResult result = new LibSVMResult();
 				listResults.add(result);
 				String predictTokens[] = wsPattern.split(predictionLine);
-				String labelPredict = predictTokens[0];
-				String labelTruth = extractFirstToken(instanceLine, wsPattern);
-				result.setTargetClassIndex(labels.indexOf(labelTruth));
-				result.setPredictedClassIndex(labels.indexOf(labelPredict));
+				String classIdPredicted = predictTokens[0];
+				String classIdTarget = extractFirstToken(instanceLine,
+						wsPattern);
+				result.setTargetClassId(Integer.parseInt(classIdTarget));
+				result.setPredictedClassId(Integer.parseInt(classIdPredicted));
 				if (predictTokens.length > 1) {
-					double probabilities[] = new double[labels.size()];
+					double probabilities[] = new double[results.getClassIds()
+							.size()];
 					for (int i = 1; i < predictTokens.length; i++) {
 						probabilities[i - 1] = Double
 								.parseDouble(predictTokens[i]);
@@ -122,18 +127,102 @@ public class LibSVMParser {
 		return token;
 	}
 
-	private List<String> parseLabels(BufferedReader predictionReader,
-			List<String> labels) throws IOException {
+	private List<Integer> parseClassIds(BufferedReader predictionReader)
+			throws IOException {
+		List<Integer> labels = null;
 		String labelLine = predictionReader.readLine();
 		Matcher labelMatcher = labelsPattern.matcher(labelLine);
 		if (labelMatcher.find()) {
 			String labelsA[] = wsPattern.split(labelMatcher.group(1));
 			if (labelsA != null && labelsA.length > 0) {
-				labels = new ArrayList<String>(labelsA.length);
-				Collections.addAll(labels, labelsA);
+				labels = new ArrayList<Integer>(labelsA.length);
+				for (String label : labelsA)
+					labels.add(Integer.parseInt(label));
 			}
 		}
 		return labels;
+	}
+
+	public List<Integer> parseInstanceIds(String instanceIdFile)
+			throws IOException {
+		BufferedReader instanceIdReader = null;
+		List<Integer> instanceIds = new ArrayList<Integer>();
+		try {
+			instanceIdReader = new BufferedReader(
+					new FileReader(instanceIdFile));
+			String instanceId = null;
+			while ((instanceId = instanceIdReader.readLine()) != null)
+				instanceIds.add(Integer.parseInt(instanceId));
+			return instanceIds;
+		} finally {
+			if (instanceIdReader != null)
+				instanceIdReader.close();
+		}
+	}
+
+	public LibSVMClassifierEvaluation parseClassifierEvaluation(String name,
+			String label, String options, String fold, String predictionFile,
+			String instanceFile, String modelFile, String instanceIdFile)
+			throws Exception {
+		List<Integer> instanceIds = null;
+		if (instanceIdFile != null)
+			instanceIds = parseInstanceIds(instanceIdFile);
+		LibSVMClassifierEvaluation eval = new LibSVMClassifierEvaluation();
+		eval.setFold(fold);
+		eval.setName(name);
+		eval.setAlgorithm("libsvm");
+		eval.setOptions(options);
+		eval.setSupportVectors(this.parseModel(modelFile));
+		parseOptions(eval, options);
+		LibSVMResults results = this.parse(predictionFile, instanceFile);
+		int j = 0;
+		for (LibSVMResult result : results.getResults()) {
+			int instanceId = j++;
+			if (instanceIds != null)
+				instanceId = instanceIds.get(instanceId);
+			ClassifierInstanceEvaluation instanceEval = new ClassifierInstanceEvaluation();
+			instanceEval.setClassId(result.getPredictedClassId());
+			instanceEval.setClassifierEvaluation(eval);
+			instanceEval.setInstanceId(instanceId);
+			for (int i = 0; i < result.getProbabilities().length; i++) {
+				instanceEval.getClassifierInstanceProbabilities().put(
+						results.getClassIds().get(i),
+						result.getProbabilities()[i]);
+			}
+			eval.getClassifierInstanceEvaluations().put(instanceId,
+					instanceEval);
+		}
+		return eval;
+	}
+
+	private void parseOptions(LibSVMClassifierEvaluation eval, String options) {
+		// -q -b 1 -t 2 -w1 41 -g 1000 -c 1000 training_data_11_fold9_train.txt training_data_11_fold9_model.txt
+		Pattern pKernel = Pattern.compile("-t\\s+(\\d)");
+		Pattern pGamma = Pattern.compile("-g\\s+([\\d\\.-e]+)");
+		Pattern pCost = Pattern.compile("-c\\s+([\\d\\.-e]+)");
+		Pattern pWeight = Pattern.compile("-w1\\s+(\\d+)");
+		Pattern pDegree = Pattern.compile("-d\\s+(\\d+)");
+		eval.setKernel(parseIntOption(pKernel, options));
+		eval.setDegree(parseIntOption(pDegree, options));
+		eval.setWeight(parseIntOption(pWeight, options));
+		eval.setCost(parseDoubleOption(pCost, options));
+		eval.setGamma(parseDoubleOption(pGamma, options));
+	}
+
+	private Double parseDoubleOption(Pattern pCost, String options) {
+		Matcher m = pCost.matcher(options);
+		if(m.find())
+			return Double.parseDouble(m.group(1));
+		else
+			return null;
+	}
+
+	private Integer parseIntOption(Pattern pKernel, String options) {
+		Matcher m = pKernel.matcher(options);
+		if(m.find())
+			return Integer.parseInt(m.group(1));
+		else
+			return null;
 	}
 
 	public static void main(String args[]) throws Exception {

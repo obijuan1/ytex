@@ -9,6 +9,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.springframework.context.ApplicationContext;
@@ -70,11 +71,17 @@ public class KernelLauncher {
 				.withDescription(
 						"use specified beans.xml, no default.  This file is typically required.")
 				.create("beans");
+		
 		Option oHelp = new Option("help", "print this message");
 		Options options = new Options();
-		options.addOption(oStoreInstanceMap);
+		OptionGroup og = new OptionGroup();
+		og.addOption(oStoreInstanceMap);
+		og.addOption(oEvaluateKernel);
+		og.addOption(exportBagOfWords);
+		options.addOptionGroup(og);
+//		options.addOption(oStoreInstanceMap);
 		options.addOption(oEvaluateKernel);
-		options.addOption(exportBagOfWords);
+//		options.addOption(exportBagOfWords);
 		options.addOption(exportType);
 		options.addOption(oLoadInstanceMap);
 		options.addOption(oEvalMod);
@@ -83,6 +90,7 @@ public class KernelLauncher {
 		options.addOption(oAppctx);
 		options.addOption(oBeans);
 		options.addOption(oHelp);
+		
 		return options;
 	}
 
@@ -110,7 +118,8 @@ public class KernelLauncher {
 				String storeInstanceMap = line
 						.getOptionValue("storeInstanceMap");
 				boolean evalKernel = line.hasOption("evalKernel");
-				String exportBagOfWords = line.getOptionValue("exportBagOfWords");
+				String exportBagOfWords = line
+						.getOptionValue("exportBagOfWords");
 				if (!evalKernel && storeInstanceMap == null
 						&& exportBagOfWords == null) {
 					System.out
@@ -156,10 +165,11 @@ public class KernelLauncher {
 	private static void exportBagOfWords(ApplicationContext appCtxSource,
 			String exportBagOfWords, CommandLine line) throws IOException {
 		String beanName = "wekaBagOfWordsExporter";
-		if("libsvm".equals(line.getOptionValue("exportType"))) {
+		if ("libsvm".equals(line.getOptionValue("exportType"))) {
 			beanName = "libsvmBagOfWordsExporter";
 		}
-		BagOfWordsExporter exporter = (BagOfWordsExporter)appCtxSource.getBean(beanName);
+		BagOfWordsExporter exporter = (BagOfWordsExporter) appCtxSource
+				.getBean(beanName);
 		exporter.exportBagOfWords(exportBagOfWords);
 	}
 

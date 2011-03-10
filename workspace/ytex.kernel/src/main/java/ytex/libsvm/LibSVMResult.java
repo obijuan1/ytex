@@ -1,25 +1,25 @@
 package ytex.libsvm;
 
 public class LibSVMResult {
-	int targetClassIndex;
-	int predictedClassIndex;
+	int targetClassId;
+	int predictedClassId;
 	int instanceId;
 	double[] probabilities;
 
-	public int getTargetClassIndex() {
-		return targetClassIndex;
+	public int getTargetClassId() {
+		return targetClassId;
 	}
 
-	public void setTargetClassIndex(int targetClassIndex) {
-		this.targetClassIndex = targetClassIndex;
+	public void setTargetClassId(int targetClassIndex) {
+		this.targetClassId = targetClassIndex;
 	}
 
-	public int getPredictedClassIndex() {
-		return predictedClassIndex;
+	public int getPredictedClassId() {
+		return predictedClassId;
 	}
 
-	public void setPredictedClassIndex(int predictedClassIndex) {
-		this.predictedClassIndex = predictedClassIndex;
+	public void setPredictedClassId(int predictedClassIndex) {
+		this.predictedClassId = predictedClassIndex;
 	}
 
 	public int getInstanceId() {
