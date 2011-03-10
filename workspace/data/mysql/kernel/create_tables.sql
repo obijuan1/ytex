@@ -164,3 +164,40 @@ CREATE TABLE  `stopword` (
   `stopword` varchar(50) NOT NULL,
   PRIMARY KEY (`stopword`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf-8;
+
+create table classifier_eval (
+	classifier_eval_id int AUTO_INCREMENT not null primary key,
+	name varchar(50) not null,
+	fold varchar(50) null,
+	algorithm varchar(50) null,
+	label varchar(50) null,
+	options varchar(200) null,
+	model longblob null
+) comment 'evaluation of a classifier on a dataset';
+
+create table classifier_eval_libsvm (
+	classifier_eval_id int not null comment 'fk classifier_eval' primary key,
+	cost double DEFAULT '0',
+  	weight int DEFAULT '0',
+	degree int DEFAULT '0',
+	gamma double DEFAULT '0',
+	kernel int DEFAULT NULL,
+	supportVectors int default null
+) comment 'evaluation of a libsvm classifier on a dataset';
+
+create table classifier_instance_eval (
+	classifier_instance_eval_id int not null auto_increment primary key,
+	classifier_eval_id int not null comment 'fk classifier_eval',
+	instance_id int not null,
+	class_id int not null,
+	unique key nk_result (classifier_eval_id, instance_id)
+) comment 'instance classification result';
+
+create table classifier_instance_eval_prob (
+	classifier_eval_result_prob_id int not null auto_increment primary key,
+	classifier_instance_eval_id int comment 'fk classifier_instance_eval',
+	class_id int not null,
+	probability double not null,
+	unique key nk_result_prob (classifier_instance_eval_id, class_id)
+) comment 'probability of belonging to respective class';
+
