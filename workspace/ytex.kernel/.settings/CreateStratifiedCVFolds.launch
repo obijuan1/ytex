@@ -7,6 +7,6 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.libsvm.CreateStratifiedCVFolds"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-data ${workspace_loc:cmc/libsvm/ctakes-tree-neg}/training_gram_10.txt -outdir c:\temp"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-data ${workspace_loc}/i2b2.2008/libsvm/bocuis/training_data_1.txt -instanceId ${workspace_loc}/i2b2.2008/libsvm/bocuis/training_id_1.txt -outdir e:\temp\libsvm-cv"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ytex.kernel"/>
 </launchConfiguration>
