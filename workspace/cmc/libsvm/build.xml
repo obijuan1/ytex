@@ -10,6 +10,8 @@
 	<property name="experiment" value="ctakes-tuifilter" />
 	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
+	<property name="cv.numFolds" value="10" />
+	<property name="cv.extractResults.target" value="cv.extractResults.db" />
 	<!--
 	<property name="costs" value="1" />
 	-->
@@ -28,7 +30,7 @@
 	-->
 	<property name="classLabels" value="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45" />
 	<property name="maxClassLabel" value="45" />
-	
+
 	<path id="libsvm.cp">
 		<pathelement location="${config.local}" />
 		<pathelement location="${ytex.home}/config/desc" />
@@ -43,6 +45,7 @@
 	explicitly define the task.
 	-->
 	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" onerror="ignore" classpathref="libsvm.cp" />
+	<taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" onerror="ignore" classpathref="libsvm.cp" />
 
 	<!-- property name="classLabels" value="1,2"/ -->
 	<!-- property name="costs" value="0.01,0.1" / -->
@@ -114,13 +117,28 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="cv.generateFolds" description="generate folds for label and evaluate locally">
-		<property name="cv.classLabel" value="20" />
+	<target name="ytex.libsvm.CreateStratifiedCVFolds" description="call CreateStratifiedCVFolds">
+		<property name="cv.classLabel" value="1" />
 		<mkdir dir="${cv.tmpdir}" />
 		<echo>cv.tmpdir=${cv.tmpdir}</echo>
 		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="libsvm.cp" fork="no">
 			<arg value="-data" />
 			<arg value="${processedData}/training_data_${cv.classLabel}.txt" />
+			<arg value="-outdir" />
+			<arg value="${cv.tmpdir}" />
+			<arg value="-folds" />
+			<arg value="${cv.numFolds}" />
+		</java>
+	</target>
+	<target name="cv.generateFolds" description="generate folds for label and evaluate locally">
+		<property name="cv.classLabel" value="1" />
+		<mkdir dir="${cv.tmpdir}" />
+		<echo>cv.tmpdir=${cv.tmpdir}</echo>
+		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="libsvm.cp" fork="no">
+			<arg value="-data" />
+			<arg value="${processedData}/training_data_${cv.classLabel}.txt" />
+			<arg value="-instanceId" />
+			<arg value="${processedData}/training_id_${cv.classLabel}.txt" />
 			<arg value="-outdir" />
 			<arg value="${cv.tmpdir}" />
 			<arg value="-folds" />
@@ -142,26 +160,35 @@
 		</delete>
 	</target>
 	<target name="cv.iter.kernel" description="run cross-validation with all specified kernels, delegate to cv.iter.weight">
+		<property name="cv.fold.training" value="${processedData}/training_data_1_fold1_train.txt"/>
 		<for list="${kernel.types}" param="kernel.type">
 			<sequential>
 				<echo>kernel.type = @{kernel.type}</echo>
 				<antcall target="cv.iter.weight">
-					<param name="kernel.type" value="@{kernel.type}"/>
+					<param name="kernel.type" value="@{kernel.type}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
 	<target name="cv.init.classWeights" description="load property with class weights to iterate over for the given class label">
 		<property name="cv.classLabel" value="1" />
-		<loadfile srcfile="${processedData}/classWeights.properties" property="classWeights">
-			<filterchain>
-				<linecontains>
-					<contains value="class.weight.${cv.classLabel}=" />
-				</linecontains>
-				<replacestring from="class.weight.${cv.classLabel}=" to="" />
-				<striplinebreaks />
-			</filterchain>
-		</loadfile>
+		<if>
+			<available file="${processedData}/classWeights.properties" />
+			<then>
+				<loadfile srcfile="${processedData}/classWeights.properties" property="classWeights">
+					<filterchain>
+						<linecontains>
+							<contains value="class.weight.${cv.classLabel}=" />
+						</linecontains>
+						<replacestring from="class.weight.${cv.classLabel}=" to="" />
+						<striplinebreaks />
+					</filterchain>
+				</loadfile>
+			</then>
+			<else>
+				<property name="classWeights" value="1"/>
+			</else>
+		</if>
 		<!-- for precomputed gram matrix or linear kernel, iterate over cost params -->
 		<echo>kernel.type = ${kernel.type}</echo>
 		<condition property="cv.iter.target" value="cv.iter.cost">
@@ -230,6 +257,7 @@
 		<property name="cv.fold.base" value="training_data_10_fold8" />
 		<property name="cv.fold.train" value="${cv.fold.base}_train.txt" />
 		<property name="cv.fold.test" value="${cv.fold.base}_test.txt" />
+		<property name="cv.fold.testId" value="${cv.fold.base}_testId.txt" />
 		<property name="cv.fold.model" value="${cv.fold.base}_model.txt" />
 		<property name="cv.fold.predict" value="${cv.fold.base}_predict.txt" />
 		<!--
@@ -241,7 +269,7 @@
 		</java>
 		-->
 		<!-- train the svm -->
-		<property name="cv.eval.line" value="-q -b 1 -t ${kernel.type} ${cv.libsvm.line} ${cv.fold.train} ${cv.fold.model}"/>
+		<property name="cv.eval.line" value="-q -b 1 -t ${kernel.type} ${cv.libsvm.line} ${cv.fold.train} ${cv.fold.model}" />
 		<exec executable="${libsvm.bin}/svm-train" dir="${cv.tmpdir}" failonerror="yes">
 			<arg line="${cv.eval.line}" />
 		</exec>
@@ -250,9 +278,36 @@
 			<arg line="-b 1 ${cv.fold.test} ${cv.fold.model} ${cv.fold.predict}" />
 		</exec>
 		<!-- extract results -->
-		<antcall target="cv.extractResults" />
+		<antcall target="${cv.extractResults.target}" />
 	</target>
-	<target name="cv.extractResults" description="calculate IR metrics, calculate optimal threshold, output to cv_${cv.classLabel}.txt">
+	<target name="cv.extractResults.db" description="store cross validation results in database">
+		<property name="cv.classLabel" value="1" />
+		<property name="cv.fold.base" value="training_data_1_fold1" />
+		<property name="cv.fold.train" value="${cv.fold.base}_train.txt" />
+		<property name="cv.fold.test" value="${cv.fold.base}_test.txt" />
+		<property name="cv.fold.testId" value="${cv.fold.base}_testId.txt" />
+		<property name="cv.fold.model" value="${cv.fold.base}_model.txt" />
+		<property name="cv.fold.predict" value="${cv.fold.base}_predict.txt" />
+		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="libsvm.cp" fork="yes" dir="${cv.tmpdir}">
+			<arg value="-name" />
+			<arg value="${experiment}" />
+			<arg value="-label" />
+			<arg value="${cv.classLabel}" />
+			<arg value="-options" />
+			<arg value="${cv.eval.line}" />
+			<arg value="-test" />
+			<arg value="${cv.fold.test}" />
+			<arg value="-instanceId" />
+			<arg value="${cv.fold.testId}" />
+			<arg value="-model" />
+			<arg value="${cv.fold.model}" />
+			<arg value="-fold" />
+			<arg value="${cv.fold.base}" />
+			<arg value="-output" />
+			<arg value="${cv.fold.predict}" />
+		</java>
+	</target>
+	<target name="cv.extractResults.summary" description="calculate IR metrics, calculate optimal threshold, output to cv_${cv.classLabel}.txt">
 		<property name="cv.classLabel" value="1" />
 		<property name="cv.cost" value="1" />
 		<property name="cv.weight" value="1" />
@@ -314,7 +369,7 @@
 			<arg line="${mysql.line} -e &quot;source select_params.sql&quot; -s" />
 		</exec>
 	</target>
-	<target name="test.all" depends="test.generateOptimalParams,test.eval.all,test.loadResults" description="train on all training sets, test on all test sets, save results in db"/>
+	<target name="test.all" depends="test.generateOptimalParams,test.eval.all,test.loadResults" description="train on all training sets, test on all test sets, save results in db" />
 	<target name="test.eval.all" description="test on all test sets">
 		<property name="test.outfile" value="${processedData}/test_results.txt" />
 		<delete file="test.outfile" quiet="yes" />
@@ -358,13 +413,13 @@
 		<!-- set the degree parameter if it has been defined -->
 		<condition property="degreeParam" value="-d ${degree}" else="">
 			<not>
-				<equals arg1="${degree}" arg2="0"/>
+				<equals arg1="${degree}" arg2="0" />
 			</not>
 		</condition>
 		<!-- set the gamma parameter if it has been defined -->
 		<condition property="gammaParam" value="-g ${gamma}" else="">
 			<not>
-				<equals arg1="${gamma}" arg2="0"/>
+				<equals arg1="${gamma}" arg2="0" />
 			</not>
 		</condition>
 	</target>
