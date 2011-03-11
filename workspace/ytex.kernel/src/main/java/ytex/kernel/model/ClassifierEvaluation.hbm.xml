@@ -8,6 +8,7 @@
 			</generator>
 		</id>
 		<property name="name" />
+		<property name="experiment" />
 		<property name="fold" />
 		<property name="algorithm" />
 		<property name="label" />
@@ -36,7 +37,8 @@
 			</generator>
 		</id>
 		<property name="instanceId" column="instance_id" />
-		<property name="classId" column="class_id" />
+		<property name="predictedClassId" column="pred_class_id" />
+		<property name="targetClassId" column="target_class_id" />
 		<many-to-one name="classifierEvaluation" class="ClassifierEvaluation"
 			column="classifier_eval_id" not-null="true" />
 		<map name="classifierInstanceProbabilities" table="classifier_instance_eval_prob">

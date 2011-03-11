@@ -30,7 +30,9 @@ public class CreateStratifiedCVFolds {
 	@SuppressWarnings("static-access")
 	private static Options initOptions() {
 		Option data = OptionBuilder.withArgName("data").hasArg()
-				.withDescription("input data").create("data");
+				.withDescription("input data").isRequired().create("data");
+		Option instanceId = OptionBuilder.withArgName("instanceId").hasArg()
+				.withDescription("file with instance ids").create("instanceId");
 		Option outdir = OptionBuilder
 				.withArgName("outdir")
 				.hasArg()
@@ -49,6 +51,7 @@ public class CreateStratifiedCVFolds {
 				.create("minClass");
 		Options options = new Options();
 		options.addOption(data);
+		options.addOption(instanceId);
 		options.addOption(outdir);
 		options.addOption(folds);
 		options.addOption(seed);
@@ -77,12 +80,16 @@ public class CreateStratifiedCVFolds {
 			printHelp(options);
 		} else {
 			String dataFile = line.getOptionValue("data");
+			String idFile = line.getOptionValue("instanceId");
 			String outdir = line.getOptionValue("outdir");
 			int nFolds = Integer.parseInt(line.getOptionValue("folds", "10"));
 			int nSeed = Integer.parseInt(line.getOptionValue("seed", "0"));
 			int nMinPerClass = Integer.parseInt(line.getOptionValue("minClass",
 					"1"));
 			Map<String, List<Integer>> mapLabelToLineNumbers = new HashMap<String, List<Integer>>();
+			List<Integer> listIds = null;
+			if (idFile != null)
+				listIds = loadIdFile(idFile);
 			List<String> lines = new ArrayList<String>();
 			// read input, create a map of class label to line numbers, and a
 			// list of each line
@@ -91,8 +98,29 @@ public class CreateStratifiedCVFolds {
 			List<Set<Integer>> folds = createFolds(mapLabelToLineNumbers,
 					nFolds, nMinPerClass, nSeed);
 			// output folds
-			outputFolds(dataFile, folds, lines, outdir);
+			outputFolds(dataFile, folds, lines, listIds, outdir);
 		}
+	}
+
+	private static List<Integer> loadIdFile(String idFile) throws IOException {
+		List<Integer> listIds = new ArrayList<Integer>();
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(new FileReader(idFile));
+			String line = null;
+			while ((line = r.readLine()) != null) {
+				listIds.add(Integer.parseInt(line));
+			}
+		} finally {
+			if (r != null) {
+				try {
+					r.close();
+				} catch (Exception e) {
+					e.printStackTrace(System.err);
+				}
+			}
+		}
+		return listIds;
 	}
 
 	/**
@@ -127,10 +155,12 @@ public class CreateStratifiedCVFolds {
 	 * @param gramFile
 	 * @param folds
 	 * @param lines
+	 * @param mapLineNumberToId
 	 * @throws IOException
 	 */
 	private static void outputFolds(String gramFile, List<Set<Integer>> folds,
-			List<String> lines, String outdir) throws IOException {
+			List<String> lines, List<Integer> listIds, String outdir)
+			throws IOException {
 		String fileParts[] = splitFile(gramFile);
 		// if outdir specified, put the files there
 		String foldOutDir = outdir != null ? outdir : fileParts[0];
@@ -144,6 +174,14 @@ public class CreateStratifiedCVFolds {
 			String trainFileName = prefix + "_fold" + (i + 1) + "_train"
 					+ suffix;
 			String testFileName = prefix + "_fold" + (i + 1) + "_test" + suffix;
+			String trainIdFileName = null;
+			String testIdFileName = null;
+			if (listIds != null) {
+				trainIdFileName = prefix + "_fold" + (i + 1) + "_trainId"
+						+ suffix;
+				testIdFileName = prefix + "_fold" + (i + 1) + "_testId"
+						+ suffix;
+			}
 			Set<Integer> setTrainLineNums = new TreeSet<Integer>();
 			Set<Integer> setTestLineNums = new TreeSet<Integer>();
 			int nFold = 0;
@@ -155,25 +193,41 @@ public class CreateStratifiedCVFolds {
 				}
 				nFold++;
 			}
-			writeSubSet(trainFileName, setTrainLineNums, lines);
-			writeSubSet(testFileName, setTestLineNums, lines);
+			writeSubSet(trainFileName, setTrainLineNums, lines,
+					trainIdFileName, listIds);
+			writeSubSet(testFileName, setTestLineNums, lines, testIdFileName,
+					listIds);
 		}
 	}
 
 	private static void writeSubSet(String fileName, Set<Integer> setLineNums,
-			List<String> lines) throws IOException {
+			List<String> lines, String idFileName, List<Integer> listIds)
+			throws IOException {
 		BufferedWriter w = null;
+		BufferedWriter wId = null;
 		try {
 			w = new BufferedWriter(new FileWriter(fileName));
+			if (idFileName != null)
+				wId = new BufferedWriter(new FileWriter(idFileName));
 			for (int lineNum : setLineNums) {
 				w.write(lines.get(lineNum));
 				w.newLine();
+				if (wId != null) {
+					wId.write(Integer.toString(listIds.get(lineNum)));
+					wId.newLine();
+				}
 			}
 		} finally {
 			try {
-				w.close();
+				if (w != null)
+					w.close();
 			} catch (Exception e) {
-				System.err.println(e.getMessage());
+				e.printStackTrace(System.err);
+			}
+			try {
+				if (wId != null)
+					wId.close();
+			} catch (Exception e) {
 				e.printStackTrace(System.err);
 			}
 		}

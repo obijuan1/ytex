@@ -16,19 +16,20 @@ public class LibSVMResultImporter {
 	private static Options initOptions() {
 		Options options = new Options();
 		options.addOption(OptionBuilder.withArgName("model").hasArg()
-				.withDescription("libsvm model file").isRequired().create(
-						"model"));
+				.withDescription("libsvm model file").isRequired()
+				.create("model"));
 		options.addOption(OptionBuilder.withArgName("predict").hasArg()
-				.withDescription("libsvm output file").isRequired().create(
-						"output"));
+				.withDescription("libsvm output file").isRequired()
+				.create("output"));
 		options.addOption(OptionBuilder.withArgName("test").hasArg()
 				.withDescription("libsvm input test data file").isRequired()
 				.create("test"));
 		options.addOption(OptionBuilder.withArgName("instanceId").hasArg()
-				.withDescription("file with instance ids").create(
-						"instanceId"));
+				.withDescription("file with instance ids").create("instanceId"));
 		options.addOption(OptionBuilder.withArgName("name").hasArg()
 				.withDescription("name").isRequired().create("name"));
+		options.addOption(OptionBuilder.withArgName("experiment").hasArg()
+				.withDescription("experiment").create("experiment"));
 		options.addOption(OptionBuilder.withArgName("options").hasArg()
 				.withDescription("libsvm training options").create("options"));
 		options.addOption(OptionBuilder.withArgName("fold").hasArg()
@@ -40,7 +41,7 @@ public class LibSVMResultImporter {
 
 	/**
 	 * @param args
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 		Options options = initOptions();
@@ -51,15 +52,19 @@ public class LibSVMResultImporter {
 			try {
 				CommandLine line = oparser.parse(options, args);
 				LibSVMParser lparser = new LibSVMParser();
-				ClassifierEvaluation eval = lparser.parseClassifierEvaluation(line.getOptionValue("name"),
-						line.getOptionValue("label"), line
-								.getOptionValue("options"), line
-								.getOptionValue("fold"), line
-								.getOptionValue("output"), line
-								.getOptionValue("test"), line
-								.getOptionValue("model"), line
-								.getOptionValue("instanceId"));
-				KernelContextHolder.getApplicationContext().getBean(ClassifierEvaluationDao.class).saveClassifierEvaluation(eval);
+				ClassifierEvaluation eval = lparser.parseClassifierEvaluation(
+						line.getOptionValue("name"),
+						line.getOptionValue("experiment"),
+						line.getOptionValue("label"),
+						line.getOptionValue("options"),
+						line.getOptionValue("fold"),
+						line.getOptionValue("output"),
+						line.getOptionValue("test"),
+						line.getOptionValue("model"),
+						line.getOptionValue("instanceId"));
+				KernelContextHolder.getApplicationContext()
+						.getBean(ClassifierEvaluationDao.class)
+						.saveClassifierEvaluation(eval);
 			} catch (ParseException e) {
 				printHelp(options);
 				throw e;
@@ -69,10 +74,7 @@ public class LibSVMResultImporter {
 
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
-		formatter
-				.printHelp(
-						"java ytex.libsvm.LibSVMResultImporter\n",
-						options);
+		formatter.printHelp("java ytex.libsvm.LibSVMResultImporter\n", options);
 	}
 
 }

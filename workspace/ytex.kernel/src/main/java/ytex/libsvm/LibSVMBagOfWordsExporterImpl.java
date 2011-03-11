@@ -26,7 +26,8 @@ import ytex.kernel.BagOfWordsExporter;
  * @author vijay
  * 
  */
-public class LibSVMBagOfWordsExporterImpl extends AbstractBagOfWordsExporter implements BagOfWordsExporter {
+public class LibSVMBagOfWordsExporterImpl extends AbstractBagOfWordsExporter
+		implements BagOfWordsExporter {
 	LibSVMUtil libsvmUtil;
 
 	public LibSVMUtil getLibsvmUtil() {
@@ -44,10 +45,10 @@ public class LibSVMBagOfWordsExporterImpl extends AbstractBagOfWordsExporter imp
 		if (outdir == null || outdir.length() == 0)
 			outdir = ".";
 		exportBagOfWords(outdir, props.getProperty("train.instance.query"),
-				props.getProperty("test.instance.query"), props.getProperty(
-						"numericWordQuery", ""), props.getProperty(
-						"nominalWordQuery", ""), "true".equals(props
-						.getProperty("tfidf", "false")));
+				props.getProperty("test.instance.query"),
+				props.getProperty("numericWordQuery", ""),
+				props.getProperty("nominalWordQuery", ""),
+				"true".equals(props.getProperty("tfidf", "false")));
 	}
 
 	public void exportBagOfWords(String outdir, String trainInstanceQuery,
@@ -88,24 +89,40 @@ public class LibSVMBagOfWordsExporterImpl extends AbstractBagOfWordsExporter imp
 			Map<String, Map<String, Integer>> nominalAttributeMap)
 			throws IOException {
 		for (String label : labels) {
-			StringBuilder bFileName = new StringBuilder(outdir).append(
-					File.separator).append(type).append("_data_").append(label)
-					.append(".txt");
-			exportDataForLabel(bFileName.toString(), bagOfWordsData,
+			StringBuilder bFileName = new StringBuilder(outdir)
+					.append(File.separator).append(type).append("_data_")
+					.append(label).append(".txt");
+			StringBuilder bInstanceIdFileName = new StringBuilder(outdir)
+			.append(File.separator).append(type).append("_id_")
+			.append(label).append(".txt");
+			exportDataForLabel(bFileName.toString(), bInstanceIdFileName.toString(), bagOfWordsData,
 					instanceLabelMap, numericAttributeMap, nominalAttributeMap,
 					label);
 		}
 	}
 
-	private void exportDataForLabel(String filename,
+	/**
+	 * Export data file and id file
+	 * @param filename
+	 * @param idFilename
+	 * @param bagOfWordsData
+	 * @param instanceLabelMap
+	 * @param numericAttributeMap
+	 * @param nominalAttributeMap
+	 * @param label
+	 * @throws IOException
+	 */
+	private void exportDataForLabel(String filename, String idFilename,
 			BagOfWordsData bagOfWordsData,
 			SortedMap<Integer, Map<String, Integer>> instanceLabelMap,
 			Map<String, Integer> numericAttributeMap,
 			Map<String, Map<String, Integer>> nominalAttributeMap, String label)
 			throws IOException {
 		BufferedWriter wData = null;
+		BufferedWriter wId = null;
 		try {
 			wData = new BufferedWriter(new FileWriter(filename));
+			wId = new BufferedWriter(new FileWriter(idFilename));
 			for (Map.Entry<Integer, Map<String, Integer>> instanceClass : instanceLabelMap
 					.entrySet()) {
 				int instanceId = instanceClass.getKey();
@@ -115,27 +132,30 @@ public class LibSVMBagOfWordsExporterImpl extends AbstractBagOfWordsExporter imp
 						nominalAttributeMap, instanceId);
 				// data file
 				// write class id
-				// default the class Id to 0
-				int classId = 0;
 				if (instanceClass.getValue() != null
 						&& instanceClass.getValue().containsKey(label)) {
-					classId = instanceClass.getValue().get(label);
+					int classId = instanceClass.getValue().get(label);
+					// write id to id file
+					wId.write(Integer.toString(instanceId));
+					wId.newLine();
+					wData.write(Integer.toString(classId));
+					// write attributes
+					// add the attributes
+					for (SortedMap.Entry<Integer, Double> instanceValue : instanceValues
+							.entrySet()) {
+						wData.write("\t");
+						wData.write(Integer.toString(instanceValue.getKey()));
+						wData.write(":");
+						wData.write(Double.toString(instanceValue.getValue()));
+					}
+					wData.newLine();
 				}
-				wData.write(Integer.toString(classId));
-				// write attributes
-				// add the attributes
-				for (SortedMap.Entry<Integer, Double> instanceValue : instanceValues
-						.entrySet()) {
-					wData.write("\t");
-					wData.write(Integer.toString(instanceValue.getKey()));
-					wData.write(":");
-					wData.write(Double.toString(instanceValue.getValue()));
-				}
-				wData.newLine();
 			}
 		} finally {
 			if (wData != null)
 				wData.close();
+			if (wId != null)
+				wId.close();
 		}
 	}
 
@@ -150,17 +170,18 @@ public class LibSVMBagOfWordsExporterImpl extends AbstractBagOfWordsExporter imp
 			for (Map.Entry<String, Double> numericValue : bagOfWordsData
 					.getInstanceNumericWords().get(instanceId).entrySet()) {
 				// look up index for attribute and put in map
-				instanceValues.put(numericAttributeMap.get(numericValue
-						.getKey()), numericValue.getValue());
+				instanceValues.put(
+						numericAttributeMap.get(numericValue.getKey()),
+						numericValue.getValue());
 			}
 		}
 		if (bagOfWordsData.getInstanceNominalWords().containsKey(instanceId)) {
 			for (Map.Entry<String, String> nominalValue : bagOfWordsData
 					.getInstanceNominalWords().get(instanceId).entrySet()) {
 				// look up index for attribute and value and put in map
-				instanceValues
-						.put(nominalAttributeMap.get(nominalValue.getKey())
-								.get(nominalValue.getValue()), 1d);
+				instanceValues.put(
+						nominalAttributeMap.get(nominalValue.getKey()).get(
+								nominalValue.getValue()), 1d);
 			}
 		}
 		return instanceValues;

@@ -9,13 +9,14 @@ public class ClassifierInstanceEvaluation implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	int classId;
+	int predictedClassId;
+	Integer targetClassId;
 	ClassifierEvaluation classifierEvaluation;
 	int classifierInstanceEvaluationId;
 	Map<Integer, Double> classifierInstanceProbabilities = new HashMap<Integer, Double>();
 	int instanceId;
-	public int getClassId() {
-		return classId;
+	public int getPredictedClassId() {
+		return predictedClassId;
 	}
 	public ClassifierEvaluation getClassifierEvaluation() {
 		return classifierEvaluation;
@@ -29,8 +30,8 @@ public class ClassifierInstanceEvaluation implements Serializable {
 	public int getInstanceId() {
 		return instanceId;
 	}
-	public void setClassId(int classId) {
-		this.classId = classId;
+	public void setPredictedClassId(int classId) {
+		this.predictedClassId = classId;
 	}
 	public void setClassifierEvaluation(ClassifierEvaluation classifierEvaluation) {
 		this.classifierEvaluation = classifierEvaluation;
@@ -44,5 +45,11 @@ public class ClassifierInstanceEvaluation implements Serializable {
 	}
 	public void setInstanceId(int instanceId) {
 		this.instanceId = instanceId;
+	}
+	public Integer getTargetClassId() {
+		return targetClassId;
+	}
+	public void setTargetClassId(Integer targetClassId) {
+		this.targetClassId = targetClassId;
 	}
 }

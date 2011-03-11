@@ -12,6 +12,13 @@ public class ClassifierEvaluation implements Serializable {
 	private static final long serialVersionUID = 1L;
 	int classifierEvaluationId;
 	String name;
+	String experiment;
+	public String getExperiment() {
+		return experiment;
+	}
+	public void setExperiment(String experiment) {
+		this.experiment = experiment;
+	}
 	String fold;
 	String algorithm;
 	String label;

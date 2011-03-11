@@ -160,7 +160,7 @@ public class LibSVMParser {
 		}
 	}
 
-	public LibSVMClassifierEvaluation parseClassifierEvaluation(String name,
+	public LibSVMClassifierEvaluation parseClassifierEvaluation(String name, String experiment,
 			String label, String options, String fold, String predictionFile,
 			String instanceFile, String modelFile, String instanceIdFile)
 			throws Exception {
@@ -170,6 +170,7 @@ public class LibSVMParser {
 		LibSVMClassifierEvaluation eval = new LibSVMClassifierEvaluation();
 		eval.setFold(fold);
 		eval.setName(name);
+		eval.setExperiment(experiment);
 		eval.setAlgorithm("libsvm");
 		eval.setOptions(options);
 		eval.setSupportVectors(this.parseModel(modelFile));
@@ -181,7 +182,8 @@ public class LibSVMParser {
 			if (instanceIds != null)
 				instanceId = instanceIds.get(instanceId);
 			ClassifierInstanceEvaluation instanceEval = new ClassifierInstanceEvaluation();
-			instanceEval.setClassId(result.getPredictedClassId());
+			instanceEval.setPredictedClassId(result.getPredictedClassId());
+			instanceEval.setTargetClassId(result.getTargetClassId());
 			instanceEval.setClassifierEvaluation(eval);
 			instanceEval.setInstanceId(instanceId);
 			for (int i = 0; i < result.getProbabilities().length; i++) {
