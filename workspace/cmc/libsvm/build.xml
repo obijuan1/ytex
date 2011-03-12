@@ -17,7 +17,7 @@
 	-->
 	<property name="costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
 	<!-- degrees to test polynomical kernel with -->
-	<property name="cv.poly.degrees" value="1,2,3" />
+	<property name="cv.poly.degrees" value="2,3" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<property name="ant.pbs" value="${user.home}/ant.pbs" />
 	<!-- machine specific settings -->
@@ -86,6 +86,7 @@
 		</java>
 	</target>
 	<target name="export.data.bow" description="export bag of words">
+		<echo>export.data.bow ${processedData}</echo>
 		<java classname="ytex.KernelLauncher" classpathref="libsvm.cp" dir="${processedData}" fork="yes">
 			<arg value="-exportBagOfWords" />
 			<arg value="export-bow.xml" />
@@ -124,6 +125,8 @@
 		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="libsvm.cp" fork="no">
 			<arg value="-data" />
 			<arg value="${processedData}/training_data_${cv.classLabel}.txt" />
+			<arg value="-instanceId" />
+			<arg value="${processedData}/training_id_${cv.classLabel}.txt" />
 			<arg value="-outdir" />
 			<arg value="${cv.tmpdir}" />
 			<arg value="-folds" />
@@ -132,21 +135,9 @@
 	</target>
 	<target name="cv.generateFolds" description="generate folds for label and evaluate locally">
 		<property name="cv.classLabel" value="1" />
-		<mkdir dir="${cv.tmpdir}" />
-		<echo>cv.tmpdir=${cv.tmpdir}</echo>
-		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="libsvm.cp" fork="no">
-			<arg value="-data" />
-			<arg value="${processedData}/training_data_${cv.classLabel}.txt" />
-			<arg value="-instanceId" />
-			<arg value="${processedData}/training_id_${cv.classLabel}.txt" />
-			<arg value="-outdir" />
-			<arg value="${cv.tmpdir}" />
-			<arg value="-folds" />
-			<arg value="10" />
-			<!--
-			<jvmarg value="${log4j.param}" />
-			-->
-		</java>
+		<antcall target="ytex.libsvm.CreateStratifiedCVFolds">
+			<param name="cv.classLabel" value="${cv.classLabel}" />
+		</antcall>
 		<for param="training.file">
 			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*_train.txt" />
 			<sequential>
