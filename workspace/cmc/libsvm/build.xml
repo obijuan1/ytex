@@ -11,7 +11,7 @@
 	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<property name="cv.numFolds" value="10" />
-	<property name="cv.extractResults.target" value="cv.extractResults.db" />
+	<property name="cv.extractResults.target" value="cv.extractResults.zip" />
 	<!--
 	<property name="costs" value="1" />
 	-->
@@ -146,9 +146,11 @@
 				</antcall>
 			</sequential>
 		</for>
+		<!--
 		<delete quiet="yes">
 			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*.*" />
 		</delete>
+		-->
 	</target>
 	<target name="cv.iter.kernel" description="run cross-validation with all specified kernels, delegate to cv.iter.weight">
 		<property name="cv.fold.training" value="${processedData}/training_data_1_fold1_train.txt"/>
@@ -270,6 +272,17 @@
 		</exec>
 		<!-- extract results -->
 		<antcall target="${cv.extractResults.target}" />
+	</target>
+	<target name="cv.extractResults.zip" description="store cross validation result in zip file for later processing">
+		<tstamp>
+			<format property="cv.tstamp" pattern="ddhhmmS"/>
+		</tstamp>
+		<echo file="${cv.tmpdir}/${cv.fold.base}_cv.properties" append="yes">
+${cv.tstamp}.options=${cv.eval.line}
+</echo>
+		<zip destfile="${cv.tmpdir}/${cv.fold.base}_cv.zip" update="yes">
+			<zipfileset dir="${cv.tmpdir}" includes="${cv.fold.model},${cv.fold.predict}" prefix="${cv.tstamp}"/>
+		</zip>
 	</target>
 	<target name="cv.extractResults.db" description="store cross validation results in database">
 		<property name="cv.classLabel" value="1" />
