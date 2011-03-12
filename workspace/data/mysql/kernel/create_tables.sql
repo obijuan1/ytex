@@ -168,10 +168,11 @@ CREATE TABLE  `stopword` (
 create table classifier_eval (
 	classifier_eval_id int AUTO_INCREMENT not null primary key,
 	name varchar(50) not null,
-	fold varchar(50) null,
-	algorithm varchar(50) null,
-	label varchar(50) null,
-	options varchar(200) null,
+	experiment varchar(50) not null default "",
+	fold varchar(50) not null default "",
+	algorithm varchar(50) not null default "",
+	label varchar(50) not null default "",
+	options varchar(200) not null default "",
 	model longblob null
 ) comment 'evaluation of a classifier on a dataset';
 
@@ -189,7 +190,8 @@ create table classifier_instance_eval (
 	classifier_instance_eval_id int not null auto_increment primary key,
 	classifier_eval_id int not null comment 'fk classifier_eval',
 	instance_id int not null,
-	class_id int not null,
+	pred_class_id int not null,
+	target_class_id int null,
 	unique key nk_result (classifier_eval_id, instance_id)
 ) comment 'instance classification result';
 
@@ -201,3 +203,91 @@ create table classifier_instance_eval_prob (
 	unique key nk_result_prob (classifier_instance_eval_id, class_id)
 ) comment 'probability of belonging to respective class';
 
+
+
+create view v_classifier_eval_ir_classes
+as
+select distinct ce.classifier_eval_id, target_class_id ir_class_id
+from classifier_eval ce
+inner join classifier_instance_eval ci
+on ce.classifier_eval_id = ci.classifier_eval_id
+;
+
+create view v_classifier_eval_ir_tt
+as
+select cls.classifier_eval_id, ir_class_id,
+  sum(case
+    when ir_class_id = target_class_id and ir_class_id = pred_class_id then 1
+    else 0
+  end) tp,
+  sum(case
+    when ir_class_id <> target_class_id and ir_class_id <> pred_class_id then 1
+    else 0
+  end) tn,
+  sum(case
+    when ir_class_id <> target_class_id and ir_class_id = pred_class_id then 1
+    else 0
+  end) fp,
+  sum(case
+    when ir_class_id = target_class_id and ir_class_id <> pred_class_id then 1
+    else 0
+  end) fn
+from v_classifier_eval_ir_classes cls
+inner join classifier_instance_eval ci on cls.classifier_eval_id = ci.classifier_eval_id
+group by classifier_eval_id, ir_class_id
+;
+
+create view v_classifier_eval_ir
+as
+select *,
+  case when tp+fp > 0 then tp/(tp+fp) else 0 end prec,
+  case when tp+fn > 0 then tp/(tp+fn) else 0 end sens,
+  case when fp+tn > 0 then tn/(fp+tn) else 0 end spec,
+  case when fn+tn > 0 then tn/(fn+tn) else 0 end npv,
+  case when (tp+fp) > 0 and (tp+fn) > 0 then 2*(tp/(tp+fp))*(tp/(tp+fn))/(tp/(tp+fn) + tp/(tp+fp)) else 0 end f1
+from v_classifier_eval_ir_tt
+;
+
+/*
+create view v_classifier_eval_ir
+as
+select *,
+  case when sens+prec > 0 then 2*sens*prec/(sens+prec) else 0 end f1
+from
+(
+select *,
+  case when tp+fp > 0 then tp/(tp+fp) else 0 end prec,
+  case when tp+fn > 0 then tp/(tp+fn) else 0 end sens,
+  case when fp+tn > 0 then tn/(fp+tn) else 0 end spec
+from
+(
+select cls.classifier_eval_id, ir_class_id,
+  sum(case
+    when ir_class_id = target_class_id and ir_class_id = pred_class_id then 1
+    else 0
+  end) tp,
+  sum(case
+    when ir_class_id <> target_class_id and ir_class_id <> pred_class_id then 1
+    else 0
+  end) tn,
+  sum(case
+    when ir_class_id <> target_class_id and ir_class_id = pred_class_id then 1
+    else 0
+  end) fp,
+  sum(case
+    when ir_class_id = target_class_id and ir_class_id <> pred_class_id then 1
+    else 0
+  end) fn
+from
+(
+select distinct ce.classifier_eval_id, target_class_id ir_class_id
+from classifier_eval ce
+inner join classifier_instance_eval ci
+on ce.classifier_eval_id = ci.classifier_eval_id
+) cls
+inner join classifier_instance_eval ci on cls.classifier_eval_id = ci.classifier_eval_id
+group by classifier_eval_id, ir_class_id
+) s
+) s
+;
+*/
