@@ -1,5 +1,10 @@
 package ytex.libsvm;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -15,17 +20,20 @@ import ytex.kernel.model.ClassifierEvaluation;
 public class LibSVMResultImporter {
 	private static Options initOptions() {
 		Options options = new Options();
+		options.addOption(OptionBuilder.withArgName("cvDir").hasArg()
+				.withDescription("fold cross-validation results directory")
+				.create("cvDir"));
 		options.addOption(OptionBuilder.withArgName("model").hasArg()
-				.withDescription("libsvm model file").isRequired()
-				.create("model"));
+				.withDescription("libsvm model file").create("model"));
 		options.addOption(OptionBuilder.withArgName("predict").hasArg()
-				.withDescription("libsvm output file").isRequired()
-				.create("output"));
+				.withDescription("libsvm output file").create("output"));
 		options.addOption(OptionBuilder.withArgName("test").hasArg()
 				.withDescription("libsvm input test data file").isRequired()
 				.create("test"));
-		options.addOption(OptionBuilder.withArgName("instanceId").hasArg()
-				.withDescription("file with instance ids").create("instanceId"));
+		options
+				.addOption(OptionBuilder.withArgName("instanceId").hasArg()
+						.withDescription("file with instance ids").create(
+								"instanceId"));
 		options.addOption(OptionBuilder.withArgName("name").hasArg()
 				.withDescription("name").isRequired().create("name"));
 		options.addOption(OptionBuilder.withArgName("experiment").hasArg()
@@ -51,25 +59,84 @@ public class LibSVMResultImporter {
 			CommandLineParser oparser = new GnuParser();
 			try {
 				CommandLine line = oparser.parse(options, args);
-				LibSVMParser lparser = new LibSVMParser();
-				ClassifierEvaluation eval = lparser.parseClassifierEvaluation(
-						line.getOptionValue("name"),
-						line.getOptionValue("experiment"),
-						line.getOptionValue("label"),
-						line.getOptionValue("options"),
-						line.getOptionValue("fold"),
-						line.getOptionValue("output"),
-						line.getOptionValue("test"),
-						line.getOptionValue("model"),
-						line.getOptionValue("instanceId"));
-				KernelContextHolder.getApplicationContext()
-						.getBean(ClassifierEvaluationDao.class)
-						.saveClassifierEvaluation(eval);
+				if (line.hasOption("cvDir")) {
+					importDirectory(line);
+				} else {
+					LibSVMParser lparser = new LibSVMParser();
+					ClassifierEvaluation eval = lparser
+							.parseClassifierEvaluation(line
+									.getOptionValue("name"), line
+									.getOptionValue("experiment"), line
+									.getOptionValue("label"), line
+									.getOptionValue("options"), line
+									.getOptionValue("fold"), line
+									.getOptionValue("output"), line
+									.getOptionValue("test"), line
+									.getOptionValue("model"), line
+									.getOptionValue("instanceId"));
+					KernelContextHolder.getApplicationContext().getBean(
+							ClassifierEvaluationDao.class)
+							.saveClassifierEvaluation(eval);
+				}
 			} catch (ParseException e) {
 				printHelp(options);
 				throw e;
 			}
 		}
+	}
+
+	/**
+	 * Expect directory with subdirectories for each evaluation. Subdirectories
+	 * must contain following in order for results to be processed:
+	 * <ul>
+	 * <li>
+	 * model.txt: libsvm model trained on training set
+	 * <li>predict.txt: libsvm predictions on test set
+	 * <li>options.properties: libsvm command line options
+	 * </ul>
+	 * 
+	 * @param line
+	 * @throws Exception
+	 */
+	private static void importDirectory(CommandLine line) throws Exception {
+		LibSVMParser lparser = new LibSVMParser();
+		File cvDir = new File(line.getOptionValue("cvDir"));
+		for (File resultDir : cvDir.listFiles()) {
+			String model = resultDir + File.separator + "model.txt";
+			String output = resultDir + File.separator + "predict.txt";
+			String optionsFile = resultDir + File.separator
+					+ "options.properties";
+			if (checkFileRead(model) && checkFileRead(output)
+					&& checkFileRead(optionsFile)) {
+				String options = null;
+				InputStream isOptions = null;
+				try {
+					isOptions = new FileInputStream(optionsFile);
+					Properties props = new Properties();
+					props.load(isOptions);
+					options = props.getProperty("cv.eval.line");
+				} finally {
+					isOptions.close();
+				}
+				if (options != null) {
+					ClassifierEvaluation eval = lparser
+							.parseClassifierEvaluation(line
+									.getOptionValue("name"), line
+									.getOptionValue("experiment"), line
+									.getOptionValue("label"), options, line
+									.getOptionValue("fold"), output, line
+									.getOptionValue("test"), model, line
+									.getOptionValue("instanceId"));
+					KernelContextHolder.getApplicationContext().getBean(
+							ClassifierEvaluationDao.class)
+							.saveClassifierEvaluation(eval);
+				}
+			}
+		}
+	}
+
+	private static boolean checkFileRead(String file) {
+		return (new File(file)).canRead();
 	}
 
 	private static void printHelp(Options options) {

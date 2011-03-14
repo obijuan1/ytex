@@ -160,10 +160,10 @@ public class LibSVMParser {
 		}
 	}
 
-	public LibSVMClassifierEvaluation parseClassifierEvaluation(String name, String experiment,
-			String label, String options, String fold, String predictionFile,
-			String instanceFile, String modelFile, String instanceIdFile)
-			throws Exception {
+	public LibSVMClassifierEvaluation parseClassifierEvaluation(String name,
+			String experiment, String label, String options, String fold,
+			String predictionFile, String instanceFile, String modelFile,
+			String instanceIdFile) throws Exception {
 		List<Integer> instanceIds = null;
 		if (instanceIdFile != null)
 			instanceIds = parseInstanceIds(instanceIdFile);
@@ -198,22 +198,25 @@ public class LibSVMParser {
 	}
 
 	private void parseOptions(LibSVMClassifierEvaluation eval, String options) {
-		// -q -b 1 -t 2 -w1 41 -g 1000 -c 1000 training_data_11_fold9_train.txt training_data_11_fold9_model.txt
-		Pattern pKernel = Pattern.compile("-t\\s+(\\d)");
-		Pattern pGamma = Pattern.compile("-g\\s+([\\d\\.-e]+)");
-		Pattern pCost = Pattern.compile("-c\\s+([\\d\\.-e]+)");
-		Pattern pWeight = Pattern.compile("-w1\\s+(\\d+)");
-		Pattern pDegree = Pattern.compile("-d\\s+(\\d+)");
-		eval.setKernel(parseIntOption(pKernel, options));
-		eval.setDegree(parseIntOption(pDegree, options));
-		eval.setWeight(parseIntOption(pWeight, options));
-		eval.setCost(parseDoubleOption(pCost, options));
-		eval.setGamma(parseDoubleOption(pGamma, options));
+		// -q -b 1 -t 2 -w1 41 -g 1000 -c 1000 training_data_11_fold9_train.txt
+		// training_data_11_fold9_model.txt
+		if (options != null) {
+			Pattern pKernel = Pattern.compile("-t\\s+(\\d)");
+			Pattern pGamma = Pattern.compile("-g\\s+([\\d\\.-e]+)");
+			Pattern pCost = Pattern.compile("-c\\s+([\\d\\.-e]+)");
+			Pattern pWeight = Pattern.compile("-w1\\s+(\\d+)");
+			Pattern pDegree = Pattern.compile("-d\\s+(\\d+)");
+			eval.setKernel(parseIntOption(pKernel, options));
+			eval.setDegree(parseIntOption(pDegree, options));
+			eval.setWeight(parseIntOption(pWeight, options));
+			eval.setCost(parseDoubleOption(pCost, options));
+			eval.setGamma(parseDoubleOption(pGamma, options));
+		}
 	}
 
 	private Double parseDoubleOption(Pattern pCost, String options) {
 		Matcher m = pCost.matcher(options);
-		if(m.find())
+		if (m.find())
 			return Double.parseDouble(m.group(1));
 		else
 			return null;
@@ -221,7 +224,7 @@ public class LibSVMParser {
 
 	private Integer parseIntOption(Pattern pKernel, String options) {
 		Matcher m = pKernel.matcher(options);
-		if(m.find())
+		if (m.find())
 			return Integer.parseInt(m.group(1));
 		else
 			return null;
