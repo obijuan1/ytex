@@ -40,7 +40,7 @@
 	  group by k.uid, w.canonical_form
 	) tf
 	inner join tfidf_doclength dl on tf.uid = dl.instance_id and dl.name = 'cmc-word'
-	inner join tfidf_docfreq f on f.term = tf.canonical_form and dl.name = 'cmc-word'
+	inner join tfidf_docfreq f on f.term = tf.canonical_form and f.name = 'cmc-word'
 	inner join
 	(
 	  select count(*) doccount from cmcdocument
@@ -60,7 +60,7 @@
 		group by k.uid, c.code
 	) tf
 	inner join tfidf_doclength dl on tf.uid = dl.instance_id and dl.name = 'cmc-cui'
-	inner join tfidf_docfreq f on f.term = tf.code and dl.name = 'cmc-cui'
+	inner join tfidf_docfreq f on f.term = tf.code and f.name = 'cmc-cui'
 	inner join
 	(
 	  select count(*) doccount from cmcdocument
