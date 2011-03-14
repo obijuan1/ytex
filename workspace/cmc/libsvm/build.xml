@@ -145,7 +145,7 @@ zip up cv.tmpdir and put in processed data dir
 			<param name="cv.classLabel" value="${cv.classLabel}" />
 		</antcall>
 		<for param="training.file">
-			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*_train.txt" />
+			<fileset dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" includes="training_data_${cv.classLabel}_fold*_train.txt" />
 			<sequential>
 				<antcall target="cv.iter.fold">
 					<param name="cv.fold.training" value="@{training.file}" />
