@@ -173,6 +173,7 @@ public class LibSVMParser {
 		eval.setExperiment(experiment);
 		eval.setAlgorithm("libsvm");
 		eval.setOptions(options);
+		eval.setLabel(label);
 		eval.setSupportVectors(this.parseModel(modelFile));
 		parseOptions(eval, options);
 		LibSVMResults results = this.parse(predictionFile, instanceFile);
