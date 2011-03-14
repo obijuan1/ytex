@@ -134,7 +134,7 @@ zip up cv.tmpdir and put in processed data dir
 			<arg value="-instanceId" />
 			<arg value="${processedData}/training_id_${cv.classLabel}.txt" />
 			<arg value="-outdir" />
-			<arg value="${cv.tmpdir}" />
+			<arg value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
 			<arg value="-folds" />
 			<arg value="${cv.numFolds}" />
 		</java>
@@ -152,13 +152,12 @@ zip up cv.tmpdir and put in processed data dir
 				</antcall>
 			</sequential>
 		</for>
-		<delete quiet="yes">
-			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*.*" />
-			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*/**/*.*" />
+		<delete quiet="yes" includeemptydirs="yes">
+			<fileset dir="${cv.tmpdir}" includes="${libsvm.experiment}-${cv.classLabel}/**/*.*" />
 		</delete>
 	</target>
 	<target name="cv.iter.fold" description="run libsvm on specified fold, store results in database">
-		<property name="cv.fold.training" value="${cv.tmpdir}/training_data_1_fold1_train.txt" />
+		<property name="cv.fold.training" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/training_data_1_fold1_train.txt" />
 		<basename file="${cv.fold.training}" property="cv.fold.base" suffix="_train.txt" />
 		<antcall target="cv.iter.kernel"/>
 		<antcall target="cv.extractResults.db.fold"/>
@@ -257,7 +256,7 @@ zip up cv.tmpdir and put in processed data dir
 			<format property="cv.tstamp" pattern="ddhhmmS"/>
 		</tstamp>
 		<property name="cv.outdir" value="${cv.fold.base}/${cv.tstamp}"/>
-		<mkdir dir="${cv.tmpdir}/${cv.outdir}"/>
+		<mkdir dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.outdir}"/>
 		<property name="cv.classLabel" value="10" />
 		<property name="cv.libsvm.line" value="-c 1 -w1 1" />
 		<property name="cv.fold.base" value="training_data_10_fold8" />
@@ -273,21 +272,21 @@ zip up cv.tmpdir and put in processed data dir
 		-->
 		<!-- train the svm -->
 		<property name="cv.eval.line" value="-q -b 1 -t ${kernel.type} ${cv.libsvm.line} ${cv.fold.train} ${cv.outdir}/model.txt" />
-		<exec executable="${libsvm.bin}/svm-train" dir="${cv.tmpdir}" failonerror="yes">
+		<exec executable="${libsvm.bin}/svm-train" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failonerror="yes">
 			<arg line="${cv.eval.line}" />
 		</exec>
 		<!-- test the svm -->
-		<exec executable="${libsvm.bin}/svm-predict" dir="${cv.tmpdir}" failonerror="yes">
+		<exec executable="${libsvm.bin}/svm-predict" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failonerror="yes">
 			<arg line="-b 1 ${cv.fold.test} ${cv.outdir}/model.txt ${cv.outdir}/predict.txt" />
 		</exec>
 		<!-- store libsvm options -->
-		<echo file="${cv.tmpdir}/${cv.outdir}/options.properties">
+		<echo file="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.outdir}/options.properties">
 cv.eval.line=${cv.eval.line}
 </echo>
 	</target>
 	<target name="cv.extractResults.db.fold">
 		<property name="cv.fold.base" value="training_data_1_fold1"/>
-		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="libsvm.cp" fork="yes" dir="${cv.tmpdir}">
+		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="libsvm.cp" fork="yes" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}">
 			<arg value="-name" />
 			<arg value="${libsvm.name}" />
 			<arg value="-experiment" />
@@ -304,58 +303,6 @@ cv.eval.line=${cv.eval.line}
 			<arg value="${cv.fold.base}" />
 			<jvmarg value="${log4j.param}" />
 		</java>
-	</target>
-	<target name="cv.extractResults.summary" description="calculate IR metrics, calculate optimal threshold, output to cv_${cv.classLabel}.txt">
-		<property name="cv.classLabel" value="1" />
-		<property name="cv.cost" value="1" />
-		<property name="cv.weight" value="1" />
-		<property name="cv.gamma" value="" />
-		<property name="cv.degree" value="" />
-		<property name="cv.fold.base" value="training_data_20_fold8" />
-		<property name="cv.fold.train" value="${cv.fold.base}_train.txt" />
-		<property name="cv.fold.test" value="${cv.fold.base}_test.txt" />
-		<property name="cv.fold.model" value="${cv.fold.base}_model.txt" />
-		<property name="cv.fold.predict" value="${cv.fold.base}_predict.txt" />
-		<property name="cv.outfile" value="${processedData}/cv_${cv.classLabel}.txt" />
-		<script language="beanshell" classpathref="libsvm.cp">
-			<![CDATA[
-			import ytex.libsvm.*;
-			String processedDataDir = project.getProperty("processedData");
-			String cvTmpDir = project.getProperty("cv.tmpdir");
-			String testFile = project.getProperty("cv.fold.test");
-			String predictFile = project.getProperty("cv.fold.predict");
-			String modelFile = project.getProperty("cv.fold.model");
-			LibSVMParser p = new LibSVMParser();
-			ScutLibsvm scut = new ScutLibsvm(); 
-			int nSV = p.parseModel(cvTmpDir+"/"+modelFile);
-			project.setProperty("cv.nsv", Integer.toString(nSV));
-			Object[] scutMetrics = scut.calculateScutLibsvm(cvTmpDir+"/"+predictFile, cvTmpDir+"/"+testFile);
-			project.setProperty("cv.metrics", 
-				scutMetrics[1].toString() + "\t"
-				+ Double.toString(scutMetrics[0]) + "\t"
-				+ scutMetrics[2].toString()); 
-		]]>
-		</script>
-		<!-- 
-		generate tab delimited output with libsvm parameters and results
-		the columns here must match the columns in load_cv.template.sql 
-		-->
-		<echo append="yes" file="${cv.outfile}">libsvm	${cv.eval.line}	${kernel.type}	${cv.classLabel}	${cv.cost}	${cv.weight}	${cv.gamma}	${cv.degree}	${cv.nsv}	${cv.metrics}
-</echo>
-	</target>
-	<target name="cv.consolidateResult.all" description="consolidate the results of all the cross-validation runs into a single file, import into weka_results table">
-		<delete file="${processedData}/cv.txt" quiet="yes" />
-		<concat destfile="${processedData}/cv.txt">
-			<fileset dir="${processedData}" includes="cv_*.txt" />
-		</concat>
-		<copy file="${basedir}/load_cv.template.sql" tofile="${processedData}/load_cv.sql" overwrite="yes">
-			<filterset>
-				<filter token="EXPERIMENT" value="${libsvm.experiment}" />
-			</filterset>
-		</copy>
-		<exec executable="${mysql.bin.home}/mysql" dir="${processedData}">
-			<arg line="${mysql.line} -e &quot;source load_cv.sql&quot;" />
-		</exec>
 	</target>
 	<target name="test.generateOptimalParams" description="generate optimal parameters for running test evaluation">
 		<copy file="${basedir}/select_params.template.sql" tofile="${processedData}/select_params.sql" overwrite="yes">
