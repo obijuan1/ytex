@@ -1,3 +1,8 @@
+<!--
+todo: 
+import results at end of cv.all.folds
+zip up cv.tmpdir and put in processed data dir
+-->
 <project name="Libsvm">
 	<property environment="env" />
 	<property name="ytex.home" value="../.." />
@@ -7,8 +12,9 @@
 	<property file="${ytex.properties}" />
 	<property name="libsvm.home" value="c:/java/libsvm-3.0" />
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
-	<property name="experiment" value="ctakes-tuifilter" />
-	<property name="processedData" value="${ytex.home}/cmc/libsvm/${experiment}" />
+	<property name="libsvm.experiment" value="test" />
+	<property name="libsvm.name" value="${libsvm.experiment}" />
+	<property name="processedData" value="${ytex.home}/cmc/libsvm/${libsvm.experiment}" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<property name="cv.numFolds" value="10" />
 	<property name="cv.extractResults.target" value="cv.extractResults.zip" />
@@ -59,7 +65,7 @@
 	-->
 	<target name="all" depends="kernel.evalAllSlices,cv.all" />
 
-	<target name="cv.all" depends="export.data,cv.all.folds,cv.consolidateResult.all" />
+	<target name="cv.all" depends="export.data,cv.all.folds" />
 
 	<target name="export.data" description="export libsvm data" depends="export.data.cluster,export.data.local" />
 	<target name="export.data.local" unless="ytex.cluster" description="export libsvm data locally">
@@ -141,19 +147,23 @@
 		<for param="training.file">
 			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*_train.txt" />
 			<sequential>
-				<antcall target="cv.iter.kernel">
+				<antcall target="cv.iter.fold">
 					<param name="cv.fold.training" value="@{training.file}" />
 				</antcall>
 			</sequential>
 		</for>
-		<!--
 		<delete quiet="yes">
 			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*.*" />
+			<fileset dir="${cv.tmpdir}" includes="training_data_${cv.classLabel}_fold*/**/*.*" />
 		</delete>
-		-->
+	</target>
+	<target name="cv.iter.fold" description="run libsvm on specified fold, store results in database">
+		<property name="cv.fold.training" value="${cv.tmpdir}/training_data_1_fold1_train.txt" />
+		<basename file="${cv.fold.training}" property="cv.fold.base" suffix="_train.txt" />
+		<antcall target="cv.iter.kernel"/>
+		<antcall target="cv.extractResults.db.fold"/>
 	</target>
 	<target name="cv.iter.kernel" description="run cross-validation with all specified kernels, delegate to cv.iter.weight">
-		<property name="cv.fold.training" value="${processedData}/training_data_1_fold1_train.txt"/>
 		<for list="${kernel.types}" param="kernel.type">
 			<sequential>
 				<echo>kernel.type = @{kernel.type}</echo>
@@ -203,8 +213,6 @@
 		</condition>
 	</target>
 	<target name="cv.iter.weight" depends="cv.init.classWeights" description="iterate over class weights">
-		<property name="cv.fold.training" value="${cv.tmpdir}/training_data_20_fold1_train.txt" />
-		<basename file="${cv.fold.training}" property="cv.fold.base" suffix="_train.txt" />
 		<for list="${classWeights}" param="classWeight">
 			<sequential>
 				<antcall target="${cv.iter.target}">
@@ -244,15 +252,17 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="cv.evaluate" description="train on cv training set, eval on cv test set">
+	<target name="cv.evaluate" description="train on cv training set, eval on cv test set, store results in fold-specific timestamped directory">
+		<tstamp>
+			<format property="cv.tstamp" pattern="ddhhmmS"/>
+		</tstamp>
+		<property name="cv.outdir" value="${cv.fold.base}/${cv.tstamp}"/>
+		<mkdir dir="${cv.tmpdir}/${cv.outdir}"/>
 		<property name="cv.classLabel" value="10" />
 		<property name="cv.libsvm.line" value="-c 1 -w1 1" />
 		<property name="cv.fold.base" value="training_data_10_fold8" />
 		<property name="cv.fold.train" value="${cv.fold.base}_train.txt" />
 		<property name="cv.fold.test" value="${cv.fold.base}_test.txt" />
-		<property name="cv.fold.testId" value="${cv.fold.base}_testId.txt" />
-		<property name="cv.fold.model" value="${cv.fold.base}_model.txt" />
-		<property name="cv.fold.predict" value="${cv.fold.base}_predict.txt" />
 		<!--
 		<java classname="svm_train" fork="yes" classpathref="libsvm.cp" >
 			<arg line="-q -b 1 -t 4 -w1 ${cv.weight} -c ${cv.cost} ${cv.fold.train} ${cv.fold.model}" />
@@ -262,53 +272,37 @@
 		</java>
 		-->
 		<!-- train the svm -->
-		<property name="cv.eval.line" value="-q -b 1 -t ${kernel.type} ${cv.libsvm.line} ${cv.fold.train} ${cv.fold.model}" />
+		<property name="cv.eval.line" value="-q -b 1 -t ${kernel.type} ${cv.libsvm.line} ${cv.fold.train} ${cv.outdir}/model.txt" />
 		<exec executable="${libsvm.bin}/svm-train" dir="${cv.tmpdir}" failonerror="yes">
 			<arg line="${cv.eval.line}" />
 		</exec>
 		<!-- test the svm -->
 		<exec executable="${libsvm.bin}/svm-predict" dir="${cv.tmpdir}" failonerror="yes">
-			<arg line="-b 1 ${cv.fold.test} ${cv.fold.model} ${cv.fold.predict}" />
+			<arg line="-b 1 ${cv.fold.test} ${cv.outdir}/model.txt ${cv.outdir}/predict.txt" />
 		</exec>
-		<!-- extract results -->
-		<antcall target="${cv.extractResults.target}" />
-	</target>
-	<target name="cv.extractResults.zip" description="store cross validation result in zip file for later processing">
-		<tstamp>
-			<format property="cv.tstamp" pattern="ddhhmmS"/>
-		</tstamp>
-		<echo file="${cv.tmpdir}/${cv.fold.base}_cv.properties" append="yes">
-${cv.tstamp}.options=${cv.eval.line}
+		<!-- store libsvm options -->
+		<echo file="${cv.tmpdir}/${cv.outdir}/options.properties">
+cv.eval.line=${cv.eval.line}
 </echo>
-		<zip destfile="${cv.tmpdir}/${cv.fold.base}_cv.zip" update="yes">
-			<zipfileset dir="${cv.tmpdir}" includes="${cv.fold.model},${cv.fold.predict}" prefix="${cv.tstamp}"/>
-		</zip>
 	</target>
-	<target name="cv.extractResults.db" description="store cross validation results in database">
-		<property name="cv.classLabel" value="1" />
-		<property name="cv.fold.base" value="training_data_1_fold1" />
-		<property name="cv.fold.train" value="${cv.fold.base}_train.txt" />
-		<property name="cv.fold.test" value="${cv.fold.base}_test.txt" />
-		<property name="cv.fold.testId" value="${cv.fold.base}_testId.txt" />
-		<property name="cv.fold.model" value="${cv.fold.base}_model.txt" />
-		<property name="cv.fold.predict" value="${cv.fold.base}_predict.txt" />
+	<target name="cv.extractResults.db.fold">
+		<property name="cv.fold.base" value="training_data_1_fold1"/>
 		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="libsvm.cp" fork="yes" dir="${cv.tmpdir}">
 			<arg value="-name" />
-			<arg value="${experiment}" />
+			<arg value="${libsvm.name}" />
+			<arg value="-experiment" />
+			<arg value="${libsvm.experiment}" />
 			<arg value="-label" />
 			<arg value="${cv.classLabel}" />
-			<arg value="-options" />
-			<arg value="${cv.eval.line}" />
 			<arg value="-test" />
-			<arg value="${cv.fold.test}" />
+			<arg value="${cv.fold.base}_test.txt" />
 			<arg value="-instanceId" />
-			<arg value="${cv.fold.testId}" />
-			<arg value="-model" />
-			<arg value="${cv.fold.model}" />
+			<arg value="${cv.fold.base}_testId.txt" />
 			<arg value="-fold" />
 			<arg value="${cv.fold.base}" />
-			<arg value="-output" />
-			<arg value="${cv.fold.predict}" />
+			<arg value="-cvDir" />
+			<arg value="${cv.fold.base}" />
+			<jvmarg value="${log4j.param}" />
 		</java>
 	</target>
 	<target name="cv.extractResults.summary" description="calculate IR metrics, calculate optimal threshold, output to cv_${cv.classLabel}.txt">
@@ -356,7 +350,7 @@ ${cv.tstamp}.options=${cv.eval.line}
 		</concat>
 		<copy file="${basedir}/load_cv.template.sql" tofile="${processedData}/load_cv.sql" overwrite="yes">
 			<filterset>
-				<filter token="EXPERIMENT" value="${experiment}" />
+				<filter token="EXPERIMENT" value="${libsvm.experiment}" />
 			</filterset>
 		</copy>
 		<exec executable="${mysql.bin.home}/mysql" dir="${processedData}">
@@ -366,7 +360,7 @@ ${cv.tstamp}.options=${cv.eval.line}
 	<target name="test.generateOptimalParams" description="generate optimal parameters for running test evaluation">
 		<copy file="${basedir}/select_params.template.sql" tofile="${processedData}/select_params.sql" overwrite="yes">
 			<filterset>
-				<filter token="EXPERIMENT" value="${experiment}" />
+				<filter token="EXPERIMENT" value="${libsvm.experiment}" />
 			</filterset>
 		</copy>
 		<exec executable="${mysql.bin.home}/mysql" dir="${processedData}" output="${processedData}/optimalParams.properties">
@@ -455,7 +449,7 @@ ${cv.tstamp}.options=${cv.eval.line}
 	<target name="test.loadResults" description="consolidate the results of all the cross-validation runs into a single file, import into weka_results table">
 		<copy file="${basedir}/test_results.template.sql" tofile="${processedData}/test_results.sql" overwrite="yes">
 			<filterset>
-				<filter token="EXPERIMENT" value="${experiment}" />
+				<filter token="EXPERIMENT" value="${libsvm.experiment}" />
 			</filterset>
 		</copy>
 		<exec executable="${mysql.bin.home}/mysql" dir="${processedData}">
