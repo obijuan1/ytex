@@ -126,8 +126,8 @@ zip up cv.tmpdir and put in processed data dir
 	</target>
 	<target name="ytex.libsvm.CreateStratifiedCVFolds" description="call CreateStratifiedCVFolds">
 		<property name="cv.classLabel" value="1" />
-		<mkdir dir="${cv.tmpdir}" />
-		<echo>cv.tmpdir=${cv.tmpdir}</echo>
+		<mkdir dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
+		<echo>cv.tmpdir=${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}</echo>
 		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="libsvm.cp" fork="no">
 			<arg value="-data" />
 			<arg value="${processedData}/training_data_${cv.classLabel}.txt" />
