@@ -172,7 +172,7 @@ create table classifier_eval (
 	fold varchar(50) not null default "",
 	algorithm varchar(50) not null default "",
 	label varchar(50) not null default "",
-	options varchar(200) not null default "",
+	options varchar(1000) not null default "",
 	model longblob null
 ) comment 'evaluation of a classifier on a dataset';
 
@@ -247,47 +247,3 @@ select *,
   case when (tp+fp) > 0 and (tp+fn) > 0 then 2*(tp/(tp+fp))*(tp/(tp+fn))/(tp/(tp+fn) + tp/(tp+fp)) else 0 end f1
 from v_classifier_eval_ir_tt
 ;
-
-/*
-create view v_classifier_eval_ir
-as
-select *,
-  case when sens+prec > 0 then 2*sens*prec/(sens+prec) else 0 end f1
-from
-(
-select *,
-  case when tp+fp > 0 then tp/(tp+fp) else 0 end prec,
-  case when tp+fn > 0 then tp/(tp+fn) else 0 end sens,
-  case when fp+tn > 0 then tn/(fp+tn) else 0 end spec
-from
-(
-select cls.classifier_eval_id, ir_class_id,
-  sum(case
-    when ir_class_id = target_class_id and ir_class_id = pred_class_id then 1
-    else 0
-  end) tp,
-  sum(case
-    when ir_class_id <> target_class_id and ir_class_id <> pred_class_id then 1
-    else 0
-  end) tn,
-  sum(case
-    when ir_class_id <> target_class_id and ir_class_id = pred_class_id then 1
-    else 0
-  end) fp,
-  sum(case
-    when ir_class_id = target_class_id and ir_class_id <> pred_class_id then 1
-    else 0
-  end) fn
-from
-(
-select distinct ce.classifier_eval_id, target_class_id ir_class_id
-from classifier_eval ce
-inner join classifier_instance_eval ci
-on ce.classifier_eval_id = ci.classifier_eval_id
-) cls
-inner join classifier_instance_eval ci on cls.classifier_eval_id = ci.classifier_eval_id
-group by classifier_eval_id, ir_class_id
-) s
-) s
-;
-*/
