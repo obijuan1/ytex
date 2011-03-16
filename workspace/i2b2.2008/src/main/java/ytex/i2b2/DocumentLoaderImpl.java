@@ -125,8 +125,11 @@ public class DocumentLoaderImpl {
 //		l.process(args[0]+ File.separator + "obesity_patient_records_training.xml", "train");
 //		l.process(args[0]+ File.separator + "obesity_patient_records_training2.xml", "train");
 //		l.process(args[0]+ File.separator + "obesity_patient_records_test.xml", "test");
-		l.processAnno(args[0]+ File.separator + "obesity_standoff_annotations_training.xml");
-		l.processAnno(args[0]+ File.separator + "obesity_standoff_annotations_test.xml");
+//		l.processAnno(args[0]+ File.separator + "obesity_standoff_annotations_training.xml");
+//		l.processAnno(args[0]+ File.separator + "obesity_standoff_annotations_test.xml");
+		l.processAnno(args[0]+ File.separator + "obesity_standoff_annotations_training_addendum.xml");
+		l.processAnno(args[0]+ File.separator + "obesity_standoff_annotations_training_addendum2.xml");
+		l.processAnno(args[0]+ File.separator + "obesity_standoff_annotations_training_addendum3.xml");
 	}
 
 }
