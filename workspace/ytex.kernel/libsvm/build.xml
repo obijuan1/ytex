@@ -1,0 +1,475 @@
+<!--
+todo: 
+import results at end of cv.all.folds
+zip up cv.tmpdir and put in processed data dir
+-->
+<project name="ytex.libsvm">
+	<property environment="env" />
+	<property name="ytex.home" value="../.." />
+	<property name="config.local" value="${ytex.home}/config/desc" />
+	<property name="ytex.properties" value="${config.local}/ytex.properties" />
+	<property name="log4j.param" value="-Dlog4j.configuration=file://${ytex.home}/config/desc/log4j.properties" />
+	<property file="${ytex.properties}" />
+	<property name="libsvm.home" value="c:/java/libsvm-3.0" />
+	<property name="libsvm.bin" value="${libsvm.home}/windows" />
+	<property name="libsvm.experiment" value="test" />
+	<property name="libsvm.name" value="test" />
+	<property name="processedData" value="${ytex.home}/${libsvm.name}/libsvm/${libsvm.experiment}" />
+	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
+	<property name="cv.numFolds" value="10" />
+	<property name="costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
+	<!-- degrees to test polynomical kernel with -->
+	<property name="cv.poly.degrees" value="2,3" />
+	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
+	<property name="ant.pbs" value="${user.home}/ant.pbs" />
+	<!-- libsvm kernel type -->
+	<property name="kernel.types" value="0" />
+	<property name="classLabels" value="1" />
+	<property name="maxClassLabel" value="1" />
+	<!-- classpath switch -->
+	<property name="libsvm.cp" value="libsvm.cp.prod" />
+	<!-- machine specific settings -->
+	<!-- how many threads to run kernel evaluations in -->
+	<property name="kernel.mod" value="2" />
+	<!-- how many threads to parallelize cross validation label/fold evaluations -->
+	<property name="libsvm.threads" value="1" />
+	<!-- parallelize via threads on class lables? -->
+	<property name="parallel.labels" value="no" />
+	<!-- parallelize via threads on folds? -->
+	<property name="parallel.folds" value="no" />
+
+
+	<path id="libsvm.cp.dev">
+		<pathelement location="${config.local}" />
+		<pathelement location="${ytex.home}/config/desc" />
+		<pathelement location="${ytex.home}/cmc/bin" />
+		<pathelement location="${ytex.home}/ytex.kernel/bin" />
+		<pathelement location="${ytex.home}/ytex.model/bin" />
+		<fileset dir="${ytex.home}/libs.system" includes="**/*.jar" />
+		<fileset dir="${ytex.home}/ytex.web/WebContent/WEB-INF/lib" includes="**/*.jar" />
+	</path>
+	<path id="libsvm.cp.prod">
+		<pathelement location="${config.local}" />
+		<pathelement location="${ytex.home}/config/desc" />
+		<fileset dir="${ytex.home}/lib" includes="**/*.jar" />
+		<fileset dir="${ytex.home}/web/webapps/ytex.web/WEB-INF/lib" includes="**/*.jar" />
+	</path>
+	<!-- 
+	for some reason on linux just copying the jars to the ant/lib directory doesn't work.
+	explicitly define the task.
+	-->
+	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" onerror="ignore" classpathref="${libsvm.cp}" />
+	<taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" onerror="ignore" classpathref="${libsvm.cp}" />
+
+	<!-- property name="classLabels" value="1,2"/ -->
+	<!-- property name="costs" value="0.01,0.1" / -->
+	<!--
+	<target name="cv.consolidateResult.all">
+		<antcall target="cv.all">
+			<param name="iteration.target" value="cv.consolidateResult" />
+			<param name="iteration.parallel" value="false" />
+		</antcall>
+	</target>
+	-->
+	<target name="all" depends="kernel.evalAllSlices,cv.all" />
+
+	<target name="cv.all" depends="export.data,cv.all.folds" />
+
+	<target name="export.data" description="export libsvm data" depends="export.data.cluster,export.data.local" />
+	<target name="export.data.local" unless="ytex.cluster" description="export libsvm data locally">
+		<antcall target="export.data.internal" />
+	</target>
+	<target name="export.data.cluster" if="ytex.cluster" description="export libsvm data on cluster">
+		<exec executable="qsub">
+			<arg line="-sync y ${ant.pbs} export.data.internal" />
+		</exec>
+	</target>
+	<target name="export.data.internal" depends="export.data.initType" description="for precomputed kernel export gram matrix, else export bag of words">
+		<antcall target="${export.target}" />
+	</target>
+	<target name="export.data.initType" description="select the export procedure based on kernel types. precomputed kernel presupposes type 4">
+		<condition property="export.target" value="export.data.gram" else="export.data.bow">
+			<equals arg1="${kernel.types}" arg2="4" />
+		</condition>
+	</target>
+	<target name="export.data.gram" description="export gram matrix">
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${libsvm.cp}" dir="${processedData}" fork="yes">
+			<arg value="libsvm-export.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.param}" />
+		</java>
+	</target>
+	<target name="export.data.bow" description="export bag of words">
+		<echo>export.data.bow ${processedData}</echo>
+		<java classname="ytex.KernelLauncher" classpathref="${libsvm.cp}" dir="${processedData}" fork="yes">
+			<arg value="-exportBagOfWords" />
+			<arg value="export-bow.xml" />
+			<arg value="-exportType" />
+			<arg value="libsvm" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.param}" />
+		</java>
+	</target>
+	<target name="cv.all.folds" depends="cv.all.folds.cluster,cv.all.folds.local" description="generate folds, evaluate svm on parameter grid" />
+	<target name="cv.all.folds.cluster" description="on cluster, generate all folds, evaluate libsvm" if="ytex.cluster">
+		<exec executable="qsub">
+			<arg line="-sync y -t 1-${maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
+		</exec>
+	</target>
+	<target name="cv.generateFolds.cluster" description="generate folds for label and evaluate on cluster">
+		<antcall target="cv.generateFolds">
+			<param name="cv.classLabel" value="${env.SGE_TASK_ID}" />
+		</antcall>
+	</target>
+	<target name="cv.all.folds.local" description="generate all folds, evaluate libsvm" unless="ytex.cluster">
+		<for list="${classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
+			<sequential>
+				<antcall target="cv.generateFolds">
+					<param name="cv.classLabel" value="@{classLabel}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="ytex.libsvm.CreateStratifiedCVFolds" description="call CreateStratifiedCVFolds">
+		<property name="cv.classLabel" value="1" />
+		<mkdir dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
+		<echo>cv.tmpdir=${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}</echo>
+		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="${libsvm.cp}" fork="no">
+			<arg value="-data" />
+			<arg value="${processedData}/training_data_${cv.classLabel}.txt" />
+			<arg value="-instanceId" />
+			<arg value="${processedData}/training_id_${cv.classLabel}.txt" />
+			<arg value="-outdir" />
+			<arg value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
+			<arg value="-folds" />
+			<arg value="${cv.numFolds}" />
+		</java>
+	</target>
+	<target name="cv.generateFolds" description="generate folds for label and evaluate locally">
+		<property name="cv.classLabel" value="1" />
+		<antcall target="ytex.libsvm.CreateStratifiedCVFolds">
+			<param name="cv.classLabel" value="${cv.classLabel}" />
+		</antcall>
+		<for param="training.file" parallel="${parallel.folds}" threadCount="${libsvm.threads}">
+			<fileset dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" includes="training_data_${cv.classLabel}_fold*_train.txt" />
+			<sequential>
+				<antcall target="cv.iter.fold">
+					<param name="cv.fold.training" value="@{training.file}" />
+				</antcall>
+			</sequential>
+		</for>
+		<delete quiet="yes" includeemptydirs="yes">
+			<fileset dir="${cv.tmpdir}" includes="${libsvm.experiment}-${cv.classLabel}/**/*.*" />
+		</delete>
+	</target>
+	<target name="cv.iter.fold" description="run libsvm on specified fold, store results in database">
+		<property name="cv.fold.training" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/training_data_1_fold1_train.txt" />
+		<basename file="${cv.fold.training}" property="cv.fold.base" suffix="_train.txt" />
+		<antcall target="cv.iter.kernel" />
+		<antcall target="cv.extractResults.db.fold" />
+	</target>
+	<target name="cv.iter.kernel" description="run cross-validation with all specified kernels, delegate to cv.iter.weight">
+		<for list="${kernel.types}" param="kernel.type">
+			<sequential>
+				<echo>kernel.type = @{kernel.type}</echo>
+				<antcall target="cv.iter.weight">
+					<param name="kernel.type" value="@{kernel.type}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cv.init.classWeights" description="load property with class weights to iterate over for the given class label">
+		<property name="cv.classLabel" value="1" />
+		<if>
+			<available file="${processedData}/classWeights.properties" />
+			<then>
+				<loadfile srcfile="${processedData}/classWeights.properties" property="classWeights">
+					<filterchain>
+						<linecontains>
+							<contains value="class.weight.${cv.classLabel}=" />
+						</linecontains>
+						<replacestring from="class.weight.${cv.classLabel}=" to="" />
+						<striplinebreaks />
+					</filterchain>
+				</loadfile>
+			</then>
+		</if>
+		<!-- for precomputed gram matrix or linear kernel, iterate over cost params -->
+		<echo>kernel.type = ${kernel.type}</echo>
+		<condition property="cv.iter.target" value="cv.iter.cost">
+			<or>
+				<equals arg1="${kernel.type}" arg2="4" />
+				<equals arg1="${kernel.type}" arg2="0" />
+			</or>
+		</condition>
+		<!-- for polynomial kernel, iterate over degrees -->
+		<condition property="cv.iter.target" value="cv.iter.degree">
+			<equals arg1="${kernel.type}" arg2="1" />
+		</condition>
+		<!-- for rbg/sigmoid iterate over gamma -->
+		<condition property="cv.iter.target" value="cv.iter.gamma">
+			<or>
+				<equals arg1="${kernel.type}" arg2="2" />
+				<equals arg1="${kernel.type}" arg2="3" />
+			</or>
+		</condition>
+	</target>
+	<target name="cv.iter.weight" depends="cv.init.classWeights" description="iterate over class weights">
+		<if>
+			<isset property="classWeights" />
+			<then>
+				<for list="${classWeights}" param="classWeight">
+					<sequential>
+						<antcall target="${cv.iter.target}">
+							<param name="cv.weight" value="@{classWeight}" />
+							<param name="cv.libsvm.line" value="-w1 @{classWeight}" />
+						</antcall>
+					</sequential>
+				</for>
+			</then>
+			<else>
+				<antcall target="${cv.iter.target}">
+					<param name="cv.libsvm.line" value="" />
+				</antcall>
+			</else>
+		</if>
+	</target>
+	<target name="cv.iter.degree" description="iterate polynomial kernel degree, delegate to cv.iter.cost">
+		<for list="${cv.poly.degrees}" param="degree">
+			<sequential>
+				<antcall target="cv.iter.cost">
+					<param name="cv.degree" value="@{degree}" />
+					<param name="cv.libsvm.line" value="${cv.libsvm.line} -d @{degree}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cv.iter.gamma" description="iterate rbg kernel gamma, delegate to cv.iter.cost">
+		<for list="${costs}" param="gamma">
+			<sequential>
+				<antcall target="cv.iter.cost">
+					<param name="cv.gamma" value="@{gamma}" />
+					<param name="cv.libsvm.line" value="${cv.libsvm.line} -g @{gamma}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cv.iter.cost" description="iterate over cost parameters, delegate to cv.evaluate">
+		<for list="${costs}" param="cost">
+			<sequential>
+				<antcall target="cv.evaluate">
+					<param name="cv.cost" value="@{cost}" />
+					<param name="cv.libsvm.line" value="${cv.libsvm.line} -c @{cost}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cv.evaluate" description="train on cv training set, eval on cv test set, store results in fold-specific timestamped directory">
+		<tstamp>
+			<format property="cv.tstamp" pattern="ddhhmmS" />
+		</tstamp>
+		<property name="cv.outdir" value="${cv.fold.base}/${cv.tstamp}" />
+		<mkdir dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.outdir}" />
+		<property name="cv.classLabel" value="1" />
+		<property name="cv.fold.base" value="training_data_${cv.classLabel}_fold1" />
+		<property name="cv.fold.train" value="${cv.fold.base}_train.txt" />
+		<property name="cv.fold.test" value="${cv.fold.base}_test.txt" />
+		<!--
+		<java classname="svm_train" fork="yes" classpathref="libsvm.cp" >
+			<arg line="-q -b 1 -t 4 -w1 ${cv.weight} -c ${cv.cost} ${cv.fold.train} ${cv.fold.model}" />
+		</java>
+		<java classname="svm_predict" fork="yes" classpathref="libsvm.cp" >
+			<arg line="-b 1 ${cv.fold.test} ${cv.fold.model} ${cv.fold.predict}" />
+		</java>
+		-->
+		<!-- train the svm -->
+		<property name="cv.eval.line" value="-q -b 1 -t ${kernel.type} ${cv.libsvm.line} ${cv.fold.train} ${cv.outdir}/model.txt" />
+		<exec executable="${libsvm.bin}/svm-train" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failonerror="yes">
+			<arg line="${cv.eval.line}" />
+		</exec>
+		<!-- test the svm -->
+		<exec executable="${libsvm.bin}/svm-predict" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failonerror="yes">
+			<arg line="-b 1 ${cv.fold.test} ${cv.outdir}/model.txt ${cv.outdir}/predict.txt" />
+		</exec>
+		<!-- store libsvm options -->
+		<echo file="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.outdir}/options.properties">
+cv.eval.line=${cv.eval.line}
+</echo>
+	</target>
+	<target name="cv.extractResults.db.fold">
+		<property name="cv.fold.base" value="training_data_1_fold1" />
+		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}">
+			<arg value="-name" />
+			<arg value="${libsvm.name}" />
+			<arg value="-experiment" />
+			<arg value="${libsvm.experiment}" />
+			<arg value="-label" />
+			<arg value="${cv.classLabel}" />
+			<arg value="-test" />
+			<arg value="${cv.fold.base}_test.txt" />
+			<arg value="-instanceId" />
+			<arg value="${cv.fold.base}_testId.txt" />
+			<arg value="-fold" />
+			<arg value="${cv.fold.base}" />
+			<arg value="-cvDir" />
+			<arg value="${cv.fold.base}" />
+			<jvmarg value="${log4j.param}" />
+		</java>
+	</target>
+	<target name="test.generateOptimalParams" description="generate optimal parameters for running test evaluation">
+		<copy file="${basedir}/select_params.template.sql" tofile="${processedData}/select_params.sql" overwrite="yes">
+			<filterset>
+				<filter token="EXPERIMENT" value="${libsvm.experiment}" />
+			</filterset>
+		</copy>
+		<exec executable="${mysql.bin.home}/mysql" dir="${processedData}" output="${processedData}/optimalParams.properties">
+			<arg line="${mysql.line} -e &quot;source select_params.sql&quot; -s" />
+		</exec>
+	</target>
+	<target name="test.all" depends="test.generateOptimalParams,test.eval.all" description="train on all training sets, test on all test sets, save results in db" />
+	<target name="test.eval.all" description="test on all test sets">
+		<property name="test.outfile" value="${processedData}/test_results.txt" />
+		<delete file="test.outfile" quiet="yes" />
+		<for list="${classLabels}" param="classLabel">
+			<sequential>
+				<antcall target="test.evaluate">
+					<param name="test.classLabel" value="@{classLabel}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="test.evaluate" depends="test.evaluate.init" description="train svm on training set, test on test set, extract results">
+		<!-- train the svm -->
+		<property name="test.classLabel" value="1" />
+		<property name="test.train" value="training_data_${test.classLabel}.txt" />
+		<property name="test.test" value="test_data_${test.classLabel}.txt" />
+		<property name="test.model" value="model_${test.classLabel}.txt" />
+		<property name="test.predict" value="predict_${test.classLabel}.txt" />
+		<property name="test.eval.line" value="-q -b 1 -t ${kernel} -w1 ${weight} -c ${cost} ${gammaParam} ${degreeParam}" />
+		<exec executable="${libsvm.bin}/svm-train" dir="${processedData}">
+			<arg line="${test.eval.line} ${test.train} ${test.model}" />
+		</exec>
+		<!-- test the svm -->
+		<exec executable="${libsvm.bin}/svm-predict" dir="${processedData}">
+			<arg line="-b 1 ${test.test} ${test.model} ${test.predict}" />
+		</exec>
+		<!-- extract results -->
+		<antcall target="test.extractResults">
+		</antcall>
+	</target>
+	<target name="test.evaluate.init" description="load optimal params for the given class label">
+		<property name="test.classLabel" value="20" />
+		<loadproperties srcfile="${processedData}/optimalParams.properties">
+			<filterchain>
+				<linecontains>
+					<contains value="${test.classLabel}." />
+				</linecontains>
+				<replacestring from="${test.classLabel}." to="" />
+			</filterchain>
+		</loadproperties>
+		<echo>${cost} ${weight} ${scut} ${degree} ${gamma} ${kernel}</echo>
+		<!-- set the degree parameter if it has been defined -->
+		<condition property="degreeParam" value="-d ${degree}" else="">
+			<not>
+				<equals arg1="${degree}" arg2="0" />
+			</not>
+		</condition>
+		<!-- set the gamma parameter if it has been defined -->
+		<condition property="gammaParam" value="-g ${gamma}" else="">
+			<not>
+				<equals arg1="${gamma}" arg2="0" />
+			</not>
+		</condition>
+	</target>
+	<target name="test.extractResults">
+		<property name="test.classLabel" value="1" />
+		<property name="test.test" value="test_data_${test.classLabel}.txt" />
+		<property name="test.id" value="test_id_${test.classLabel}.txt" />
+		<property name="test.model" value="model_${test.classLabel}.txt" />
+		<property name="test.predict" value="predict_${test.classLabel}.txt" />
+		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${processedData}">
+			<arg value="-name" />
+			<arg value="${libsvm.name}" />
+			<arg value="-experiment" />
+			<arg value="${libsvm.experiment}" />
+			<arg value="-label" />
+			<arg value="${test.classLabel}" />
+			<arg value="-test" />
+			<arg value="${test.test}" />
+			<arg value="-instanceId" />
+			<arg value="${test.id}" />
+			<arg value="-fold" />
+			<arg value="test" />
+			<arg value="-model" />
+			<arg value="${test.model}" />
+			<arg value="-output" />
+			<arg value="${test.predict}" />
+			<arg value="-options" />
+			<arg value="${test.eval.line}" />
+			<jvmarg value="${log4j.param}" />
+		</java>
+	</target>
+	<target name="kernel.storeInstanceMap" description="generate map of instance trees">
+		<echo>${db.url}</echo>
+		<java classname="ytex.KernelLauncher" dir="${processedData}" fork="yes" classpathref="${libsvm.cp}">
+			<arg line="-beans ./beans-corpus-kernel.xml -storeInstanceMap instanceMap.obj" />
+			<jvmarg value="-Xmx1g" />
+		</java>
+	</target>
+	<target name="kernel.generateSliceList" description="create property kernel.slices for use in for loop">
+		<script language="beanshell" classpathref="${libsvm.cp}">
+			<![CDATA[
+			int mod = Integer.parseInt(project.getProperty("kernel.mod"));
+			String slices = "";
+			for(int i = 1; i<=mod; i++) {
+				slices = slices + i;
+				if(i < mod)
+					slices = slices + ",";
+			}
+			project.setProperty("kernel.slices", slices);
+		]]>
+		</script>
+	</target>
+	<target name="kernel.evalSlice.cluster" if="env.SGE_TASK_ID" description="evaluate kernel on cluster node - determine slice from env.SGE_TASK_ID">
+		<fail unless="kernel.mod" />
+		<antcall target="kernel.evalSlice">
+			<param name="kernel.slice" value="${env.SGE_TASK_ID}" />
+		</antcall>
+	</target>
+	<target name="kernel.evalAllSlices.cluster" if="ytex.cluster" description="submit array job to cluster to evaluate kernel in parallel">
+		<exec executable="qsub">
+			<arg line="-sync y -t 1-${kernel.mod} ${ant.pbs} kernel.evalSlice.cluster" />
+		</exec>
+	</target>
+	<target name="kernel.evalAllSlices.local" depends="kernel.generateSliceList" unless="ytex.cluster">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
+			<sequential>
+				<antcall target="kernel.evalSlice">
+					<param name="kernel.slice" value="@{kernel.slice}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="kernel.evalAllSlices" depends="kernel.evalAllSlices.cluster,kernel.evalAllSlices.local" />
+	<target name="kernel.evalSlice">
+		<property name="kernel.slice" value="1" />
+		<java classname="ytex.KernelLauncher" dir="${processedData}" fork="yes" classpathref="${libsvm.cp}">
+			<arg line="-beans ./beans-corpus-kernel.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod} -slice ${kernel.slice}" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.param}" />
+		</java>
+	</target>
+	<target name="kernel.evalAll">
+		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${processedData}" fork="yes" classpathref="${libsvm.cp}">
+			<arg line="-beans ./beans-corpus-kernel.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.param}" />
+		</java>
+	</target>
+	<target name="kernel.all" depends="kernel.storeInstanceMap,kernel.evalAllSlices" />
+	<target name="test">
+		<property resource="ytex.properties" prefix="tmp" classpathref="${libsvm.cp}" />
+		<echo>${tmp.ytex.conceptGraphDir}</echo>
+	</target>
+</project>
