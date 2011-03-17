@@ -14,6 +14,7 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
 	<property name="libsvm.experiment" value="test" />
 	<property name="libsvm.name" value="test" />
+	<property name="cv.storeProb" value="no" />
 	<property name="processedData" value="${ytex.home}/${libsvm.name}/libsvm/${libsvm.experiment}" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<property name="cv.numFolds" value="10" />
@@ -163,6 +164,7 @@ zip up cv.tmpdir and put in processed data dir
 		</delete>
 	</target>
 	<target name="cv.iter.fold" description="run libsvm on specified fold, store results in database">
+		<property name="cv.classLabel" value="1" />
 		<property name="cv.fold.training" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/training_data_1_fold1_train.txt" />
 		<basename file="${cv.fold.training}" property="cv.fold.base" suffix="_train.txt" />
 		<antcall target="cv.iter.kernel" />
@@ -220,9 +222,10 @@ zip up cv.tmpdir and put in processed data dir
 			<then>
 				<for list="${classWeights}" param="classWeight">
 					<sequential>
+						<echo>classWeight = @{classWeight}</echo>
 						<antcall target="${cv.iter.target}">
 							<param name="cv.weight" value="@{classWeight}" />
-							<param name="cv.libsvm.line" value="-w1 @{classWeight}" />
+							<param name="cv.libsvm.line" value="@{classWeight}" />
 						</antcall>
 					</sequential>
 				</for>
@@ -274,14 +277,6 @@ zip up cv.tmpdir and put in processed data dir
 		<property name="cv.fold.base" value="training_data_${cv.classLabel}_fold1" />
 		<property name="cv.fold.train" value="${cv.fold.base}_train.txt" />
 		<property name="cv.fold.test" value="${cv.fold.base}_test.txt" />
-		<!--
-		<java classname="svm_train" fork="yes" classpathref="libsvm.cp" >
-			<arg line="-q -b 1 -t 4 -w1 ${cv.weight} -c ${cv.cost} ${cv.fold.train} ${cv.fold.model}" />
-		</java>
-		<java classname="svm_predict" fork="yes" classpathref="libsvm.cp" >
-			<arg line="-b 1 ${cv.fold.test} ${cv.fold.model} ${cv.fold.predict}" />
-		</java>
-		-->
 		<!-- train the svm -->
 		<property name="cv.eval.line" value="-q -b 1 -t ${kernel.type} ${cv.libsvm.line} ${cv.fold.train} ${cv.outdir}/model.txt" />
 		<exec executable="${libsvm.bin}/svm-train" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failonerror="yes">
@@ -297,6 +292,7 @@ cv.eval.line=${cv.eval.line}
 </echo>
 	</target>
 	<target name="cv.extractResults.db.fold">
+		<property name="cv.classLabel" value="1" />
 		<property name="cv.fold.base" value="training_data_1_fold1" />
 		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}">
 			<arg value="-name" />
@@ -313,6 +309,8 @@ cv.eval.line=${cv.eval.line}
 			<arg value="${cv.fold.base}" />
 			<arg value="-cvDir" />
 			<arg value="${cv.fold.base}" />
+			<arg value="-storeProb" />
+			<arg value="${cv.storeProb}" />
 			<jvmarg value="${log4j.param}" />
 		</java>
 	</target>
