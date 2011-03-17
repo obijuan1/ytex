@@ -13,7 +13,7 @@ import ytex.kernel.model.ClassifierInstanceEvaluation;
 import ytex.kernel.model.LibSVMClassifierEvaluation;
 
 public class LibSVMParser {
-	public static Pattern wsPattern = Pattern.compile("\\s");
+	public static Pattern wsPattern = Pattern.compile("\\s|\\z");
 	public static Pattern wsDotPattern = Pattern.compile("\\s|\\.|\\z");
 	public static Pattern labelsPattern = Pattern.compile("labels\\s+(.*)");
 	public static Pattern totalSVPattern = Pattern.compile("total_sv (\\d+)");
@@ -163,7 +163,7 @@ public class LibSVMParser {
 	public LibSVMClassifierEvaluation parseClassifierEvaluation(String name,
 			String experiment, String label, String options, String fold,
 			String predictionFile, String instanceFile, String modelFile,
-			String instanceIdFile) throws Exception {
+			String instanceIdFile, boolean storeProbabilities) throws Exception {
 		List<Integer> instanceIds = null;
 		if (instanceIdFile != null)
 			instanceIds = parseInstanceIds(instanceIdFile);
@@ -187,10 +187,12 @@ public class LibSVMParser {
 			instanceEval.setTargetClassId(result.getTargetClassId());
 			instanceEval.setClassifierEvaluation(eval);
 			instanceEval.setInstanceId(instanceId);
-			for (int i = 0; i < result.getProbabilities().length; i++) {
-				instanceEval.getClassifierInstanceProbabilities().put(
-						results.getClassIds().get(i),
-						result.getProbabilities()[i]);
+			if (storeProbabilities) {
+				for (int i = 0; i < result.getProbabilities().length; i++) {
+					instanceEval.getClassifierInstanceProbabilities().put(
+							results.getClassIds().get(i),
+							result.getProbabilities()[i]);
+				}
 			}
 			eval.getClassifierInstanceEvaluations().put(instanceId,
 					instanceEval);

@@ -61,9 +61,9 @@ public class LibSVMBagOfWordsExporterImpl extends AbstractBagOfWordsExporter
 		SortedMap<Integer, Map<String, Integer>> trainInstanceLabelMap = libsvmUtil
 				.loadClassLabels(trainInstanceQuery, labels);
 		SortedMap<Integer, Map<String, Integer>> testInstanceLabelMap = null;
-		if (trainInstanceQuery != null) {
+		if (testInstanceQuery != null) {
 			testInstanceLabelMap = libsvmUtil.loadClassLabels(
-					trainInstanceQuery, labels);
+					testInstanceQuery, labels);
 		}
 		Map<String, Integer> numericAttributeMap = new HashMap<String, Integer>();
 		Map<String, Map<String, Integer>> nominalAttributeMap = new HashMap<String, Map<String, Integer>>();
@@ -76,10 +76,6 @@ public class LibSVMBagOfWordsExporterImpl extends AbstractBagOfWordsExporter
 					testInstanceLabelMap, numericAttributeMap,
 					nominalAttributeMap);
 		}
-		libsvmUtil.outputInstanceIds(outdir, trainInstanceLabelMap, "training");
-		if (testInstanceLabelMap != null)
-			libsvmUtil.outputInstanceIds(outdir, testInstanceLabelMap, "test");
-
 	}
 
 	private void exportData(String outdir, String type,

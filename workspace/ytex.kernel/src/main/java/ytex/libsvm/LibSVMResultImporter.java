@@ -44,6 +44,9 @@ public class LibSVMResultImporter {
 				.withDescription("fold").create("fold"));
 		options.addOption(OptionBuilder.withArgName("label").hasArg()
 				.withDescription("label").create("label"));
+		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
+				.withDescription("store probabilities, default yes").create(
+						"storeProb"));
 		return options;
 	}
 
@@ -73,7 +76,9 @@ public class LibSVMResultImporter {
 									.getOptionValue("output"), line
 									.getOptionValue("test"), line
 									.getOptionValue("model"), line
-									.getOptionValue("instanceId"));
+									.getOptionValue("instanceId"), "yes"
+									.equals(line.getOptionValue("storeProb",
+											"yes")));
 					KernelContextHolder.getApplicationContext().getBean(
 							ClassifierEvaluationDao.class)
 							.saveClassifierEvaluation(eval);
@@ -126,7 +131,9 @@ public class LibSVMResultImporter {
 									.getOptionValue("label"), options, line
 									.getOptionValue("fold"), output, line
 									.getOptionValue("test"), model, line
-									.getOptionValue("instanceId"));
+									.getOptionValue("instanceId"), "yes"
+									.equals(line.getOptionValue("storeProb",
+											"yes")));
 					KernelContextHolder.getApplicationContext().getBean(
 							ClassifierEvaluationDao.class)
 							.saveClassifierEvaluation(eval);
