@@ -33,16 +33,16 @@
 
 @rem MS SQL server jdbc driver directory
 @rem downloaded from http://www.microsoft.com/downloads/details.aspx?displaylang=en&FamilyID=a737000d-68d0-4531-b65d-da0f2a735707
-@set SQLJDBC_HOME=%YTEX_HOME%\..\sqljdbc_3.0
+@set SQLJDBC_HOME=%YTEX_HOME%\libs\sqljdbc_3.0
 
 @rem add JDBC dependencies
 @set JDBC_CP=%SQLJDBC_HOME%\enu\sqljdbc4.jar
 
 @rem MySQL JDBC driver 
-@set JDBC_CP=%JDBC_CP%;%YTEX_HOME%\..\mysql-connector-java-5.1.9\mysql-connector-java-5.1.9-bin.jar
+@set JDBC_CP=%JDBC_CP%;%YTEX_HOME%\libs\mysql-connector-java-5.1.9\mysql-connector-java-5.1.9-bin.jar
 
 @rem Oracle JDBC driver 
-@set JDBC_CP=%JDBC_CP%;%YTEX_HOME%\..\oracle11.2.0.1.0\ojdbc6.jar
+@set JDBC_CP=%JDBC_CP%;%YTEX_HOME%\libs\oracle11.2.0.1.0\ojdbc6.jar
 
 @rem tomcat installation directory
 @set CATALINA_HOME=%YTEX_HOME%\..\apache-tomcat-6.0.26

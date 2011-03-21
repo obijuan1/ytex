@@ -11,9 +11,6 @@
 	<property name="nlp.home" value="c:/java" />
 	<property name="tomcat.dir" value="apache-tomcat-6.0.26" />
 	<property name="ant.dir" value="apache-ant-1.8.0" />
-	<property name="sqljdbc.dir" value="sqljdbc_3.0" />
-	<property name="mysql-connector.dir" value="mysql-connector-java-5.1.9" />
-	<property name="orcl.jdbc.dir" value="oracle11.2.0.1.0" />
 
 
 	<path id="cp.maveric">
@@ -111,12 +108,12 @@
 		<path id="cp.ytex.kernel">
 			<path refid="cp.all" />
 			<fileset dir="${ytex.dist.home}/lib" includes="ytex.model.jar" />
-		</path>		
+		</path>
 		<antcall target="compile">
 			<param name="project.name" value="ytex.kernel" />
 			<param name="project.classpathref" value="cp.ytex.kernel" />
 		</antcall>
-	</target>	
+	</target>
 	<target name="build.ytex.model">
 		<antcall target="compile">
 			<param name="project.name" value="ytex.model" />
@@ -175,6 +172,10 @@
 				<include name="*.cmd" />
 				<include name="build-setup.xml" />
 			</fileset>
+			<fileset dir="../" includes="ytex.kernel/libsvm/*.*" />
+		</copy>
+		<copy todir="${ytex.dist.home}/lib">
+			<fileset dir="../libs.system" includes="**/*.*" excludes="**/.svn/**/*.*,*.*,.settings/**/*.*" />
 		</copy>
 	</target>
 	<target name="copy.examples">
@@ -257,14 +258,13 @@
 		</copy>
 	</target>
 	<target name="zip.dist">
-		<zip destfile="${dist.home}/ytex.zip" basedir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
+		<zip destfile="${dist.home}/ytex.zip">
+			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
+		</zip>
 		<zip destfile="${dist.home}/ytex-with-dependencies.zip">
 			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
 			<zipfileset dir="${nlp.home}" includes="${tomcat.dir}/**/*.*" excludes="${tomcat.dir}/webapps/**/*.*" />
 			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
-			<zipfileset dir="../libs.system" includes="${sqljdbc.dir}/**/*.*" excludes="**/.svn/**/*.*" />
-			<zipfileset dir="../libs.system" includes="${mysql-connector.dir}/*.*" excludes="**/.svn/**/*.*" />
-			<zipfileset dir="../libs.system" includes="${orcl.jdbc.dir}/*.*" excludes="**/.svn/**/*.*" />
 		</zip>
 	</target>
 	<target name="build.all" depends="clean.dist,build.ctakes-patches,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />
