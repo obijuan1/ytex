@@ -18,6 +18,13 @@ CREATE NONCLUSTERED INDEX [IX_document_analysis_batch] ON $(db_schema).[document
 )
 ;
 
+CREATE NONCLUSTERED INDEX [IX_document_analysis_batch] ON $(db_schema).[document] 
+(
+	[document_id],
+	[analysis_batch]
+)
+;
+
 CREATE TABLE $(db_schema).[document_class](
 	[document_class_id] [int] IDENTITY(1,1) NOT NULL,
 	[document_id] [int] NOT NULL,

@@ -38,3 +38,10 @@ CREATE INDEX IX_anno_dockey_uid ON $(db_schema).anno_dockey
 	uid
 )
 ;
+
+CREATE INDEX IX_anno_id_uid ON $(db_schema).anno_dockey
+(
+	anno_id,
+	uid
+)
+;
