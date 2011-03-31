@@ -23,6 +23,14 @@ public class ClassifierEvaluation implements Serializable {
 	String algorithm;
 	String label;
 	String options;
+	byte[] model;
+	
+	public byte[] getModel() {
+		return model;
+	}
+	public void setModel(byte[] model) {
+		this.model = model;
+	}
 	Map<Integer, ClassifierInstanceEvaluation> classifierInstanceEvaluations = new HashMap<Integer, ClassifierInstanceEvaluation>();
 	public int getClassifierEvaluationId() {
 		return classifierEvaluationId;

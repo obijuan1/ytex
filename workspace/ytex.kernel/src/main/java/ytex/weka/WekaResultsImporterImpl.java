@@ -8,21 +8,40 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.SessionFactory;
+
+import ytex.kernel.model.ClassifierEvaluation;
+import ytex.kernel.model.ClassifierInstanceEvaluation;
+
 /**
  * parse weka instance output when classifier run with -p option. load results
  * into db.
  */
 public class WekaResultsImporterImpl implements WekaResultsImporter {
 	// inst# actual predicted error prediction (instance_id,C0000726,C0000731)
+	// inst#     actual  predicted error prediction (instance_id)
 	// private static final Pattern patHeader = Pattern
 	// .compile("\\sinst#\\s+actual\\s+predicted\\s+error\\s+");
 	private static final Pattern patHeader = Pattern
-			.compile("\\sinst#\\W.*\\Wactual\\W.*\\Wpredicted\\W.*\\Werror\\W");
+			.compile("\\s*inst#.*actual.*predicted.*error");
 	// 1 1:0 1:0 0.988 (330478,101,0)
 	// private static final Pattern patResult = Pattern
 	// .compile("\\s+(\\d+)\\s+(\\d+)\\:\\d+\\s+(\\d+)\\:\\d+\\s+\\+{0,1}\\s+(\\d\\.\\d+)\\s+\\((.*)\\)");
 	private static final Pattern patResult = Pattern
 			.compile("\\s+(\\d+)\\s+(\\d+)\\:.*\\s+(\\d+)\\:.*\\s+\\+{0,1}\\s+(.*)\\s+\\((.*)\\)");
+	private SessionFactory sessionFactory;
+	private static final Log log = LogFactory
+			.getLog(DocumentResultInstanceImporter.class);
+
+	public SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		this.sessionFactory = sessionFactory;
+	}
 
 	/**
 	 * this imports the classification results for a document
@@ -100,4 +119,62 @@ public class WekaResultsImporterImpl implements WekaResultsImporter {
 			}
 		}
 	}
+
+	public void importClassifierEvaluation(String name, String fold,
+			String algorithm, String label, String options, String experiment,
+			BufferedReader reader) throws IOException {
+		ClassifierEvaluation ce = new ClassifierEvaluation();
+		ce.setName(name);
+		ce.setFold(fold);
+		ce.setAlgorithm(algorithm);
+		ce.setLabel(label);
+		ce.setOptions(options);
+		ce.setExperiment(experiment);
+		this.getSessionFactory().getCurrentSession().save(ce);
+		ClassifierEvaluationInstanceImporter instanceImporter = new ClassifierEvaluationInstanceImporter(
+				ce, false);
+		this.importResults(instanceImporter, label, reader);
+	}
+
+	public class ClassifierEvaluationInstanceImporter implements
+			WekaResultInstanceImporter {
+		private ClassifierEvaluation classifierEvaluation;
+		private boolean storeProbabilities;
+
+		public ClassifierEvaluationInstanceImporter(
+				ClassifierEvaluation classifierEvaluation,
+				boolean storeProbabilities) {
+			super();
+			this.classifierEvaluation = classifierEvaluation;
+			this.storeProbabilities = storeProbabilities;
+		}
+
+		@Override
+		public void importInstanceResult(Integer instanceNumber,
+				List<String> instanceKey, String task, int classAuto,
+				int classGold, List<Double> predictions) {
+			ClassifierInstanceEvaluation ci = new ClassifierInstanceEvaluation();
+			if (instanceKey.size() > 0) {
+				try {
+					ci.setInstanceId(Integer.parseInt(instanceKey.get(0)));
+				} catch (NumberFormatException nfe) {
+				}
+			} else {
+				ci.setInstanceId(instanceNumber);
+			}
+			ci.setPredictedClassId(classAuto);
+			ci.setTargetClassId(classGold);
+			if (storeProbabilities && predictions != null
+					&& predictions.size() > 0) {
+				for (int i = 0; i < predictions.size(); i++) {
+					ci.getClassifierInstanceProbabilities().put(i,
+							predictions.get(i));
+				}
+			}
+			ci.setClassifierEvaluation(classifierEvaluation);
+			sessionFactory.getCurrentSession().save(ci);
+		}
+
+	}
+
 }

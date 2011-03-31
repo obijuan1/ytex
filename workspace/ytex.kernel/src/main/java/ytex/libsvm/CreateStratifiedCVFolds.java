@@ -83,7 +83,8 @@ public class CreateStratifiedCVFolds {
 			String idFile = line.getOptionValue("instanceId");
 			String outdir = line.getOptionValue("outdir");
 			int nFolds = Integer.parseInt(line.getOptionValue("folds", "10"));
-			int nSeed = Integer.parseInt(line.getOptionValue("seed", "0"));
+			Integer nSeed = line.hasOption("seed") ? Integer.parseInt(line
+					.getOptionValue("seed", "0")) : null;
 			int nMinPerClass = Integer.parseInt(line.getOptionValue("minClass",
 					"1"));
 			Map<String, List<Integer>> mapLabelToLineNumbers = new HashMap<String, List<Integer>>();
@@ -241,10 +242,11 @@ public class CreateStratifiedCVFolds {
 	 * @param nSeed
 	 * @return list with nFolds sets of line numbers corresponding to the folds
 	 */
-	private static List<Set<Integer>> createFolds(
+	public static List<Set<Integer>> createFolds(
 			Map<String, List<Integer>> mapLabelToLineNumbers, int nFolds,
-			int nMinPerClass, int nSeed) {
-		Random r = new Random(nSeed != 0 ? nSeed : System.currentTimeMillis());
+			int nMinPerClass, Integer nSeed) {
+		Random r = new Random(nSeed != null ? nSeed : System
+				.currentTimeMillis());
 		List<Set<Integer>> folds = new ArrayList<Set<Integer>>(nFolds);
 		Map<String, List<Set<Integer>>> mapLabelFolds = new HashMap<String, List<Set<Integer>>>();
 		for (Map.Entry<String, List<Integer>> labelToLineNumber : mapLabelToLineNumbers

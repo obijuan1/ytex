@@ -70,6 +70,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="wekaResultsImporter" class="ytex.weka.WekaResultsImporterImpl">
 		<property name="docResultInstanceImporter" ref="documentResultInstanceImporter" />
+		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 	<bean id="corpusDao" class="ytex.kernel.dao.CorpusDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
