@@ -21,8 +21,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:pointcut id="daoOperation"
 			expression="execution(* ytex.kernel.dao.*Dao.*(..))" />
 		<aop:pointcut id="umlsDaoOperation" expression="execution(* ytex.umls.dao.*Dao.*(..))" />
-		<aop:pointcut id="exporterOperation"
-			expression="execution(* ytex.*.*Exporter*.*(..))" />
+		<aop:pointcut id="exporterOperation" expression="execution(* ytex.*.*Exporter*.*(..))" />
 		<aop:pointcut id="wekaImporter"
 			expression="execution(* ytex.weka.WekaResultsImporterImpl.*(..))" />
 		<aop:pointcut id="mapperOperation" expression="execution(* ytex.uima.mapper.*.*(..))" />
@@ -54,15 +53,17 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="wekaBagOfWordsExporter" class="ytex.weka.WekaBagOfWordsExporterImpl">
 		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="libsvmBagOfWordsExporter" class="ytex.libsvm.LibSVMBagOfWordsExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="libsvmUtil" ref="libsvmUtil" />
+		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="gramMatrixExporter" class="ytex.weka.GramMatrixExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
-		<!--  property name="bagOfWordsExporter" ref="wekaBagOfWordsExporter" / -->
+		<!-- property name="bagOfWordsExporter" ref="wekaBagOfWordsExporter" / -->
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="documentResultInstanceImporter" class="ytex.weka.DocumentResultInstanceImporter">
@@ -92,7 +93,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="libsvmUtil" class="ytex.libsvm.LibSVMUtilImpl">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
-	
+
 	<bean id="instanceTreeBuilder" class="ytex.kernel.tree.InstanceTreeBuilderImpl">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
@@ -124,4 +125,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 
+	<bean id="foldGenerator" class="ytex.kernel.FoldGeneratorImpl">
+		<property name="libsvmUtil" ref="libsvmUtil" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
+	</bean>
 </beans>
