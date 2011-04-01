@@ -4,35 +4,46 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.InvalidPropertiesFormatException;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.sql.DataSource;
+import javax.transaction.TransactionManager;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
-
-import weka.core.Attribute;
-import weka.core.FastVector;
-import weka.core.Instances;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class AbstractBagOfWordsExporter {
 
-	SimpleJdbcTemplate simpleJdbcTemplate;
+	protected SimpleJdbcTemplate simpleJdbcTemplate;
 	protected JdbcTemplate jdbcTemplate;
+	protected PlatformTransactionManager transactionManager;
+	protected TransactionTemplate txNew;
+
+	public PlatformTransactionManager getTransactionManager() {
+		return transactionManager;
+	}
+
+	public void setTransactionManager(
+			PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+		txNew = new TransactionTemplate(transactionManager);
+		txNew.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
+	}
 
 	public AbstractBagOfWordsExporter() {
 		super();
@@ -55,18 +66,36 @@ public class AbstractBagOfWordsExporter {
 	 * @param instanceNumericWords
 	 *            map of instance id - [map word - word value] to be populated
 	 */
-	protected void getNumericInstanceWords(String sql,
+	protected void getNumericInstanceWords(final String sql,
 			final BagOfWordsData bagOfWordsData) {
-		jdbcTemplate.query(sql, new RowCallbackHandler() {
+		txNew.execute(new TransactionCallback<Object>() {
 
 			@Override
-			public void processRow(ResultSet rs) throws SQLException {
-				int instanceId = rs.getInt(1);
-				String word = rs.getString(2);
-				double wordValue = rs.getDouble(3);
-				addNumericWordToInstance(bagOfWordsData, instanceId, word,
-						wordValue);
+			public Object doInTransaction(TransactionStatus txStatus) {
+				jdbcTemplate.query(new PreparedStatementCreator() {
+
+					@Override
+					public PreparedStatement createPreparedStatement(
+							Connection conn) throws SQLException {
+						return conn.prepareStatement(sql,
+								ResultSet.TYPE_FORWARD_ONLY,
+								ResultSet.CONCUR_READ_ONLY);
+					}
+
+				}, new RowCallbackHandler() {
+
+					@Override
+					public void processRow(ResultSet rs) throws SQLException {
+						int instanceId = rs.getInt(1);
+						String word = rs.getString(2);
+						double wordValue = rs.getDouble(3);
+						addNumericWordToInstance(bagOfWordsData, instanceId,
+								word, wordValue);
+					}
+				});
+				return null;
 			}
+
 		});
 	}
 
@@ -128,46 +157,36 @@ public class AbstractBagOfWordsExporter {
 	 *            map of word to valid values for the word.
 	 * @return populate maps with results of query.
 	 */
-	protected void getNominalInstanceWords(String sql,
+	protected void getNominalInstanceWords(final String sql,
 			final BagOfWordsData bagOfWordsData) {
-		jdbcTemplate.query(sql, new RowCallbackHandler() {
+		txNew.execute(new TransactionCallback<Object>() {
 
 			@Override
-			public void processRow(ResultSet rs) throws SQLException {
-				int instanceId = rs.getInt(1);
-				String word = rs.getString(2);
-				String wordValue = rs.getString(3);
-				addNominalWordToInstance(bagOfWordsData, instanceId, word,
-						wordValue);
+			public Object doInTransaction(TransactionStatus txStatus) {
+				jdbcTemplate.query(new PreparedStatementCreator() {
+
+					@Override
+					public PreparedStatement createPreparedStatement(
+							Connection conn) throws SQLException {
+						return conn.prepareStatement(sql,
+								ResultSet.TYPE_FORWARD_ONLY,
+								ResultSet.CONCUR_READ_ONLY);
+					}
+
+				}, new RowCallbackHandler() {
+
+					@Override
+					public void processRow(ResultSet rs) throws SQLException {
+						int instanceId = rs.getInt(1);
+						String word = rs.getString(2);
+						String wordValue = rs.getString(3);
+						addNominalWordToInstance(bagOfWordsData, instanceId,
+								word, wordValue);
+					}
+				});
+				return null;
 			}
 		});
-	}
-
-	/**
-	 * update all values in bagOfWordsData.instanceNumericWords. apply tf-idf
-	 * normalization.
-	 * 
-	 * @param bagOfWordsData
-	 */
-	protected void normalizeTfIDF(BagOfWordsData bagOfWordsData) {
-		// iterate through all documents
-		for (Map.Entry<Integer, SortedMap<String, Double>> instanceNumericWords : bagOfWordsData
-				.getInstanceNumericWords().entrySet()) {
-			int instanceId = instanceNumericWords.getKey();
-			// iterate through all document attributes
-			for (Map.Entry<String, Double> word : instanceNumericWords
-					.getValue().entrySet()) {
-				// term frequency within document
-				double tf = word.getValue().doubleValue()
-						/ bagOfWordsData.getDocLengthMap().get(instanceId);
-				// inverse docuement frequency
-				double idf = Math.log(bagOfWordsData.getIdfMap().size())
-						- Math.log(bagOfWordsData.getIdfMap()
-								.get(word.getKey()));
-				// update
-				word.setValue(tf * idf);
-			}
-		}
 	}
 
 	protected void loadProperties(String propertyFile, Properties props)
@@ -188,25 +207,22 @@ public class AbstractBagOfWordsExporter {
 	}
 
 	protected void loadData(BagOfWordsData bagOfWordsData,
-			String instanceNumericWordQuery,
-			String instanceNominalWordQuery, BagOfWordsDecorator bDecorator,
-			boolean tfIdf) {
+			String instanceNumericWordQuery, String instanceNominalWordQuery,
+			BagOfWordsDecorator bDecorator) {
 		if (instanceNumericWordQuery.trim().length() > 0)
 			this.getNumericInstanceWords(instanceNumericWordQuery,
 					bagOfWordsData);
 		// added to support adding gram matrix index in GramMatrixExporter
 		if (bDecorator != null)
-			bDecorator.decorateNumericInstanceWords(bagOfWordsData
-					.getInstanceNumericWords(), bagOfWordsData
-					.getNumericWords());
+			bDecorator.decorateNumericInstanceWords(
+					bagOfWordsData.getInstanceNumericWords(),
+					bagOfWordsData.getNumericWords());
 		if (instanceNominalWordQuery.trim().length() > 0)
 			this.getNominalInstanceWords(instanceNominalWordQuery,
 					bagOfWordsData);
 		if (bDecorator != null)
-			bDecorator.decorateNominalInstanceWords(bagOfWordsData
-					.getInstanceNominalWords(), bagOfWordsData
-					.getNominalWordValueMap());
-		if (tfIdf)
-			this.normalizeTfIDF(bagOfWordsData);
+			bDecorator.decorateNominalInstanceWords(
+					bagOfWordsData.getInstanceNominalWords(),
+					bagOfWordsData.getNominalWordValueMap());
 	}
 }
