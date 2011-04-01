@@ -16,7 +16,7 @@ public class ExportBagOfWords {
 
 	public static void main(String args[]) throws IOException {
 		BagOfWordsExporter exporter = (BagOfWordsExporter) KernelContextHolder
-				.getApplicationContext().getBean("bagOfWordsExporter");
+				.getApplicationContext().getBean("wekaBagOfWordsExporter");
 		exporter.exportBagOfWords(args[0]);
 	}
 }

@@ -21,10 +21,8 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.kernel.BagOfWordsDecorator;
 import ytex.kernel.BagOfWordsExporter;
@@ -36,20 +34,10 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 	private JdbcTemplate jdbcTemplate;
 	private KernelEvaluationDao kernelEvaluationDao;
 	private WekaBagOfWordsExporter bagOfWordsExporter;
-	private PlatformTransactionManager transactionManager;
 
 	public enum GramMatrixType {
 		WEKA, LIBSVM
 	};
-
-	public PlatformTransactionManager getTransactionManager() {
-		return transactionManager;
-	}
-
-	public void setTransactionManager(
-			PlatformTransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
-	}
 
 	public KernelEvaluationDao getKernelEvaluationDao() {
 		return kernelEvaluationDao;
@@ -181,11 +169,7 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 				.entrySet()) {
 			final int indexThis = instanceIdIndex.getValue();
 			final int instanceId = instanceIdIndex.getKey();
-			TransactionTemplate t = new TransactionTemplate(
-					this.transactionManager);
-			t
-					.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
-			t.execute(new TransactionCallback<Object>() {
+			txNew.execute(new TransactionCallback<Object>() {
 				@Override
 				public Object doInTransaction(TransactionStatus arg0) {
 					for (KernelEvaluation keval : getKernelEvaluationDao()
