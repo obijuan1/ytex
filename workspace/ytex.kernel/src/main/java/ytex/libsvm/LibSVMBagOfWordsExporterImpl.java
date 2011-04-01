@@ -21,7 +21,7 @@ import ytex.kernel.BagOfWordsExporter;
  * property file entries: <li>filePrefix - directory and file base name for
  * exported files <li>instanceClassQuery - query to retrieve class labels <li>
  * numericWordQuery - query to retrieve numeric attributes <li>nominalWordQuery
- * - query to retrieve nominal attributes <li>tfidf - true/false
+ * - query to retrieve nominal attributes 
  * 
  * @author vijay
  * 
@@ -47,16 +47,14 @@ public class LibSVMBagOfWordsExporterImpl extends AbstractBagOfWordsExporter
 		exportBagOfWords(outdir, props.getProperty("train.instance.query"),
 				props.getProperty("test.instance.query"),
 				props.getProperty("numericWordQuery", ""),
-				props.getProperty("nominalWordQuery", ""),
-				"true".equals(props.getProperty("tfidf", "false")));
+				props.getProperty("nominalWordQuery", ""));
 	}
 
 	public void exportBagOfWords(String outdir, String trainInstanceQuery,
 			String testInstanceQuery, String numericWordQuery,
-			String nominalWordQuery, boolean tfIdf) throws IOException {
+			String nominalWordQuery) throws IOException {
 		BagOfWordsData bagOfWordsData = new BagOfWordsData();
-		loadData(bagOfWordsData, numericWordQuery, nominalWordQuery, null,
-				tfIdf);
+		loadData(bagOfWordsData, numericWordQuery, nominalWordQuery, null);
 		Set<String> labels = new HashSet<String>();
 		SortedMap<Integer, Map<String, Integer>> trainInstanceLabelMap = libsvmUtil
 				.loadClassLabels(trainInstanceQuery, labels);
