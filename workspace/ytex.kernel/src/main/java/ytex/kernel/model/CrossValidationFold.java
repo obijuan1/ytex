@@ -8,24 +8,36 @@ public class CrossValidationFold implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	int crossValidationFoldId;
+	private int crossValidationFoldId;
+	private String name;
+	private String label;
+	private Integer run;
+	private Integer fold;
+	private Set<Integer> instanceIds;
+	private boolean train;
+	
+	/**
+	 * is this the training or test fold?
+	 * @return
+	 */
+	public boolean isTrain() {
+		return train;
+	}
+	public void setTrain(boolean train) {
+		this.train = train;
+	}
 	public int getCrossValidationFoldId() {
 		return crossValidationFoldId;
 	}
 	public void setCrossValidationFoldId(int crossValidationFoldId) {
 		this.crossValidationFoldId = crossValidationFoldId;
 	}
-	String name;
-	String label;
 	public String getLabel() {
 		return label;
 	}
 	public void setLabel(String label) {
 		this.label = label;
 	}
-	Integer run;
-	Integer fold;
-	Set<Integer> instanceIds;
 
 	public Set<Integer> getInstanceIds() {
 		return instanceIds;
@@ -51,13 +63,14 @@ public class CrossValidationFold implements Serializable {
 	public void setFold(Integer fold) {
 		this.fold = fold;
 	}
-	public CrossValidationFold(String name, String label, Integer run, Integer fold,
+	public CrossValidationFold(String name, String label, Integer run, Integer fold, boolean train,
 			Set<Integer> instanceIds) {
 		super();
 		this.name = name;
 		this.run = run;
 		this.fold = fold;
 		this.label = label;
+		this.train = train;
 		this.instanceIds = instanceIds;
 	}
 	public CrossValidationFold() {

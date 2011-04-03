@@ -9,21 +9,20 @@ public class FeatureInfogain implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	int fatureInfogainId;
+	int featureInfogainId;
 	String name;
 	String label;
-	Integer cvFoldId;
+	Integer crossValidationFoldId;
 	String featureName;
 	double infogain;
 	int rank;
 
-	public FeatureInfogain(int fatureInfogainId, String name, String label,
-			Integer cvFoldId, String featureName, double infogain, int rank) {
+	public FeatureInfogain(String name, String label,
+			Integer crossValidationFoldId, String featureName, double infogain, int rank) {
 		super();
-		this.fatureInfogainId = fatureInfogainId;
 		this.name = name;
 		this.label = label;
-		this.cvFoldId = cvFoldId;
+		this.crossValidationFoldId = crossValidationFoldId;
 		this.featureName = featureName;
 		this.infogain = infogain;
 		this.rank = rank;
@@ -33,12 +32,12 @@ public class FeatureInfogain implements Serializable {
 		super();
 	}
 
-	public int getFatureInfogainId() {
-		return fatureInfogainId;
+	public int getFeatureInfogainId() {
+		return featureInfogainId;
 	}
 
-	public void setFatureInfogainId(int fatureInfogainId) {
-		this.fatureInfogainId = fatureInfogainId;
+	public void setFeatureInfogainId(int featureInfogainId) {
+		this.featureInfogainId = featureInfogainId;
 	}
 
 	public String getName() {
@@ -49,12 +48,12 @@ public class FeatureInfogain implements Serializable {
 		this.name = name;
 	}
 
-	public Integer getCvFoldId() {
-		return cvFoldId;
+	public Integer getCrossValidationFoldId() {
+		return crossValidationFoldId;
 	}
 
-	public void setCvFoldId(Integer cvFoldId) {
-		this.cvFoldId = cvFoldId;
+	public void setCrossValidationFoldId(Integer crossValidationFoldId) {
+		this.crossValidationFoldId = crossValidationFoldId;
 	}
 
 	public String getFeatureName() {
@@ -79,6 +78,14 @@ public class FeatureInfogain implements Serializable {
 
 	public void setRank(int rank) {
 		this.rank = rank;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
 }

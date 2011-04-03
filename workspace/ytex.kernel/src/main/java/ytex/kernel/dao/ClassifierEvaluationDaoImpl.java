@@ -4,11 +4,13 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
+import ytex.kernel.model.FeatureInfogain;
 
 public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	private static final Log log = LogFactory
@@ -21,6 +23,17 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void deleteCrossValidationFoldByName(String name) {
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getCrossValidationFoldByName");
+		q.setString("name", name);
+		List<CrossValidationFold> folds = q.list();
+		for(CrossValidationFold fold : folds)
+			this.getSessionFactory().getCurrentSession().delete(fold);
 	}
 
 	/*
@@ -41,6 +54,13 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public void saveFold(CrossValidationFold fold) {
 		this.getSessionFactory().getCurrentSession().save(fold);
+	}
+
+	@Override
+	public void saveInfogain(List<FeatureInfogain> foldInfogainList) {
+		for(FeatureInfogain ig : foldInfogainList) {
+			this.getSessionFactory().getCurrentSession().save(ig);
+		}
 	}
 
 }

@@ -13,6 +13,7 @@
 		<property name="featureName" />
 		<property name="infogain" />
 		<property name="rank" />
+		<property name="crossValidationFoldId" />
 	</class>
 
 	<class name="CrossValidationFold" table="cv_fold">
@@ -25,7 +26,8 @@
 		<property name="label" />
 		<property name="run" />
 		<property name="fold" />
-		<set name="instanceIds" table="cv_fold_instance">
+		<property name="train" />
+		<set name="instanceIds" table="cv_fold_instance" cascade="all">
 			<key column="cv_fold_id" />
 			<element column="instance_id" type="int" />
 		</set>
@@ -78,4 +80,11 @@
 			<element column="probability" type="double" />
 		</map>
 	</class>
+	<query name="deleteCrossValidationFoldByName">
+		delete from CrossValidationFold where name = :name
+	</query>
+	<query name="getCrossValidationFoldByName">
+		from CrossValidationFold where name = :name
+	</query>
+	
 </hibernate-mapping>

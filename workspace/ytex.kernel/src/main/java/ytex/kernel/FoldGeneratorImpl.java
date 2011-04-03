@@ -70,6 +70,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 		SortedSet<String> labels = new TreeSet<String>();
 		SortedMap<Integer, Map<String, Integer>> mapInstanceToClassLabel = libsvmUtil
 				.loadClassLabels(query, labels);
+		this.getClassifierEvaluationDao().deleteCrossValidationFoldByName(name);
 		for (int run = 1; run <= nRuns; run++) {
 			generateFolds(labels, mapInstanceToClassLabel, name, run, query,
 					nFolds, nMinPerClass, r);
@@ -126,69 +127,80 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * @param name
 	 * @param run
 	 */
-	private void insertFolds(List<Set<Integer>> folds, String name, String label, int run) {
+	private void insertFolds(List<Set<Integer>> folds, String name,
+			String label, int run) {
 		for (int foldNum = 1; foldNum <= folds.size(); foldNum++) {
-			classifierEvaluationDao.saveFold(new CrossValidationFold(name, label, run,
-					foldNum, folds.get(foldNum - 1)));
+			// insert test set
+			classifierEvaluationDao.saveFold(new CrossValidationFold(name,
+					label, run, foldNum, false, folds.get(foldNum - 1)));
+			// insert training set
+			Set<Integer> trainInstances = new TreeSet<Integer>();
+			for (int trainFoldNum = 1; trainFoldNum <= folds.size(); trainFoldNum++) {
+				if (trainFoldNum != foldNum)
+					trainInstances.addAll(folds.get(trainFoldNum - 1));
+			}
+			classifierEvaluationDao.saveFold(new CrossValidationFold(name,
+					label, run, foldNum, true, trainInstances));
 		}
 	}
 
 	/**
 	 * iterate through the labels, split instances into folds
-	 * @param mapLabelToLineNumbers
+	 * 
+	 * @param mapClassToInstanceId
 	 * @param nFolds
 	 * @param nMinPerClass
 	 * @param nSeed
 	 * @return list with nFolds sets of line numbers corresponding to the folds
 	 */
 	private static List<Set<Integer>> createFolds(
-			Map<Integer, List<Integer>> mapLabelToLineNumbers, int nFolds,
+			Map<Integer, List<Integer>> mapClassToInstanceId, int nFolds,
 			int nMinPerClass, Random r) {
 		List<Set<Integer>> folds = new ArrayList<Set<Integer>>(nFolds);
 		Map<Integer, List<Set<Integer>>> mapLabelFolds = new HashMap<Integer, List<Set<Integer>>>();
-		for (Map.Entry<Integer, List<Integer>> labelToLineNumber : mapLabelToLineNumbers
+		for (Map.Entry<Integer, List<Integer>> classToInstanceId : mapClassToInstanceId
 				.entrySet()) {
-			List<Integer> lineNums = labelToLineNumber.getValue();
-			Collections.shuffle(lineNums, r);
-			List<Set<Integer>> labelFolds = new ArrayList<Set<Integer>>(nFolds);
-			int blockSize = lineNums.size() / nFolds;
+			List<Integer> instanceIds = classToInstanceId.getValue();
+			Collections.shuffle(instanceIds, r);
+			List<Set<Integer>> classFolds = new ArrayList<Set<Integer>>(nFolds);
+			int blockSize = instanceIds.size() / nFolds;
 			for (int i = 0; i < nFolds; i++) {
-				Set<Integer> foldLineNums = new HashSet<Integer>(blockSize);
-				if (lineNums.size() <= nMinPerClass) {
+				Set<Integer> foldInstanceIds = new HashSet<Integer>(blockSize);
+				if (instanceIds.size() <= nMinPerClass) {
 					// we don't have minPerClass for the given class
 					// just add all of them to each fold
-					foldLineNums.addAll(lineNums);
+					foldInstanceIds.addAll(instanceIds);
 				} else if (blockSize < nMinPerClass) {
 					// too few of the given class - just randomly select
 					// nMinPerClass
 					double fraction = (double) nMinPerClass
-							/ (double) lineNums.size();
+							/ (double) instanceIds.size();
 					// iterate through the list, start somewhere in the middle
-					int lineNumIndex = (int) (r.nextDouble() * lineNums.size());
-					while (foldLineNums.size() < nMinPerClass) {
+					int instanceIdIndex = (int) (r.nextDouble() * instanceIds.size());
+					while (foldInstanceIds.size() < nMinPerClass) {
 						// go back to beginning of list if we hit the end
-						if (lineNumIndex >= lineNums.size()) {
-							lineNumIndex = 0;
+						if (instanceIdIndex >= instanceIds.size()) {
+							instanceIdIndex = 0;
 						}
 						// randomly select this line
 						if (r.nextDouble() <= fraction) {
-							int nLineNum = lineNums.get(lineNumIndex);
-							foldLineNums.add(nLineNum);
+							int nLineNum = instanceIds.get(instanceIdIndex);
+							foldInstanceIds.add(nLineNum);
 						}
 						// go to next line
-						lineNumIndex++;
+						instanceIdIndex++;
 					}
 				} else {
 					int nStart = i * blockSize;
-					int nEnd = (i == nFolds - 1) ? lineNums.size() - 1 : nStart
+					int nEnd = (i == nFolds - 1) ? instanceIds.size() : nStart
 							+ blockSize;
-					for (int lineNumIndex = nStart; lineNumIndex < nEnd; lineNumIndex++) {
-						foldLineNums.add(lineNums.get(lineNumIndex));
+					for (int instanceIdIndex = nStart; instanceIdIndex < nEnd; instanceIdIndex++) {
+						foldInstanceIds.add(instanceIds.get(instanceIdIndex));
 					}
 				}
-				labelFolds.add(foldLineNums);
+				classFolds.add(foldInstanceIds);
 			}
-			mapLabelFolds.put(labelToLineNumber.getKey(), labelFolds);
+			mapLabelFolds.put(classToInstanceId.getKey(), classFolds);
 		}
 		for (int i = 0; i < nFolds; i++) {
 			Set<Integer> foldLineNums = new HashSet<Integer>();
