@@ -74,7 +74,16 @@ create table tfidf_docfreq (
   unique key nk_docfreq (name, term)
 ) comment 'num docs term occurs for calculating tf-idf';
 
-
+drop table tfidf_termfreq;
+create table tfidf_termfreq (
+  tfidf_termfreq_id int auto_increment primary key,
+  name varchar(50) not null,
+  instance_id int not null,
+  term varchar(50) not null,
+  freq int not null,
+  unique index NK_tfidif_termfreq (name, instance_id, term),
+  index IX_instance(name, instance_id)
+) comment 'per-doc term count';
 
 DROP TABLE IF EXISTS `weka_results`;
 CREATE TABLE  `weka_results` (
@@ -168,11 +177,11 @@ CREATE TABLE  `stopword` (
 create table classifier_eval (
 	classifier_eval_id int AUTO_INCREMENT not null primary key,
 	name varchar(50) not null,
-	experiment varchar(50) not null default "",
-	fold varchar(50) not null default "",
-	algorithm varchar(50) not null default "",
-	label varchar(50) not null default "",
-	options varchar(1000) not null default "",
+	experiment varchar(50) null default "",
+	fold varchar(50) null default "",
+	algorithm varchar(50) null default "",
+	label varchar(50) null default "",
+	options varchar(1000) null default "",
 	model longblob null
 ) comment 'evaluation of a classifier on a dataset';
 
@@ -202,6 +211,58 @@ create table classifier_instance_eval_prob (
 	probability double not null,
 	unique key nk_result_prob (classifier_instance_eval_id, class_id)
 ) comment 'probability of belonging to respective class';
+
+drop table cv_fold;
+drop table cv_fold_instance;
+create table cv_fold (
+  cv_fold_id int auto_increment not null primary key,
+  name varchar(50) not null,
+  label varchar(50) not null,
+  run int null,
+  fold int null,
+  unique index nk_cv_fold (name, label, run, fold)
+);
+
+create table cv_fold_instance (
+  cv_fold_instance_id int auto_increment not null primary key,
+  cv_fold_id int not null,
+  instance_id int not null,
+  train bit not null default 0,
+  unique index nk_cv_fold_instance (cv_fold_id, instance_id, train)
+);
+create table feature_infogain (
+  feature_infogain_id int auto_increment not null primary key,
+  name varchar(50) not null,
+  label varchar(50) not null,
+  cv_fold_id int null,
+  feature_name varchar(50) not null,
+  infogain double not null,
+  rank int not null,
+  unique index nk_feature_infogain(name, cv_fold_id, feature_name)
+);
+
+
+drop table feature_eval;
+create table feature_eval (
+  feature_eval_id int auto_increment not null primary key,
+  name varchar(50) not null,
+  label varchar(50) not null,
+  cv_fold_id int null,
+  type varchar(50) not null,
+  unique index nk_feature_eval(name, label, cv_fold_id, type),
+  index ix_feature_eval(name, cv_fold_id, type)
+);
+
+drop table feature_rank;
+create table feature_rank (
+  feature_rank_id int auto_increment not null primary key,
+  feature_eval_id int not null comment 'fk feature_eval',
+  feature_name varchar(50) not null,
+  infogain double not null,
+  rank int not null,
+  unique index nk_feature_rank(feature_eval_id, feature_name),
+  index fk_feature_eval(feature_eval_id)
+);
 
 
 
@@ -247,3 +308,4 @@ select *,
   case when (tp+fp) > 0 and (tp+fn) > 0 then 2*(tp/(tp+fp))*(tp/(tp+fn))/(tp/(tp+fn) + tp/(tp+fp)) else 0 end f1
 from v_classifier_eval_ir_tt
 ;
+
