@@ -10,6 +10,7 @@ import org.hibernate.SessionFactory;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
+import ytex.kernel.model.FeatureEvaluation;
 import ytex.kernel.model.FeatureInfogain;
 
 public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
@@ -32,7 +33,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 				.getNamedQuery("getCrossValidationFoldByName");
 		q.setString("name", name);
 		List<CrossValidationFold> folds = q.list();
-		for(CrossValidationFold fold : folds)
+		for (CrossValidationFold fold : folds)
 			this.getSessionFactory().getCurrentSession().delete(fold);
 	}
 
@@ -56,11 +57,26 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		this.getSessionFactory().getCurrentSession().save(fold);
 	}
 
+	// @Override
+	// public void saveInfogain(List<FeatureInfogain> foldInfogainList) {
+	// for(FeatureInfogain ig : foldInfogainList) {
+	// this.getSessionFactory().getCurrentSession().save(ig);
+	// }
+	// }
+
 	@Override
-	public void saveInfogain(List<FeatureInfogain> foldInfogainList) {
-		for(FeatureInfogain ig : foldInfogainList) {
-			this.getSessionFactory().getCurrentSession().save(ig);
-		}
+	public void saveFeatureEvaluation(FeatureEvaluation featureEvaluation) {
+		this.getSessionFactory().getCurrentSession().save(featureEvaluation);
+	}
+
+	@Override
+	public void deleteFeatureEvaluationByNameAndType(String name, String type) {
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getFeatureEvaluationByNameAndType");
+		q.setString("name", name);
+		q.setString("type", type);
+		for (FeatureEvaluation fe : (List<FeatureEvaluation>) q.list())
+			this.getSessionFactory().getCurrentSession().delete(fe);
 	}
 
 }

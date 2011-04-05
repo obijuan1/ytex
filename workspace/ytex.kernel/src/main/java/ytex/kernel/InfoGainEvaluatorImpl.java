@@ -9,11 +9,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.sql.DataSource;
@@ -25,6 +25,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -35,7 +37,8 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.kernel.dao.ClassifierEvaluationDao;
-import ytex.kernel.model.FeatureInfogain;
+import ytex.kernel.model.FeatureEvaluation;
+import ytex.kernel.model.FeatureRank;
 
 /**
  * 
@@ -48,6 +51,31 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 	protected PlatformTransactionManager transactionManager;
 	protected TransactionTemplate txNew;
 	protected ClassifierEvaluationDao classifierEvaluationDao;
+	private static final Log log = LogFactory
+			.getLog(InfoGainEvaluatorImpl.class);
+	private static final String FEATURE_EVAL_TYPE = "infogain";
+
+	public static class FeatureInfo {
+		double entropy;
+		SortedMap<String, Double> binToFrequencyMap = new TreeMap<String, Double>();
+
+		public double getEntropy() {
+			return entropy;
+		}
+
+		public void setEntropy(double entropy) {
+			this.entropy = entropy;
+		}
+
+		public SortedMap<String, Double> getBinToFrequencyMap() {
+			return binToFrequencyMap;
+		}
+
+		public void setBinToFrequencyMap(
+				SortedMap<String, Double> binToFrequencyMap) {
+			this.binToFrequencyMap = binToFrequencyMap;
+		}
+	}
 
 	public PlatformTransactionManager getTransactionManager() {
 		return transactionManager;
@@ -86,13 +114,20 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 	 */
 	@Override
 	public void storeInfoGain(String name, String labelQuery,
-			String featureQuery, String classFeatureQuery) {
+			String featureQuery, String classFeatureQuery, Double minInfo) {
+		// delete existing feature evaluations with this name
+		this.classifierEvaluationDao.deleteFeatureEvaluationByNameAndType(name,
+				FEATURE_EVAL_TYPE);
+		// load Y - class distributions per fold & label
 		Map<String, Map<Integer, Map<String, Integer>>> labelClassMap = loadY(labelQuery);
-		Map<String, Double> featureEntropyMap = loadFeatureEntropyMap(featureQuery);
+		// load X - feature distributions per bin & entropy
+		Map<String, FeatureInfo> featureInfoMap = loadFeatureInfoMap(featureQuery);
+		// process each label
 		for (Map.Entry<String, Map<Integer, Map<String, Integer>>> labelClass : labelClassMap
 				.entrySet()) {
 			storeInfoGain(name, labelClass.getKey(), labelClass.getValue(),
-					featureEntropyMap, classFeatureQuery);
+					featureInfoMap, classFeatureQuery, minInfo == null ? 0
+							: minInfo);
 		}
 	}
 
@@ -103,9 +138,10 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 	 * 
 	 */
 	public class InfoGainRowCallbackHandler implements RowCallbackHandler {
-		private Map<Integer, List<FeatureInfogain>> foldInfogainMap;
-		Integer currentFold;
+		private Map<Integer, List<FeatureRank>> foldInfogainMap;
+		int currentFold;
 		String currentFeature;
+		double minInfo;
 		/**
 		 * matrix of class - feature bin - bin count. We don't know the
 		 * dimensions of the matrix, so we use a map. Use a tree map so that we
@@ -113,31 +149,30 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 		 */
 		Map<String, Map<String, Integer>> currentBins = new TreeMap<String, Map<String, Integer>>();
 		Map<Integer, Map<String, Integer>> foldClassCountMap;
-		Map<String, Double> featureEntropy;
+		Map<String, FeatureInfo> featureInfoMap;
 		Map<Integer, Double> foldEntropy;
 
 		public InfoGainRowCallbackHandler(
-				Map<Integer, List<FeatureInfogain>> foldInfogainMap,
+				Map<Integer, List<FeatureRank>> foldInfogainMap,
 				Map<Integer, Map<String, Integer>> foldClassCountMap,
-				Map<String, Double> featureEntropy,
-				Map<Integer, Double> foldEntropy) {
+				Map<String, FeatureInfo> featureInfoMap,
+				Map<Integer, Double> foldEntropy, double minInfo) {
 			super();
 			this.foldInfogainMap = foldInfogainMap;
 			this.foldClassCountMap = foldClassCountMap;
-			this.featureEntropy = featureEntropy;
+			this.featureInfoMap = featureInfoMap;
 			this.foldEntropy = foldEntropy;
 		}
 
 		@Override
 		public void processRow(ResultSet rs) throws SQLException {
 			Integer foldId = rs.getInt(1);
-			String featureName = rs.getString(2);
-			String className = rs.getString(3);
-			String featureBin = rs.getString(4);
+			String featureName = rs.getString(2).toLowerCase();
+			String className = rs.getString(3).toLowerCase();
+			String featureBin = rs.getString(4).toLowerCase();
 			int binCount = rs.getInt(5);
-			if (foldId != currentFold || !currentFeature.equals(featureName)
-					|| rs.isLast()) {
-				if (currentFold != null)
+			if (foldId != currentFold || !featureName.equals(currentFeature)) {
+				if (currentFeature != null)
 					addInfoGain();
 				// reinitialize state
 				currentBins.clear();
@@ -151,63 +186,73 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 				currentBins.put(className, featureBinMap);
 			}
 			featureBinMap.put(featureBin, binCount);
+			// if we hit the end, add the info gain
+			if (currentFeature != null && rs.isLast())
+				addInfoGain();
 		}
 
 		private void addInfoGain() {
+			if (!this.featureInfoMap.containsKey(currentFeature.toLowerCase())) {
+				log.warn("bins and marginal probabilities for feature not defined, skipping; featureName="
+						+ currentFeature);
+				return;
+			}
 			List<Integer> binCounts = new ArrayList<Integer>();
 			int grandTotal = 0;
 			List<Double> jointProbabilities = new ArrayList<Double>();
-			// iterate over each class in the class-feature bin matrix
-			for (Map.Entry<String, Map<String, Integer>> classFeatureBinMap : currentBins
-					.entrySet()) {
-				String className = classFeatureBinMap.getKey();
-				Map<String, Integer> featureBinMap = classFeatureBinMap
-						.getValue();
-				// get the total number of instances for the specified class
-				int classTotalCount = this.foldClassCountMap.get(currentFold)
-						.get(className);
-				// see if we are missing any
-				int allFeatureBinCount = 0;
-				for (int binCount : featureBinMap.values()) {
-					// add the count for this bin to the list of bin counts
+			for (Map.Entry<String, Integer> classNameCount : this.foldClassCountMap
+					.get(this.currentFold).entrySet()) {
+				// iterate over 'rows' i.e. the class names
+				String className = classNameCount.getKey();
+				int classCount = classNameCount.getValue();
+				grandTotal += classCount;
+				// keep track of how many instances have already been allocated
+				// to a feature bin
+				int classFeatureCount = 0;
+				for (String binName : this.featureInfoMap
+						.get(currentFeature.toLowerCase())
+						.getBinToFrequencyMap().keySet()) {
+					// iterate over 'columns' i.e. the feature bins
+					int binCount = 0;
+					if (currentBins.containsKey(className)
+							&& currentBins.get(className).containsKey(binName))
+						binCount = currentBins.get(className).get(binName);
+					classFeatureCount += binCount;
 					binCounts.add(binCount);
-					allFeatureBinCount += binCount;
 				}
-				// we didn't fill up the 'row' - add a count for the missing
-				// feature bin
-				if (allFeatureBinCount < classTotalCount) {
-					binCounts.add(classTotalCount - allFeatureBinCount);
-				}
+				// add a trailing bin for when the feature is not present
+				binCounts.add(classCount - classFeatureCount);
 			}
-			// get the grand total
-			for (int binCount : binCounts)
-				grandTotal += binCount;
 			// convert bin count into joint probability
 			for (int binCount : binCounts)
 				jointProbabilities.add((double) binCount / (double) grandTotal);
 			// H(X) + H(Y) - H(X,Y)
-			double infogain = this.featureEntropy.get(currentFeature)
+			double infogain = this.featureInfoMap.get(currentFeature)
+					.getEntropy()
 					+ this.foldEntropy.get(currentFold)
 					- entropy(jointProbabilities);
-			List<FeatureInfogain> foldInfogainList = this.foldInfogainMap
-					.get(currentFold);
-			if (foldInfogainList == null) {
-				foldInfogainList = new ArrayList<FeatureInfogain>();
-				foldInfogainMap.put(currentFold, foldInfogainList);
+			if (infogain > minInfo) {
+				List<FeatureRank> foldInfogainList = this.foldInfogainMap
+						.get(currentFold);
+				if (foldInfogainList == null) {
+					foldInfogainList = new ArrayList<FeatureRank>();
+					foldInfogainMap.put(currentFold, foldInfogainList);
+				}
+				foldInfogainList.add(new FeatureRank(currentFeature, infogain));
 			}
-			foldInfogainList.add(new FeatureInfogain(null, null, currentFold,
-					currentFeature, infogain, 0));
 		}
 	}
 
 	private void storeInfoGain(final String name, final String label,
 			final Map<Integer, Map<String, Integer>> foldClassCountMap,
-			final Map<String, Double> featureEntropy, final String featureQuery) {
-		final Map<Integer, List<FeatureInfogain>> foldInfogainMap = new HashMap<Integer, List<FeatureInfogain>>();
+			final Map<String, FeatureInfo> featureInfoMap,
+			final String featureQuery, double minInfo) {
+		final Map<Integer, List<FeatureRank>> foldInfogainMap = new HashMap<Integer, List<FeatureRank>>();
 		final Map<Integer, Double> foldEntropy = this
 				.calculateFoldEntropy(foldClassCountMap);
 		final InfoGainRowCallbackHandler handler = new InfoGainRowCallbackHandler(
-				foldInfogainMap, foldClassCountMap, featureEntropy, foldEntropy);
+				foldInfogainMap, foldClassCountMap, featureInfoMap,
+				foldEntropy, minInfo);
 		txNew.execute(new TransactionCallback<Object>() {
 
 			@Override
@@ -229,48 +274,37 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 			}
 		});
 		// iterate over each feature list and rank the features
-		for (List<FeatureInfogain> foldInfogainList : foldInfogainMap.values()) {
+		for (Map.Entry<Integer, List<FeatureRank>> foldInfogain : foldInfogainMap
+				.entrySet()) {
 			// sort by infogain in descending order
-			// if two features have the same infogain, order them by name
+			List<FeatureRank> foldInfogainList = foldInfogain.getValue();
+			int foldId = foldInfogain.getKey();
 			Collections.sort(foldInfogainList,
-					new Comparator<FeatureInfogain>() {
-
-						@Override
-						public int compare(FeatureInfogain o1,
-								FeatureInfogain o2) {
-							if (o1.getInfogain() > o2.getInfogain()) {
-								return 1;
-							} else if (o1.getInfogain() == o2.getInfogain()) {
-								return o1.getFeatureName().compareTo(
-										o2.getFeatureName());
-							} else {
-								return -1;
-							}
-						}
-					});
+					new FeatureRank.FeatureRankDesc());
 			// update the rank of each infogain entry based on sorting
 			int i = 1;
-			for (FeatureInfogain ig : foldInfogainList) {
+			for (FeatureRank ig : foldInfogainList) {
 				ig.setRank(i++);
-				ig.setName(name);
-				ig.setLabel(label);
 			}
+			FeatureEvaluation featureEval = new FeatureEvaluation(name, label,
+					foldId, FEATURE_EVAL_TYPE, foldInfogainList);
 			// insert the infogain
-			classifierEvaluationDao.saveInfogain(foldInfogainList);
+			classifierEvaluationDao.saveFeatureEvaluation(featureEval);
 		}
 	}
 
-	private Map<String, Double> loadFeatureEntropyMap(final String labelQuery) {
-		final Map<String, Double> featureEntropyMap = new HashMap<String, Double>();
+	private Map<String, FeatureInfo> loadFeatureInfoMap(final String labelQuery) {
+		final Map<String, FeatureInfo> featureInfoMap = new HashMap<String, FeatureInfo>();
 		// fill in the y map from the query
 		txNew.execute(new TransactionCallback<Object>() {
 
 			@Override
 			public Object doInTransaction(TransactionStatus arg0) {
 				jdbcTemplate.query(labelQuery, new RowCallbackHandler() {
-					String currentFeature = null;
-					List<Double> currentFrequencies = new ArrayList<Double>();
-					double currentTotalFreq = 0;
+					// String currentFeature = null;
+					// List<Double> currentFrequencies = new
+					// ArrayList<Double>();
+					// double currentTotalFreq = 0;
 
 					/**
 					 * iterate through results. get per-bin probabilities.
@@ -278,32 +312,50 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 					 */
 					@Override
 					public void processRow(ResultSet rs) throws SQLException {
-						String featureName = rs.getString(1);
-						// String bin = rs.getString(2);
+						String featureName = rs.getString(1).toLowerCase();
+						String bin = rs.getString(2).toLowerCase();
 						double freq = rs.getDouble(3);
-						if (!featureName.equals(currentFeature) || rs.isLast()) {
-							if (currentFeature != null) {
-								// new feature / end of list - update
-								// make sure the frequency adds up to 1
-								currentFrequencies.add(1d - currentTotalFreq);
-								featureEntropyMap.put(currentFeature,
-										entropy(currentFrequencies));
-							}
-							// reset state
-							currentFrequencies.clear();
-							currentTotalFreq = 0;
-							currentFeature = featureName;
+						FeatureInfo info = featureInfoMap.get(featureName);
+						if (info == null) {
+							info = new FeatureInfo();
+							featureInfoMap.put(featureName, info);
 						}
-						// update current feature
-						currentFrequencies.add(freq);
-						currentTotalFreq += freq;
+						info.getBinToFrequencyMap().put(bin, freq);
+						// if (!featureName.equals(currentFeature) ||
+						// rs.isLast()) {
+						// if (currentFeature != null) {
+						// // new feature / end of list - update
+						// // make sure the frequency adds up to 1
+						// currentFrequencies.add(1d - currentTotalFreq);
+						// featureEntropyMap.put(currentFeature,
+						// entropy(currentFrequencies));
+						// }
+						// // reset state
+						// currentFrequencies.clear();
+						// currentTotalFreq = 0;
+						// currentFeature = featureName;
+						// }
+						// // update current feature
+						// currentFrequencies.add(freq);
+						// currentTotalFreq += freq;
 					}
 				});
 				return null;
 			}
-
 		});
-		return featureEntropyMap;
+		// compute entropy for each feature
+		for (FeatureInfo info : featureInfoMap.values()) {
+			double totalFreq = 0;
+			for (double freq : info.getBinToFrequencyMap().values())
+				totalFreq += freq;
+			List<Double> freqs = new ArrayList<Double>();
+			freqs.addAll(info.getBinToFrequencyMap().values());
+			if (totalFreq < 1d) {
+				freqs.add(1d - totalFreq);
+			}
+			info.setEntropy(entropy(freqs));
+		}
+		return featureInfoMap;
 	}
 
 	/**
@@ -324,7 +376,7 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 					public void processRow(ResultSet rs) throws SQLException {
 						String label = rs.getString(1);
 						int foldId = rs.getInt(2);
-						String cls = rs.getString(3);
+						String cls = rs.getString(3).toLowerCase();
 						int count = rs.getInt(4);
 						Map<Integer, Map<String, Integer>> foldToClassMap = y
 								.get(label);
@@ -388,7 +440,8 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 		double entropy = 0;
 		double log2 = Math.log(2);
 		for (double prob : classProbs) {
-			entropy += prob * Math.log(prob) / log2;
+			if (prob > 0)
+				entropy += prob * Math.log(prob) / log2;
 		}
 		return entropy * -1;
 	}
@@ -401,7 +454,11 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 				.hasArg()
 				.isRequired()
 				.withDescription(
-						"property file with queries and other parameters")
+						"property file with queries and other parameters.  Expected properties:\ninfogain.name name"
+								+ "\nlabel.query query to get Y, i.e. class labels, fold, and class count"
+								+ "\nfeature.query query to get X, i.e. feature names, bins, and bin frequencies"
+								+ "\nclassfeature.query to get XxY per label, i.e. fold, feature, class, bin, count"
+								+ "\nmin.info optional minimum infogain feature must have to be stored")
 				.create("prop"));
 		try {
 			if (args.length == 0)
@@ -415,6 +472,7 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 				String labelQuery;
 				String featureQuery;
 				String classFeatureQuery;
+				double minInfo;
 				try {
 					is = new FileInputStream(propFile);
 					Properties props = new Properties();
@@ -426,6 +484,8 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 					labelQuery = props.getProperty("label.query");
 					featureQuery = props.getProperty("feature.query");
 					classFeatureQuery = props.getProperty("classfeature.query");
+					minInfo = Double.parseDouble(props.getProperty("min.info",
+							"0"));
 				} finally {
 					if (is != null)
 						is.close();
@@ -436,7 +496,7 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 							.getApplicationContext()
 							.getBean(InfoGainEvaluator.class)
 							.storeInfoGain(name, labelQuery, featureQuery,
-									classFeatureQuery);
+									classFeatureQuery, minInfo);
 				} else {
 					printHelp(options);
 				}

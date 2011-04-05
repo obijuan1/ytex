@@ -1,19 +1,24 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping package="ytex.kernel.model">
-
-	<class name="FeatureInfogain" table="feature_infogain">
-		<id name="featureInfogainId" column="feature_infogain_id">
+	<class name="FeatureEvaluation" table="feature_eval">
+		<id name="featureEvaluationId" column="feature_eval_id">
 			<generator class="native">
-				<param name="sequence">feature_infogain_sequence</param>
+				<param name="sequence">feature_eval_sequence</param>
 			</generator>
 		</id>
 		<property name="name" />
 		<property name="label" />
-		<property name="featureName" />
-		<property name="infogain" />
-		<property name="rank" />
-		<property name="crossValidationFoldId" />
+		<property name="crossValidationFoldId" column="cv_fold_id" />
+		<property name="evaluationType" column="type" />
+		<list name="features" table="feature_rank" cascade="all">
+			<key column="feature_eval_id"/>
+			<list-index column="rank" base="1" />
+			<composite-element class="FeatureRank">
+				<property name="featureName" column="feature_name"/>
+				<property name="evaluation" column="evaluation"/>
+			</composite-element>
+		</list>
 	</class>
 
 	<class name="CrossValidationFold" table="cv_fold">
@@ -26,10 +31,13 @@
 		<property name="label" />
 		<property name="run" />
 		<property name="fold" />
-		<property name="train" />
+		<!--   property name="train" /-->
 		<set name="instanceIds" table="cv_fold_instance" cascade="all">
 			<key column="cv_fold_id" />
-			<element column="instance_id" type="int" />
+			<composite-element class="CrossValidationFoldInstance">
+				<property name="instanceId" column="instance_id" type="int" />
+				<property name="train" />
+			</composite-element>
 		</set>
 	</class>
 	<class name="ClassifierEvaluation" table="classifier_eval">
@@ -45,7 +53,7 @@
 		<property name="label" />
 		<property name="options" />
 		<property name="model" column="model" type="binary" />
-		
+
 		<map name="classifierInstanceEvaluations" inverse="true"
 			table="classifier_instance_eval">
 			<key column="classifier_eval_id" />
@@ -80,11 +88,12 @@
 			<element column="probability" type="double" />
 		</map>
 	</class>
-	<query name="deleteCrossValidationFoldByName">
-		delete from CrossValidationFold where name = :name
-	</query>
 	<query name="getCrossValidationFoldByName">
 		from CrossValidationFold where name = :name
 	</query>
+	<query name="getFeatureEvaluationByNameAndType">
+		from FeatureEvaluation where name = :name and type = :type
+	</query>
 	
+
 </hibernate-mapping>

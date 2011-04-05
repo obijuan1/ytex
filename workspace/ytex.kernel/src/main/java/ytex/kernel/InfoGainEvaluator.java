@@ -40,6 +40,6 @@ public interface InfoGainEvaluator {
 	 *            table, and compute mutual information from this.
 	 */
 	public abstract void storeInfoGain(String name, String labelQuery,
-			String featureQuery, String classFeatureQuery);
+			String featureQuery, String classFeatureQuery, Double minInfo);
 
 }

@@ -28,6 +28,7 @@ import org.apache.commons.cli.ParseException;
 
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.CrossValidationFold;
+import ytex.kernel.model.CrossValidationFoldInstance;
 import ytex.libsvm.LibSVMUtil;
 
 /**
@@ -129,18 +130,30 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 */
 	private void insertFolds(List<Set<Integer>> folds, String name,
 			String label, int run) {
+		// iterate over fold numbers
 		for (int foldNum = 1; foldNum <= folds.size(); foldNum++) {
-			// insert test set
-			classifierEvaluationDao.saveFold(new CrossValidationFold(name,
-					label, run, foldNum, false, folds.get(foldNum - 1)));
-			// insert training set
-			Set<Integer> trainInstances = new TreeSet<Integer>();
+			Set<CrossValidationFoldInstance> instanceIds = new HashSet<CrossValidationFoldInstance>();
+			// iterate over instances in each fold
 			for (int trainFoldNum = 1; trainFoldNum <= folds.size(); trainFoldNum++) {
-				if (trainFoldNum != foldNum)
-					trainInstances.addAll(folds.get(trainFoldNum - 1));
+				// add the instance, set the train flag
+				for (int instanceId : folds.get(trainFoldNum - 1))
+					instanceIds.add(new CrossValidationFoldInstance(instanceId,
+							trainFoldNum != foldNum));
 			}
 			classifierEvaluationDao.saveFold(new CrossValidationFold(name,
-					label, run, foldNum, true, trainInstances));
+					label, run, foldNum, instanceIds));
+			// insert test set
+			// classifierEvaluationDao.saveFold(new CrossValidationFold(name,
+			// label, run, foldNum, false, folds.get(foldNum - 1)));
+			// insert training set
+			// Set<Integer> trainInstances = new TreeSet<Integer>();
+			// for (int trainFoldNum = 1; trainFoldNum <= folds.size();
+			// trainFoldNum++) {
+			// if (trainFoldNum != foldNum)
+			// trainInstances.addAll(folds.get(trainFoldNum - 1));
+			// }
+			// classifierEvaluationDao.saveFold(new CrossValidationFold(name,
+			// label, run, foldNum, true, trainInstances));
 		}
 	}
 
@@ -176,7 +189,8 @@ public class FoldGeneratorImpl implements FoldGenerator {
 					double fraction = (double) nMinPerClass
 							/ (double) instanceIds.size();
 					// iterate through the list, start somewhere in the middle
-					int instanceIdIndex = (int) (r.nextDouble() * instanceIds.size());
+					int instanceIdIndex = (int) (r.nextDouble() * instanceIds
+							.size());
 					while (foldInstanceIds.size() < nMinPerClass) {
 						// go back to beginning of list if we hit the end
 						if (instanceIdIndex >= instanceIds.size()) {

@@ -1,10 +1,8 @@
 package ytex.kernel.dao;
 
-import java.util.List;
-
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.CrossValidationFold;
-import ytex.kernel.model.FeatureInfogain;
+import ytex.kernel.model.FeatureEvaluation;
 
 public interface ClassifierEvaluationDao {
 
@@ -14,6 +12,9 @@ public interface ClassifierEvaluationDao {
 
 	public abstract void deleteCrossValidationFoldByName(String name);
 
-	public abstract void saveInfogain(List<FeatureInfogain> foldInfogainList);
+	public abstract void saveFeatureEvaluation(FeatureEvaluation featureEvaluation);
+
+	public abstract void deleteFeatureEvaluationByNameAndType(String name,
+			String type);
 
 }
