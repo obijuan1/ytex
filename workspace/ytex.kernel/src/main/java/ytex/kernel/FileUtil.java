@@ -1,6 +1,7 @@
 package ytex.kernel;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,6 +109,24 @@ public class FileUtil {
 		else
 			builder.append("test");
 		return builder.toString();
+	}
+
+	public static void createOutdir(String outdir) throws IOException {
+		if (outdir != null && outdir.length() > 0) {
+			File outdirF = new File(outdir);
+			if (outdirF.exists()) {
+				if (!outdirF.isDirectory()) {
+					throw new IOException(
+							"outdir exists but is not a directory " + outdir);
+				}
+			} else {
+				if (!outdirF.mkdirs()) {
+					throw new IOException("could not create directory: "
+							+ outdir);
+				}
+			}
+		}
+
 	}
 
 }
