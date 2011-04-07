@@ -442,6 +442,8 @@ cv.eval.line=${cv.eval.line}
 		</for>
 	</target>
 	<target name="cv.evaluate" description="train on cv training set, eval on cv test set, store results in fold-specific timestamped directory">
+		<!-- want to put each result in a different directory, use timestamp, but libsvm is fast -->		
+		<sleep seconds="1"/>
 		<tstamp>
 			<format property="cv.tstamp" pattern="ddhhmmS" />
 		</tstamp>
