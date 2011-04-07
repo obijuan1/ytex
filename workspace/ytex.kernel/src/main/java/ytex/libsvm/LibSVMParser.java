@@ -18,6 +18,11 @@ public class LibSVMParser {
 	public static Pattern wsDotPattern = Pattern.compile("\\s|\\.|\\z");
 	public static Pattern labelsPattern = Pattern.compile("labels\\s+(.*)");
 	public static Pattern totalSVPattern = Pattern.compile("total_sv (\\d+)");
+	public static Pattern pKernel = Pattern.compile("-t\\s+(\\d)");
+	public static Pattern pGamma = Pattern.compile("-g\\s+([\\d\\.-e]+)");
+	public static Pattern pCost = Pattern.compile("-c\\s+([\\d\\.-e]+)");
+	public static Pattern pWeight = Pattern.compile("-w\\d\\s+[\\d\\.]+\\b");
+	public static Pattern pDegree = Pattern.compile("-d\\s+(\\d+)");
 
 	/**
 	 * parse svm-train model file to get the number of support vectors. Needed
@@ -206,19 +211,40 @@ public class LibSVMParser {
 		// -q -b 1 -t 2 -w1 41 -g 1000 -c 1000 training_data_11_fold9_train.txt
 		// training_data_11_fold9_model.txt
 		if (options != null) {
-			Pattern pKernel = Pattern.compile("-t\\s+(\\d)");
-			Pattern pGamma = Pattern.compile("-g\\s+([\\d\\.-e]+)");
-			Pattern pCost = Pattern.compile("-c\\s+([\\d\\.-e]+)");
-			Pattern pWeight = Pattern.compile("-w1\\s+(\\d+)");
-			Pattern pDegree = Pattern.compile("-d\\s+(\\d+)");
 			eval.setKernel(parseIntOption(pKernel, options));
 			eval.setDegree(parseIntOption(pDegree, options));
-			eval.setWeight(parseIntOption(pWeight, options));
+			eval.setWeight(parseWeight(options));
 			eval.setCost(parseDoubleOption(pCost, options));
 			eval.setGamma(parseDoubleOption(pGamma, options));
 		}
 	}
 
+	/**
+	 * parse the weight options out of the libsvm command line.
+	 * they are of the form -w0 1 -w2 1.5 ...
+	 * @param options
+	 * @return null if no weight options, else weight options
+	 */
+	private String parseWeight(String options) {
+		StringBuilder bWeight = new StringBuilder();
+		Matcher m = pWeight.matcher(options);
+		boolean bWeightParam = false;
+		while(m.find()) {
+			bWeightParam = true;
+			bWeight.append(m.group()).append(" ");
+		}
+		if(bWeightParam)
+			return bWeight.toString();
+		else
+			return null;
+	}
+
+	/**
+	 * parse a number out of the libsvm command line that matches the specified pattern.
+	 * @param pCost
+	 * @param options
+	 * @return null if option not present
+	 */
 	private Double parseDoubleOption(Pattern pCost, String options) {
 		Matcher m = pCost.matcher(options);
 		if (m.find())
@@ -227,6 +253,13 @@ public class LibSVMParser {
 			return null;
 	}
 
+	/**
+	 * 
+	 * parse a number out of the libsvm command line that matches the specified pattern.
+	 * @param pKernel
+	 * @param options
+	 * @return null if option not present
+	 */
 	private Integer parseIntOption(Pattern pKernel, String options) {
 		Matcher m = pKernel.matcher(options);
 		if (m.find())
@@ -235,12 +268,19 @@ public class LibSVMParser {
 			return null;
 	}
 
+	/**
+	 * for testing
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String args[]) throws Exception {
 		LibSVMParser parser = new LibSVMParser();
 		parser
 				.parse(
 						"E:\\projects\\ytex\\sujeevan\\processedData\\predict_35.txt",
 						"E:\\projects\\ytex\\sujeevan\\processedData\\test_gram_35.txt");
+		LibSVMClassifierEvaluation eval = new LibSVMClassifierEvaluation(); 
+		parser.parseOptions(eval, "-q -b 1 -t 0 -w0 0.13 -w1 0.87 -c 1 label1_run2_fold1_train_data.txt label1_run2_fold1/071022701/model.txt");
 
 	}
 }

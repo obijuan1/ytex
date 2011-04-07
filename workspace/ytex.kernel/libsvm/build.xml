@@ -29,8 +29,8 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="ant.pbs" value="${user.home}/ant.pbs" />
 	<!-- libsvm kernel type -->
 	<property name="kernel.types" value="0" />
-	<property name="classLabels" value="1" />
-	<property name="maxClassLabel" value="1" />
+	<property name="libsvm.classLabels" value="1" />
+	<property name="libsvm.maxClassLabel" value="1" />
 	<!-- classpath switch -->
 	<property name="libsvm.cp" value="libsvm.cp.prod" />
 	<!-- machine specific settings -->
@@ -66,7 +66,7 @@ zip up cv.tmpdir and put in processed data dir
 	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" onerror="ignore" classpathref="${libsvm.cp}" />
 	<taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" onerror="ignore" classpathref="${libsvm.cp}" />
 
-	<!-- property name="classLabels" value="1,2"/ -->
+	<!-- property name="libsvm.classLabels" value="1,2"/ -->
 	<!-- property name="costs" value="0.01,0.1" / -->
 	<!--
 	<target name="cv.consolidateResult.all">
@@ -116,7 +116,7 @@ zip up cv.tmpdir and put in processed data dir
 		</java>
 	</target>
 	<target name="cv.prepare">
-		<for list="${classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
+		<for list="${libsvm.classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
 			<sequential>
 				<antcall target="cv.prepare.class">
 					<param name="cv.classLabel" value="@{classLabel}" />
@@ -198,9 +198,9 @@ cv.eval.line=${cv.eval.line}
 	<target name="cv.all.folds.cluster" description="on cluster, generate all folds, evaluate libsvm" if="ytex.cluster">
 		<exec executable="qsub">
 			<!--
-			<arg line="-sync y -t 1-${maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
+			<arg line="-sync y -t 1-${libsvm.maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
 			-->
-			<arg line="-sync y -t 1-${maxClassLabel} ${ant.pbs} cv.processLabel" />
+			<arg line="-sync y -t 1-${libsvm.maxClassLabel} ${ant.pbs} cv.iter.label" />
 		</exec>
 	</target>
 	<target name="cv.generateFolds.cluster" description="generate folds for label and evaluate on cluster">
@@ -208,7 +208,7 @@ cv.eval.line=${cv.eval.line}
 			<param name="cv.classLabel" value="${env.SGE_TASK_ID}" />
 		</antcall>
 	</target>
-	<target name="cv.processLabel" description="proess folds for label">
+	<target name="cv.iter.label" description="process folds for label">
 		<property name="cv.classLabel" value="1" />
 		<property name="label.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
 		<!-- copy files for the specified label -->
@@ -234,7 +234,7 @@ cv.eval.line=${cv.eval.line}
 		</delete>
 	</target>
 	<target name="cv.all.folds.local" description="generate all folds, evaluate libsvm" unless="ytex.cluster">
-		<for list="${classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
+		<for list="${libsvm.classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
 			<sequential>
 				<antcall target="cv.generateFolds">
 					<param name="cv.classLabel" value="@{classLabel}" />
@@ -495,7 +495,7 @@ cv.eval.line=${cv.eval.line}
 	<target name="test.eval.all" description="test on all test sets">
 		<property name="test.outfile" value="${processedData}/test_results.txt" />
 		<delete file="test.outfile" quiet="yes" />
-		<for list="${classLabels}" param="classLabel">
+		<for list="${libsvm.classLabels}" param="classLabel">
 			<sequential>
 				<antcall target="test.evaluate">
 					<param name="test.classLabel" value="@{classLabel}" />

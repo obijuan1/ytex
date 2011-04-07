@@ -6,7 +6,7 @@ public class LibSVMClassifierEvaluation extends ClassifierEvaluation {
 	 */
 	private static final long serialVersionUID = 1L;
 	Double cost;
-	Integer weight;
+	String weight;
 	Integer degree;
 	Double gamma;
 	Integer kernel;
@@ -17,10 +17,10 @@ public class LibSVMClassifierEvaluation extends ClassifierEvaluation {
 	public void setCost(Double cost) {
 		this.cost = cost;
 	}
-	public Integer getWeight() {
+	public String getWeight() {
 		return weight;
 	}
-	public void setWeight(Integer weight) {
+	public void setWeight(String weight) {
 		this.weight = weight;
 	}
 	public Integer getDegree() {
