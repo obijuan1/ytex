@@ -200,11 +200,16 @@ cv.eval.line=${cv.eval.line}
 			<!--
 			<arg line="-sync y -t 1-${libsvm.maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
 			-->
-			<arg line="-sync y -t 1-${libsvm.maxClassLabel} ${ant.pbs} cv.iter.label" />
+			<arg line="-sync y -t 1-${libsvm.maxClassLabel} ${ant.pbs} cv.iter.label.cluster" />
 		</exec>
 	</target>
 	<target name="cv.generateFolds.cluster" description="generate folds for label and evaluate on cluster">
 		<antcall target="cv.generateFolds">
+			<param name="cv.classLabel" value="${env.SGE_TASK_ID}" />
+		</antcall>
+	</target>
+	<target name="cv.iter.label.cluster" description="take label from SGE_TASK_ID, call cv.iter.label">
+		<antcall target="cv.iter.label">
 			<param name="cv.classLabel" value="${env.SGE_TASK_ID}" />
 		</antcall>
 	</target>
