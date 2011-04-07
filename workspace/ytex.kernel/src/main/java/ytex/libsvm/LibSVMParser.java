@@ -175,7 +175,7 @@ public class LibSVMParser {
 			instanceIds = parseInstanceIds(instanceIdFile);
 		LibSVMClassifierEvaluation eval = new LibSVMClassifierEvaluation();
 		eval.setFold(FileUtil.parseFoldFromFileName(instanceIdFile));
-		eval.setRun(FileUtil.parseFoldFromFileName(instanceIdFile));
+		eval.setRun(FileUtil.parseRunFromFileName(instanceIdFile));
 		eval.setName(name);
 		eval.setExperiment(experiment);
 		eval.setAlgorithm("libsvm");
