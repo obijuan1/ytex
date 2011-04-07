@@ -174,11 +174,18 @@ CREATE TABLE  `stopword` (
   PRIMARY KEY (`stopword`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf-8;
 
+
+drop table classifier_eval;
+drop table classifier_eval_libsvm;
+drop table classifier_instance_eval;
+drop table classifier_instance_eval_prob;
+
 create table classifier_eval (
 	classifier_eval_id int AUTO_INCREMENT not null primary key,
 	name varchar(50) not null,
 	experiment varchar(50) null default "",
-	fold varchar(50) null default "",
+	fold int null,
+	run int null,
 	algorithm varchar(50) null default "",
 	label varchar(50) null default "",
 	options varchar(1000) null default "",
@@ -264,6 +271,39 @@ create table feature_rank (
   index fk_feature_eval(feature_eval_id)
 );
 
+
+
+create table hotspot (
+  hotspot_id int auto_increment not null primary key,
+  instance_id int not null comment 'fk cv_fold_instance',
+  anno_base_id int not null comment 'fk anno_base_id',
+  feature_rank_id int not null comment 'fk feature_rank',
+  unique index NK_hotspot (instance_id, anno_base_id, feature_rank_id)
+);
+ALTER TABLE `hotspot` ADD INDEX `ix_instance_id`(`instance_id`),
+ ADD INDEX `ix_anno_base_id`(`anno_base_id`),
+ ADD INDEX `ix_feature_rank_id`(`feature_rank_id`);
+
+drop table hotspot_zero_vector;
+create table hotspot_zero_vector (
+  hotspot_zero_vector_id int not null auto_increment primary key,
+  label varchar(50) not null,
+  instance_id int not null,
+  cutoff double not null,
+  unique index nk_zero_vector (label, instance_id, cutoff),
+  index ix_instance_id (instance_id)
+);
+
+
+create table hotspot_feature (
+	hotspot_feature_id int not null auto_increment primary key,
+	label varchar(50) not null,
+	instance_id int not null,
+	feature_name varchar(50),
+	rank int,
+	unique index nk_hotspot_feature (label, instance_id, feature_name),
+	index ix_rank (instance_id, rank)
+);
 
 
 create view v_classifier_eval_ir_classes
