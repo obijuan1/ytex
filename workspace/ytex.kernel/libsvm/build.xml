@@ -215,6 +215,7 @@ cv.eval.line=${cv.eval.line}
 	</target>
 	<target name="cv.iter.label" description="process folds for label">
 		<property name="cv.classLabel" value="1" />
+		<echo>cv.iter.label cv.classLabel=${cv.classLabel}</echo>
 		<property name="label.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
 		<!-- copy files for the specified label -->
 		<copy todir="${label.dir}">
