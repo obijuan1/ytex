@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ytex.kernel.FileUtil;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
 import ytex.kernel.model.LibSVMClassifierEvaluation;
 
@@ -161,14 +162,15 @@ public class LibSVMParser {
 	}
 
 	public LibSVMClassifierEvaluation parseClassifierEvaluation(String name,
-			String experiment, String label, String options, String fold,
+			String experiment, String label, String options, 
 			String predictionFile, String instanceFile, String modelFile,
 			String instanceIdFile, boolean storeProbabilities) throws Exception {
 		List<Integer> instanceIds = null;
 		if (instanceIdFile != null)
 			instanceIds = parseInstanceIds(instanceIdFile);
 		LibSVMClassifierEvaluation eval = new LibSVMClassifierEvaluation();
-		eval.setFold(fold);
+		eval.setFold(FileUtil.parseFoldFromFileName(instanceIdFile));
+		eval.setRun(FileUtil.parseFoldFromFileName(instanceIdFile));
 		eval.setName(name);
 		eval.setExperiment(experiment);
 		eval.setAlgorithm("libsvm");

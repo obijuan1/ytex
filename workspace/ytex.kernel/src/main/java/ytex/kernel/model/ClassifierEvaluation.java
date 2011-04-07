@@ -13,18 +13,19 @@ public class ClassifierEvaluation implements Serializable {
 	int classifierEvaluationId;
 	String name;
 	String experiment;
-	public String getExperiment() {
-		return experiment;
-	}
-	public void setExperiment(String experiment) {
-		this.experiment = experiment;
-	}
-	String fold;
+	Integer fold;
+	Integer run;
 	String algorithm;
 	String label;
 	String options;
 	byte[] model;
 	
+	public String getExperiment() {
+		return experiment;
+	}
+	public void setExperiment(String experiment) {
+		this.experiment = experiment;
+	}	
 	public byte[] getModel() {
 		return model;
 	}
@@ -44,11 +45,17 @@ public class ClassifierEvaluation implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getFold() {
+	public Integer getFold() {
 		return fold;
 	}
-	public void setFold(String fold) {
+	public void setFold(Integer fold) {
 		this.fold = fold;
+	}
+	public Integer getRun() {
+		return run;
+	}
+	public void setRun(Integer run) {
+		this.run = run;
 	}
 	public String getAlgorithm() {
 		return algorithm;

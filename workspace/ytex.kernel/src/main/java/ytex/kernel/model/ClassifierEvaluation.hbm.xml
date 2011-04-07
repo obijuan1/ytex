@@ -49,6 +49,7 @@
 		<property name="name" />
 		<property name="experiment" />
 		<property name="fold" />
+		<property name="run" />
 		<property name="algorithm" />
 		<property name="label" />
 		<property name="options" />

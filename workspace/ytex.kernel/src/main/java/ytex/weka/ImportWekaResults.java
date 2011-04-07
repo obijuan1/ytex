@@ -130,14 +130,21 @@ public class ImportWekaResults  {
 						+ "options.properties";
 				if (checkFileRead(output) && checkFileRead(optionsFile)) {
 					String options = null;
-					String fold = null;
+					Integer fold = null;
 					InputStream isOptions = null;
 					try {
 						isOptions = new FileInputStream(optionsFile);
 						Properties props = new Properties();
 						props.load(isOptions);
 						options = props.getProperty("options");
-						fold = props.getProperty("fold");
+						String strFold = props.getProperty("fold");
+						if(strFold != null) {
+							try {
+								fold = Integer.parseInt(strFold);
+							} catch(NumberFormatException nfe) {
+								
+							}
+						}
 					} finally {
 						isOptions.close();
 					}

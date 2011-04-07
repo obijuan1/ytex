@@ -120,7 +120,7 @@ public class WekaResultsImporterImpl implements WekaResultsImporter {
 		}
 	}
 
-	public void importClassifierEvaluation(String name, String fold,
+	public void importClassifierEvaluation(String name, Integer fold,
 			String algorithm, String label, String options, String experiment,
 			BufferedReader reader) throws IOException {
 		ClassifierEvaluation ce = new ClassifierEvaluation();

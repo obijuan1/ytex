@@ -34,7 +34,7 @@ public interface WekaResultsImporter {
 			WekaResultInstanceImporter resultInstanceImporter, String task,
 			BufferedReader reader) throws IOException;
 
-	public void importClassifierEvaluation(String name, String fold,
+	public void importClassifierEvaluation(String name, Integer fold,
 			String algorithm, String label, String options, String experiment,
 			BufferedReader reader) throws IOException;
 

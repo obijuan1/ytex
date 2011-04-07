@@ -27,12 +27,15 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:pointcut id="mapperOperation" expression="execution(* ytex.uima.mapper.*.*(..))" />
 		<aop:pointcut id="treeOperation"
 			expression="execution(* ytex.kernel.tree.*Tree*.*.*(..))" />
+		<aop:pointcut id="utilOperation"
+			expression="execution(* ytex.kernel.KernelUtil*.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="exporterOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="mapperOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="wekaImporter" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="daoOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="umlsDaoOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="treeOperation" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="utilOperation" />
 	</aop:config>
 
 
@@ -129,10 +132,33 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="libsvmUtil" ref="libsvmUtil" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 	</bean>
-	
+
 	<bean id="infoGainEvaluator" class="ytex.kernel.InfoGainEvaluatorImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 	</bean>
+	<bean id="kernelUtil" class="ytex.kernel.KernelUtilImpl">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="sparseDataExporter" class="ytex.kernel.SparseDataExporterImpl">
+		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="kernelUtil" ref="kernelUtil" />
+		<property name="nameToFormatterMap">
+			<map>
+				<entry>
+					<key><value>libsvm</value></key>
+					<ref bean="libSVMFormatterFactory"/>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+	<bean id="libSVMFormatterFactory" class="ytex.libsvm.LibSVMFormatterFactory">
+	</bean>
+	
+
+
 </beans>

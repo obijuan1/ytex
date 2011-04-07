@@ -18,6 +18,7 @@ import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.ClassifierEvaluation;
 
 public class LibSVMResultImporter {
+	@SuppressWarnings("static-access")
 	private static Options initOptions() {
 		Options options = new Options();
 		options.addOption(OptionBuilder.withArgName("cvDir").hasArg()
@@ -30,10 +31,8 @@ public class LibSVMResultImporter {
 		options.addOption(OptionBuilder.withArgName("test").hasArg()
 				.withDescription("libsvm input test data file").isRequired()
 				.create("test"));
-		options
-				.addOption(OptionBuilder.withArgName("instanceId").hasArg()
-						.withDescription("file with instance ids").create(
-								"instanceId"));
+		options.addOption(OptionBuilder.withArgName("instanceId").hasArg()
+				.withDescription("file with instance ids").create("instanceId"));
 		options.addOption(OptionBuilder.withArgName("name").hasArg()
 				.withDescription("name").isRequired().create("name"));
 		options.addOption(OptionBuilder.withArgName("experiment").hasArg()
@@ -45,8 +44,8 @@ public class LibSVMResultImporter {
 		options.addOption(OptionBuilder.withArgName("label").hasArg()
 				.withDescription("label").create("label"));
 		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
-				.withDescription("store probabilities, default yes").create(
-						"storeProb"));
+				.withDescription("store probabilities, default yes")
+				.create("storeProb"));
 		return options;
 	}
 
@@ -72,15 +71,14 @@ public class LibSVMResultImporter {
 									.getOptionValue("experiment"), line
 									.getOptionValue("label"), line
 									.getOptionValue("options"), line
-									.getOptionValue("fold"), line
 									.getOptionValue("output"), line
 									.getOptionValue("test"), line
 									.getOptionValue("model"), line
 									.getOptionValue("instanceId"), "yes"
 									.equals(line.getOptionValue("storeProb",
 											"yes")));
-					KernelContextHolder.getApplicationContext().getBean(
-							ClassifierEvaluationDao.class)
+					KernelContextHolder.getApplicationContext()
+							.getBean(ClassifierEvaluationDao.class)
 							.saveClassifierEvaluation(eval);
 				}
 			} catch (ParseException e) {
@@ -128,14 +126,13 @@ public class LibSVMResultImporter {
 							.parseClassifierEvaluation(line
 									.getOptionValue("name"), line
 									.getOptionValue("experiment"), line
-									.getOptionValue("label"), options, line
-									.getOptionValue("fold"), output, line
-									.getOptionValue("test"), model, line
-									.getOptionValue("instanceId"), "yes"
-									.equals(line.getOptionValue("storeProb",
-											"yes")));
-					KernelContextHolder.getApplicationContext().getBean(
-							ClassifierEvaluationDao.class)
+									.getOptionValue("label"), options, output,
+									line.getOptionValue("test"), model, line
+											.getOptionValue("instanceId"),
+									"yes".equals(line.getOptionValue(
+											"storeProb", "yes")));
+					KernelContextHolder.getApplicationContext()
+							.getBean(ClassifierEvaluationDao.class)
 							.saveClassifierEvaluation(eval);
 				}
 			}

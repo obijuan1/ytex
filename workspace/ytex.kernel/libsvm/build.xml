@@ -14,7 +14,7 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
 	<property name="libsvm.experiment" value="test" />
 	<property name="libsvm.name" value="test" />
-	<property name="libsvm.timeout" value="240000"/>
+	<property name="libsvm.timeout" value="240000" />
 	<property name="cv.storeProb" value="no" />
 	<property name="processedData" value="${ytex.home}/${libsvm.name}/libsvm/${libsvm.experiment}" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
@@ -126,21 +126,21 @@ zip up cv.tmpdir and put in processed data dir
 	</target>
 	<target name="cv.prepare.class">
 		<property name="cv.classLabel" value="1" />
-		<antcall target="ytex.libsvm.CreateStratifiedCVFolds"/>
-		<antcall target="cv.generateLibSVMSlices"/>
+		<antcall target="ytex.libsvm.CreateStratifiedCVFolds" />
+		<antcall target="cv.generateLibSVMSlices" />
 	</target>
 	<target name="cv.execute.local">
-		<property name="cv.classLabel" value="1"/>
+		<property name="cv.classLabel" value="1" />
 		<for list="${cv.local.slices}" param="cv.slice" parallel="${parallel.slices}" threadCount="${libsvm.threads}">
 			<sequential>
 				<antcall target="cv.execute.slice">
-					<param name="cv.slice" value="@{cv.slice}"/>
+					<param name="cv.slice" value="@{cv.slice}" />
 				</antcall>
-			</sequential>			
+			</sequential>
 		</for>
 	</target>
 	<target name="cv.execute.slice">
-		<property name="cv.slice" value="1"/>
+		<property name="cv.slice" value="1" />
 		<for param="training.file">
 			<fileset dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" includes="training_data_${cv.classLabel}_fold*_train.txt" />
 			<sequential>
@@ -151,25 +151,25 @@ zip up cv.tmpdir and put in processed data dir
 		</for>
 	</target>
 	<target name="cv.execute.fold">
-		<property name="cv.classLabel" value="1"/>
-		<property name="cv.slice" value="1"/>
-		<property name="training.file" value="1"/>
+		<property name="cv.classLabel" value="1" />
+		<property name="cv.slice" value="1" />
+		<property name="training.file" value="1" />
 		<property name="cv.fold.training" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/training_data_1_fold1_train.txt" />
 		<basename file="${cv.fold.training}" property="cv.fold.base" suffix="_train.txt" />
-		<loadfile property="libsvm.lines" srcFile="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/slice${cv.slice}.txt"/>
+		<loadfile property="libsvm.lines" srcFile="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/slice${cv.slice}.txt" />
 		<for list="${libsvm.lines}" param="cv.libsvm.line">
 			<sequential>
 				<antcall target="cv.evaluate2">
-					<param name="cv.libsvm.line" value="@{cv.libsvm.line}"/>
+					<param name="cv.libsvm.line" value="@{cv.libsvm.line}" />
 				</antcall>
 				<echo>@{cv.libsvm.line} ${cv.fold.base}</echo>
 			</sequential>
 		</for>
 		<antcall target="cv.extractResults.db.fold">
-			<param name="cv.result.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.slice}/${cv.fold.base}"/>
+			<param name="cv.result.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.slice}/${cv.fold.base}" />
 		</antcall>
 	</target>
-	
+
 	<target name="cv.evaluate2" description="train on cv training set, eval on cv test set, store results in fold-specific timestamped directory">
 		<tstamp>
 			<format property="cv.tstamp" pattern="ddhhmmS" />
@@ -197,13 +197,41 @@ cv.eval.line=${cv.eval.line}
 	<target name="cv.all.folds" depends="cv.all.folds.cluster,cv.all.folds.local" description="generate folds, evaluate svm on parameter grid" />
 	<target name="cv.all.folds.cluster" description="on cluster, generate all folds, evaluate libsvm" if="ytex.cluster">
 		<exec executable="qsub">
+			<!--
 			<arg line="-sync y -t 1-${maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
+			-->
+			<arg line="-sync y -t 1-${maxClassLabel} ${ant.pbs} cv.processLabel" />
 		</exec>
 	</target>
 	<target name="cv.generateFolds.cluster" description="generate folds for label and evaluate on cluster">
 		<antcall target="cv.generateFolds">
 			<param name="cv.classLabel" value="${env.SGE_TASK_ID}" />
 		</antcall>
+	</target>
+	<target name="cv.processLabel" description="proess folds for label">
+		<property name="cv.classLabel" value="1" />
+		<property name="label.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
+		<!-- copy files for the specified label -->
+		<copy todir="${label.dir}">
+			<fileset dir="${processedData}" includes="label${cv.classLabel}_*.*" />
+		</copy>
+		<!-- iterate over files -->
+		<for param="training.file" parallel="${parallel.folds}" threadCount="${libsvm.threads}">
+			<fileset dir="${label.dir}" includes="label${cv.classLabel}_*train_data.txt" />
+			<sequential>
+				<antcall target="cv.iter.fold">
+					<param name="cv.fold.training" value="@{training.file}" />
+				</antcall>
+			</sequential>
+		</for>
+		<!-- cleanup -->
+		<mkdir dir="${processedData}/cv" />
+		<zip destfile="${processedData}/cv/${cv.classLabel}.zip" update="yes">
+			<fileset dir="${label.dir}" excludes="*.txt" />
+		</zip>
+		<delete quiet="yes" includeemptydirs="yes">
+			<fileset dir="${cv.tmpdir}" includes="${libsvm.experiment}-${cv.classLabel}/**/*.*" excludes="${libsvm.experiment}-${cv.classLabel}/*.txt" />
+		</delete>
 	</target>
 	<target name="cv.all.folds.local" description="generate all folds, evaluate libsvm" unless="ytex.cluster">
 		<for list="${classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
@@ -302,12 +330,13 @@ cv.eval.line=${cv.eval.line}
 
 	<target name="cv.iter.fold" description="run libsvm on specified fold, store results in database">
 		<property name="cv.classLabel" value="1" />
-		<property name="cv.fold.training" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/training_data_1_fold1_train.txt" />
-		<basename file="${cv.fold.training}" property="cv.fold.base" suffix="_train.txt" />
+		<property name="label.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
+		<property name="cv.fold.training" value="${label.dir}/label${cv.classLabel}_run1_fold1_train_data.txt" />
+		<basename file="${cv.fold.training}" property="cv.fold.base.prefix" suffix="_train_data.txt" />
+		<basename file="${cv.fold.base.prefix}" property="cv.fold.base" />
+		<property name="cv.result.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.fold.base}" />
 		<antcall target="cv.iter.kernel" />
-		<antcall target="cv.extractResults.db.fold">
-			<param name="cv.result.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.fold.base}"/>
-		</antcall>
+		<antcall target="cv.extractResults.db.fold" />
 	</target>
 	<target name="cv.iter.kernel" description="run cross-validation with all specified kernels, delegate to cv.iter.weight">
 		<for list="${kernel.types}" param="kernel.type">
@@ -410,29 +439,30 @@ cv.eval.line=${cv.eval.line}
 		<tstamp>
 			<format property="cv.tstamp" pattern="ddhhmmS" />
 		</tstamp>
+		<property name="label.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
 		<property name="cv.outdir" value="${cv.fold.base}/${cv.tstamp}" />
-		<mkdir dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.outdir}" />
+		<mkdir dir="${label.dir}/${cv.outdir}" />
 		<property name="cv.classLabel" value="1" />
-		<property name="cv.fold.base" value="training_data_${cv.classLabel}_fold1" />
-		<property name="cv.fold.train" value="${cv.fold.base}_train.txt" />
-		<property name="cv.fold.test" value="${cv.fold.base}_test.txt" />
+		<property name="cv.fold.base" value="label${cv.classLabel}_run1_fold1" />
+		<property name="cv.fold.train" value="${cv.fold.base}_train_data.txt" />
+		<property name="cv.fold.test" value="${cv.fold.base}_test_data.txt" />
 		<!-- train the svm -->
 		<property name="cv.eval.line" value="-q -b 1 -t ${kernel.type} ${cv.libsvm.line} ${cv.fold.train} ${cv.outdir}/model.txt" />
-		<exec executable="${libsvm.bin}/svm-train" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failonerror="yes">
+		<exec executable="${libsvm.bin}/svm-train" dir="${label.dir}" failonerror="yes">
 			<arg line="${cv.eval.line}" />
 		</exec>
 		<!-- test the svm -->
-		<exec executable="${libsvm.bin}/svm-predict" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failonerror="yes">
+		<exec executable="${libsvm.bin}/svm-predict" dir="${label.dir}" failonerror="yes">
 			<arg line="-b 1 ${cv.fold.test} ${cv.outdir}/model.txt ${cv.outdir}/predict.txt" />
 		</exec>
 		<!-- store libsvm options -->
-		<echo file="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.outdir}/options.properties">
+		<echo file="${label.dir}/${cv.outdir}/options.properties">
 cv.eval.line=${cv.eval.line}
 </echo>
 	</target>
 	<target name="cv.extractResults.db.fold">
 		<property name="cv.classLabel" value="1" />
-		<property name="cv.fold.base" value="training_data_1_fold1" />
+		<property name="cv.fold.base" value="label1_run1_fold1" />
 		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failOnError="yes">
 			<arg value="-name" />
 			<arg value="${libsvm.name}" />
@@ -441,11 +471,9 @@ cv.eval.line=${cv.eval.line}
 			<arg value="-label" />
 			<arg value="${cv.classLabel}" />
 			<arg value="-test" />
-			<arg value="${cv.fold.base}_test.txt" />
+			<arg value="${cv.fold.base}_test_data.txt" />
 			<arg value="-instanceId" />
-			<arg value="${cv.fold.base}_testId.txt" />
-			<arg value="-fold" />
-			<arg value="${cv.fold.base}" />
+			<arg value="${cv.fold.base}_test_id.txt" />
 			<arg value="-cvDir" />
 			<arg value="${cv.result.dir}" />
 			<arg value="-storeProb" />
