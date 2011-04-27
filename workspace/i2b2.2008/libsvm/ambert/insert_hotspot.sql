@@ -56,6 +56,83 @@ group by label, instance_id
 ) h on d.docId = h.instance_id and a.disease = h.label
 where fc is null
 ;
+
+insert into hotspot_zero_vector (label, instance_id, cutoff)
+select a.disease, d.docId, 75
+from i2b2_2008_doc d
+inner join i2b2_2008_anno a on d.docId = a.docId and a.source = 'intuitive'
+left join
+(
+select label, instance_id, count(*) fc
+from hotspot_feature
+where rank <= 75
+group by label, instance_id
+) h on d.docId = h.instance_id and a.disease = h.label
+where fc is null
+;
+
+insert into hotspot_zero_vector (label, instance_id, cutoff)
+select a.disease, d.docId, 50
+from i2b2_2008_doc d
+inner join i2b2_2008_anno a on d.docId = a.docId and a.source = 'intuitive'
+left join
+(
+select label, instance_id, count(*) fc
+from hotspot_feature
+where rank <= 50
+group by label, instance_id
+) h on d.docId = h.instance_id and a.disease = h.label
+where fc is null
+;
+
+insert into hotspot_zero_vector (label, instance_id, cutoff)
+select a.disease, d.docId, 25
+from i2b2_2008_doc d
+inner join i2b2_2008_anno a on d.docId = a.docId and a.source = 'intuitive'
+left join
+(
+select label, instance_id, count(*) fc
+from hotspot_feature
+where rank <= 25
+group by label, instance_id
+) h on d.docId = h.instance_id and a.disease = h.label
+where fc is null
+;
+
+
+insert into hotspot_zero_vector (label, instance_id, cutoff)
+select a.disease, d.docId, 10
+from i2b2_2008_doc d
+inner join i2b2_2008_anno a on d.docId = a.docId and a.source = 'intuitive'
+left join
+(
+select label, instance_id, count(*) fc
+from hotspot_feature
+where rank <= 10
+group by label, instance_id
+) h on d.docId = h.instance_id and a.disease = h.label
+where fc is null
+;
+
+
+insert into hotspot_zero_vector (label, instance_id, cutoff)
+select a.disease, d.docId, 5
+from i2b2_2008_doc d
+inner join i2b2_2008_anno a on d.docId = a.docId and a.source = 'intuitive'
+left join
+(
+select label, instance_id, count(*) fc
+from hotspot_feature
+where rank <= 5
+group by label, instance_id
+) h on d.docId = h.instance_id and a.disease = h.label
+where fc is null
+;
+
+
+
+
+
 /*
 takes way too long per fold.
 generating hotspot vector per instance: 1.8 sec
