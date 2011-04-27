@@ -1,0 +1,28 @@
+<project name="i2b2">
+	<property environment="env" />
+	<property name="ytex.home" value="../.." />
+	<property name="config.local" value="${ytex.home}/config/desc" />
+	<property name="ytex.properties" value="${config.local}/ytex.properties" />
+	<property name="log4j.param" value="-Dlog4j.configuration=file://${ytex.home}/config/desc/log4j.properties" />
+	<property file="${ytex.properties}" />
+	<path id="i2b2.cp">
+		<pathelement location="desc" />
+		<pathelement location="bin" />
+		<pathelement location="${config.local}" />
+		<pathelement location="${ytex.home}/config/desc" />
+		<pathelement location="${ytex.home}/cmc/bin" />
+		<pathelement location="${ytex.home}/ytex.kernel/bin" />
+		<pathelement location="${ytex.home}/ytex.model/bin" />
+		<fileset dir="${ytex.home}/libs.system" includes="**/*.jar" />
+		<fileset dir="${ytex.home}/ytex.web/WebContent/WEB-INF/lib" includes="**/*.jar" />
+	</path>
+	
+	<target name="runCPE" description="annotate i2b2 corpus">
+		<java class="ytex.tools.RunCPE" fork="yes">
+			<arg>./desc/ytex/uima/i2b2/cpe.xml</arg>
+			<jvmarg>-Xmx1g</jvmarg>
+			<jvmarg>${log4j.param}</jvmarg>
+		</java>
+	</target>
+
+</project>
