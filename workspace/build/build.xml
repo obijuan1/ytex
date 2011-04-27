@@ -109,7 +109,7 @@
 			<path refid="cp.all" />
 			<fileset dir="${ytex.dist.home}/lib" includes="ytex.model.jar" />
 		</path>
-		<antcall target="compile">
+		<antcall target="compile"  inheritRefs="true">
 			<param name="project.name" value="ytex.kernel" />
 			<param name="project.classpathref" value="cp.ytex.kernel" />
 		</antcall>
