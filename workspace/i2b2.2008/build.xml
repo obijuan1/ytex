@@ -10,7 +10,7 @@
 		<pathelement location="bin" />
 		<pathelement location="${config.local}" />
 		<pathelement location="${ytex.home}/config/desc" />
-		<pathelement location="${ytex.home}/cmc/bin" />
+		<pathelement location="${ytex.home}/ctakes-patches/bin" />
 		<pathelement location="${ytex.home}/ytex.kernel/bin" />
 		<pathelement location="${ytex.home}/ytex.model/bin" />
 		<pathelement location="${ytex.home}/ytex.uima/bin" />
