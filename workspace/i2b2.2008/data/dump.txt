@@ -1,0 +1,3 @@
+mysqldump --user=ytex --password=ytex ytex i2b2_2008_anno i2b2_2008_disease i2b2_2008_doc i2b2_2008_judgement > i2b2.sql
+
+mysqldump --user=ytex --password=ytex ytex document anno_base anno_word_token anno_dockey anno_sentence anno_ontology_concept anno_segment > ytex_i2b2.sql

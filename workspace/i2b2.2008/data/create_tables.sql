@@ -17,3 +17,5 @@ create table i2b2_2008_anno (
 
 create index idx_docId on i2b2_2008_anno(docId);
 create unique index idx_anno on i2b2_2008_anno(source, disease, docId);
+
+
