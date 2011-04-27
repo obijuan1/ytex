@@ -71,8 +71,8 @@ where anno_base.anno_base_id is null
 delete anno_umls_concept
 from anno_umls_concept 
 left join anno_ontology_concept
-	on anno_umls_concept.ontology_concept_id = anno_ontology_concept.ontology_concept_id
-where anno_ontology_concept.ontology_concept_id is null
+	on anno_umls_concept.anno_ontology_concept_id = anno_ontology_concept.anno_ontology_concept_id
+where anno_ontology_concept.anno_ontology_concept_id is null
 ;
 
 delete anno_word_token
