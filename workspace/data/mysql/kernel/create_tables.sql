@@ -195,7 +195,7 @@ create table classifier_eval (
 create table classifier_eval_libsvm (
 	classifier_eval_id int not null comment 'fk classifier_eval' primary key,
 	cost double DEFAULT '0',
-  	weight int DEFAULT '0',
+  	weight varchar(50),
 	degree int DEFAULT '0',
 	gamma double DEFAULT '0',
 	kernel int DEFAULT NULL,

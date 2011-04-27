@@ -53,6 +53,10 @@ create table anno_base (
 )engine=myisam
 ;
 
+ALTER TABLE `anno_base` 
+	ADD INDEX `IX_type_span`(`document_id`, `span_begin`, `span_end`, `uima_type_id`),
+	ADD INDEX `IX_type`(`document_id`, `uima_type_id`);
+ 
 CREATE INDEX IX_docanno_doc ON anno_base (document_id)
 ;
 
@@ -231,3 +235,12 @@ create table anno_date (
 	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE */
 ) engine=myisam;
 
+create table anno_contain (
+  parent_anno_base_id int not null comment 'parent anno fk anno_base',
+  parent_uima_type_id int not null comment 'parent type',
+  child_anno_base_id int not null comment 'child anno fk anno_base',
+  child_uima_type_id int not null comment 'child type',
+  key ix_child_id (child_anno_base_id),
+  key ix_parent_id (parent_anno_base_id),
+  primary key pk_anno_contain (parent_anno_base_id, child_anno_base_id)
+) engine=myisam, comment 'containment relationships between annotations';

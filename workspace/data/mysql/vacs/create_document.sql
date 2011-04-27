@@ -38,3 +38,10 @@ CREATE INDEX IX_anno_dockey_uid ON anno_dockey
 	uid
 )
 ;
+
+CREATE INDEX IX_anno_base_uid ON anno_dockey
+(
+	anno_base_id,
+	uid
+)
+;
