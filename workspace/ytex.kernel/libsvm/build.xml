@@ -20,8 +20,8 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="cv.storeProb" value="no" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<property name="cv.numFolds" value="10" />
-	<property name="cv.costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
-	<property name="cv.rbf.gammas" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
+	<property name="cv.costs" value="0.01,0.1,1,10,100" />
+	<property name="cv.rbf.gammas" value="0.01,0.1,1,10,100" />
 	<property name="cv.slices" value="24" />
 	<property name="cv.local.slices" value="1,2" />
 	<!-- degrees to test polynomical kernel with -->
