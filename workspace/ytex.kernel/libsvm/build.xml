@@ -259,9 +259,14 @@ cv.eval.line=${cv.eval.line}
 	<target name="cv.all.folds.local" description="generate all folds, evaluate libsvm" unless="ytex.cluster">
 		<for list="${libsvm.classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
 			<sequential>
+				<!--
 				<antcall target="cv.generateFolds">
 					<param name="cv.classLabel" value="@{classLabel}" />
 				</antcall>
+				-->
+				<antcall target="cv.iter.label">
+					<param name="cv.classLabel" value="@{classLabel}" />
+				</antcall>				
 			</sequential>
 		</for>
 	</target>
