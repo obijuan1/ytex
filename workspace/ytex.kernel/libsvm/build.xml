@@ -10,13 +10,14 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="ytex.properties" value="${config.local}/ytex.properties" />
 	<property name="log4j.param" value="-Dlog4j.configuration=file://${ytex.home}/config/desc/log4j.properties" />
 	<property file="${ytex.properties}" />
+	<property name="libsvm.data" value="${ytex.home}/${libsvm.name}/libsvm/${libsvm.experiment}" />
 	<property name="libsvm.home" value="c:/java/libsvm-3.0" />
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
 	<property name="libsvm.experiment" value="test" />
 	<property name="libsvm.name" value="test" />
 	<property name="libsvm.timeout" value="240000" />
+	<property name="libsvm.classweights" value="${libsvm.data}/classWeights.properties" />
 	<property name="cv.storeProb" value="no" />
-	<property name="processedData" value="${ytex.home}/${libsvm.name}/libsvm/${libsvm.experiment}" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<property name="cv.numFolds" value="10" />
 	<property name="cv.costs" value="0.0001,0.001,0.01,0.1,1,10,100,1000" />
@@ -27,6 +28,16 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="cv.poly.degrees" value="2,3" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<property name="ant.pbs" value="${user.home}/ant.pbs" />
+	<!-- cluster parameters -->
+	<!-- 
+	to submit an array job, define cv.qsub.array
+	<property name="cv.qsub.array" value="-sync y -t"/>
+	-->
+	<!-- 
+	to submit a indidual jobs (because the queue you're using doesn't allow array jobs)
+	define cv.qsub.array
+	<property name="cv.qsub.single" value="-q sandbox "/>
+	-->
 	<!-- libsvm kernel type -->
 	<property name="kernel.types" value="0" />
 	<property name="libsvm.classLabels" value="1" />
@@ -98,15 +109,15 @@ zip up cv.tmpdir and put in processed data dir
 		</condition>
 	</target>
 	<target name="export.data.gram" description="export gram matrix">
-		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${libsvm.cp}" dir="${processedData}" fork="yes">
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${libsvm.cp}" dir="${libsvm.data}" fork="yes">
 			<arg value="libsvm-export.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.param}" />
 		</java>
 	</target>
 	<target name="export.data.bow" description="export bag of words">
-		<echo>export.data.bow ${processedData}</echo>
-		<java classname="ytex.KernelLauncher" classpathref="${libsvm.cp}" dir="${processedData}" fork="yes">
+		<echo>export.data.bow ${libsvm.data}</echo>
+		<java classname="ytex.KernelLauncher" classpathref="${libsvm.cp}" dir="${libsvm.data}" fork="yes">
 			<arg value="-exportBagOfWords" />
 			<arg value="export-bow.xml" />
 			<arg value="-exportType" />
@@ -194,14 +205,20 @@ zip up cv.tmpdir and put in processed data dir
 cv.eval.line=${cv.eval.line}
 </echo>
 	</target>
-	<target name="cv.all.folds" depends="cv.all.folds.cluster,cv.all.folds.local" description="generate folds, evaluate svm on parameter grid" />
-	<target name="cv.all.folds.cluster" description="on cluster, generate all folds, evaluate libsvm" if="ytex.cluster">
+	<target name="cv.all.folds" depends="cv.qsub.array, cv.qsub.single,cv.all.folds.local" description="generate folds, evaluate svm on parameter grid" />
+	<target name="cv.qsub.array" if="cv.qsub.array" description="on cluster submit array job">
 		<exec executable="qsub">
-			<!--
-			<arg line="-sync y -t 1-${libsvm.maxClassLabel} ${ant.pbs} cv.generateFolds.cluster" />
-			-->
-			<arg line="-sync y -t 1-${libsvm.maxClassLabel} ${ant.pbs} cv.iter.label.cluster" />
+			<arg line="${cv.qsub.array} 1-${libsvm.maxClassLabel} ${ant.pbs} cv.iter.label.cluster" />
 		</exec>
+	</target>
+	<target name="cv.qsub.single" description="on cluster, submit each job individually" if="cv.qsub.single">
+		<for list="${libsvm.classLabels}" param="classLabel">
+			<sequential>
+				<exec executable="qsub">
+					<arg line="${cv.qsub.single} -v SGE_TASK_ID=@{classLabel} ${cv.pbs}" />
+				</exec>
+			</sequential>
+		</for>
 	</target>
 	<target name="cv.generateFolds.cluster" description="generate folds for label and evaluate on cluster">
 		<antcall target="cv.generateFolds">
@@ -219,7 +236,7 @@ cv.eval.line=${cv.eval.line}
 		<property name="label.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
 		<!-- copy files for the specified label -->
 		<copy todir="${label.dir}">
-			<fileset dir="${processedData}" includes="label${cv.classLabel}_*.*" />
+			<fileset dir="${libsvm.data}" includes="label${cv.classLabel}_*.*" />
 		</copy>
 		<!-- iterate over files -->
 		<for param="training.file" parallel="${parallel.folds}" threadCount="${libsvm.threads}">
@@ -231,8 +248,8 @@ cv.eval.line=${cv.eval.line}
 			</sequential>
 		</for>
 		<!-- cleanup -->
-		<mkdir dir="${processedData}/cv" />
-		<zip destfile="${processedData}/cv/${cv.classLabel}.zip" update="yes">
+		<mkdir dir="${libsvm.data}/cv" />
+		<zip destfile="${libsvm.data}/cv/${cv.classLabel}.zip" update="yes">
 			<fileset dir="${label.dir}" excludes="*.txt" />
 		</zip>
 		<delete quiet="yes" includeemptydirs="yes">
@@ -254,9 +271,9 @@ cv.eval.line=${cv.eval.line}
 		<echo>cv.tmpdir=${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}</echo>
 		<java classname="ytex.libsvm.CreateStratifiedCVFolds" classpathref="${libsvm.cp}" fork="no">
 			<arg value="-data" />
-			<arg value="${processedData}/training_data_${cv.classLabel}.txt" />
+			<arg value="${libsvm.data}/training_data_${cv.classLabel}.txt" />
 			<arg value="-instanceId" />
-			<arg value="${processedData}/training_id_${cv.classLabel}.txt" />
+			<arg value="${libsvm.data}/training_id_${cv.classLabel}.txt" />
 			<arg value="-outdir" />
 			<arg value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
 			<arg value="-folds" />
@@ -357,9 +374,9 @@ cv.eval.line=${cv.eval.line}
 	<target name="cv.init.classWeights" description="load property with class weights to iterate over for the given class label">
 		<property name="cv.classLabel" value="1" />
 		<if>
-			<available file="${processedData}/classWeights.properties" />
+			<available file="${libsvm.classweights}" />
 			<then>
-				<loadfile srcfile="${processedData}/classWeights.properties" property="classWeights">
+				<loadfile srcfile="${libsvm.classweights}" property="classWeights">
 					<filterchain>
 						<linecontains>
 							<contains value="class.weight.${cv.classLabel}=" />
@@ -490,18 +507,18 @@ cv.eval.line=${cv.eval.line}
 		</java>
 	</target>
 	<target name="test.generateOptimalParams" description="generate optimal parameters for running test evaluation">
-		<copy file="${basedir}/select_params.template.sql" tofile="${processedData}/select_params.sql" overwrite="yes">
+		<copy file="${basedir}/select_params.template.sql" tofile="${libsvm.data}/select_params.sql" overwrite="yes">
 			<filterset>
 				<filter token="EXPERIMENT" value="${libsvm.experiment}" />
 			</filterset>
 		</copy>
-		<exec executable="${mysql.bin.home}/mysql" dir="${processedData}" output="${processedData}/optimalParams.properties">
+		<exec executable="${mysql.bin.home}/mysql" dir="${libsvm.data}" output="${libsvm.data}/optimalParams.properties">
 			<arg line="${mysql.line} -e &quot;source select_params.sql&quot; -s" />
 		</exec>
 	</target>
 	<target name="test.all" depends="test.generateOptimalParams,test.eval.all" description="train on all training sets, test on all test sets, save results in db" />
 	<target name="test.eval.all" description="test on all test sets">
-		<property name="test.outfile" value="${processedData}/test_results.txt" />
+		<property name="test.outfile" value="${libsvm.data}/test_results.txt" />
 		<delete file="test.outfile" quiet="yes" />
 		<for list="${libsvm.classLabels}" param="classLabel">
 			<sequential>
@@ -519,11 +536,11 @@ cv.eval.line=${cv.eval.line}
 		<property name="test.model" value="model_${test.classLabel}.txt" />
 		<property name="test.predict" value="predict_${test.classLabel}.txt" />
 		<property name="test.eval.line" value="-q -b 1 -t ${kernel} -w1 ${weight} -c ${cost} ${gammaParam} ${degreeParam}" />
-		<exec executable="${libsvm.bin}/svm-train" dir="${processedData}">
+		<exec executable="${libsvm.bin}/svm-train" dir="${libsvm.data}">
 			<arg line="${test.eval.line} ${test.train} ${test.model}" />
 		</exec>
 		<!-- test the svm -->
-		<exec executable="${libsvm.bin}/svm-predict" dir="${processedData}">
+		<exec executable="${libsvm.bin}/svm-predict" dir="${libsvm.data}">
 			<arg line="-b 1 ${test.test} ${test.model} ${test.predict}" />
 		</exec>
 		<!-- extract results -->
@@ -532,7 +549,7 @@ cv.eval.line=${cv.eval.line}
 	</target>
 	<target name="test.evaluate.init" description="load optimal params for the given class label">
 		<property name="test.classLabel" value="20" />
-		<loadproperties srcfile="${processedData}/optimalParams.properties">
+		<loadproperties srcfile="${libsvm.data}/optimalParams.properties">
 			<filterchain>
 				<linecontains>
 					<contains value="${test.classLabel}." />
@@ -560,7 +577,7 @@ cv.eval.line=${cv.eval.line}
 		<property name="test.id" value="test_id_${test.classLabel}.txt" />
 		<property name="test.model" value="model_${test.classLabel}.txt" />
 		<property name="test.predict" value="predict_${test.classLabel}.txt" />
-		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${processedData}">
+		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${libsvm.data}">
 			<arg value="-name" />
 			<arg value="${libsvm.name}" />
 			<arg value="-experiment" />
@@ -584,7 +601,7 @@ cv.eval.line=${cv.eval.line}
 	</target>
 	<target name="kernel.storeInstanceMap" description="generate map of instance trees">
 		<echo>${db.url}</echo>
-		<java classname="ytex.KernelLauncher" dir="${processedData}" fork="yes" classpathref="${libsvm.cp}">
+		<java classname="ytex.KernelLauncher" dir="${libsvm.data}" fork="yes" classpathref="${libsvm.cp}">
 			<arg line="-beans ./beans-corpus-kernel.xml -storeInstanceMap instanceMap.obj" />
 			<jvmarg value="-Xmx1g" />
 		</java>
@@ -626,7 +643,7 @@ cv.eval.line=${cv.eval.line}
 	<target name="kernel.evalAllSlices" depends="kernel.evalAllSlices.cluster,kernel.evalAllSlices.local" />
 	<target name="kernel.evalSlice">
 		<property name="kernel.slice" value="1" />
-		<java classname="ytex.KernelLauncher" dir="${processedData}" fork="yes" classpathref="${libsvm.cp}">
+		<java classname="ytex.KernelLauncher" dir="${libsvm.data}" fork="yes" classpathref="${libsvm.cp}">
 			<arg line="-beans ./beans-corpus-kernel.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod} -slice ${kernel.slice}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
@@ -634,7 +651,7 @@ cv.eval.line=${cv.eval.line}
 		</java>
 	</target>
 	<target name="kernel.evalAll">
-		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${processedData}" fork="yes" classpathref="${libsvm.cp}">
+		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${libsvm.data}" fork="yes" classpathref="${libsvm.cp}">
 			<arg line="-beans ./beans-corpus-kernel.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.param}" />
