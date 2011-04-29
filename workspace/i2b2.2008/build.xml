@@ -59,7 +59,7 @@
 		</antcall>		
 	</target>
 	<target name="bocuis.export" description="export libsvm data for bocuis">
-		<for list="bocuis.export.cutoffss" param="export.cutoff">
+		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
 			<sequential>
 				<antcall target="bocuis.export.cutoff">
 					<param name="export.cutoff" value="@{export.cutoff}" />
