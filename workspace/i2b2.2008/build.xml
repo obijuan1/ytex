@@ -5,6 +5,11 @@
 	<property name="ytex.properties" value="${config.local}/ytex.properties" />
 	<property name="log4j.param" value="-Dlog4j.configuration=file://${ytex.home}/config/desc/log4j.properties" />
 	<property file="${ytex.properties}" />
+	<property name="mysql.home" value="${env.MYSQL_HOME}" />
+	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
+	
+	<property name="bocuis.export.cutoffs" value="0.03,0.1,1.0" />
+
 	<path id="i2b2.cp">
 		<pathelement location="desc" />
 		<pathelement location="bin" />
@@ -22,12 +27,83 @@
 		<pathelement location="${ytex.home}/maveric/dest" />
 		<pathelement location="${ytex.home}/maveric/resources" />
 	</path>
-	
+	<!-- 
+	for some reason on linux just copying the jars to the ant/lib directory doesn't work.
+	explicitly define the task.
+	-->
+	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" onerror="ignore" classpathref="i2b2.cp" />
+	<taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" onerror="ignore" classpathref="i2b2.cp" />
+
 	<target name="runCPE" description="annotate i2b2 corpus">
 		<java classname="ytex.tools.RunCPE" fork="yes" classpathref="i2b2.cp">
-			<arg value="./desc/ytex/uima/i2b2/cpe.xml"/>
-			<jvmarg value="-Xmx1g"/>
+			<arg value="./desc/ytex/uima/i2b2/cpe.xml" />
+			<jvmarg value="-Xmx1g" />
 		</java>
 	</target>
-
+	<target name="bocuis.InfoGain" description="rank features for bocuis representation">
+		<java classname="ytex.kernel.InfoGainEvaluatorImpl" fork="yes" classpathref="i2b2.cp">
+			<arg value="-prop" />
+			<arg value="./libsvm/bocuis/infogain-cui-train.xml" />
+			<jvmarg value="-Xmx1g" />
+		</java>
+		<java classname="ytex.kernel.InfoGainEvaluatorImpl" fork="yes" classpathref="i2b2.cp">
+			<arg value="-prop" />
+			<arg value="./libsvm/bocuis/infogain-ncuiword-train.xml" />
+			<jvmarg value="-Xmx1g" />
+		</java>
+	</target>
+	<target name="bocuis.hotspot" description="execute scripts to identify hotspot sentences">
+		<exec executable="${mysql.home}/mysql" dir="./libsvm/bocuis">
+			<arg line="${mysql.line}" />
+			<arg value="-e" />
+			<arg value="source insert_hotspot.sql" />
+		</exec>
+	</target>
+	<target name="bocuis.export" description="export libsvm data for bocuis">
+		<for list="bocuis.export.cutoffss" param="export.cutoff">
+			<sequential>
+				<antcall target="bocuis.export.cutoff">
+					<param name="export.cutoff" value="@{export.cutoff}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="bocuis.export.cutoff" description="export libsvm data for specified cutoff">
+		<property name="export.cutoff" value="0.03" />
+		<!-- generate script to find zero vectors for cutoff -->
+		<mkdir dir="libsvm/bocuis/${export.cutoff}"/>
+		<filterset id="export.filterset">
+			<filter token="export.cutoff" value="${export.cutoff}" />
+		</filterset>		
+		<!-- generate export property file -->
+		<copy file="libsvm/bocuis/export-bow.template.xml" tofile="libsvm/bocuis/${export.cutoff}/export-bow.xml" overwrite="yes">
+			<filterset refid="export.filterset"/>
+		</copy>
+		<!-- generate script to insert zero vectors for the cutoff  -->
+		<copy file="libsvm/bocuis/insert_hotspot_zv.template.sql" tofile="libsvm/bocuis/${export.cutoff}/insert_hotspot_zv.sql" overwrite="yes">
+			<filterset refid="export.filterset"/>
+		</copy>
+		<!-- export the data -->
+		<antcall target="SparseDataExporter">
+			<param name="export.type" value="libsvm" />
+			<param name="export.dir" value="libsvm/bocuis/${export.cutoff}" />
+		</antcall>
+	</target>
+	<target name="SparseDataExporter" description="run the SparseDataExporter from export.dir, property file export.prop, type export.type">
+		<property name="export.prop" value="export-bow.xml"/>
+		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="i2b2.cp" dir="${export.dir}">
+			<arg value="-prop" />
+			<arg value="${export.prop}" />
+			<arg value="-type" />
+			<arg value="${export.type}" />
+			<jvmarg value="-Xmx1g" />
+		</java>
+	</target>
+	<target name="mysql" description="run specified script">
+		<exec executable="${mysql.home}/mysql" dir="${mysql.dir}">
+			<arg line="${mysql.line}" />
+			<arg value="-e" />
+			<arg value="source ${mysql.script}" />
+		</exec>
+	</target>
 </project>
