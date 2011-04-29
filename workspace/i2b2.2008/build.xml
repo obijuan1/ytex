@@ -53,11 +53,10 @@
 		</java>
 	</target>
 	<target name="bocuis.hotspot" description="execute scripts to identify hotspot sentences">
-		<exec executable="${mysql.home}/mysql" dir="./libsvm/bocuis">
-			<arg line="${mysql.line}" />
-			<arg value="-e" />
-			<arg value="source insert_hotspot.sql" />
-		</exec>
+		<antcall target="mysql">
+			<param name="mysql.dir" value="libsvm/bocuis" />
+			<param name="mysql.script" value="insert_hotspot.sql" />
+		</antcall>		
 	</target>
 	<target name="bocuis.export" description="export libsvm data for bocuis">
 		<for list="bocuis.export.cutoffss" param="export.cutoff">
@@ -79,11 +78,15 @@
 		<copy file="libsvm/bocuis/export-bow.template.xml" tofile="libsvm/bocuis/${export.cutoff}/export-bow.xml" overwrite="yes">
 			<filterset refid="export.filterset"/>
 		</copy>
-		<!-- generate script to insert zero vectors for the cutoff  -->
+		<!-- generate and run script to insert zero vectors for the cutoff  -->
 		<copy file="libsvm/bocuis/insert_hotspot_zv.template.sql" tofile="libsvm/bocuis/${export.cutoff}/insert_hotspot_zv.sql" overwrite="yes">
 			<filterset refid="export.filterset"/>
 		</copy>
-		<!-- export the data -->
+		<antcall target="mysql">
+			<param name="mysql.dir" value="libsvm/bocuis/${export.cutoff}" />
+			<param name="mysql.script" value="insert_hotspot_zv.sql" />
+		</antcall>
+		<!-- export the data --> 
 		<antcall target="SparseDataExporter">
 			<param name="export.type" value="libsvm" />
 			<param name="export.dir" value="libsvm/bocuis/${export.cutoff}" />
