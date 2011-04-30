@@ -4,20 +4,21 @@ import java.util.List;
 import java.util.Set;
 
 import ytex.kernel.model.KernelEvaluation;
+import ytex.kernel.model.KernelEvaluationInstance;
 
 public interface KernelEvaluationDao {
 
-	public abstract void storeNorm(String name, int instanceId, double norm);
+	public abstract void storeNorm(KernelEvaluation kernelEvaluation, int instanceId, double norm);
 
-	public abstract Double getNorm(String name, int instanceId);
+	public abstract Double getNorm(KernelEvaluation kernelEvaluation, int instanceId);
 
-	public abstract void storeKernel(String name, int instanceId1,
+	public abstract void storeKernel(KernelEvaluation kernelEvaluation, int instanceId1,
 			int instanceId2, double kernel);
 
-	public abstract Double getKernel(String name, int instanceId1,
+	public abstract Double getKernel(KernelEvaluation kernelEvaluation, int instanceId1,
 			int instanceId2);
 
-	public List<KernelEvaluation> getAllKernelEvaluationsForInstance(
-			Set<String> names, int instanceId);
+	public List<KernelEvaluationInstance> getAllKernelEvaluationsForInstance(
+			KernelEvaluation kernelEvaluation, int instanceId);
 	
 }

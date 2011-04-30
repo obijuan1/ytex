@@ -12,11 +12,11 @@
 		<property name="crossValidationFoldId" column="cv_fold_id" />
 		<property name="evaluationType" column="type" />
 		<list name="features" table="feature_rank" cascade="all">
-			<key column="feature_eval_id"/>
+			<key column="feature_eval_id" />
 			<list-index column="rank" base="1" />
 			<composite-element class="FeatureRank">
-				<property name="featureName" column="feature_name"/>
-				<property name="evaluation" column="evaluation"/>
+				<property name="featureName" column="feature_name" />
+				<property name="evaluation" column="evaluation" />
 			</composite-element>
 		</list>
 	</class>
@@ -31,7 +31,7 @@
 		<property name="label" />
 		<property name="run" />
 		<property name="fold" />
-		<!--   property name="train" /-->
+		<!-- property name="train" / -->
 		<set name="instanceIds" table="cv_fold_instance" cascade="all">
 			<key column="cv_fold_id" />
 			<composite-element class="CrossValidationFoldInstance">
@@ -54,7 +54,12 @@
 		<property name="label" />
 		<property name="options" />
 		<property name="model" column="model" type="binary" />
-
+		<map name="classifierIRStats" inverse="true"
+			table="classifier_eval_ir">
+			<key column="classifier_eval_id" />
+			<map-key column="ir_class_id" type="int" />
+			<one-to-many class="ClassifierEvaluationIRStat" />
+		</map>
 		<map name="classifierInstanceEvaluations" inverse="true"
 			table="classifier_instance_eval">
 			<key column="classifier_eval_id" />
@@ -72,10 +77,29 @@
 			<property name="supportVectors" />
 		</joined-subclass>
 	</class>
+	<class name="ClassifierEvaluationIRStat" table="classifier_eval_ir">
+		<id name="classifierEvaluationIRStatId" column="classifier_instance_eval_id">
+			<generator class="native">
+				<param name="sequence">classifier_eval_ir_sequence</param>
+			</generator>
+		</id>
+		<many-to-one name="classifierEvaluation" class="ClassifierEvaluation"
+			column="classifier_eval_id" not-null="true" />
+		<property name="irClassId" column="ir_class_id"/>
+		<property name="tp"/>
+		<property name="fp"/>
+		<property name="tn"/>
+		<property name="fn"/>
+		<property name="ppv"/>
+		<property name="npv"/>
+		<property name="sensitivity" column="sens"/>
+		<property name="specificity" column="spec"/>
+		<property name="f1"/>
+	</class>
 	<class name="ClassifierInstanceEvaluation" table="classifier_instance_eval">
 		<id name="classifierInstanceEvaluationId" column="classifier_instance_eval_id">
 			<generator class="native">
-				<param name="sequence">classifier_eval_sequence</param>
+				<param name="sequence">classifier_instance_eval_sequence</param>
 			</generator>
 		</id>
 		<property name="instanceId" column="instance_id" />
@@ -93,8 +117,9 @@
 		from CrossValidationFold where name = :name
 	</query>
 	<query name="getFeatureEvaluationByNameAndType">
-		from FeatureEvaluation where name = :name and type = :type
+		from FeatureEvaluation where name = :name and type =
+		:type
 	</query>
-	
+
 
 </hibernate-mapping>

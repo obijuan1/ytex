@@ -6,7 +6,7 @@ import ytex.kernel.model.FeatureEvaluation;
 
 public interface ClassifierEvaluationDao {
 
-	public abstract void saveClassifierEvaluation(ClassifierEvaluation eval);
+	public abstract void saveClassifierEvaluation(ClassifierEvaluation eval, boolean saveInstanceEval);
 
 	public abstract void saveFold(CrossValidationFold fold);
 

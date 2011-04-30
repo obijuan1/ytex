@@ -19,7 +19,16 @@ public class ClassifierEvaluation implements Serializable {
 	String label;
 	String options;
 	byte[] model;
+	Map<Integer, ClassifierInstanceEvaluation> classifierInstanceEvaluations = new HashMap<Integer, ClassifierInstanceEvaluation>();
+	Map<Integer, ClassifierEvaluationIRStat> classifierIRStats = new HashMap<Integer, ClassifierEvaluationIRStat>();
 	
+	public Map<Integer, ClassifierEvaluationIRStat> getClassifierIRStats() {
+		return classifierIRStats;
+	}
+	public void setClassifierIRStats(
+			Map<Integer, ClassifierEvaluationIRStat> classifierIRStats) {
+		this.classifierIRStats = classifierIRStats;
+	}
 	public String getExperiment() {
 		return experiment;
 	}
@@ -32,7 +41,6 @@ public class ClassifierEvaluation implements Serializable {
 	public void setModel(byte[] model) {
 		this.model = model;
 	}
-	Map<Integer, ClassifierInstanceEvaluation> classifierInstanceEvaluations = new HashMap<Integer, ClassifierInstanceEvaluation>();
 	public int getClassifierEvaluationId() {
 		return classifierEvaluationId;
 	}

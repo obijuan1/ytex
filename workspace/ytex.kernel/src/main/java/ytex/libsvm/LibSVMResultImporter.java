@@ -44,7 +44,10 @@ public class LibSVMResultImporter {
 		options.addOption(OptionBuilder.withArgName("label").hasArg()
 				.withDescription("label").create("label"));
 		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
-				.withDescription("store probabilities, default yes")
+				.withDescription("store instance evaluations, default no")
+				.create("storeInstanceEval"));
+		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
+				.withDescription("store probabilities, default no")
 				.create("storeProb"));
 		return options;
 	}
@@ -76,10 +79,14 @@ public class LibSVMResultImporter {
 									.getOptionValue("model"), line
 									.getOptionValue("instanceId"), "yes"
 									.equals(line.getOptionValue("storeProb",
-											"yes")));
-					KernelContextHolder.getApplicationContext()
+											"no")));
+					KernelContextHolder
+							.getApplicationContext()
 							.getBean(ClassifierEvaluationDao.class)
-							.saveClassifierEvaluation(eval);
+							.saveClassifierEvaluation(
+									eval,
+									"yes".equals(line.getOptionValue(
+											"storeInstanceEval", "no")));
 				}
 			} catch (ParseException e) {
 				printHelp(options);
@@ -130,10 +137,14 @@ public class LibSVMResultImporter {
 									line.getOptionValue("test"), model, line
 											.getOptionValue("instanceId"),
 									"yes".equals(line.getOptionValue(
-											"storeProb", "yes")));
-					KernelContextHolder.getApplicationContext()
+											"storeProb", "no")));
+					KernelContextHolder
+							.getApplicationContext()
 							.getBean(ClassifierEvaluationDao.class)
-							.saveClassifierEvaluation(eval);
+							.saveClassifierEvaluation(
+									eval,
+									"yes".equals(line.getOptionValue(
+											"storeInstanceEval", "no")));
 				}
 			}
 		}

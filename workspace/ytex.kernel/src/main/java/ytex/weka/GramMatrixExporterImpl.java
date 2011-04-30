@@ -28,6 +28,7 @@ import ytex.kernel.BagOfWordsDecorator;
 import ytex.kernel.BagOfWordsExporter;
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.kernel.model.KernelEvaluation;
+import ytex.kernel.model.KernelEvaluationInstance;
 
 public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implements
 		GramMatrixExporter {
@@ -130,6 +131,8 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 					.getProperty("matrixFile")));
 			String kernelEvaluationNames = props
 					.getProperty("kernelEvaluationNames");
+			//TODO
+			KernelEvaluation kernelEvaluation = null;
 			Set<String> setKernelEvaluationNames = new HashSet<String>();
 			Collections.addAll(setKernelEvaluationNames, kernelEvaluationNames
 					.split(","));
@@ -137,7 +140,7 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 					instanceIDClassLabel, instanceIdToIndexMap);
 			this.bagOfWordsExporter.exportBagOfWords(propertyFile,
 					new GramMatrixArffDecorator(instanceIdToIndexMap));
-			exportGramMatrix(matrixWriter, setKernelEvaluationNames,
+			exportGramMatrix(matrixWriter, kernelEvaluation,
 					GramMatrixType.WEKA, instanceIDClassLabel,
 					instanceIdToIndexMap);
 		} finally {
@@ -155,7 +158,7 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 	}
 
 	protected Map<Integer, Integer> exportGramMatrix(BufferedWriter writer,
-			final Set<String> kernelEvaluationNames, GramMatrixType matrixType,
+			final KernelEvaluation kernelEvaluation, GramMatrixType matrixType,
 			final Map<Integer, String> instanceIDClassLabel,
 			final Map<Integer, Integer> instanceToIndexMap) throws IOException {
 		// allocate gram matrix
@@ -172,9 +175,9 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 			txNew.execute(new TransactionCallback<Object>() {
 				@Override
 				public Object doInTransaction(TransactionStatus arg0) {
-					for (KernelEvaluation keval : getKernelEvaluationDao()
+					for (KernelEvaluationInstance keval : getKernelEvaluationDao()
 							.getAllKernelEvaluationsForInstance(
-									kernelEvaluationNames, instanceId)) {
+									kernelEvaluation, instanceId)) {
 						Integer indexOther = null;
 						if (instanceId != keval.getInstanceId1()) {
 							indexOther = instanceToIndexMap.get(keval

@@ -29,6 +29,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.kernel.model.KernelEvaluation;
+import ytex.kernel.model.KernelEvaluationInstance;
 
 /**
  * export gram matrix for libsvm. input properties file with following keys:
@@ -220,8 +221,10 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 			final double[][] trainGramMatrix,
 			final SortedMap<Integer, Map<String, Integer>> testInstanceLabelMap,
 			final double[][] testGramMatrix) {
-		final Set<String> kernelEvaluationNames = new HashSet<String>(1);
-		kernelEvaluationNames.add(name);
+		//final Set<String> kernelEvaluationNames = new HashSet<String>(1);
+		//kernelEvaluationNames.add(name);
+		//TODO
+		final KernelEvaluation kernelEvaluation = null;
 		// prepare map of instance id to gram matrix index
 		final Map<Integer, Integer> trainInstanceToIndexMap = createInstanceIdToIndexMap(trainInstanceLabelMap);
 		final Map<Integer, Integer> testInstanceToIndexMap = testInstanceLabelMap != null ? createInstanceIdToIndexMap(testInstanceLabelMap)
@@ -242,10 +245,10 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 			t.execute(new TransactionCallback<Object>() {
 				@Override
 				public Object doInTransaction(TransactionStatus arg0) {
-					List<KernelEvaluation> kevals = getKernelEvaluationDao()
+					List<KernelEvaluationInstance> kevals = getKernelEvaluationDao()
 					.getAllKernelEvaluationsForInstance(
-							kernelEvaluationNames, instanceId); 
-					for (KernelEvaluation keval : kevals) {
+							kernelEvaluation, instanceId); 
+					for (KernelEvaluationInstance keval : kevals) {
 						// determine the index of the instance
 						// the index could be in the training or test matrix
 						Integer indexOtherTrain = null;

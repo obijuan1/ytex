@@ -34,6 +34,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.kernel.model.KernelEvaluation;
+import ytex.kernel.model.KernelEvaluationInstance;
 import ytex.kernel.tree.InstanceTreeBuilder;
 import ytex.kernel.tree.Node;
 import ytex.kernel.tree.TreeMappingInfo;
@@ -49,6 +50,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	}
 
+	@SuppressWarnings("static-access")
 	private static Options initOptions() {
 		Option oBeanref = OptionBuilder
 				.withArgName("classpath*:simSvcBeanRefContext.xml")
@@ -125,7 +127,44 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 	private InstanceTreeBuilder instanceTreeBuilder;
 
 	private KernelEvaluationDao kernelEvaluationDao;
-	private String kernelName;
+	
+	public String getExperiment() {
+		return experiment;
+	}
+
+	public void setExperiment(String experiment) {
+		this.experiment = experiment;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public int getFoldId() {
+		return foldId;
+	}
+
+	public void setFoldId(int foldId) {
+		this.foldId = foldId;
+	}
+
+	private String experiment;
+	private String name;
+	private String label = "";
+	private int foldId = 0;
+	
 	private SimpleJdbcTemplate simpleJdbcTemplate;
 	private String testInstanceIDQuery;
 	private String trainInstanceIDQuery;
@@ -137,6 +176,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	public void evaluateKernelOnCorpus(Map<Integer, Node> instanceIDMap,
 			int nMod, int nSlice) {
+		KernelEvaluation kernelEvaluation = null;
 		List<Integer> documentIds = txTemplate
 				.execute(new TransactionCallback<List<Integer>>() {
 					@Override
@@ -160,7 +200,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 					});
 		}
 		Set<String> names = new HashSet<String>(1);
-		names.add(kernelName);
+		names.add(experiment);
 		int nStart = 0;
 		int nEnd = documentIds.size();
 		if (nMod > 0) {
@@ -183,8 +223,8 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 						documentIds.size() - 1));
 			}
 			// remove instances already evaluated
-			for (KernelEvaluation kEval : this.kernelEvaluationDao
-					.getAllKernelEvaluationsForInstance(names, instanceId1)) {
+			for (KernelEvaluationInstance kEval : this.kernelEvaluationDao
+					.getAllKernelEvaluationsForInstance(kernelEvaluation, instanceId1)) {
 				rightDocumentIDs
 						.remove(instanceId1 == kEval.getInstanceId1() ? kEval
 								.getInstanceId2() : kEval.getInstanceId1());
@@ -202,7 +242,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 						// @Override
 						// public Object doInTransaction(TransactionStatus arg0)
 						// {
-						kernelEvaluationDao.storeKernel(kernelName, i1, i2,
+						kernelEvaluationDao.storeKernel(kernelEvaluation, i1, i2,
 								instanceKernel.evaluate(root1, root2));
 					}
 					// return null;
@@ -229,9 +269,6 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		return kernelEvaluationDao;
 	}
 
-	public String getKernelName() {
-		return kernelName;
-	}
 
 	public String getTestInstanceIDQuery() {
 		return testInstanceIDQuery;
@@ -298,10 +335,6 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	public void setKernelEvaluationDao(KernelEvaluationDao kernelEvaluationDao) {
 		this.kernelEvaluationDao = kernelEvaluationDao;
-	}
-
-	public void setKernelName(String kernelName) {
-		this.kernelName = kernelName;
 	}
 
 	public void setTestInstanceIDQuery(String testInstanceIDQuery) {

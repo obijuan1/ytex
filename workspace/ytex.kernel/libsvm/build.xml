@@ -17,6 +17,7 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="libsvm.name" value="test" />
 	<property name="libsvm.timeout" value="240000" />
 	<property name="libsvm.classweights" value="${libsvm.data}/classWeights.properties" />
+	<property name="cv.storeInstanceEval" value="no" />
 	<property name="cv.storeProb" value="no" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<property name="cv.numFolds" value="10" />
@@ -506,6 +507,8 @@ cv.eval.line=${cv.eval.line}
 			<arg value="${cv.fold.base}_test_id.txt" />
 			<arg value="-cvDir" />
 			<arg value="${cv.result.dir}" />
+			<arg value="-storeInstanceEval" />
+			<arg value="${cv.storeInstanceEval}" />
 			<arg value="-storeProb" />
 			<arg value="${cv.storeProb}" />
 			<jvmarg value="${log4j.param}" />

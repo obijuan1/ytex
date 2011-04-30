@@ -1,6 +1,8 @@
 package ytex.kernel.dao;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,10 +10,10 @@ import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 
 import ytex.kernel.model.ClassifierEvaluation;
-import ytex.kernel.model.CrossValidationFold;
+import ytex.kernel.model.ClassifierEvaluationIRStat;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
+import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.FeatureEvaluation;
-import ytex.kernel.model.FeatureInfogain;
 
 public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	private static final Log log = LogFactory
@@ -44,12 +46,61 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	 * ytex.kernel.dao.ClassifierEvaluationDao#saveClassifierEvaluation(ytex
 	 * .kernel.model.ClassifierEvaluation)
 	 */
-	public void saveClassifierEvaluation(ClassifierEvaluation eval) {
+	public void saveClassifierEvaluation(ClassifierEvaluation eval,
+			boolean saveInstanceEval) {
 		this.getSessionFactory().getCurrentSession().save(eval);
+		this.saveIRStats(eval);
+		if (saveInstanceEval) {
+			for (ClassifierInstanceEvaluation instanceEval : eval
+					.getClassifierInstanceEvaluations().values()) {
+				this.getSessionFactory().getCurrentSession().save(instanceEval);
+			}
+		}
+	}
+
+	private void saveIRStats(ClassifierEvaluation eval) {
+		Set<Integer> classIds = this.getClassIds(eval);
+		// setup stats
+		for (Integer irClassId : classIds) {
+			ClassifierEvaluationIRStat irStat = calcIRStats(irClassId, eval);
+			this.getSessionFactory().getCurrentSession().save(irStat);
+			eval.getClassifierIRStats().put(irClassId, irStat);
+		}
+	}
+
+	private ClassifierEvaluationIRStat calcIRStats(Integer irClassId,
+			ClassifierEvaluation eval) {
+		int tp = 0;
+		int tn = 0;
+		int fp = 0;
+		int fn = 0;
+		for (ClassifierInstanceEvaluation instanceEval : eval.getClassifierInstanceEvaluations()
+				.values()) {
+			if (instanceEval.getTargetClassId() == irClassId) {
+				if (instanceEval.getPredictedClassId() ==  instanceEval.getTargetClassId()) {
+					tp++;
+				} else {
+					fn++;
+				}
+			} else {
+				if (instanceEval.getPredictedClassId() == irClassId) {
+					fp++;
+				} else {
+					tn++;
+				}
+			}
+		}
+		return new ClassifierEvaluationIRStat(eval, irClassId, tp, tn, fp, fn);
+	}
+
+	private Set<Integer> getClassIds(ClassifierEvaluation eval) {
+		Set<Integer> classIds = new HashSet<Integer>();
 		for (ClassifierInstanceEvaluation instanceEval : eval
 				.getClassifierInstanceEvaluations().values()) {
-			this.getSessionFactory().getCurrentSession().save(instanceEval);
+			classIds.add(instanceEval.getPredictedClassId());
+			classIds.add(instanceEval.getTargetClassId());
 		}
+		return classIds;
 	}
 
 	@Override
