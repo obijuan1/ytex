@@ -8,7 +8,7 @@
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	
-	<property name="bocuis.export.cutoffs" value="0.03,0.1,1.0" />
+	<property name="bocuis.export.cutoffs" value="0.03,0.05,0.07,0.09,0.1" />
 
 	<path id="i2b2.cp">
 		<pathelement location="desc" />
@@ -46,11 +46,13 @@
 			<arg value="./libsvm/bocuis/infogain-cui-train.xml" />
 			<jvmarg value="-Xmx1g" />
 		</java>
+		<!--
 		<java classname="ytex.kernel.InfoGainEvaluatorImpl" fork="yes" classpathref="i2b2.cp">
 			<arg value="-prop" />
 			<arg value="./libsvm/bocuis/infogain-ncuiword-train.xml" />
 			<jvmarg value="-Xmx1g" />
 		</java>
+		-->
 	</target>
 	<target name="bocuis.hotspot" description="execute scripts to identify hotspot sentences">
 		<antcall target="mysql">
@@ -91,6 +93,26 @@
 			<param name="export.type" value="libsvm" />
 			<param name="export.dir" value="libsvm/bocuis/${export.cutoff}" />
 		</antcall>
+	</target>
+	<target name="bocuis.libsvm.cutoffs" description="run libsvm on all cutoffs">
+		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
+			<sequential>
+				<antcall target="bocuis.libsvm.cutoff">
+					<param name="export.cutoff" value="@{export.cutoff}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="bocuis.libsvm.cutoff" description="run libsvm for specified cutoff">
+		<property name="export.cutoff" value="0.03test"/>
+		<ant antfile="build.xml" dir="../ytex.kernel/libsvm" target="cv.all.folds.local" inheritall="true">
+			<!-- for testing 
+			<property name="libsvm.classLabels" value="1"/>
+			-->
+			<property name="ytex.home" value="../.."/>
+			<property name="experiment" value="bocuis${export.cutoff}"/>
+			<property name="libsvm.data" value="../../i2b2.2008/libsvm/bocuis/${export.cutoff}"/>
+		</ant>
 	</target>
 	<target name="SparseDataExporter" description="run the SparseDataExporter from export.dir, property file export.prop, type export.type">
 		<property name="export.prop" value="export-bow.xml"/>
