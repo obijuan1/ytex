@@ -12,12 +12,17 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.ClassifierEvaluation;
 
 public class LibSVMResultImporter {
+	private static final Log log = LogFactory
+			.getLog(LibSVMResultImporter.class);
+
 	@SuppressWarnings("static-access")
 	private static Options initOptions() {
 		Options options = new Options();
@@ -129,22 +134,30 @@ public class LibSVMResultImporter {
 					isOptions.close();
 				}
 				if (options != null) {
-					ClassifierEvaluation eval = lparser
-							.parseClassifierEvaluation(line
-									.getOptionValue("name"), line
-									.getOptionValue("experiment"), line
-									.getOptionValue("label"), options, output,
-									line.getOptionValue("test"), model, line
-											.getOptionValue("instanceId"),
-									"yes".equals(line.getOptionValue(
-											"storeProb", "no")));
-					KernelContextHolder
-							.getApplicationContext()
-							.getBean(ClassifierEvaluationDao.class)
-							.saveClassifierEvaluation(
-									eval,
-									"yes".equals(line.getOptionValue(
-											"storeInstanceEval", "no")));
+					try {
+						ClassifierEvaluation eval = lparser
+								.parseClassifierEvaluation(line
+										.getOptionValue("name"), line
+										.getOptionValue("experiment"), line
+										.getOptionValue("label"), options,
+										output, line.getOptionValue("test"),
+										model, line
+												.getOptionValue("instanceId"),
+										"yes".equals(line.getOptionValue(
+												"storeProb", "no")));
+						KernelContextHolder
+								.getApplicationContext()
+								.getBean(ClassifierEvaluationDao.class)
+								.saveClassifierEvaluation(
+										eval,
+										"yes".equals(line.getOptionValue(
+												"storeInstanceEval", "no")));
+					} catch (Exception e) {
+						// continue processing - don't give up because of one
+						// bad file
+						log.warn("error importing results, resultDir="
+								+ resultDir.getAbsolutePath(), e);
+					}
 				}
 			}
 		}
