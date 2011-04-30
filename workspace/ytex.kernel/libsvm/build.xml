@@ -253,18 +253,23 @@ cv.eval.line=${cv.eval.line}
 		<zip destfile="${libsvm.data}/cv/${cv.classLabel}.zip" update="yes">
 			<fileset dir="${label.dir}" excludes="*.txt" />
 		</zip>
-		<delete quiet="yes" includeemptydirs="yes">
-			<fileset dir="${cv.tmpdir}" includes="${libsvm.experiment}-${cv.classLabel}/**/*.*" excludes="${libsvm.experiment}-${cv.classLabel}/*.txt" />
-		</delete>
+		<delete quiet="yes" includeemptydirs="yes" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}"/>
 	</target>
+	
+	<target name="cv.iter.experiment" description="iterate over multiple experiments locally">
+		<for list="${cv.experiments}" param="cv.libsvm.experiment">
+			<sequential>
+				<antcall target="cv.all.folds.local">
+					<param name="libsvm.data" value="${ytex.home}/${libsvm.name}/libsvm/@{cv.libsvm.experiment}"/>
+					<param name="libsvm.experiment" value="@{cv.libsvm.experiment}"/>
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	
 	<target name="cv.all.folds.local" description="generate all folds, evaluate libsvm" unless="ytex.cluster">
 		<for list="${libsvm.classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
 			<sequential>
-				<!--
-				<antcall target="cv.generateFolds">
-					<param name="cv.classLabel" value="@{classLabel}" />
-				</antcall>
-				-->
 				<antcall target="cv.iter.label">
 					<param name="cv.classLabel" value="@{classLabel}" />
 				</antcall>				
