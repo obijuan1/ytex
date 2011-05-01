@@ -2,7 +2,7 @@ package ytex.kernel.model;
 
 import java.io.Serializable;
 
-public abstract class KernelEvaluation implements Serializable {
+public class KernelEvaluation implements Serializable {
 	/**
 	 * 
 	 */

@@ -2,6 +2,12 @@ package ytex.kernel.evaluator;
 
 import java.util.List;
 
+/**
+ * compute the product of delegate kernels
+ * 
+ * @author vijay
+ * 
+ */
 public class ProductKernel implements Kernel {
 	List<Kernel> delegateKernels;
 
@@ -16,9 +22,9 @@ public class ProductKernel implements Kernel {
 	@Override
 	public double evaluate(Object o1, Object o2) {
 		double d = 1;
-		for(Kernel k : delegateKernels) {
+		for (Kernel k : delegateKernels) {
 			d *= k.evaluate(o1, o2);
-			if(d == 0)
+			if (d == 0)
 				break;
 		}
 		return d;

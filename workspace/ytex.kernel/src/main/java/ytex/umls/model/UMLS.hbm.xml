@@ -47,8 +47,7 @@
 		select cui1, cui2
 		from MRREL
 		where sab in (:sabs)
-		and rel in (:rel)
-		and rela not in (:relaExclude)
+		and rel in ('PAR') and rela in ('inverse_isa')
 	]]></query>
 	<query name="getAllRelations"><![CDATA[
 		select cui1, cui2

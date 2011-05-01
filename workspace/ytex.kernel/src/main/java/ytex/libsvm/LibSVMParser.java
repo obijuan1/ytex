@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,8 +80,10 @@ public class LibSVMParser {
 			// 1st line in libSVMOutputReader lists labels
 
 			results.setClassIds(parseClassIds(predictionReader));
-			if (results.getClassIds().size() < 2)
-				throw new Exception("error parsing class ids");
+			// when working with high cutoffs resulting in mainly zero vectors
+			// we sometimes have a trivial classification problem (1 class)
+//			if (results.getClassIds().size() < 2)
+//				throw new Exception("error parsing class ids");
 			while (((instanceLine = instanceReader.readLine()) != null)
 					&& ((predictionLine = predictionReader.readLine()) != null)) {
 				nLine++;

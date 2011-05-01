@@ -3,10 +3,8 @@ package ytex.kernel.evaluator;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -40,7 +38,9 @@ import ytex.kernel.tree.Node;
 import ytex.kernel.tree.TreeMappingInfo;
 
 public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
-	private static final Log log = LogFactory.getLog(CorpusKernelEvaluator.class);
+	private static final Log log = LogFactory
+			.getLog(CorpusKernelEvaluator.class);
+
 	protected class InstanceIDRowMapper implements RowMapper<Integer> {
 
 		@Override
@@ -127,7 +127,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 	private InstanceTreeBuilder instanceTreeBuilder;
 
 	private KernelEvaluationDao kernelEvaluationDao;
-	
+
 	public String getExperiment() {
 		return experiment;
 	}
@@ -164,7 +164,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 	private String name;
 	private String label = "";
 	private int foldId = 0;
-	
+
 	private SimpleJdbcTemplate simpleJdbcTemplate;
 	private String testInstanceIDQuery;
 	private String trainInstanceIDQuery;
@@ -176,7 +176,13 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	public void evaluateKernelOnCorpus(Map<Integer, Node> instanceIDMap,
 			int nMod, int nSlice) {
-		KernelEvaluation kernelEvaluation = null;
+		KernelEvaluation kernelEvaluation = new KernelEvaluation();
+		kernelEvaluation.setExperiment(this.getExperiment());
+		kernelEvaluation.setFoldId(this.getFoldId());
+		kernelEvaluation.setLabel(this.getLabel());
+		kernelEvaluation.setName(this.getName());
+		kernelEvaluation = this.kernelEvaluationDao
+				.storeKernelEval(kernelEvaluation);
 		List<Integer> documentIds = txTemplate
 				.execute(new TransactionCallback<List<Integer>>() {
 					@Override
@@ -199,38 +205,39 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 						}
 					});
 		}
-		Set<String> names = new HashSet<String>(1);
-		names.add(experiment);
 		int nStart = 0;
 		int nEnd = documentIds.size();
 		if (nMod > 0) {
 			int total = documentIds.size();
 			int sliceSize = total / nMod;
 			nStart = sliceSize * (nSlice - 1);
-			if(nSlice != nMod)
+			if (nSlice != nMod)
 				nEnd = nStart + sliceSize;
 		}
 		for (int i = nStart; i < nEnd; i++) {
 			// left hand side of kernel evaluation
 			int instanceId1 = documentIds.get(i);
-			if(log.isInfoEnabled())
+			if (log.isInfoEnabled())
 				log.info("evaluating kernel for instance_id1 = " + instanceId1);
 			// list of instance ids right hand side of kernel evaluation
 			SortedSet<Integer> rightDocumentIDs = new TreeSet<Integer>(
 					testDocumentIds);
-			if (i < (documentIds.size() - 1)) {
-				rightDocumentIDs.addAll(documentIds.subList(i + 1,
-						documentIds.size() - 1));
+			if (i < documentIds.size()) {
+				// rightDocumentIDs.addAll(documentIds.subList(i + 1,
+				// documentIds.size() - 1));
+				rightDocumentIDs.addAll(documentIds.subList(i,
+						documentIds.size()));
 			}
 			// remove instances already evaluated
 			for (KernelEvaluationInstance kEval : this.kernelEvaluationDao
-					.getAllKernelEvaluationsForInstance(kernelEvaluation, instanceId1)) {
+					.getAllKernelEvaluationsForInstance(kernelEvaluation,
+							instanceId1)) {
 				rightDocumentIDs
 						.remove(instanceId1 == kEval.getInstanceId1() ? kEval
 								.getInstanceId2() : kEval.getInstanceId1());
 			}
 			for (Integer instanceId2 : rightDocumentIDs) {
-				if (instanceId1 != instanceId2) {
+//				if (instanceId1 != instanceId2) {
 					final int i1 = instanceId1;
 					final int i2 = instanceId2;
 					final Node root1 = instanceIDMap.get(i1);
@@ -242,13 +249,13 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 						// @Override
 						// public Object doInTransaction(TransactionStatus arg0)
 						// {
-						kernelEvaluationDao.storeKernel(kernelEvaluation, i1, i2,
-								instanceKernel.evaluate(root1, root2));
+						kernelEvaluationDao.storeKernel(kernelEvaluation, i1,
+								i2, instanceKernel.evaluate(root1, root2));
 					}
 					// return null;
 					// }
 					// });
-				}
+//				}
 			}
 		}
 	}
@@ -268,7 +275,6 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 	public KernelEvaluationDao getKernelEvaluationDao() {
 		return kernelEvaluationDao;
 	}
-
 
 	public String getTestInstanceIDQuery() {
 		return testInstanceIDQuery;

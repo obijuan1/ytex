@@ -16,7 +16,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;

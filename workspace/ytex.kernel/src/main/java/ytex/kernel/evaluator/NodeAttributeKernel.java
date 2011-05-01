@@ -2,6 +2,12 @@ package ytex.kernel.evaluator;
 
 import ytex.kernel.tree.Node;
 
+/**
+ * Extract a node attribute and run the delegate kernel on the attribute.
+ * 
+ * @author vijay
+ * 
+ */
 public class NodeAttributeKernel implements Kernel {
 
 	private Kernel delegateKernel;

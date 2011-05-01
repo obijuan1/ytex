@@ -52,7 +52,7 @@ public class ConceptKernel implements Kernel {
 				} else {
 					// it's not there - put it there
 					d = conceptSimilarityService.lch(c1, c2)
-							* conceptSimilarityService.lin("cmc-suj", c1, c2);
+							* conceptSimilarityService.lin("i2b2.2008", c1, c2);
 					conceptSimCache.put(new Element(key, d));
 				}
 				// }

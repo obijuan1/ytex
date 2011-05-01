@@ -1,11 +1,11 @@
 package ytex.kernel.evaluator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class NormKernel implements Kernel {
 	private static final Log log = LogFactory.getLog(NormKernel.class);

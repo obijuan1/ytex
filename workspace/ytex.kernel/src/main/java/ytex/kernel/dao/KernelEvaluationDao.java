@@ -1,7 +1,6 @@
 package ytex.kernel.dao;
 
 import java.util.List;
-import java.util.Set;
 
 import ytex.kernel.model.KernelEvaluation;
 import ytex.kernel.model.KernelEvaluationInstance;
@@ -20,5 +19,13 @@ public interface KernelEvaluationDao {
 
 	public List<KernelEvaluationInstance> getAllKernelEvaluationsForInstance(
 			KernelEvaluation kernelEvaluation, int instanceId);
+
+	/**
+	 * store the kernel evaluation if it doesn't exist, else return the existing one
+	 * @param kernelEvaluation
+	 * @return
+	 */
+	public abstract KernelEvaluation storeKernelEval(
+			KernelEvaluation kernelEvaluation);
 	
 }

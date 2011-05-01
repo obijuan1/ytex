@@ -3,9 +3,6 @@ package ytex.weka;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import ytex.kernel.model.ClassifierEvaluation;
-import ytex.weka.WekaResultsImporterImpl.ClassifierEvaluationInstanceImporter;
-
 /**
  * parse weka instance output when classifier run with -p option. load results
  * into db.

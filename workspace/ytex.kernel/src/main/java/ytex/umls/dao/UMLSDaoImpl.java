@@ -1,8 +1,6 @@
 package ytex.umls.dao;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -48,8 +46,8 @@ public class UMLSDaoImpl implements UMLSDao {
 		Query q = sessionFactory.getCurrentSession().getNamedQuery(
 				"getRelationsForSABs");
 		q.setParameterList("sabs", sabs);
-		q.setParameterList("rel", INCLUDE_REL);
-		q.setParameterList("relaExclude", EXCLUDE_RELA);
+//		q.setParameterList("rel", INCLUDE_REL);
+//		q.setParameterList("relaExclude", EXCLUDE_RELA);
 		return (List<Object[]>) q.list();
 	}
 

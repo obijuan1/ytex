@@ -33,19 +33,19 @@
 	]]></query>
 	<query name="getKernelEvaluation"><![CDATA[
 		from KernelEvaluationInstance
-		where kernelEvaluationId = :kernelEvaluationId
+		where kernelEvaluation.kernelEvaluationId = :kernelEvaluationId
 		and instanceId1 = :instanceId1
 		and  instanceId2 =  :instanceId2
 	]]></query>
 	<query name="deleteKernelEvaluation"><![CDATA[
 		delete from KernelEvaluationInstance
-		where kernelEvaluationId = :kernelEvaluationId
+		where kernelEvaluation.kernelEvaluationId = :kernelEvaluationId
 		and instanceId1 = :instanceId1
 		and  instanceId2 =  :instanceId2
 	]]></query>
 	<query name="getAllKernelEvaluations"><![CDATA[
 		from KernelEvaluationInstance
-		where kernelEvaluationId = :kernelEvaluationId
+		where kernelEvaluation.kernelEvaluationId = :kernelEvaluationId
 	]]></query>
 	<!-- 2 separate indices for instanceId1 & instanceId2 use union so that 
 		mysql can use both indices arggh! hibernate doesn't support union - run 2 
@@ -60,4 +60,12 @@
 		where kernelEvaluation.kernelEvaluationId = :kernelEvaluationId
 		and instanceId2 = :instanceId 
 	]]></query>
+	<query name="getKernelEval"><![CDATA[
+		from KernelEvaluation
+		where name = :name
+		and experiment = :experiment
+		and label = :label
+		and foldId = :foldId
+	]]></query>
+	
 </hibernate-mapping>

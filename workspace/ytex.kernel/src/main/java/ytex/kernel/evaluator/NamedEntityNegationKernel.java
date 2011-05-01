@@ -3,10 +3,10 @@ package ytex.kernel.evaluator;
 import ytex.kernel.tree.Node;
 
 /**
- * Evaluate negation status and certainty of named entities. If negation status differs,
- * multiply convolution on concepts by -1.
- * If certainty differs, multiply by 0.5.  
- * This assumes that possible values for certainty are certain/uncertain.
+ * Evaluate negation status and certainty of named entities. If negation status
+ * differs, multiply convolution on concepts by -1. If certainty differs,
+ * multiply by 0.5. This assumes that possible values for certainty are
+ * certain/uncertain.
  */
 public class NamedEntityNegationKernel extends ConvolutionKernel {
 	private static final String CONF_ATTR = "confidence";

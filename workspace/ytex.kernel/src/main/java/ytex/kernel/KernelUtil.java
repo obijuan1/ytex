@@ -4,8 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
-import java.util.SortedMap;
-import java.util.SortedSet;
 
 public interface KernelUtil {
 

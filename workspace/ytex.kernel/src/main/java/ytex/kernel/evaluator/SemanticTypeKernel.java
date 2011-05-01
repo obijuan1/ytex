@@ -1,5 +1,7 @@
 package ytex.kernel.evaluator;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +13,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -42,11 +46,23 @@ public class SemanticTypeKernel implements Kernel {
 	private static final String TUI = "TUI";
 
 	private SimpleJdbcTemplate simpleJdbcTemplate;
-	private Map<String, Set<String>> cuiTuiMap;
-	private Map<String, Set<Integer>> cuiMainSuiMap;
+	private JdbcTemplate jdbcTemplate;
+	private Map<String, Set<String>> cuiTuiMap = new HashMap<String, Set<String>>();
+	private Map<String, Set<Integer>> cuiMainSuiMap = new HashMap<String, Set<Integer>>(
+			cuiTuiMap.size());
 	private PlatformTransactionManager transactionManager;
 	private DataSource dataSource;
 	private String corpusName;
+	private String cuiTuiQuery;
+
+	public String getCuiTuiQuery() {
+		return cuiTuiQuery;
+	}
+
+	public void setCuiTuiQuery(String cuiTuiQuery) {
+		this.cuiTuiQuery = cuiTuiQuery;
+	}
+
 	private String mode = "MAINSUI";
 	private CorpusDao corpusDao = null;
 
@@ -65,6 +81,7 @@ public class SemanticTypeKernel implements Kernel {
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 		this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
 	public PlatformTransactionManager getTransactionManager() {
@@ -244,9 +261,26 @@ public class SemanticTypeKernel implements Kernel {
 	}
 
 	/**
+	 * init cui-tui map from query
+	 */
+	public void initCuiTuiMapFromQuery() {
+		this.jdbcTemplate.query(this.cuiTuiQuery, new RowCallbackHandler() {
+			// don't duplicate tui strings to save memory
+			Map<String, String> tuiMap = new HashMap<String, String>();
+
+			@Override
+			public void processRow(ResultSet rs) throws SQLException {
+				String cui = rs.getString(1);
+				String tui = rs.getString(2);
+				addCuiTuiToMap(tuiMap, cui, tui);
+			}
+		});
+	}
+
+	/**
 	 * load cui-tui for the specified corpus from the MRSTY table
 	 */
-	public void initCuiTuiMap() {
+	public void initCuiTuiMapFromCorpus() {
 		// String query =
 		// "select m.cui, m.tui from umls.MRSTY m inner join (select distinct cui from suj_concept)s  on s.cui = m.cui";
 		// List<Map<String, Object>> results = simpleJdbcTemplate
@@ -262,7 +296,6 @@ public class SemanticTypeKernel implements Kernel {
 		// }
 		// tuis.add(tui);
 		// }
-		this.cuiTuiMap = new HashMap<String, Set<String>>();
 		// don't duplicate tui strings to save memory
 		Map<String, String> tuiMap = new HashMap<String, String>();
 		List<Object[]> listCuiTui = this.getCorpusDao().getCorpusCuiTuis(
@@ -270,22 +303,32 @@ public class SemanticTypeKernel implements Kernel {
 		for (Object[] cuiTui : listCuiTui) {
 			String cui = (String) cuiTui[0];
 			String tui = (String) cuiTui[1];
-			// get 'the' tui string
-			if (tuiMap.containsKey(tui))
-				tui = tuiMap.get(tui);
-			else
-				tuiMap.put(tui, tui);
-			Set<String> tuis = cuiTuiMap.get(cui);
-			if (tuis == null) {
-				tuis = new HashSet<String>();
-				cuiTuiMap.put(cui, tuis);
-			}
-			tuis.add(tui);
+			addCuiTuiToMap(tuiMap, cui, tui);
 		}
-		this.cuiMainSuiMap = new HashMap<String, Set<Integer>>(cuiTuiMap.size());
+	}
+
+	/**
+	 * init the cui -> 'main sui' map.
+	 */
+	private void initCuiMainSuiMap() {
 		for (Map.Entry<String, Set<String>> cuiTui : cuiTuiMap.entrySet()) {
 			cuiMainSuiMap.put(cuiTui.getKey(), tuiToMainSui(cuiTui.getValue()));
 		}
+	}
+
+	private void addCuiTuiToMap(Map<String, String> tuiMap, String cui,
+			String tui) {
+		// get 'the' tui string
+		if (tuiMap.containsKey(tui))
+			tui = tuiMap.get(tui);
+		else
+			tuiMap.put(tui, tui);
+		Set<String> tuis = cuiTuiMap.get(cui);
+		if (tuis == null) {
+			tuis = new HashSet<String>();
+			cuiTuiMap.put(cui, tuis);
+		}
+		tuis.add(tui);
 	}
 
 	/**
@@ -349,7 +392,11 @@ public class SemanticTypeKernel implements Kernel {
 		t.execute(new TransactionCallback<Object>() {
 			@Override
 			public Object doInTransaction(TransactionStatus arg0) {
-				initCuiTuiMap();
+				if (cuiTuiQuery != null)
+					initCuiTuiMapFromQuery();
+				else
+					initCuiTuiMapFromCorpus();
+				initCuiMainSuiMap();
 				return null;
 			}
 		});

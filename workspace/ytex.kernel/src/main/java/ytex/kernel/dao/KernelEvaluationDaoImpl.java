@@ -28,7 +28,8 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	 * 
 	 * @see dao.KernelEvaluationDao#storeNorm(java.lang.String, int, double)
 	 */
-	public void storeNorm(KernelEvaluation kernelEvaluation, int instanceId, double norm) {
+	public void storeNorm(KernelEvaluation kernelEvaluation, int instanceId,
+			double norm) {
 		storeKernel(kernelEvaluation, instanceId, instanceId, norm);
 	}
 
@@ -47,17 +48,18 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	 * @see dao.KernelEvaluationDao#storeKernel(java.lang.String, int, int,
 	 * double)
 	 */
-	public void storeKernel(KernelEvaluation kernelEvaluation, int instanceId1, int instanceId2,
-			double kernel) {
+	public void storeKernel(KernelEvaluation kernelEvaluation, int instanceId1,
+			int instanceId2, double kernel) {
 		int instanceId1s = instanceId1 <= instanceId2 ? instanceId1
 				: instanceId2;
 		int instanceId2s = instanceId1 <= instanceId2 ? instanceId2
 				: instanceId1;
 		// delete existing norm
 		// if (getKernel(name, instanceId1, instanceId2) != null) {
-		Query q = this.getSessionFactory().getCurrentSession().getNamedQuery(
-				"deleteKernelEvaluation");
-		q.setInteger("kernelEvaluationId", kernelEvaluation.getKernelEvaluationId());
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("deleteKernelEvaluation");
+		q.setInteger("kernelEvaluationId",
+				kernelEvaluation.getKernelEvaluationId());
 		q.setInteger("instanceId1", instanceId1s);
 		q.setInteger("instanceId2", instanceId2s);
 		q.executeUpdate();
@@ -65,8 +67,8 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 		// log.warn("replacing kernel, instanceId1: " + instanceId1s
 		// + ", instanceId2: " + instanceId2s + ", name: " + name);
 		// }
-		KernelEvaluationInstance g = new KernelEvaluationInstance(kernelEvaluation, instanceId1s,
-				instanceId2s, kernel);
+		KernelEvaluationInstance g = new KernelEvaluationInstance(
+				kernelEvaluation, instanceId1s, instanceId2s, kernel);
 		this.getSessionFactory().getCurrentSession().save(g);
 	}
 
@@ -75,18 +77,21 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	 * 
 	 * @see dao.KernelEvaluationDao#getKernel(java.lang.String, int, int)
 	 */
-	public Double getKernel(KernelEvaluation kernelEvaluation, int instanceId1, int instanceId2) {
+	public Double getKernel(KernelEvaluation kernelEvaluation, int instanceId1,
+			int instanceId2) {
 		int instanceId1s = instanceId1 <= instanceId2 ? instanceId1
 				: instanceId2;
 		int instanceId2s = instanceId1 <= instanceId2 ? instanceId2
 				: instanceId1;
-		Query q = this.getSessionFactory().getCurrentSession().getNamedQuery(
-				"getKernelEvaluation");
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getKernelEvaluation");
 		q.setCacheable(true);
-		q.setInteger("kernelEvaluationId", kernelEvaluation.getKernelEvaluationId());
+		q.setInteger("kernelEvaluationId",
+				kernelEvaluation.getKernelEvaluationId());
 		q.setInteger("instanceId1", instanceId1s);
 		q.setInteger("instanceId2", instanceId2s);
-		KernelEvaluationInstance g = (KernelEvaluationInstance) q.uniqueResult();
+		KernelEvaluationInstance g = (KernelEvaluationInstance) q
+				.uniqueResult();
 		if (g != null) {
 			return g.getSimilarity();
 		} else {
@@ -98,16 +103,48 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	@Override
 	public List<KernelEvaluationInstance> getAllKernelEvaluationsForInstance(
 			KernelEvaluation kernelEvaluation, int instanceId) {
-		Query q = this.getSessionFactory().getCurrentSession().getNamedQuery(
-				"getAllKernelEvaluationsForInstance1");
-		q.setInteger("kernelEvaluationId", kernelEvaluation.getKernelEvaluationId());
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getAllKernelEvaluationsForInstance1");
+		q.setInteger("kernelEvaluationId",
+				kernelEvaluation.getKernelEvaluationId());
 		q.setInteger("instanceId", instanceId);
 		List<KernelEvaluationInstance> kevals = q.list();
-		Query q2 = this.getSessionFactory().getCurrentSession().getNamedQuery(
-				"getAllKernelEvaluationsForInstance2");
-		q2.setInteger("kernelEvaluationId", kernelEvaluation.getKernelEvaluationId());
+		Query q2 = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getAllKernelEvaluationsForInstance2");
+		q2.setInteger("kernelEvaluationId",
+				kernelEvaluation.getKernelEvaluationId());
 		q2.setInteger("instanceId", instanceId);
 		kevals.addAll(q2.list());
 		return kevals;
+	}
+
+	@Override
+	public KernelEvaluation storeKernelEval(KernelEvaluation kernelEvaluation) {
+		KernelEvaluation kEval = getKernelEvaluation(kernelEvaluation);
+		if (kEval == null) {
+			try {
+				this.getSessionFactory().getCurrentSession()
+						.save(kernelEvaluation);
+				kEval = kernelEvaluation;
+			} catch (Exception e) {
+				log.warn(
+						"couldn't save kernel evaluation, maybe somebody else did. try to retrieve kernel eval",
+						e);
+				kEval = getKernelEvaluation(kernelEvaluation);
+			}
+		}
+		return kEval;
+	}
+
+	private KernelEvaluation getKernelEvaluation(
+			KernelEvaluation kernelEvaluation) {
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getKernelEval");
+		q.setString("name", kernelEvaluation.getName());
+		q.setString("experiment", kernelEvaluation.getExperiment());
+		q.setString("label", kernelEvaluation.getLabel());
+		q.setInteger("foldId", kernelEvaluation.getFoldId());
+		KernelEvaluation kEval = (KernelEvaluation) q.uniqueResult();
+		return kEval;
 	}
 }

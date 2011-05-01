@@ -13,23 +13,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="corpusDao" ref="corpusDao" />
 		<property name="corpusNames">
 			<list>
-				<!-- <value>cmc-ctakes</value> -->
+				<!-- <value>cmc-ctakes</value> 
 				<value>cmc-suj</value>
+				-->
+				<value>i2b2.2008</value>
 			</list>
 		</property>
-	</bean>
-	<bean id="abstractMainSuiSemanticTypeKernel" abstract="true"
-		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
-		<property name="dataSource" ref="dataSource" />
-		<property name="transactionManager" ref="transactionManager" />
-		<property name="corpusDao" ref="corpusDao" />
-	</bean>
-	<bean id="abstractTuiSemanticTypeKernel" abstract="true"
-		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
-		<property name="mode" value="TUI" />
-		<property name="dataSource" ref="dataSource" />
-		<property name="transactionManager" ref="transactionManager" />
-		<property name="corpusDao" ref="corpusDao" />
 	</bean>
 	<bean id="conceptKernel" class="ytex.kernel.evaluator.ConceptKernel"
 		init-method="init">

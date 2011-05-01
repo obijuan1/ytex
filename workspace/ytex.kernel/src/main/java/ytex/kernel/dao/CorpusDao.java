@@ -2,8 +2,6 @@ package ytex.kernel.dao;
 
 import java.util.List;
 
-import org.hibernate.Query;
-
 import ytex.kernel.model.Corpus;
 import ytex.kernel.model.CorpusTerm;
 import ytex.kernel.model.InfoContent;

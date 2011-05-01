@@ -18,6 +18,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 
+import ytex.kernel.KernelContextHolder;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
 import ytex.umls.dao.UMLSDao;
@@ -221,6 +222,10 @@ public class ConceptDaoImpl implements ConceptDao {
 			cr.constructRel(conceptMap);
 		}
 		return cg;
+	}
+	
+	public static void main(String args[]) {
+		KernelContextHolder.getApplicationContext().getBean(ConceptDao.class).initializeConceptGraph(args);
 	}
 
 }
