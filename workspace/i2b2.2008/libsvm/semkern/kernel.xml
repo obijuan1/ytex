@@ -70,7 +70,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
 		<property name="treeMappingInfo" ref="treeMappingInfo" />
 		<property name="name" value="i2b2.2008" />
-		<property name="experiment" value="lin0.07" />
+		<property name="experiment" value="semkern0.07" />
 		<property name="label" value="9" />
 		<property name="trainInstanceIDQuery">
 			<value><![CDATA[
@@ -80,7 +80,6 @@ inner join i2b2_2008_anno a on a.docId = d.docId and a.source = 'intuitive'
 inner join i2b2_2008_disease ds on ds.disease = a.disease
 where d.documentSet = 'train'
 and ds.disease_id = 9
-limit 4
 			]]></value>
 		</property>
 <!-- 		
