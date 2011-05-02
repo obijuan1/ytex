@@ -69,6 +69,7 @@ left join hotspot_zero_vector hzv
 where ds.disease_id = @export.label@
 and evaluation > @export.cutoff@
 and hzv.hotspot_zero_vector_id is null
+order by hs.instance_id, ne.anno_base_id, ne.confidence, c.anno_ontology_concept_id
 					]]></value>
 				</property>
 				<property name="nodeTypes">
@@ -102,6 +103,7 @@ where acw.parent_anno_base_id is null
 and ds.disease_id = @export.label@
 and evaluation > @export.cutoff@
 and hzv.hotspot_zero_vector_id is null
+order by hs.instance_id, w.anno_base_id
 					]]></value>
 					</property>
 					<property name="nodeTypes">
