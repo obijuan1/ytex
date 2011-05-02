@@ -160,7 +160,7 @@
 		<property name="export.label" value="9" />
 		<property name="export.cutoff" value="0.07" />
 		<property name="export.tree.basedir" value="libsvm/semkern" />
-		<property name="kernel.base" value="kernel_lin" />
+		<property name="kernel.base" value="semkern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
 		<copy file="${export.tree.basedir}/${kernel.base}.xml" tofile="${export.tree.dir}/${kernel.base}.xml">
 			<filterset>
