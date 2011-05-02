@@ -45,6 +45,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="kernelEvaluationDao" class="ytex.kernel.dao.KernelEvaluationDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="conceptDao" class="ytex.kernel.dao.ConceptDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
