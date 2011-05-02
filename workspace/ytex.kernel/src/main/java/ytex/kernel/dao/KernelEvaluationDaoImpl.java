@@ -6,6 +6,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.kernel.model.KernelEvaluation;
 import ytex.kernel.model.KernelEvaluationInstance;
@@ -14,6 +18,21 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	private SessionFactory sessionFactory;
 	private static final Log log = LogFactory
 			.getLog(KernelEvaluationDaoImpl.class);
+	private PlatformTransactionManager transactionManager;
+
+	public PlatformTransactionManager getTransactionManager() {
+		return transactionManager;
+	}
+
+	public void setTransactionManager(
+			PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+		txTemplate = new TransactionTemplate(this.transactionManager);
+		txTemplate
+				.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
+	}
+
+	private TransactionTemplate txTemplate;
 
 	public SessionFactory getSessionFactory() {
 		return sessionFactory;
@@ -119,24 +138,30 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	}
 
 	@Override
-	public KernelEvaluation storeKernelEval(KernelEvaluation kernelEvaluation) {
+	public KernelEvaluation storeKernelEval(final KernelEvaluation kernelEvaluation) {
 		KernelEvaluation kEval = getKernelEval(kernelEvaluation.getName(),
 				kernelEvaluation.getExperiment(), kernelEvaluation.getLabel(),
 				kernelEvaluation.getFoldId());
 		if (kEval == null) {
-			try {
-				this.getSessionFactory().getCurrentSession()
-						.save(kernelEvaluation);
-				kEval = kernelEvaluation;
-			} catch (Exception e) {
-				log.warn(
-						"couldn't save kernel evaluation, maybe somebody else did. try to retrieve kernel eval",
-						e);
-				kEval = getKernelEval(kernelEvaluation.getName(),
-						kernelEvaluation.getExperiment(),
-						kernelEvaluation.getLabel(),
-						kernelEvaluation.getFoldId());
-			}
+			txTemplate.execute(new TransactionCallback<Object>() {
+
+				@Override
+				public Object doInTransaction(TransactionStatus arg0) {
+					try {
+						getSessionFactory().getCurrentSession()
+								.save(kernelEvaluation);
+					} catch (Exception e) {
+						log.warn(
+								"couldn't save kernel evaluation, maybe somebody else did. try to retrieve kernel eval",
+								e);
+					}
+					return null;
+				}
+			});
+			kEval = getKernelEval(kernelEvaluation.getName(),
+					kernelEvaluation.getExperiment(),
+					kernelEvaluation.getLabel(),
+					kernelEvaluation.getFoldId());
 		}
 		return kEval;
 	}
