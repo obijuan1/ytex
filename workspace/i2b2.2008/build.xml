@@ -154,6 +154,7 @@
 		<java classname="ytex.KernelLauncher" fork="yes" classpathref="i2b2.cp">
 			<arg line="-beans ${export.tree.dir}/tree.xml -storeInstanceMap ${export.tree.dir}/instanceMap.obj" />
 			<jvmarg value="-Xmx4g" />
+			<jvmarg value="-Xms1g" />
 		</java>
 	</target>
 	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
@@ -168,22 +169,9 @@
 				<filter token="export.cutoff" value="${export.cutoff}" />
 			</filterset>
 		</copy>
-		<antcall target="kernel.evalAllSlices.local" />
-	</target>
-	<target name="kernel.evalAllSlices.local" unless="ytex.cluster">
-		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
-			<sequential>
-				<antcall target="kernel.evalSlice">
-					<param name="kernel.slice" value="@{kernel.slice}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="kernel.evalSlice">
-		<property name="kernel.slice" value="1" />
 		<java classname="ytex.KernelLauncher" dir="${export.tree.dir}" fork="yes" classpathref="i2b2.cp">
-			<arg line="-beans ${kernel.base}.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod} -slice ${kernel.slice}" />
-			<jvmarg value="-Xmx1g" />
+			<arg line="-beans ${kernel.base}.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod}" />
+			<jvmarg value="-Xmx4g" />
 			<jvmarg value="-Xms1g" />
 		</java>
 	</target>
