@@ -1,7 +1,7 @@
 delete classifier_eval_irzv
 from classifier_eval_irzv
 inner join classifier_eval e on classifier_eval_irzv.classifier_eval_id = e.classifier_eval_id
-where e.experiment like 'semkern%';
+where e.experiment like 'semkern%' or e.experiment like 'linkern%' or e.experiment like 'lchkern%';
 
 
 insert into classifier_eval_irzv (classifier_eval_id, ir_class_id, tp, tn, fp, fn, ppv, npv, sens, spec, f1)
@@ -26,8 +26,9 @@ select
 from classifier_eval_ir ir
 inner join classifier_eval e on ir.classifier_eval_id = e.classifier_eval_id
 left join hotspot_zero_vector_tt z
-  on (z.name, z.experiment, z.label, z.run, z.fold, z.ir_class_id) = (e.name, e.experiment, e.label, e.run, e.fold, ir.ir_class_id)
-where e.experiment like 'semkern%'
+  on (z.name, substring(z.experiment, 7), z.label, z.run, z.fold, z.ir_class_id) = (e.name, substring(e.experiment,8), e.label, e.run, e.fold, ir.ir_class_id)
+where (e.experiment like 'semkern%' or e.experiment like 'linkern%' or e.experiment like 'lchkern%')
+and z.experiment like 'bocuis%'
 ) s
 ) s
 ;
