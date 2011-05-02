@@ -7,7 +7,7 @@
 	<property file="${ytex.properties}" />
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
-	
+
 	<property name="bocuis.export.cutoffs" value="0.03,0.05,0.07,0.09,0.1" />
 
 	<path id="i2b2.cp">
@@ -58,7 +58,7 @@
 		<antcall target="mysql">
 			<param name="mysql.dir" value="libsvm/bocuis" />
 			<param name="mysql.script" value="insert_hotspot.sql" />
-		</antcall>		
+		</antcall>
 	</target>
 	<target name="bocuis.export" description="export libsvm data for bocuis">
 		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
@@ -73,24 +73,24 @@
 		<property name="export.cutoff" value="0.03" />
 		<property name="export.dir" value="libsvm/bocuis${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
-		<delete dir="${export.dir}" quiet="yes"/>
-		<mkdir dir="${export.dir}"/>
+		<delete dir="${export.dir}" quiet="yes" />
+		<mkdir dir="${export.dir}" />
 		<filterset id="export.filterset">
 			<filter token="export.cutoff" value="${export.cutoff}" />
-		</filterset>		
+		</filterset>
 		<!-- generate export property file -->
 		<copy file="libsvm/bocuis/export-bow.template.xml" tofile="${export.dir}/export-bow.xml" overwrite="yes">
-			<filterset refid="export.filterset"/>
+			<filterset refid="export.filterset" />
 		</copy>
 		<!-- generate and run script to insert zero vectors for the cutoff  -->
 		<copy file="libsvm/bocuis/insert_hotspot_zv.template.sql" tofile="${export.dir}/insert_hotspot_zv.sql" overwrite="yes">
-			<filterset refid="export.filterset"/>
+			<filterset refid="export.filterset" />
 		</copy>
 		<antcall target="mysql">
 			<param name="mysql.dir" value="${export.dir}" />
 			<param name="mysql.script" value="insert_hotspot_zv.sql" />
 		</antcall>
-		<!-- export the data --> 
+		<!-- export the data -->
 		<antcall target="SparseDataExporter">
 			<param name="export.type" value="libsvm" />
 			<param name="export.dir" value="${export.dir}" />
@@ -105,23 +105,125 @@
 			</sequential>
 		</for>
 	</target>
+
+
+	<target name="setup.ic" description="setup information content">
+		<!-- update term frequencies -->
+		<antcall target="mysql">
+			<param name="mysql.dir" value="./data" />
+			<param name="mysql.script" value="updateCorpus.sql" />
+		</antcall>
+		<!-- update information content -->
+		<java classname="ytex.kernel.ConceptSimilarityServiceImpl" classpathref="i2b2.cp" fork="yes">
+			<arg value="-updateIC" />
+			<arg value="i2b2.2008" />
+			<jvmarg value="-Xmx1g" />
+		</java>
+	</target>
+	<target name="export.tree.all">
+		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
+			<sequential>
+				<antcall target="export.tree.cutoff">
+					<param name="export.cutoff" value="@{export.cutoff}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="export.tree.cutoff">
+		<property name="export.cutoff" value="0.07" />
+		<for list="libsvm.classLabels" param="export.label">
+			<sequential>
+				<antcall target="export.tree.label">
+					<param name="export.label" value="@{export.label}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="export.tree.label">
+		<property name="export.label" value="9" />
+		<property name="export.cutoff" value="0.07" />
+		<property name="export.tree.basedir" value="libsvm/semkern" />
+		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
+		<mkdir dir="${export.tree.dir}" />
+		<copy file="${export.tree.basedir}/tree.xml" tofile="${export.tree.dir}/tree.xml">
+			<filterset>
+				<filter token="export.label" value="${export.label}" />
+				<filter token="export.cutoff" value="${export.cutoff}" />
+			</filterset>
+		</copy>
+		<java classname="ytex.KernelLauncher" fork="yes" classpathref="i2b2.cp">
+			<arg line="-beans ${export.tree.dir}/tree.xml -storeInstanceMap ${export.tree.dir}/instanceMap.obj" />
+			<jvmarg value="-Xmx1g" />
+		</java>
+	</target>
+	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
+		<property name="export.label" value="9" />
+		<property name="export.cutoff" value="0.07" />
+		<property name="export.tree.basedir" value="libsvm/semkern" />
+		<property name="kernel.base" value="kernel_lin" />
+		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
+		<copy file="${export.tree.basedir}/${kernel.base}.xml" tofile="${export.tree.dir}/${kernel.base}.xml">
+			<filterset>
+				<filter token="export.label" value="${export.label}" />
+				<filter token="export.cutoff" value="${export.cutoff}" />
+			</filterset>
+		</copy>
+		<antcall target="kernel.evalAllSlices.local" />
+	</target>
+	<target name="kernel.evalAllSlices.local" unless="ytex.cluster">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
+			<sequential>
+				<antcall target="kernel.evalSlice">
+					<param name="kernel.slice" value="@{kernel.slice}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="kernel.evalSlice">
+		<property name="kernel.slice" value="1" />
+		<java classname="ytex.KernelLauncher" dir="${export.tree.dir}" fork="yes" classpathref="i2b2.cp">
+			<arg line="-beans ${kernel.base}.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod} -slice ${kernel.slice}" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+		</java>
+	</target>
+	<target name="kernel.export.libsvm.cutoff" description="export libvm for specified cutoff">
+		<property name="export.cutoff" value="0.07" />
+		<property name="export.tree.basedir" value="libsvm/semkern" />
+		<property name="experiment.base" value="linkern" />
+		<property name="experiment" value="${experiment.base}${export.cutoff}" />
+		<property name="export.dir" value="libsvm/${experiment}" />
+		<mkdir dir="${export.dir}" />
+		<copy file="${export.tree.basedir}/export.xml" todir="${export.dir}" overwrite="yes">
+			<filterset>
+				<filter token="experiment" value="${experiment}" />
+				<filter token="export.cutoff" value="${export.cutoff}" />
+			</filterset>
+		</copy>
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="i2b2.cp" fork="yes" dir="${export.dir}">
+			<arg value="export.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+		</java>
+	</target>
+
 	<!--
 	for some reason this isn't working on linux
 	can't overide experiment/libsvm.data with ant task
 	-->
 	<target name="bocuis.libsvm.cutoff" description="run libsvm for specified cutoff">
-		<property name="export.cutoff" value="0.03test"/>
+		<property name="export.cutoff" value="0.03test" />
 		<ant antfile="build.xml" dir="../ytex.kernel/libsvm" target="cv.all.folds.local" inheritall="true">
 			<!-- for testing 
 			<property name="libsvm.classLabels" value="1"/>
 			-->
-			<property name="ytex.home" value="../.."/>
-			<property name="experiment" value="bocuis${export.cutoff}"/>
-			<property name="libsvm.data" value="../../i2b2.2008/libsvm/bocuis/${export.cutoff}"/>
+			<property name="ytex.home" value="../.." />
+			<property name="experiment" value="bocuis${export.cutoff}" />
+			<property name="libsvm.data" value="../../i2b2.2008/libsvm/bocuis/${export.cutoff}" />
 		</ant>
 	</target>
 	<target name="SparseDataExporter" description="run the SparseDataExporter from export.dir, property file export.prop, type export.type">
-		<property name="export.prop" value="export-bow.xml"/>
+		<property name="export.prop" value="export-bow.xml" />
 		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="i2b2.cp" dir="${export.dir}">
 			<arg value="-prop" />
 			<arg value="${export.prop}" />
