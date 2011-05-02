@@ -35,7 +35,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</bean>
 		</property>
 	</bean>
-
 	<bean id="tuiSemanticTypeKernel" parent="abstractTuiSemanticTypeKernel">
 		<property name="cuiTuiQuery">
 			<value><![CDATA[
@@ -45,6 +44,9 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		where df.name = 'i2b2.2008-cui'
 		]]></value>
 		</property>
+	</bean>
+	<bean id="conceptKernel" parent="abstractConceptKernel">
+		<property name="corpusName" value="i2b2.2008" />
 	</bean>
 	<!-- Check overlapping main semantic type. Concept kernel is lin * lch -->
 	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
