@@ -39,6 +39,27 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			<bean class="ytex.kernel.tree.QueryMappingInfo">
 				<property name="query">
 					<value><![CDATA[
+select distinct hs.instance_id
+from hotspot_sentence hs
+inner join i2b2_2008_disease ds on ds.disease = hs.label
+where ds.disease_id = @export.label@
+and evaluation > @export.cutoff@
+order by hs.instance_id
+					]]></value>
+				</property>
+				<property name="nodeTypes">
+					<list>
+						<ref bean="nodeInstanceInfo" />
+					</list>
+				</property>
+			</bean>
+		</property>
+		<property name="nodeQueryMappingInfos">
+			<list>
+				<!-- map concepts -->
+				<bean class="ytex.kernel.tree.QueryMappingInfo">
+					<property name="query">
+						<value><![CDATA[
 select distinct hs.instance_id, c.code
 from hotspot_sentence hs
 inner join i2b2_2008_disease ds on ds.disease = hs.label
@@ -60,18 +81,16 @@ where ds.disease_id = @export.label@
 and evaluation > @export.cutoff@
 /* and hzv.hotspot_zero_vector_id is null */
 order by hs.instance_id
-					]]></value>
-				</property>
-				<property name="nodeTypes">
-					<list>
-						<ref bean="nodeInstanceInfo" />
-						<ref bean="nodeConceptInfo" />
-					</list>
-				</property>
-			</bean>
-		</property>
-		<property name="nodeQueryMappingInfos">
-			<list>
+						]]></value>
+					</property>
+					<property name="nodeTypes">
+						<list>
+							<ref bean="nodeInstanceInfo" />
+							<ref bean="nodeConceptInfo" />
+						</list>
+					</property>
+				</bean>
+				<!-- map words -->
 				<bean class="ytex.kernel.tree.QueryMappingInfo">
 					<property name="query">
 						<value><![CDATA[
