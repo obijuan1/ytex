@@ -145,7 +145,7 @@
 		<property name="export.tree.basedir" value="libsvm/semkern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
 		<mkdir dir="${export.tree.dir}" />
-		<copy file="${export.tree.basedir}/tree.xml" tofile="${export.tree.dir}/tree.xml">
+		<copy file="${export.tree.basedir}/tree.xml" tofile="${export.tree.dir}/tree.xml" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
@@ -153,7 +153,7 @@
 		</copy>
 		<java classname="ytex.KernelLauncher" fork="yes" classpathref="i2b2.cp">
 			<arg line="-beans ${export.tree.dir}/tree.xml -storeInstanceMap ${export.tree.dir}/instanceMap.obj" />
-			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xmx4g" />
 		</java>
 	</target>
 	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
@@ -162,7 +162,7 @@
 		<property name="export.tree.basedir" value="libsvm/semkern" />
 		<property name="kernel.base" value="semkern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
-		<copy file="${export.tree.basedir}/${kernel.base}.xml" tofile="${export.tree.dir}/${kernel.base}.xml">
+		<copy file="${export.tree.basedir}/${kernel.base}.xml" tofile="${export.tree.dir}/${kernel.base}.xml" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
