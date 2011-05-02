@@ -84,7 +84,7 @@ public class FileUtil {
 			builder.append("run").append(Integer.toString(run)).append("_");
 		}
 		if (fold != null && fold > 0) {
-			builder.append("fold").append(Integer.toString(fold)).append("_");
+			builder.append("fold").append(Integer.toString(fold));
 		}
 		return builder.toString();
 	}
@@ -101,13 +101,15 @@ public class FileUtil {
 	 * @return
 	 */
 	public static String getDataFilePrefix(String outdir, String label,
-			Integer run, Integer fold, boolean train) {
+			Integer run, Integer fold, Boolean train) {
 		StringBuilder builder = new StringBuilder(getFoldFilePrefix(outdir,
 				label, run, fold));
-		if (train)
-			builder.append("train");
-		else
-			builder.append("test");
+		if (train != null) {
+			if (train.booleanValue())
+				builder.append("_train");
+			else
+				builder.append("_test");
+		}
 		return builder.toString();
 	}
 

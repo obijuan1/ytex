@@ -5,7 +5,7 @@ import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import ytex.kernel.ConceptSimilarityService;
 
-public class ConceptKernel implements Kernel {
+public class LinKernel implements Kernel {
 	private ConceptSimilarityService conceptSimilarityService;
 	private CacheManager cacheManager;
 	private Cache conceptSimCache;
@@ -35,7 +35,7 @@ public class ConceptKernel implements Kernel {
 	public void setCacheManager(CacheManager cacheManager) {
 		this.cacheManager = cacheManager;
 	}
-
+	
 	@Override
 	public double evaluate(Object o1, Object o2) {
 		double d = 0;
@@ -45,13 +45,6 @@ public class ConceptKernel implements Kernel {
 			if (c1.equals(c2)) {
 				d = 1;
 			} else {
-				// Set<String> tuis1 = cuiTuiMap.get(c1);
-				// Set<String> tuis2 = cuiTuiMap.get(c2);
-				// Set<Integer> tuis1 = cuiMainSuiMap.get(c1);
-				// Set<Integer> tuis2 = cuiMainSuiMap.get(c2);
-				// // only compare the two if they have a common semantic type
-				// if (tuis1 != null && tuis2 != null
-				// && !Collections.disjoint(tuis1, tuis2)) {
 				// look in cache
 				String key = createKey(c1, c2);
 				Element e = conceptSimCache.get(key);
@@ -60,15 +53,14 @@ public class ConceptKernel implements Kernel {
 					d = (Double) e.getObjectValue();
 				} else {
 					// it's not there - put it there
-					d = conceptSimilarityService.lch(c1, c2)
-							* conceptSimilarityService.lin(corpusName, c1, c2);
+					d = conceptSimilarityService.lin(corpusName, c1, c2);
 					conceptSimCache.put(new Element(key, d));
 				}
-				// }
 			}
 		}
 		return d;
 	}
+
 
 	private String createKey(String c1, String c2) {
 		if (c1.compareTo(c2) < 0) {
@@ -79,6 +71,6 @@ public class ConceptKernel implements Kernel {
 	}
 
 	public void init() {
-		conceptSimCache = cacheManager.getCache("conceptSimCache");
+		conceptSimCache = cacheManager.getCache("linSimCache");
 	}
 }

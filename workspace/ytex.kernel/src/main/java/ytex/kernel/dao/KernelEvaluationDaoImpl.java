@@ -120,7 +120,9 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 
 	@Override
 	public KernelEvaluation storeKernelEval(KernelEvaluation kernelEvaluation) {
-		KernelEvaluation kEval = getKernelEvaluation(kernelEvaluation);
+		KernelEvaluation kEval = getKernelEval(kernelEvaluation.getName(),
+				kernelEvaluation.getExperiment(), kernelEvaluation.getLabel(),
+				kernelEvaluation.getFoldId());
 		if (kEval == null) {
 			try {
 				this.getSessionFactory().getCurrentSession()
@@ -130,21 +132,23 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 				log.warn(
 						"couldn't save kernel evaluation, maybe somebody else did. try to retrieve kernel eval",
 						e);
-				kEval = getKernelEvaluation(kernelEvaluation);
+				kEval = getKernelEval(kernelEvaluation.getName(),
+						kernelEvaluation.getExperiment(),
+						kernelEvaluation.getLabel(),
+						kernelEvaluation.getFoldId());
 			}
 		}
 		return kEval;
 	}
 
-	private KernelEvaluation getKernelEvaluation(
-			KernelEvaluation kernelEvaluation) {
+	public KernelEvaluation getKernelEval(String name, String experiment,
+			String label, int foldId) {
 		Query q = this.getSessionFactory().getCurrentSession()
 				.getNamedQuery("getKernelEval");
-		q.setString("name", kernelEvaluation.getName());
-		q.setString("experiment", kernelEvaluation.getExperiment());
-		q.setString("label", kernelEvaluation.getLabel());
-		q.setInteger("foldId", kernelEvaluation.getFoldId());
-		KernelEvaluation kEval = (KernelEvaluation) q.uniqueResult();
-		return kEval;
+		q.setString("name", name);
+		q.setString("experiment", experiment);
+		q.setString("label", label);
+		q.setInteger("foldId", foldId);
+		return (KernelEvaluation) q.uniqueResult();
 	}
 }

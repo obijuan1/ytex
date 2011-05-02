@@ -22,7 +22,10 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.kernel.FileUtil;
+import ytex.kernel.InstanceData;
 import ytex.kernel.KernelContextHolder;
+import ytex.kernel.KernelUtil;
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.kernel.model.KernelEvaluation;
 import ytex.kernel.model.KernelEvaluationInstance;
@@ -48,8 +51,8 @@ import ytex.kernel.model.KernelEvaluationInstance;
  * Output to outdir following files:
  * <li>training_data_[label].txt - for each class label, a symmetric gram matrix
  * for training instances
- * <li>training_instance_ids.txt - instance ids corresponding to rows of training gram
- * matrix
+ * <li>training_instance_ids.txt - instance ids corresponding to rows of
+ * training gram matrix
  * <li>test_data_[label].txt - for each class label, a rectangular matrix of the
  * test instances kernel evaluations wrt training instances
  * <li>test_instance_ids.txt - instance ids corresponding to rows of test gram
@@ -62,6 +65,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	private JdbcTemplate jdbcTemplate = null;
 	private PlatformTransactionManager transactionManager;
 	private LibSVMUtil libsvmUtil;
+	private KernelUtil kernelUtil;
 
 	public LibSVMUtil getLibsvmUtil() {
 		return libsvmUtil;
@@ -104,15 +108,117 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	 * )
 	 */
 	public void exportGramMatrix(Properties props) throws IOException {
-		String name = props.getProperty("kernel.name");
-		String testInstanceQuery = props.getProperty("test.instance.query");
-		String trainInstanceQuery = props.getProperty("train.instance.query");
+		String name = props.getProperty("name");
+		String experiment = props.getProperty("experiment");
+		InstanceData instanceData = this.getKernelUtil().loadInstances(
+				props.getProperty("instanceClassQuery"));
+		// String testInstanceQuery = props.getProperty("test.instance.query");
+		// String trainInstanceQuery =
+		// props.getProperty("train.instance.query");
 		String outdir = props.getProperty("outdir");
-		if(outdir == null || outdir.length() == 0)
+		if (outdir == null || outdir.length() == 0)
 			outdir = ".";
-		exportGramMatrices(name, testInstanceQuery, trainInstanceQuery, outdir);
+		exportGramMatrices(name, experiment, outdir, instanceData);
 	}
 
+	/**
+	 * todo: this loads the gram matrix for each fold. this is very inefficient.
+	 * Instead need to load gram matrix per label+experiment+fold,
+	 * label+experiment, or per experiment based on configuration.
+	 */
+	private void exportGramMatrices(String name, String experiment,
+			String outdir, InstanceData instanceData) throws IOException {
+		for (String label : instanceData.getLabelToInstanceMap().keySet()) {
+			for (int run : instanceData.getLabelToInstanceMap().get(label)
+					.keySet()) {
+				for (int fold : instanceData.getLabelToInstanceMap().get(label)
+						.get(run).keySet()) {
+					exportFold(name, experiment, outdir, instanceData, label,
+							run, fold);
+				}
+			}
+		}
+	}
+
+	private void exportFold(String name, String experiment, String outdir,
+			InstanceData instanceData, String label, int run, int fold)
+			throws IOException {
+		SortedMap<Integer, String> trainInstanceLabelMap = instanceData
+				.getLabelToInstanceMap().get(label).get(run).get(fold)
+				.get(true);
+		SortedMap<Integer, String> testInstanceLabelMap = instanceData
+				.getLabelToInstanceMap().get(label).get(run).get(fold)
+				.get(false);
+		double[][] trainGramMatrix = new double[trainInstanceLabelMap.size()][trainInstanceLabelMap
+				.size()];
+		double[][] testGramMatrix = null;
+		if (testInstanceLabelMap != null) {
+			testGramMatrix = new double[testInstanceLabelMap.size()][trainInstanceLabelMap
+					.size()];
+		}
+		KernelEvaluation kernelEval = this.kernelEvaluationDao.getKernelEval(
+				name, experiment, label, 0);
+		this.fillGramMatrix(kernelEval, trainInstanceLabelMap,
+				trainGramMatrix, testInstanceLabelMap, testGramMatrix);
+		outputGramMatrix(kernelEval, trainInstanceLabelMap, trainGramMatrix,
+				FileUtil.getDataFilePrefix(outdir, label, run, fold,
+						testInstanceLabelMap != null ? true : null));
+		if (testGramMatrix != null) {
+			outputGramMatrix(kernelEval, testInstanceLabelMap, testGramMatrix,
+					FileUtil.getDataFilePrefix(outdir, label, run, fold, false));
+		}
+	}
+
+	private void outputGramMatrix(KernelEvaluation kernelEval,
+			SortedMap<Integer, String> instanceLabelMap, double[][] gramMatrix,
+			String dataFilePrefix) throws IOException {
+		StringBuilder bFileName = new StringBuilder(dataFilePrefix)
+				.append("_data.txt");
+		StringBuilder bIdFileName = new StringBuilder(dataFilePrefix)
+				.append("_id.txt");
+		BufferedWriter w = null;
+		BufferedWriter wId = null;
+		try {
+			w = new BufferedWriter(new FileWriter(bFileName.toString()));
+			wId = new BufferedWriter(new FileWriter(bIdFileName.toString()));
+			int rowIndex = 0;
+			// the rows in the gramMatrix correspond to the entries in the
+			// instanceLabelMap
+			// both are in the same order
+			for (Map.Entry<Integer, String> instanceClass : instanceLabelMap
+					.entrySet()) {
+				// default the class Id to 0
+				String classId = instanceClass.getValue();
+				int instanceId = instanceClass.getKey();
+				// write class Id
+				w.write(classId);
+				w.write("\t");
+				// write row number - libsvm uses 1-based indexing
+				w.write("0:");
+				w.write(Integer.toString(rowIndex + 1));
+				// write column entries
+				for (int columnIndex = 0; columnIndex < gramMatrix[rowIndex].length; columnIndex++) {
+					w.write("\t");
+					// write column number
+					w.write(Integer.toString(columnIndex + 1));
+					w.write(":");
+					// write value
+					w.write(Double.toString(gramMatrix[rowIndex][columnIndex]));
+				}
+				w.newLine();
+				// increment the row number
+				rowIndex++;
+				// write id file
+				wId.write(Integer.toString(instanceId));
+				wId.newLine();
+			}
+		} finally {
+			if (w != null)
+				w.close();
+			if (wId != null)
+				wId.close();
+		}
+	}
 
 	/**
 	 * instantiate gram matrices, generate output files
@@ -126,19 +232,20 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	private void exportGramMatrices(String name, String testInstanceQuery,
 			String trainInstanceQuery, String outdir) throws IOException {
 		Set<String> labels = new HashSet<String>();
-		SortedMap<Integer, Map<String, Integer>> trainInstanceLabelMap = libsvmUtil.loadClassLabels(
-				trainInstanceQuery, labels);
+		SortedMap<Integer, Map<String, Integer>> trainInstanceLabelMap = libsvmUtil
+				.loadClassLabels(trainInstanceQuery, labels);
 		double[][] trainGramMatrix = new double[trainInstanceLabelMap.size()][trainInstanceLabelMap
 				.size()];
 		SortedMap<Integer, Map<String, Integer>> testInstanceLabelMap = null;
 		double[][] testGramMatrix = null;
 		if (testInstanceQuery != null) {
-			testInstanceLabelMap = libsvmUtil.loadClassLabels(testInstanceQuery, labels);
+			testInstanceLabelMap = libsvmUtil.loadClassLabels(
+					testInstanceQuery, labels);
 			testGramMatrix = new double[testInstanceLabelMap.size()][trainInstanceLabelMap
 					.size()];
 		}
-		fillGramMatrix(name, trainInstanceLabelMap, trainGramMatrix,
-				testInstanceLabelMap, testGramMatrix);
+		// fillGramMatrix(name, trainInstanceLabelMap, trainGramMatrix,
+		// testInstanceLabelMap, testGramMatrix);
 		for (String label : labels) {
 			outputGramMatrix(name, outdir, label, trainInstanceLabelMap,
 					trainGramMatrix, "training");
@@ -152,13 +259,12 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 			libsvmUtil.outputInstanceIds(outdir, testInstanceLabelMap, "test");
 	}
 
-
 	private void outputGramMatrix(String name, String outdir, String label,
 			SortedMap<Integer, Map<String, Integer>> instanceLabelMap,
 			double[][] gramMatrix, String type) throws IOException {
-		StringBuilder bFileName = new StringBuilder(outdir).append(
-				File.separator).append(type).append(
-				"_data_").append(label).append(".txt");
+		StringBuilder bFileName = new StringBuilder(outdir)
+				.append(File.separator).append(type).append("_data_")
+				.append(label).append(".txt");
 		BufferedWriter w = null;
 		try {
 			w = new BufferedWriter(new FileWriter(bFileName.toString()));
@@ -200,7 +306,8 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	}
 
 	private Map<Integer, Integer> createInstanceIdToIndexMap(
-			SortedMap<Integer, Map<String, Integer>> instanceLabelMap) {
+			SortedMap<Integer, String> instanceLabelMap) {
+//			SortedMap<Integer, Map<String, Integer>> instanceLabelMap) {
 		Map<Integer, Integer> instanceIdToIndexMap = new HashMap<Integer, Integer>(
 				instanceLabelMap.size());
 		int i = 0;
@@ -212,15 +319,15 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	}
 
 	private void fillGramMatrix(
-			final String name,
-			final SortedMap<Integer, Map<String, Integer>> trainInstanceLabelMap,
+			final KernelEvaluation kernelEvaluation,
+			final SortedMap<Integer, String> trainInstanceLabelMap,
+//			final SortedMap<Integer, Map<String, Integer>> trainInstanceLabelMap,
 			final double[][] trainGramMatrix,
-			final SortedMap<Integer, Map<String, Integer>> testInstanceLabelMap,
+//			final SortedMap<Integer, Map<String, Integer>> testInstanceLabelMap,
+			final SortedMap<Integer, String> testInstanceLabelMap,
 			final double[][] testGramMatrix) {
-		//final Set<String> kernelEvaluationNames = new HashSet<String>(1);
-		//kernelEvaluationNames.add(name);
-		//TODO
-		final KernelEvaluation kernelEvaluation = null;
+		// final Set<String> kernelEvaluationNames = new HashSet<String>(1);
+		// kernelEvaluationNames.add(name);
 		// prepare map of instance id to gram matrix index
 		final Map<Integer, Integer> trainInstanceToIndexMap = createInstanceIdToIndexMap(trainInstanceLabelMap);
 		final Map<Integer, Integer> testInstanceToIndexMap = testInstanceLabelMap != null ? createInstanceIdToIndexMap(testInstanceLabelMap)
@@ -236,14 +343,13 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 			// don't want too many objects in hibernate session
 			TransactionTemplate t = new TransactionTemplate(
 					this.transactionManager);
-			t
-					.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
+			t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 			t.execute(new TransactionCallback<Object>() {
 				@Override
 				public Object doInTransaction(TransactionStatus arg0) {
 					List<KernelEvaluationInstance> kevals = getKernelEvaluationDao()
-					.getAllKernelEvaluationsForInstance(
-							kernelEvaluation, instanceId); 
+							.getAllKernelEvaluationsForInstance(
+									kernelEvaluation, instanceId);
 					for (KernelEvaluationInstance keval : kevals) {
 						// determine the index of the instance
 						// the index could be in the training or test matrix
@@ -252,10 +358,10 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 						int instanceIdOther = instanceId != keval
 								.getInstanceId1() ? keval.getInstanceId1()
 								: keval.getInstanceId2();
-						//look in training set for the instance id
+						// look in training set for the instance id
 						indexOtherTrain = trainInstanceToIndexMap
 								.get(instanceIdOther);
-						//wasn't there - look in test set
+						// wasn't there - look in test set
 						if (indexOtherTrain == null
 								&& testInstanceToIndexMap != null)
 							indexOtherTest = testInstanceToIndexMap
@@ -277,9 +383,9 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 				}
 			});
 		}
-		//put 1's in the diagonal of the training gram matrix
-		for(int i = 0; i< trainGramMatrix.length; i++) {
-			if(trainGramMatrix[i][i] == 0)
+		// put 1's in the diagonal of the training gram matrix
+		for (int i = 0; i < trainGramMatrix.length; i++) {
+			if (trainGramMatrix[i][i] == 0)
 				trainGramMatrix[i][i] = 1;
 		}
 	}
@@ -299,6 +405,14 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 				propIS.close();
 			}
 		}
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
+	}
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
 	}
 
 }

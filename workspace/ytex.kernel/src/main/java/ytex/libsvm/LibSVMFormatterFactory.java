@@ -51,7 +51,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		public void initializeFold(SparseData sparseData, String label,
 				Integer run, Integer fold) throws IOException {
 			String filename = FileUtil.getFoldFilePrefix(outdir, label, run,
-					fold) + "attributes.txt";
+					fold) + "_attributes.txt";
 			exportAttributeNames(filename, sparseData);
 		}
 

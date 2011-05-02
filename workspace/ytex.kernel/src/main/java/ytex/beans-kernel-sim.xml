@@ -20,12 +20,17 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</list>
 		</property>
 	</bean>
-	<bean id="conceptKernel" class="ytex.kernel.evaluator.ConceptKernel"
+	<bean id="abstractConceptKernel" class="ytex.kernel.evaluator.ConceptKernel" abstract="true"
 		init-method="init">
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 		<property name="cacheManager" ref="cacheManager" />
 	</bean>
 	<bean id="lchKernel" class="ytex.kernel.evaluator.LCHKernel"
+		init-method="init">
+		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
+		<property name="cacheManager" ref="cacheManager" />
+	</bean>
+	<bean id="abstractLinKernel" class="ytex.kernel.evaluator.LinKernel" abstract="true"
 		init-method="init">
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 		<property name="cacheManager" ref="cacheManager" />

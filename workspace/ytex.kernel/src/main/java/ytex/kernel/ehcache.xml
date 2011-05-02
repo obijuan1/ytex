@@ -867,6 +867,22 @@ used with JMX monitors.
             overflowToDisk="false"
             memoryStoreEvictionPolicy="LRU"
             />
+    <cache name="linSimCache"
+            maxElementsInMemory="100000"
+            eternal="false"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            overflowToDisk="false"
+            memoryStoreEvictionPolicy="LRU"
+            />
+    <cache name="lchSimCache"
+            maxElementsInMemory="100000"
+            eternal="false"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            overflowToDisk="false"
+            memoryStoreEvictionPolicy="LRU"
+            />
     <!--
     Sample caches. Following are some example caches. Remove these before use.
     -->

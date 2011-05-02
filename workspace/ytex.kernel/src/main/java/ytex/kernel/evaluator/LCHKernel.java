@@ -61,7 +61,7 @@ public class LCHKernel implements Kernel {
 	}
 
 	public void init() {
-		conceptSimCache = cacheManager.getCache("conceptSimCache");
+		conceptSimCache = cacheManager.getCache("lchSimCache");
 	}
 
 }
