@@ -140,7 +140,7 @@
 		</for>
 	</target>
 	<target name="export.tree.label">
-		<property name="export.label" value="9" />
+		<property name="export.label" value="8" />
 		<property name="export.cutoff" value="0.07" />
 		<property name="export.tree.basedir" value="libsvm/semkern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
@@ -153,12 +153,12 @@
 		</copy>
 		<java classname="ytex.KernelLauncher" fork="yes" classpathref="i2b2.cp">
 			<arg line="-beans ${export.tree.dir}/tree.xml -storeInstanceMap ${export.tree.dir}/instanceMap.obj" />
-			<jvmarg value="-Xmx4g" />
+			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 		</java>
 	</target>
 	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
-		<property name="export.label" value="9" />
+		<property name="export.label" value="8" />
 		<property name="export.cutoff" value="0.07" />
 		<property name="export.tree.basedir" value="libsvm/semkern" />
 		<property name="kernel.base" value="semkern" />
@@ -171,7 +171,7 @@
 		</copy>
 		<java classname="ytex.KernelLauncher" dir="${export.tree.dir}" fork="yes" classpathref="i2b2.cp">
 			<arg line="-beans ${kernel.base}.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod}" />
-			<jvmarg value="-Xmx4g" />
+			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 		</java>
 	</target>

@@ -15,21 +15,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</list>
 		</property>
 	</bean>
-	<bean name="nodeNEInfo" class="ytex.kernel.tree.NodeMappingInfo">
-		<property name="nodeType" value="named_entity" />
-		<property name="values">
-			<list>
-				<value>anno_base_id</value>
-				<value>confidence</value>
-				<value>evaluation</value>
-			</list>
-		</property>
-	</bean>
-	<bean name="nodeOCInfo" class="ytex.kernel.tree.NodeMappingInfo">
+	<bean name="nodeConceptInfo" class="ytex.kernel.tree.NodeMappingInfo">
 		<property name="nodeType" value="ontology_concept" />
 		<property name="values">
 			<list>
-				<value>anno_ontology_concept_id</value>
 				<value>code</value>
 			</list>
 		</property>
@@ -38,9 +27,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="nodeType" value="word" />
 		<property name="values">
 			<list>
-				<value>anno_base_id</value>
 				<value>canonical_form</value>
-				<value>evaluation</value>
 			</list>
 		</property>
 	</bean>
@@ -52,7 +39,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			<bean class="ytex.kernel.tree.QueryMappingInfo">
 				<property name="query">
 					<value><![CDATA[
-select hs.instance_id, ne.anno_base_id, ne.confidence, c.anno_ontology_concept_id, c.code
+select distinct hs.instance_id, c.code
 from hotspot_sentence hs
 inner join i2b2_2008_disease ds on ds.disease = hs.label
 /* get named entities */
@@ -60,23 +47,25 @@ inner join anno_contain ac on ac.parent_anno_base_id = hs.anno_base_id and ac.ch
 inner join anno_named_entity ne on ne.anno_base_id = ac.child_anno_base_id
 /* get ontology concepts */
 inner join ytex.anno_ontology_concept c on c.anno_base_id = ne.anno_base_id
-/* exclude zero vectors */
+/* exclude zero vectors
+for some reason this slows things down greatly
 left join hotspot_zero_vector hzv
 	on hzv.instance_id = hs.instance_id
 	and hzv.label = hs.label
 	and hzv.cutoff = @export.cutoff@
+	and hzv.name = hs.name
+*/
 /* limit to label */
 where ds.disease_id = @export.label@
 and evaluation > @export.cutoff@
-and hzv.hotspot_zero_vector_id is null
-order by hs.instance_id, ne.anno_base_id, ne.confidence, c.anno_ontology_concept_id
+/* and hzv.hotspot_zero_vector_id is null */
+order by hs.instance_id
 					]]></value>
 				</property>
 				<property name="nodeTypes">
 					<list>
 						<ref bean="nodeInstanceInfo" />
-						<ref bean="nodeNEInfo" />
-						<ref bean="nodeOCInfo" />
+						<ref bean="nodeConceptInfo" />
 					</list>
 				</property>
 			</bean>
@@ -86,7 +75,7 @@ order by hs.instance_id, ne.anno_base_id, ne.confidence, c.anno_ontology_concept
 				<bean class="ytex.kernel.tree.QueryMappingInfo">
 					<property name="query">
 						<value><![CDATA[
-select hs.instance_id, w.anno_base_id, w.canonical_form
+select distinct hs.instance_id, w.canonical_form
 from hotspot_sentence hs
 inner join i2b2_2008_disease ds on ds.disease = hs.label
 /* get words */
@@ -94,16 +83,17 @@ inner join anno_contain ac on ac.parent_anno_base_id = hs.anno_base_id and ac.ch
 inner join anno_word_token w on w.anno_base_id = ac.child_anno_base_id and w.canonical_form is not null
 /* exclude words are not in named entities */
 left join anno_contain acw on acw.child_anno_base_id = ac.child_anno_base_id and acw.parent_uima_type_id = 8
-/* exclude zero vectors */
+/* exclude zero vectors
 left join hotspot_zero_vector hzv
 	on hzv.instance_id = hs.instance_id
 	and hzv.label = hs.label
 	and hzv.cutoff = @export.cutoff@
+*/
 where acw.parent_anno_base_id is null
 and ds.disease_id = @export.label@
 and evaluation > @export.cutoff@
-and hzv.hotspot_zero_vector_id is null
-order by hs.instance_id, w.anno_base_id
+/* and hzv.hotspot_zero_vector_id is null */
+order by hs.instance_id
 					]]></value>
 					</property>
 					<property name="nodeTypes">

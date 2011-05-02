@@ -15,8 +15,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<property name="delegateKernels">
 					<list>
 						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
-							<property name="nodeType" value="named_entity" />
-							<property name="delegateKernel" ref="namedEntityKernel" />
+							<property name="nodeType" value="ontology_concept" />
+							<property name="delegateKernel" ref="compositeConceptKernel" />
 						</bean>
 						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
 							<property name="nodeType" value="word" />
@@ -24,14 +24,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</list>
 				</property>
-			</bean>
-		</property>
-	</bean>
-	<!-- namedEntityKernel - norm of convolution of concepts -->
-	<bean id="namedEntityKernel" parent="abstractNormKernel">
-		<property name="delegateKernel">
-			<bean class="ytex.kernel.evaluator.ConvolutionKernel">
-				<property name="delegateKernel" ref="compositeConceptKernel" />
 			</bean>
 		</property>
 	</bean>
@@ -87,6 +79,7 @@ left join hotspot_zero_vector hzv
 where d.documentSet = 'train'
 and ds.disease_id = @export.label@
 and hzv.hotspot_zero_vector_id is null
+limit 10
 			]]></value>
 		</property>
 <!-- 		
