@@ -34,24 +34,26 @@ public class KernelLauncher {
 				.withDescription(
 						"evaluate kernel specified in application context on the instances. If instanceMap is specified, load instance from file system, else from db.")
 				.create("evalKernel");
-		Option exportBagOfWords = OptionBuilder.withDescription(
-				"exportBagOfWords.  Must specify property file").hasArg()
-				.create("exportBagOfWords");
-		Option exportType = OptionBuilder.withDescription(
-				"exportType.  either libsvm or weka").hasArg().create(
-				"exportType");
+		Option exportBagOfWords = OptionBuilder
+				.withDescription(
+						"exportBagOfWords.  Must specify property file")
+				.hasArg().create("exportBagOfWords");
+		Option exportType = OptionBuilder
+				.withDescription("exportType.  either libsvm or weka").hasArg()
+				.create("exportType");
 		Option oLoadInstanceMap = OptionBuilder
 				.withArgName("instanceMap.obj")
 				.hasArg()
 				.withDescription(
 						"load instanceMap from file system instead of from db.  Use after storing instance map.")
 				.create("loadInstanceMap");
-		Option oEvalMod = OptionBuilder.withDescription(
-				"for parallelization, split the instances into mod slices")
+		Option oEvalMod = OptionBuilder
+				.withDescription(
+						"for parallelization, split the instances into mod slices")
 				.hasArg().create("mod");
 		Option oEvalSlice = OptionBuilder
 				.withDescription(
-						"for parallelization, parameter that determines which slice we work on")
+						"for parallelization, parameter that determines which slice we work on.  If this is not specified, nMod threads will be started to evaluate all slices in parallel.")
 				.hasArg().create("slice");
 		Option oBeanref = OptionBuilder
 				.withArgName("classpath*:simSvcBeanRefContext.xml")
@@ -71,7 +73,7 @@ public class KernelLauncher {
 				.withDescription(
 						"use specified beans.xml, no default.  This file is typically required.")
 				.create("beans");
-		
+
 		Option oHelp = new Option("help", "print this message");
 		Options options = new Options();
 		OptionGroup og = new OptionGroup();
@@ -79,9 +81,9 @@ public class KernelLauncher {
 		og.addOption(oEvaluateKernel);
 		og.addOption(exportBagOfWords);
 		options.addOptionGroup(og);
-//		options.addOption(oStoreInstanceMap);
+		// options.addOption(oStoreInstanceMap);
 		options.addOption(oEvaluateKernel);
-//		options.addOption(exportBagOfWords);
+		// options.addOption(exportBagOfWords);
 		options.addOption(exportType);
 		options.addOption(oLoadInstanceMap);
 		options.addOption(oEvalMod);
@@ -90,7 +92,7 @@ public class KernelLauncher {
 		options.addOption(oAppctx);
 		options.addOption(oBeans);
 		options.addOption(oHelp);
-		
+
 		return options;
 	}
 
@@ -140,8 +142,8 @@ public class KernelLauncher {
 							"kernelApplicationContext");
 					String beans = line.getOptionValue("beans");
 					ApplicationContext appCtx = (ApplicationContext) ContextSingletonBeanFactoryLocator
-							.getInstance(beanRefContext).useBeanFactory(
-									contextName).getFactory();
+							.getInstance(beanRefContext)
+							.useBeanFactory(contextName).getFactory();
 					ApplicationContext appCtxSource = appCtx;
 					if (beans != null) {
 						appCtxSource = new FileSystemXmlApplicationContext(
@@ -183,7 +185,12 @@ public class KernelLauncher {
 		String strMod = line.getOptionValue("mod");
 		String strSlice = line.getOptionValue("slice");
 		int nMod = strMod != null ? Integer.parseInt(strMod) : 0;
-		int nSlice = strMod != null ? Integer.parseInt(strSlice) : 0;
+		Integer nSlice = null;
+		if (nMod == 0) {
+			nSlice = 0;
+		} else if (strSlice != null) {
+			nSlice = Integer.parseInt(strSlice);
+		}
 		Map<Integer, Node> instanceMap = null;
 		if (loadInstanceMap != null) {
 			instanceMap = builder.loadInstanceTrees(loadInstanceMap);
@@ -191,14 +198,19 @@ public class KernelLauncher {
 			instanceMap = builder.loadInstanceTrees(appCtxSource.getBean(
 					"treeMappingInfo", TreeMappingInfo.class));
 		}
-		corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, nSlice);
+		if (nSlice != null) {
+			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, nSlice);
+		} else {
+			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod);
+		}
 	}
 
 	private static void storeInstanceMap(ApplicationContext appCtxSource,
 			String storeInstanceMap, CommandLine line) throws Exception {
 		InstanceTreeBuilder builder = appCtxSource.getBean(
 				"instanceTreeBuilder", InstanceTreeBuilder.class);
-		builder.serializeInstanceTrees(appCtxSource.getBean("treeMappingInfo",
-				TreeMappingInfo.class), storeInstanceMap);
+		builder.serializeInstanceTrees(
+				appCtxSource.getBean("treeMappingInfo", TreeMappingInfo.class),
+				storeInstanceMap);
 	}
 }

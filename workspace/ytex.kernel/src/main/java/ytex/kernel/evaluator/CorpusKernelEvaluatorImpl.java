@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
@@ -237,25 +241,25 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 								.getInstanceId2() : kEval.getInstanceId1());
 			}
 			for (Integer instanceId2 : rightDocumentIDs) {
-//				if (instanceId1 != instanceId2) {
-					final int i1 = instanceId1;
-					final int i2 = instanceId2;
-					final Node root1 = instanceIDMap.get(i1);
-					final Node root2 = instanceIDMap.get(i2);
-					if (root1 != null && root2 != null) {
-						// store in separate tx so that there are less objects
-						// in session for hibernate to deal with
-						// txTemplate.execute(new TransactionCallback() {
-						// @Override
-						// public Object doInTransaction(TransactionStatus arg0)
-						// {
-						kernelEvaluationDao.storeKernel(kernelEvaluation, i1,
-								i2, instanceKernel.evaluate(root1, root2));
-					}
-					// return null;
-					// }
-					// });
-//				}
+				// if (instanceId1 != instanceId2) {
+				final int i1 = instanceId1;
+				final int i2 = instanceId2;
+				final Node root1 = instanceIDMap.get(i1);
+				final Node root2 = instanceIDMap.get(i2);
+				if (root1 != null && root2 != null) {
+					// store in separate tx so that there are less objects
+					// in session for hibernate to deal with
+					// txTemplate.execute(new TransactionCallback() {
+					// @Override
+					// public Object doInTransaction(TransactionStatus arg0)
+					// {
+					kernelEvaluationDao.storeKernel(kernelEvaluation, i1, i2,
+							instanceKernel.evaluate(root1, root2));
+				}
+				// return null;
+				// }
+				// });
+				// }
 			}
 		}
 	}
@@ -368,5 +372,42 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		final Map<Integer, Node> instanceIDMap = instanceTreeBuilder
 				.loadInstanceTrees(treeMappingInfo);
 		this.evaluateKernelOnCorpus(instanceIDMap, 0, 0);
+	}
+
+	public class SliceEvaluator implements Callable<Object> {
+		int nSlice;
+		Map<Integer, Node> instanceIDMap;
+		int nMod;
+
+		public SliceEvaluator(Map<Integer, Node> instanceIDMap, int nMod,
+				int nSlice) {
+			this.nSlice = nSlice;
+			this.nMod = nMod;
+			this.instanceIDMap = instanceIDMap;
+		}
+
+		@Override
+		public Object call() throws Exception {
+			try {
+				evaluateKernelOnCorpus(instanceIDMap, nMod, nSlice);
+			} catch (Exception e) {
+				log.error("error on slice: " + nSlice, e);
+				throw e;
+			}
+			return null;
+		}
+	}
+
+	@Override
+	public void evaluateKernelOnCorpus(Map<Integer, Node> instanceIDMap,
+			int nMod) throws InterruptedException {
+		ExecutorService svc = Executors.newFixedThreadPool(nMod);
+		List<Callable<Object>> taskList = new ArrayList<Callable<Object>>(nMod);
+		for (int nSlice = 1; nSlice <= nMod; nSlice++) {
+			taskList.add(new SliceEvaluator(instanceIDMap, nMod, nSlice));
+		}
+		svc.invokeAll(taskList);
+		svc.shutdown();
+		svc.awaitTermination(60 * 4, TimeUnit.MINUTES);
 	}
 }
