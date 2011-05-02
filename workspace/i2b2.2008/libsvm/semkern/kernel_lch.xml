@@ -54,7 +54,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<property name="delegateKernels">
 					<list>
 						<ref bean="tuiSemanticTypeKernel" />
-						<ref bean="conceptKernel" />
+						<ref bean="lchKernel" />
 					</list>
 				</property>
 			</bean>
@@ -70,7 +70,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
 		<property name="treeMappingInfo" ref="treeMappingInfo" />
 		<property name="name" value="i2b2.2008" />
-		<property name="experiment" value="semkern@export.cutoff@" />
+		<property name="experiment" value="lchkern@export.cutoff@" />
 		<property name="label" value="@export.label@" />
 		<property name="trainInstanceIDQuery">
 			<value><![CDATA[

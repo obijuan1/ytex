@@ -60,9 +60,15 @@ inner join anno_contain ac on ac.parent_anno_base_id = hs.anno_base_id and ac.ch
 inner join anno_named_entity ne on ne.anno_base_id = ac.child_anno_base_id
 /* get ontology concepts */
 inner join ytex.anno_ontology_concept c on c.anno_base_id = ne.anno_base_id
+/* exclude zero vectors */
+left join hotspot_zero_vector hzv
+	on hzv.instance_id = hs.instance_id
+	and hzv.label = hs.label
+	and hzv.cutoff = @export.cutoff@
 /* limit to label */
-where ds.disease_id = 9
-and evaluation > 0.07
+where ds.disease_id = @export.label@
+and evaluation > @export.cutoff@
+and hzv.hotspot_zero_vector_id is null
 					]]></value>
 				</property>
 				<property name="nodeTypes">
@@ -87,9 +93,15 @@ inner join anno_contain ac on ac.parent_anno_base_id = hs.anno_base_id and ac.ch
 inner join anno_word_token w on w.anno_base_id = ac.child_anno_base_id and w.canonical_form is not null
 /* exclude words are not in named entities */
 left join anno_contain acw on acw.child_anno_base_id = ac.child_anno_base_id and acw.parent_uima_type_id = 8
+/* exclude zero vectors */
+left join hotspot_zero_vector hzv
+	on hzv.instance_id = hs.instance_id
+	and hzv.label = hs.label
+	and hzv.cutoff = @export.cutoff@
 where acw.parent_anno_base_id is null
-and ds.disease_id = 9
-and evaluation > 0.07
+and ds.disease_id = @export.label@
+and evaluation > @export.cutoff@
+and hzv.hotspot_zero_vector_id is null
 					]]></value>
 					</property>
 					<property name="nodeTypes">
