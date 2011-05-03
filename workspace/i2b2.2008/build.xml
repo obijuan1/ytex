@@ -143,7 +143,7 @@
 	<target name="export.tree.cutoff">
 		<property name="export.cutoff" value="0.07" />
 		<antcall target="iter.label">
-			<param name="iter.label.target" value="export.tree.label"/>
+			<param name="iter.label.target" value="export.tree.label" />
 		</antcall>
 	</target>
 	<target name="export.tree.label">
@@ -167,7 +167,7 @@
 	<target name="eval.kernel.cutoff">
 		<property name="export.cutoff" value="0.07" />
 		<antcall target="iter.label">
-			<param name="iter.label.target" value="eval.kernel.label"/>
+			<param name="iter.label.target" value="eval.kernel.label" />
 		</antcall>
 	</target>
 	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
@@ -192,12 +192,12 @@
 		<property name="export.cutoff" value="0.07" />
 		<property name="export.tree.basedir" value="libsvm/semkern" />
 		<property name="experiment.base" value="linkern" />
-		<property name="experiment" value="${experiment.base}${export.cutoff}" />
-		<property name="export.dir" value="libsvm/${experiment}" />
+		<property name="libsvm.experiment" value="${experiment.base}${export.cutoff}" />
+		<property name="export.dir" value="libsvm/${libsvm.experiment}" />
 		<mkdir dir="${export.dir}" />
 		<copy file="${export.tree.basedir}/export.xml" todir="${export.dir}" overwrite="yes">
 			<filterset>
-				<filter token="experiment" value="${experiment}" />
+				<filter token="experiment" value="${libsvm.experiment}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
 			</filterset>
 		</copy>
@@ -207,6 +207,15 @@
 			<jvmarg value="-Xms1g" />
 		</java>
 	</target>
+
+	<target name="kernel.cv.all" description="run libsvm ant script. need to define libsvm.experiment via -D option for this to work on linux">
+		<property name="libsvm.experiment" value="${experiment.base}${export.cutoff}" />
+		<ant antfile="build.xml" dir="../ytex.kernel/libsvm" target="cv.all.folds.local">
+			<property name="libsvm.experiment" value="${libsvm.experiment}" />
+		</ant>
+	</target>
+	<target name="kernel.experiment.all" depends="export.tree.cutoff,eval.kernel.cutoff,kernel.export.libsvm.cutoff,kernel.cv.all" description="evaluate kernel, export, run libsvm. must define export.cutoff, export.tree.basedir, experiment.base, libsvm.experiment" />
+
 
 	<!--
 	for some reason this isn't working on linux
