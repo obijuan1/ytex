@@ -54,8 +54,8 @@ from hotspot_sentence hs
 inner join anno_contain c on c.child_anno_base_id = hs.anno_base_id and c.parent_uima_type_id = 12
 inner join anno_segment seg on seg.anno_base_id = c.parent_anno_base_id
 inner join i2b2_2008_disease ds on ds.disease = hs.label
-where ds.disease_id = 14
-and evaluation > 0.07
+where ds.disease_id = @export.label@
+and evaluation > @export.cutoff@
 order by hs.instance_id
 					]]></value>
 				</property>
@@ -87,9 +87,9 @@ inner join anno_named_entity ne on ne.anno_base_id = ac.child_anno_base_id
 inner join ytex.anno_ontology_concept c on c.anno_base_id = ne.anno_base_id
 /* exclude named entities within other named entities */
 left join anno_contain acn on acn.child_anno_base_id = ac.child_anno_base_id and acn.parent_uima_type_id = 8
-where ds.disease_id = 14
+where ds.disease_id = @export.label@
 and acn.parent_anno_base_id is null
-and evaluation > 0.07
+and evaluation > @export.cutoff@
 order by seg.anno_base_id, seg.segment_id
 						]]></value>
 					</property>
@@ -118,8 +118,8 @@ inner join anno_word_token w on w.anno_base_id = ac.child_anno_base_id and w.can
 /* exclude words are not in named entities */
 left join anno_contain acw on acw.child_anno_base_id = ac.child_anno_base_id and acw.parent_uima_type_id = 8
 where acw.parent_anno_base_id is null
-and ds.disease_id = 14
-and evaluation > 0.07
+and ds.disease_id = @export.label@
+and evaluation > @export.cutoff@
 and canonical_form not in (select stopword from stopword)
 order by seg.anno_base_id, seg.segment_id 
 					]]></value>
