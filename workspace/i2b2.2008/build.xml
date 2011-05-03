@@ -131,15 +131,20 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="export.tree.cutoff">
-		<property name="export.cutoff" value="0.07" />
-		<for list="libsvm.classLabels" param="export.label">
+	<target name="iter.label">
+		<for list="${libsvm.classLabels}" param="export.label">
 			<sequential>
-				<antcall target="export.tree.label">
+				<antcall target="${iter.label.target}">
 					<param name="export.label" value="@{export.label}" />
 				</antcall>
 			</sequential>
 		</for>
+	</target>
+	<target name="export.tree.cutoff">
+		<property name="export.cutoff" value="0.07" />
+		<antcall target="iter.label">
+			<param name="iter.label.target" value="export.tree.label"/>
+		</antcall>
 	</target>
 	<target name="export.tree.label">
 		<property name="export.label" value="8" />
@@ -159,15 +164,11 @@
 			<jvmarg value="-Xms1g" />
 		</java>
 	</target>
-	<target name="eval.kernel.cutoff" description="evaluate kernel on all labels for the specified cutoff">
+	<target name="eval.kernel.cutoff">
 		<property name="export.cutoff" value="0.07" />
-		<for list="libsvm.classLabels" param="export.label" parallel="${eval.kernel.parallel}" threadCount="${eval.kernel.thread}">
-			<sequential>
-				<antcall target="eval.kernel.label">
-					<param name="export.label" value="@{export.label}" />
-				</antcall>
-			</sequential>
-		</for>
+		<antcall target="iter.label">
+			<param name="iter.label.target" value="eval.kernel.label"/>
+		</antcall>
 	</target>
 	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
 		<property name="export.label" value="8" />
