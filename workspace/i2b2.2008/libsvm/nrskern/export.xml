@@ -15,6 +15,5 @@
 		and hzv.label = a.disease
 		and hzv.cutoff = @export.cutoff@
 	where hzv.hotspot_zero_vector_id is null
-	and d.disease_id = 8
 	]]></entry>
 </properties>
