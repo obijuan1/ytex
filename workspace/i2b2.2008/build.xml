@@ -7,6 +7,8 @@
 	<property file="${ytex.properties}" />
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
+	<property name="eval.kernel.thread" value="1" />
+	<property name="eval.kernel.parallel" value="no" />
 
 	<property name="bocuis.export.cutoffs" value="0.03,0.05,0.07,0.09,0.1" />
 
@@ -142,7 +144,7 @@
 	<target name="export.tree.label">
 		<property name="export.label" value="8" />
 		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/semkern" />
+		<property name="export.tree.basedir" value="libsvm/nrskern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
 		<mkdir dir="${export.tree.dir}" />
 		<copy file="${export.tree.basedir}/tree.xml" tofile="${export.tree.dir}/tree.xml" overwrite="yes">
@@ -157,20 +159,30 @@
 			<jvmarg value="-Xms1g" />
 		</java>
 	</target>
+	<target name="eval.kernel.cutoff" description="evaluate kernel on all labels for the specified cutoff">
+		<property name="export.cutoff" value="0.07" />
+		<for list="libsvm.classLabels" param="export.label" parallel="${eval.kernel.parallel}" threadCount="${eval.kernel.thread}">
+			<sequential>
+				<antcall target="eval.kernel.label">
+					<param name="export.label" value="@{export.label}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
 	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
 		<property name="export.label" value="8" />
 		<property name="export.cutoff" value="0.07" />
 		<property name="export.tree.basedir" value="libsvm/semkern" />
-		<property name="kernel.base" value="semkern" />
+		<property name="experiment.base" value="semkern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
-		<copy file="${export.tree.basedir}/${kernel.base}.xml" tofile="${export.tree.dir}/${kernel.base}.xml" overwrite="yes">
+		<copy file="${export.tree.basedir}/${experiment.base}.xml" tofile="${export.tree.dir}/${experiment.base}.xml" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
 			</filterset>
 		</copy>
 		<java classname="ytex.KernelLauncher" dir="${export.tree.dir}" fork="yes" classpathref="i2b2.cp">
-			<arg line="-beans ${kernel.base}.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod}" />
+			<arg line="-beans ${experiment.base}.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 		</java>
