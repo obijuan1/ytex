@@ -147,9 +147,9 @@
 		</antcall>
 	</target>
 	<target name="export.tree.label">
-		<property name="export.label" value="8" />
+		<property name="export.label" value="14" />
 		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/nrskern" />
+		<property name="export.tree.basedir" value="libsvm/segkern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
 		<mkdir dir="${export.tree.dir}" />
 		<copy file="${export.tree.basedir}/tree.xml" tofile="${export.tree.dir}/tree.xml" overwrite="yes">
@@ -171,10 +171,10 @@
 		</antcall>
 	</target>
 	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
-		<property name="export.label" value="8" />
+		<property name="export.label" value="14" />
 		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/semkern" />
-		<property name="experiment.base" value="semkern" />
+		<property name="export.tree.basedir" value="libsvm/segkern" />
+		<property name="experiment.base" value="segkern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
 		<copy file="${export.tree.basedir}/${experiment.base}.xml" tofile="${export.tree.dir}/${experiment.base}.xml" overwrite="yes">
 			<filterset>
