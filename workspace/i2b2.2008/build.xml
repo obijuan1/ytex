@@ -249,4 +249,35 @@
 			<arg value="source ${mysql.script}" />
 		</exec>
 	</target>
+
+	<target name="export.R">
+		<property name="export.cutoff" value="0.07" />
+		<property name="experiment.base" value="trvkern" />
+		<property name="experiment" value="${experiment.base}${export.cutoff}" />
+		<property name="export.dir" value="R/data/${experiment}" />
+		<mkdir dir="${export.dir}" />
+		<copy file="R/export.xml" todir="${export.dir}" overwrite="yes">
+			<filterset>
+				<filter token="experiment" value="${experiment}" />
+				<filter token="export.cutoff" value="${export.cutoff}" />
+			</filterset>
+		</copy>
+		<java classname="ytex.R.RGramMatrixExporterImpl" classpathref="i2b2.cp" fork="yes" dir="${export.dir}">
+			<arg value="export.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+		</java>
+	</target>
+	<target name="eval.R">
+		<property name="export.cutoff" value="0.07" />
+		<property name="experiment.base" value="trvkern" />
+		<property name="experiment" value="${experiment.base}${export.cutoff}" />
+		<property name="eval.R" value="./R/eval.R" />
+		<exec executable="${R.exe}" dir="./R" input="${eval.R}">
+			<arg value="--no-restore"/>
+			<arg value="--no-save"/>
+			<arg value="--no-readline"/>
+			<arg value="${experiment}"/>
+		</exec>
+	</target>
 </project>
