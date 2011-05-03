@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<import resource="tree.xml" />
+	<!-- document kernel - norm of convolution on words/concepts. Only compare 
+		documents of same type -->
+	<bean id="instanceKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+				<property name="delegateKernel" ref="segmentKernel" />
+				<property name="pow" value="2" />
+			</bean>
+		</property>
+	</bean>
+	<bean id="segmentKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="delegateKernels">
+					<list>
+						<!--  only evaluate kernel on identical segments -->
+						<bean class="ytex.kernel.evaluator.NodeAttributeKernel">
+							<property name="attributeName" value="segment_id" />
+							<property name="delegateKernel" ref="equalityKernel" />
+						</bean>
+						<!--  segment kernel is sum of contained concepts -->
+						<bean class="ytex.kernel.evaluator.SumKernel">
+							<property name="delegateKernels">
+								<list>
+									<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+										<property name="nodeType" value="ontology_concept" />
+										<property name="delegateKernel" ref="compositeConceptKernel" />
+									</bean>
+									<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+										<property name="nodeType" value="word" />
+										<property name="delegateKernel" ref="wordKernel" />
+									</bean>
+								</list>
+							</property>
+						</bean>
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<bean id="tuiSemanticTypeKernel" parent="abstractTuiSemanticTypeKernel">
+		<property name="cuiTuiQuery">
+			<value><![CDATA[
+		select t.cui, t.tui
+		from tfidf_docfreq df
+		inner join umls.MRSTY t on df.term = t.cui
+		where df.name = 'i2b2.2008-cui'
+		]]></value>
+		</property>
+	</bean>
+	<bean id="conceptKernel" parent="abstractConceptKernel">
+		<property name="corpusName" value="i2b2.2008" />
+	</bean>
+	<!-- Check overlapping main semantic type. Concept kernel is lin * lch -->
+	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
+		<property name="attributeName" value="code" />
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="delegateKernels">
+					<list>
+						<ref bean="tuiSemanticTypeKernel" />
+						<ref bean="conceptKernel" />
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<!-- wordKernel - simply compare words -->
+	<bean id="wordKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
+		<property name="attributeName" value="canonical_form" />
+		<property name="delegateKernel" ref="equalityKernel" />
+	</bean>
+	<bean id="corpusKernelEvaluator" parent="abstractCorpusKernelEvaluator">
+		<property name="instanceKernel" ref="instanceKernel" />
+		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
+		<property name="treeMappingInfo" ref="treeMappingInfo" />
+		<property name="name" value="i2b2.2008" />
+		<property name="experiment" value="segkern@export.cutoff@" />
+		<property name="label" value="@export.label@" />
+		<property name="trainInstanceIDQuery">
+			<value><![CDATA[
+select d.docId
+from i2b2_2008_doc d
+inner join i2b2_2008_anno a on a.docId = d.docId and a.source = 'intuitive'
+inner join i2b2_2008_disease ds on ds.disease = a.disease
+left join hotspot_zero_vector hzv
+	on hzv.instance_id = d.docId
+	and hzv.label = a.disease
+	and hzv.cutoff = @export.cutoff@
+where d.documentSet = 'train'
+and ds.disease_id = @export.label@
+and hzv.hotspot_zero_vector_id is null
+limit 20
+			]]></value>
+		</property>
+		<!-- <property name="testInstanceIDQuery"> <value><![CDATA[ select d.docId 
+			from i2b2_2008_doc d inner join i2b2_2008_anno a on a.docId = d.docId and 
+			a.source = 'intuitive' inner join i2b2_2008_disease ds on ds.disease = a.disease 
+			where d.documentSet = 'test' and ds.disease_id = 9 ]]></value> </property> -->
+	</bean>
+</beans>
