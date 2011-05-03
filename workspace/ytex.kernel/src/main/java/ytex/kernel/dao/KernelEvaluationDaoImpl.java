@@ -146,7 +146,7 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 			txTemplate.execute(new TransactionCallback<Object>() {
 
 				@Override
-				public Object doInTransaction(TransactionStatus arg0) {
+				public Object doInTransaction(TransactionStatus txStatus) {
 					try {
 						getSessionFactory().getCurrentSession()
 								.save(kernelEvaluation);
@@ -154,6 +154,7 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 						log.warn(
 								"couldn't save kernel evaluation, maybe somebody else did. try to retrieve kernel eval",
 								e);
+						txStatus.setRollbackOnly();
 					}
 					return null;
 				}
