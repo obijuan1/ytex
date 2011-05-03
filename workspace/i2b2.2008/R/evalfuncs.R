@@ -29,10 +29,11 @@ instanceIdToIndex = function(instanceIDs, instance_id) {
 
 evalAll = function(loadFoldsFn = loadFolds, loadGramFn = loadGram, costs = 10^(-3:3)) {
 	results = c()
+	folds = loadFoldsFn()
 	#for(label in unique(folds$label)) {
 	#	results = rbind(evalLabel(folds, label))
 	#}
-	results = foreach(label=unique(folds$label),.combine=rbind) %dopar% rbind(evalLabel(folds, label, costs))
+	results = foreach(label=unique(folds$label),.combine=rbind) %dopar% evalLabel(folds, label, costs)
 	return(results)
 }
 
@@ -52,7 +53,7 @@ evalLabel = function(folds, label, costs = 1, loadGramFn = loadGram) {
 
 evalFold = function(folds, label, run, fold, gram, instanceIDs, costs=1) {
 	foldtmp = folds[folds$label == label,]
-	foldtmp = folds[foldtmp$run == run,]
+	foldtmp = foldtmp[foldtmp$run == run,]
 	foldtmp = foldtmp[foldtmp$fold == fold,]
 	train = foldtmp[foldtmp$train == 1,]
 	test = foldtmp[foldtmp$train == 0,]
@@ -85,7 +86,7 @@ evalToResults = function(cost, m, test, preds) {
 		results[cls, "tn"] = sum(cm.tt[-cls, -cls])
 		results[cls, "fp"] = sum(cm.tt[cls, -cls])
 		results[cls, "fn"] = sum(cm.tt[-cls,cls])
-		results[cls, c("sens", "spec", "ppv", "npv")] = sapply(cm$byClass[cls, c("Sensitivity","Specificity","Pos Pred Value", "Neg Pred Value")], function(x) {if(is.nan(x)) { return(0) } else {return (x)}})
+		results[cls, c("sens", "spec", "ppv", "npv")] = sapply(cm$byClass[cls, c("Sensitivity","Specificity","Pos Pred Value", "Neg Pred Value")], function(x) {if(is.nan(x) || is.na(x)) { return(0) } else {return (x)}})
 		ppv = results[cls,"ppv"]
 		sens = results[cls,"sens"]
 		if((ppv+sens)>0) {
