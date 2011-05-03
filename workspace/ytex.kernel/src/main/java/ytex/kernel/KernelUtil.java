@@ -4,6 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
+import java.util.SortedSet;
+
+import ytex.kernel.model.KernelEvaluation;
 
 public interface KernelUtil {
 
@@ -33,5 +36,8 @@ public interface KernelUtil {
 	 * 
 	 */
 	public abstract InstanceData loadInstances(String strQuery);
+
+	public abstract void fillGramMatrix(final KernelEvaluation kernelEvaluation, final SortedSet<Integer> trainInstanceLabelMap,
+			final double[][] trainGramMatrix, final SortedSet<Integer> testInstanceLabelMap, final double[][] testGramMatrix);
 
 }

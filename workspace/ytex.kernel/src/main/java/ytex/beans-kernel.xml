@@ -95,6 +95,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="libsvmUtil" ref="libsvmUtil" />
 		<property name="kernelUtil" ref="kernelUtil" />
 	</bean>
+	<bean id="rGramMatrixExporter" class="ytex.R.RGramMatrixExporterImpl">
+		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
+		<property name="kernelUtil" ref="kernelUtil" />
+	</bean>
 	<bean id="libsvmUtil" class="ytex.libsvm.LibSVMUtilImpl">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
@@ -155,6 +159,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="kernelUtil" class="ytex.kernel.KernelUtilImpl">
 		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
 	</bean>
 
 	<bean id="sparseDataExporter" class="ytex.kernel.SparseDataExporterImpl">
