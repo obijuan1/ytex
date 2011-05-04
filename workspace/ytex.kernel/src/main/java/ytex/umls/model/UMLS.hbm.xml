@@ -42,14 +42,13 @@
 		<property name="atui" />
 		<property name="cvf" />
 	</class>
-
 	<query name="getRelationsForSABs"><![CDATA[
 		select cui1, cui2
 		from MRREL
 		where sab in (:sabs)
 		and rel in ('PAR') and rela in ('inverse_isa')
 	]]></query>
-	<query name="getAllRelations"><![CDATA[
+	<query name="getAllRelationsOld"><![CDATA[
 		select cui1, cui2
 		from MRREL
 		where rel in ('PAR') and rela in ('inverse_isa')
@@ -64,5 +63,13 @@
 		from MRCONSO
 		where aui > :aui
 		order by aui
+	]]></query>
+	<query name="getAllRelations"><![CDATA[
+		select cui1, cui2
+		from MRREL
+		where 
+		(rel in ('RB') and rela is null)
+		or
+		(rel in ('PAR') and rela in ('inverse_isa'))
 	]]></query>
 </hibernate-mapping>
