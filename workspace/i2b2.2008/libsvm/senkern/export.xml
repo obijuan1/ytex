@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="name">i2b2.2008</entry>
+	<entry key="experiment">@experiment@</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+	select i.instance_id, j.judgement_id, i.train, d.disease_id, f.fold, f.run
+	from cv_fold f
+	inner join cv_fold_instance i on f.cv_fold_id = i.cv_fold_id
+	inner join i2b2_2008_anno a on a.disease = f.label and a.docId = i.instance_id and a.source = 'intuitive'
+	inner join i2b2_2008_disease d on d.disease = a.disease
+	inner join i2b2_2008_judgement j on j.judgement = a.judgement
+	left join hotspot_zero_vector hzv
+		on hzv.instance_id = i.instance_id
+		and hzv.label = a.disease
+		and hzv.cutoff = @export.cutoff@
+	where hzv.hotspot_zero_vector_id is null
+	and d.disease_id in (select label from kernel_eval where experiment = '@experiment@')
+	]]></entry>
+</properties>
