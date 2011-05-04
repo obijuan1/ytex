@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,30 @@ public class ConceptDaoImpl implements ConceptDao {
 	private static final Log log = LogFactory.getLog(ConceptDaoImpl.class);
 	private UMLSDao umlsDao;
 	private String conceptGraphDir;
+
+	private static final String forbiddenConceptArr[] = new String[] {
+			"C1274012", "C1274013", "C1276325", "C1274014", "C1274015",
+			"C1274021", "C1443286", "C1274012", "C2733115" };
+	private static Set<String> forbiddenConcepts;
+	static {
+		forbiddenConcepts = new HashSet<String>();
+		forbiddenConcepts.addAll(Arrays.asList(forbiddenConceptArr));
+	}
+
+	/*
+	 * # if concept is one of the following just return #C1274012|Ambiguous
+	 * concept (inactive concept) if($concept=~/C1274012/) { return 1; }
+	 * #C1274013|Duplicate concept (inactive concept) if($concept=~/C1274013/) {
+	 * return 1; } #C1276325|Reason not stated concept (inactive concept)
+	 * if($concept=~/C1276325/) { return 1; } #C1274014|Outdated concept
+	 * (inactive concept) if($concept=~/C1274014/) { return 1; }
+	 * #C1274015|Erroneous concept (inactive concept) if($concept=~/C1274015/) {
+	 * return 1; } #C1274021|Moved elsewhere (inactive concept)
+	 * if($concept=~/C1274021/) { return 1; } #C1443286|unapproved attribute
+	 * if($concept=~/C1443286/) { return 1; } #C1274012|non-current concept -
+	 * ambiguous if($concept=~/C1274012/) { return 1; } #C2733115|limited status
+	 * concept if($concept=~/C2733115/) { return 1; }
+	 */
 
 	public String getConceptGraphDir() {
 		return conceptGraphDir;
@@ -137,6 +162,10 @@ public class ConceptDaoImpl implements ConceptDao {
 			Set<String> roots, Object[] conceptPair) {
 		String childCUI = (String) conceptPair[0];
 		String parentCUI = (String) conceptPair[1];
+		if(forbiddenConcepts.contains(childCUI) || forbiddenConcepts.contains(parentCUI)) {
+			// ignore relationships to useless concepts
+			return;
+		}
 		// ignore self relations
 		if (!childCUI.equals(parentCUI)) {
 			// get parent from cui map
@@ -223,9 +252,10 @@ public class ConceptDaoImpl implements ConceptDao {
 		}
 		return cg;
 	}
-	
+
 	public static void main(String args[]) {
-		KernelContextHolder.getApplicationContext().getBean(ConceptDao.class).initializeConceptGraph(args);
+		KernelContextHolder.getApplicationContext().getBean(ConceptDao.class)
+				.initializeConceptGraph(args);
 	}
 
 }
