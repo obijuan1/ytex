@@ -32,7 +32,7 @@ evalAll = function(loadFoldsFn = loadFolds, loadGramFn = loadGram, costs = 10^(-
 	results = c()
 	folds = loadFoldsFn()
 	for(label in unique(folds$label)) {
-		if(label != 10)
+		#if(label != 10)
 			results = rbind(evalLabel(folds, label))
 	}
 	#results = foreach(label=unique(folds$label),.combine=rbind) %do% evalLabel(folds, label, costs)
@@ -42,17 +42,22 @@ evalAll = function(loadFoldsFn = loadFolds, loadGramFn = loadGram, costs = 10^(-
 evalLabel = function(folds, label, costs = 1, loadGramFn = loadGram) {
 	print(paste("->evalLabel",label))
 	gram = loadGramFn(label)
-	instanceIDs = read.table(paste("label", label, "_instance_id.txt", sep=""))
-	instanceIDs = cbind(instanceIDs, 1:nrow(instanceIDs))
-	foldLabel = folds[folds$label == label, ]
-	results = c()
-	for(run in unique(folds$run)) {
-		for(fold in unique(folds$fold)) {
-			results = rbind(results, evalFold(folds, label, run, fold, gram, instanceIDs, costs=costs))
+	e = eigen(gram, symmetric=T, only.values=T)
+	if(sum(e$values<0) > 1) {
+		print(paste("-> evalLabel error - negative eigenvalues!", label))
+	} else {
+		instanceIDs = read.table(paste("label", label, "_instance_id.txt", sep=""))
+		instanceIDs = cbind(instanceIDs, 1:nrow(instanceIDs))
+		foldLabel = folds[folds$label == label, ]
+		results = c()
+		for(run in unique(folds$run)) {
+			for(fold in unique(folds$fold)) {
+				results = rbind(results, evalFold(folds, label, run, fold, gram, instanceIDs, costs=costs))
+			}
 		}
+		print(paste("<-evalLabel",label))
+		return(results)
 	}
-	print(paste("<-evalLabel",label))
-	return(results)
 }
 
 evalFold = function(folds, label, run, fold, gram, instanceIDs, costs=1) {
