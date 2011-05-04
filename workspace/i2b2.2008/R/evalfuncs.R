@@ -35,11 +35,11 @@ evalAll = function(loadFoldsFn = loadFolds, loadGramFn = loadGram, costs = 10^(-
 		#if(label != 10)
 			results = rbind(evalLabel(folds, label))
 	}
-	#results = foreach(label=unique(folds$label),.combine=rbind) %do% evalLabel(folds, label, costs)
+	#results = foreach(label=unique(folds$label),.combine=rbind) %do% evalLabel(folds, label, costs=costs)
 	return(results)
 }
 
-evalLabel = function(folds, label, costs = 1, loadGramFn = loadGram) {
+evalLabel = function(folds, label, costs = 10^(-3:3), loadGramFn = loadGram) {
 	print(paste("->evalLabel",label))
 	gram = loadGramFn(label)
 	e = eigen(gram, symmetric=T, only.values=T)
@@ -60,7 +60,7 @@ evalLabel = function(folds, label, costs = 1, loadGramFn = loadGram) {
 	}
 }
 
-evalFold = function(folds, label, run, fold, gram, instanceIDs, costs=1) {
+evalFold = function(folds, label, run, fold, gram, instanceIDs, costs = 10^(-3:3)) {
 	print(paste("->evalFold", label, run, fold))
 	foldtmp = folds[folds$label == label,]
 	foldtmp = foldtmp[foldtmp$run == run,]
@@ -69,7 +69,7 @@ evalFold = function(folds, label, run, fold, gram, instanceIDs, costs=1) {
 	test = foldtmp[foldtmp$train == 0,]
 	results = c()
 	for(cost in costs) {
-		rtmp = evalFoldCost(train, test, gram, instanceIDs, cost)
+		rtmp = evalFoldCost(train, test, gram, instanceIDs, cost=cost)
 		rtmp = cbind(label=rep(label, nrow(rtmp)), run=rep(run, nrow(rtmp)), fold=rep(fold, nrow(rtmp)), rtmp)
 		results = rbind(results, rtmp)
 	}
