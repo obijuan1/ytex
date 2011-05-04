@@ -8,6 +8,7 @@ loadFolds = function() {
 }
 
 loadGram = function(label) {
+	print(paste("loadGram",label))
 	return(read.table(paste("label", label, "_data.txt", sep=""), header=F))
 }
 
@@ -30,14 +31,16 @@ instanceIdToIndex = function(instanceIDs, instance_id) {
 evalAll = function(loadFoldsFn = loadFolds, loadGramFn = loadGram, costs = 10^(-3:3)) {
 	results = c()
 	folds = loadFoldsFn()
-	#for(label in unique(folds$label)) {
-	#	results = rbind(evalLabel(folds, label))
-	#}
-	results = foreach(label=unique(folds$label),.combine=rbind) %dopar% evalLabel(folds, label, costs)
+	for(label in unique(folds$label)) {
+		if(label != 10)
+			results = rbind(evalLabel(folds, label))
+	}
+	#results = foreach(label=unique(folds$label),.combine=rbind) %do% evalLabel(folds, label, costs)
 	return(results)
 }
 
 evalLabel = function(folds, label, costs = 1, loadGramFn = loadGram) {
+	print(paste("->evalLabel",label))
 	gram = loadGramFn(label)
 	instanceIDs = read.table(paste("label", label, "_instance_id.txt", sep=""))
 	instanceIDs = cbind(instanceIDs, 1:nrow(instanceIDs))
@@ -48,10 +51,12 @@ evalLabel = function(folds, label, costs = 1, loadGramFn = loadGram) {
 			results = rbind(results, evalFold(folds, label, run, fold, gram, instanceIDs, costs=costs))
 		}
 	}
+	print(paste("<-evalLabel",label))
 	return(results)
 }
 
 evalFold = function(folds, label, run, fold, gram, instanceIDs, costs=1) {
+	print(paste("->evalFold", label, run, fold))
 	foldtmp = folds[folds$label == label,]
 	foldtmp = foldtmp[foldtmp$run == run,]
 	foldtmp = foldtmp[foldtmp$fold == fold,]
@@ -63,14 +68,18 @@ evalFold = function(folds, label, run, fold, gram, instanceIDs, costs=1) {
 		rtmp = cbind(label=rep(label, nrow(rtmp)), run=rep(run, nrow(rtmp)), fold=rep(fold, nrow(rtmp)), rtmp)
 		results = rbind(results, rtmp)
 	}
+	print(paste("<-evalFold", label, run, fold))
 	return(results)
 }
 
 evalFoldCost = function(train, test, gram, instanceIDs, cost=1) {
+	print(paste("->evalFoldCost", cost))
 	trainIndices = sapply(train$instance_id, function(instance_id) {instanceIdToIndex(instanceIDs, instance_id)})
 	testIndices = sapply(test$instance_id, function(instance_id) {instanceIdToIndex(instanceIDs, instance_id)})
 	trainK <- as.kernelMatrix(as.matrix(gram[-testIndices,-testIndices]))
+	print(paste("->evalFoldCost - start training", cost))
 	m <- ksvm(trainK, train$class, kernel='matrix')
+	print(paste("->evalFoldCost - finished training", cost))
 	testK <- as.kernelMatrix(as.matrix(gram[testIndices,-testIndices][,SVindex(m), drop=F]))
 	preds <- predict(m, testK)
 	return(evalToResults(cost, m, test, preds))
