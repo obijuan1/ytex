@@ -15,5 +15,6 @@
 		and hzv.label = a.disease
 		and hzv.cutoff = @export.cutoff@
 	where hzv.hotspot_zero_vector_id is null
+	and d.disease_id in (select label from kernel_eval where experiment = '@experiment@')
 	]]></entry>
 </properties>
