@@ -60,7 +60,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
 		<property name="treeMappingInfo" ref="treeMappingInfo" />
 		<property name="name" value="i2b2.2008" />
-		<property name="experiment" value="nrskern@export.cutoff@" />
+		<property name="experiment" value="rbskern@export.cutoff@" />
 		<property name="label" value="@export.label@" />
 		<property name="trainInstanceIDQuery">
 			<value><![CDATA[
