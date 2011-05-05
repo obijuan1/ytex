@@ -113,6 +113,12 @@ public class ConcRel implements java.io.Serializable {
 		HashSet<ConcRel> tmp2;
 
 		int dist = 0;
+		// changed to start distance with 1 - we increment at the end of the
+		// loop
+		// we always look at the parents, so the distance has to start with 1
+		// if one concept is the parent of the other, this would return 0 if
+		// dist starts with 0
+		// int dist = 1;
 		// while there are parents
 		// this does a dual-breadth first search
 		// parC1 are the dist'th ancestors of concept 1
