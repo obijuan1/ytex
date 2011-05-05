@@ -122,6 +122,19 @@
 			<jvmarg value="-Xmx1g" />
 		</java>
 	</target>
+	<target name="setup.ic.rb" description="setup information content">
+		<!-- update term frequencies -->
+		<antcall target="mysql">
+			<param name="mysql.dir" value="./data" />
+			<param name="mysql.script" value="updateCorpusRB.sql" />
+		</antcall>
+		<!-- update information content -->
+		<java classname="ytex.kernel.ConceptSimilarityServiceImpl" classpathref="i2b2.cp" fork="yes">
+			<arg value="-updateIC" />
+			<arg value="i2b2.2008-rb" />
+			<jvmarg value="-Xmx1g" />
+		</java>
+	</target>
 	<target name="export.tree.all">
 		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
 			<sequential>
@@ -149,7 +162,7 @@
 	<target name="export.tree.label">
 		<property name="export.label" value="14" />
 		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/segkern" />
+		<property name="export.tree.basedir" value="libsvm/senkern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
 		<mkdir dir="${export.tree.dir}" />
 		<copy file="${export.tree.basedir}/tree.xml" tofile="${export.tree.dir}/tree.xml" overwrite="yes">
@@ -173,8 +186,8 @@
 	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
 		<property name="export.label" value="14" />
 		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/segkern" />
-		<property name="experiment.base" value="segkern" />
+		<property name="export.tree.basedir" value="libsvm/senkern" />
+		<property name="experiment.base" value="senkern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
 		<copy file="${export.tree.basedir}/${experiment.base}.xml" tofile="${export.tree.dir}/${experiment.base}.xml" overwrite="yes">
 			<filterset>
@@ -191,7 +204,7 @@
 	<target name="kernel.export.libsvm.cutoff" description="export libvm for specified cutoff">
 		<property name="export.cutoff" value="0.07" />
 		<property name="export.tree.basedir" value="libsvm/semkern" />
-		<property name="experiment.base" value="linkern" />
+		<property name="experiment.base" value="semkern" />
 		<property name="libsvm.experiment" value="${experiment.base}${export.cutoff}" />
 		<property name="export.dir" value="libsvm/${libsvm.experiment}" />
 		<mkdir dir="${export.dir}" />
