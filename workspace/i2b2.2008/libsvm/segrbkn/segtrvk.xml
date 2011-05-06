@@ -91,6 +91,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="delegateKernel" ref="equalityKernel" />
 	</bean>
 
+
 	<!-- wordKernel - simply compare words -->
 	<bean id="wordKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
 		<property name="attributeName" value="canonical_form" />
