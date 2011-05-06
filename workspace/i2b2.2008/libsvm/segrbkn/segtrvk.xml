@@ -116,7 +116,6 @@ left join hotspot_zero_vector hzv
 where d.documentSet = 'train'
 and ds.disease_id = @export.label@
 and hzv.hotspot_zero_vector_id is null
-limit 20
 			]]></value>
 		</property>
 		<!-- <property name="testInstanceIDQuery"> <value><![CDATA[ select d.docId 
