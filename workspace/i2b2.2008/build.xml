@@ -10,7 +10,8 @@
 	<property name="eval.kernel.thread" value="1" />
 	<property name="eval.kernel.parallel" value="no" />
 
-	<property name="bocuis.export.cutoffs" value="0.03,0.05,0.07,0.09,0.1" />
+	<property name="export.cutoffs" value="0.03,0.05,0.07,0.09,0.1" />
+	<!-- property name="export.cutoffs" value="0.07" / -->
 
 	<path id="i2b2.cp">
 		<pathelement location="desc" />
@@ -63,7 +64,7 @@
 		</antcall>
 	</target>
 	<target name="bocuis.export" description="export libsvm data for bocuis">
-		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
+		<for list="${export.cutoffs}" param="export.cutoff">
 			<sequential>
 				<antcall target="bocuis.export.cutoff">
 					<param name="export.cutoff" value="@{export.cutoff}" />
@@ -71,9 +72,21 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="bocuis.export.cutoff" description="export libsvm data for specified cutoff">
+	<target name="ambert.export" description="export libsvm data for bocuis">
+		<for list="${export.cutoffs}" param="export.cutoff">
+			<sequential>
+				<antcall target="export.cutoff">
+					<param name="export.cutoff" value="@{export.cutoff}" />
+					<param name="experiment.base" value="ambert" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+
+	<target name="export.cutoff" description="export libsvm data for specified cutoff">
 		<property name="export.cutoff" value="0.03" />
-		<property name="export.dir" value="libsvm/bocuis${export.cutoff}" />
+		<property name="experiment.base" value="bocuis" />
+		<property name="export.dir" value="libsvm/${experiment.base}${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
 		<delete dir="${export.dir}" quiet="yes" />
 		<mkdir dir="${export.dir}" />
@@ -81,11 +94,11 @@
 			<filter token="export.cutoff" value="${export.cutoff}" />
 		</filterset>
 		<!-- generate export property file -->
-		<copy file="libsvm/bocuis/export-bow.template.xml" tofile="${export.dir}/export-bow.xml" overwrite="yes">
+		<copy file="libsvm/${experiment.base}/export-bow.template.xml" tofile="${export.dir}/export-bow.xml" overwrite="yes">
 			<filterset refid="export.filterset" />
 		</copy>
 		<!-- generate and run script to insert zero vectors for the cutoff  -->
-		<copy file="libsvm/bocuis/insert_hotspot_zv.template.sql" tofile="${export.dir}/insert_hotspot_zv.sql" overwrite="yes">
+		<copy file="libsvm/${experiment.base}/insert_hotspot_zv.template.sql" tofile="${export.dir}/insert_hotspot_zv.sql" overwrite="yes">
 			<filterset refid="export.filterset" />
 		</copy>
 		<antcall target="mysql">
@@ -162,7 +175,7 @@
 	<target name="export.tree.label">
 		<property name="export.label" value="14" />
 		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/segrbkn" />
+		<property name="export.tree.basedir" value="libsvm/nekern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
 		<mkdir dir="${export.tree.dir}" />
 		<copy file="${export.tree.basedir}/tree.xml" tofile="${export.tree.dir}/tree.xml" overwrite="yes">
@@ -186,8 +199,8 @@
 	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
 		<property name="export.label" value="14" />
 		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/segrbkn" />
-		<property name="experiment.base" value="segrbkn" />
+		<property name="export.tree.basedir" value="libsvm/nekern" />
+		<property name="experiment.base" value="nekern" />
 		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
 		<copy file="${export.tree.basedir}/${experiment.base}.xml" tofile="${export.tree.dir}/${experiment.base}.xml" overwrite="yes">
 			<filterset>

@@ -115,6 +115,15 @@ where fc is null
 ;
 
 
+-- convert from rank into evaluation
+insert into hotspot_feature_eval (name, label, instance_id, feature_name, evaluation)
+select 'i2b2.2008-word', hf.label, hf.instance_id, hf.feature_name, r.evaluation
+from hotspot_feature hf
+inner join feature_eval e on hf.label = e.label and e.name = 'i2b2.2008-train' and e.cv_fold_id = 0
+inner join feature_rank r on r.feature_eval_id = e.feature_eval_id and r.rank = hf.rank
+;
+
+
 insert into hotspot_zero_vector (label, instance_id, cutoff)
 select a.disease, d.docId, 5
 from i2b2_2008_doc d
