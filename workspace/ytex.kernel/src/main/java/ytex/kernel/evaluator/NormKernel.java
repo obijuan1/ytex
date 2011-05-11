@@ -7,12 +7,30 @@ import net.sf.ehcache.Element;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Return norm of delegate kernel: <code>k(x,y)/sqrt(k(x,x)*k(y,y)</code>. Cache
+ * the result if cacheNorm = true (default). If the delegate kernel is fast
+ * (e.g. it's using caching itself / trivial operation) caching the norm will
+ * slow things down.
+ * 
+ * @author vijay
+ * 
+ */
 public class NormKernel implements Kernel {
 	private static final Log log = LogFactory.getLog(NormKernel.class);
 
 	private Cache normCache;
 	private CacheManager cacheManager;
 	private Kernel delegateKernel;
+	private boolean cacheNorm = true;
+
+	public boolean isCacheNorm() {
+		return cacheNorm;
+	}
+
+	public void setCacheNorm(boolean cacheNorm) {
+		this.cacheNorm = cacheNorm;
+	}
 
 	public NormKernel(Kernel delegateKernel) {
 		this.delegateKernel = delegateKernel;
@@ -41,10 +59,13 @@ public class NormKernel implements Kernel {
 	public double getNorm(Object o1) {
 		double norm = 0;
 		if (o1 != null) {
-			Element cachedNorm = normCache.get(o1);
+			Element cachedNorm = null;
+			if (this.isCacheNorm())
+				cachedNorm = normCache.get(o1);
 			if (cachedNorm == null) {
 				norm = Math.sqrt(delegateKernel.evaluate(o1, o1));
-				normCache.put(new Element(o1, norm));
+				if (this.isCacheNorm())
+					normCache.put(new Element(o1, norm));
 			} else {
 				norm = (Double) cachedNorm.getObjectValue();
 			}
