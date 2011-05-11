@@ -13,6 +13,7 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="libsvm.data" value="${ytex.home}/${libsvm.name}/libsvm/${libsvm.experiment}" />
 	<property name="libsvm.home" value="c:/java/libsvm-3.0" />
 	<property name="libsvm.bin" value="${libsvm.home}/windows" />
+	<property name="R.exe" value="C:/Program Files/R/R-2.12.2/bin/x64/R.exe" />
 	<property name="libsvm.experiment" value="test" />
 	<property name="libsvm.name" value="test" />
 	<property name="libsvm.timeout" value="240000" />
@@ -209,7 +210,7 @@ cv.eval.line=${cv.eval.line}
 	<target name="cv.all.folds" depends="cv.qsub.array, cv.qsub.single,cv.all.folds.local" description="generate folds, evaluate svm on parameter grid" />
 	<target name="cv.qsub.array" if="cv.qsub.array" description="on cluster submit array job">
 		<exec executable="qsub">
-			<arg line="${cv.qsub.array} 1-${libsvm.maxClassLabel} ${ant.pbs} cv.iter.label.cluster" />
+			<arg line="${cv.qsub.array} 1-${libsvm.maxClassLabel} ${ant.pbs} cv.iter.label.cluster -Dlibsvm.experiment=${libsvm.experiment}" />
 		</exec>
 	</target>
 	<target name="cv.qsub.single" description="on cluster, submit each job individually" if="cv.qsub.single">
@@ -253,26 +254,26 @@ cv.eval.line=${cv.eval.line}
 		<zip destfile="${libsvm.data}/cv/${cv.classLabel}.zip" update="yes">
 			<fileset dir="${label.dir}" excludes="*.txt" />
 		</zip>
-		<delete quiet="yes" includeemptydirs="yes" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}"/>
+		<delete quiet="yes" includeemptydirs="yes" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
 	</target>
-	
+
 	<target name="cv.iter.experiment" description="iterate over multiple experiments locally">
 		<for list="${cv.experiments}" param="cv.libsvm.experiment">
 			<sequential>
 				<antcall target="cv.all.folds.local">
-					<param name="libsvm.data" value="${ytex.home}/${libsvm.name}/libsvm/@{cv.libsvm.experiment}"/>
-					<param name="libsvm.experiment" value="@{cv.libsvm.experiment}"/>
+					<param name="libsvm.data" value="${ytex.home}/${libsvm.name}/libsvm/@{cv.libsvm.experiment}" />
+					<param name="libsvm.experiment" value="@{cv.libsvm.experiment}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-	
+
 	<target name="cv.all.folds.local" description="generate all folds, evaluate libsvm" unless="ytex.cluster">
 		<for list="${libsvm.classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
 			<sequential>
 				<antcall target="cv.iter.label">
 					<param name="cv.classLabel" value="@{classLabel}" />
-				</antcall>				
+				</antcall>
 			</sequential>
 		</for>
 	</target>
@@ -470,8 +471,8 @@ cv.eval.line=${cv.eval.line}
 		</for>
 	</target>
 	<target name="cv.evaluate" description="train on cv training set, eval on cv test set, store results in fold-specific timestamped directory">
-		<!-- want to put each result in a different directory, use timestamp, but libsvm is fast -->		
-		<sleep seconds="1"/>
+		<!-- want to put each result in a different directory, use timestamp, but libsvm is fast -->
+		<sleep seconds="1" />
 		<tstamp>
 			<format property="cv.tstamp" pattern="ddhhmmS" />
 		</tstamp>
@@ -544,11 +545,12 @@ cv.eval.line=${cv.eval.line}
 	<target name="test.evaluate" depends="test.evaluate.init" description="train svm on training set, test on test set, extract results">
 		<!-- train the svm -->
 		<property name="test.classLabel" value="1" />
-		<property name="test.train" value="training_data_${test.classLabel}.txt" />
-		<property name="test.test" value="test_data_${test.classLabel}.txt" />
-		<property name="test.model" value="model_${test.classLabel}.txt" />
-		<property name="test.predict" value="predict_${test.classLabel}.txt" />
-		<property name="test.eval.line" value="-q -b 1 -t ${kernel} -w1 ${weight} -c ${cost} ${gammaParam} ${degreeParam}" />
+		<property name="test.train" value="label${test.classLabel}_train_data.txt" />
+		<property name="test.test" value="label${test.classLabel}_test_data.txt" />
+		<property name="test.id" value="label${test.classLabel}_test_id.txt" />
+		<property name="test.model" value="label${test.classLabel}_model.txt" />
+		<property name="test.predict" value="label${test.classLabel}_predict.txt" />
+		<property name="test.eval.line" value="-q -b 1 -t ${kernel} -c ${cost} ${weightParam} ${gammaParam} ${degreeParam}" />
 		<exec executable="${libsvm.bin}/svm-train" dir="${libsvm.data}">
 			<arg line="${test.eval.line} ${test.train} ${test.model}" />
 		</exec>
@@ -557,11 +559,30 @@ cv.eval.line=${cv.eval.line}
 			<arg line="-b 1 ${test.test} ${test.model} ${test.predict}" />
 		</exec>
 		<!-- extract results -->
-		<antcall target="test.extractResults">
-		</antcall>
+		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${libsvm.data}" failOnError="yes">
+			<arg value="-name" />
+			<arg value="${libsvm.name}" />
+			<arg value="-experiment" />
+			<arg value="${libsvm.experiment}" />
+			<arg value="-label" />
+			<arg value="${test.classLabel}" />
+			<arg value="-test" />
+			<arg value="${test.test}" />
+			<arg value="-instanceId" />
+			<arg value="${test.id}" />
+			<arg value="-output" />
+			<arg value="${test.predict}" />
+			<arg value="-model" />
+			<arg value="${test.model}" />
+			<arg value="-storeInstanceEval" />
+			<arg value="yes" />
+			<arg value="-storeProb" />
+			<arg value="yes" />
+			<jvmarg value="${log4j.param}" />
+		</java>
 	</target>
 	<target name="test.evaluate.init" description="load optimal params for the given class label">
-		<property name="test.classLabel" value="20" />
+		<property name="test.classLabel" value="1" />
 		<loadproperties srcfile="${libsvm.data}/optimalParams.properties">
 			<filterchain>
 				<linecontains>
@@ -570,18 +591,28 @@ cv.eval.line=${cv.eval.line}
 				<replacestring from="${test.classLabel}." to="" />
 			</filterchain>
 		</loadproperties>
-		<echo>${cost} ${weight} ${scut} ${degree} ${gamma} ${kernel}</echo>
+		<echo>${cost} ${weight} ${degree} ${gamma} ${kernel}</echo>
 		<!-- set the degree parameter if it has been defined -->
 		<condition property="degreeParam" value="-d ${degree}" else="">
-			<not>
-				<equals arg1="${degree}" arg2="0" />
-			</not>
+			<and>
+				<isset property="degree" />
+				<not>
+					<equals arg1="${degree}" arg2="0" />
+				</not>
+			</and>
 		</condition>
 		<!-- set the gamma parameter if it has been defined -->
 		<condition property="gammaParam" value="-g ${gamma}" else="">
-			<not>
-				<equals arg1="${gamma}" arg2="0" />
-			</not>
+			<and>
+				<isset property="gamma" />
+				<not>
+					<equals arg1="${gamma}" arg2="0" />
+				</not>
+			</and>
+		</condition>
+		<!-- set the weight parameter if it has been defined -->
+		<condition property="weightParam" value="${weight}" else="">
+			<isset property="weight" />
 		</condition>
 	</target>
 	<target name="test.extractResults">
@@ -671,8 +702,4 @@ cv.eval.line=${cv.eval.line}
 		</java>
 	</target>
 	<target name="kernel.all" depends="kernel.storeInstanceMap,kernel.evalAllSlices" />
-	<target name="test">
-		<property resource="ytex.properties" prefix="tmp" classpathref="${libsvm.cp}" />
-		<echo>${tmp.ytex.conceptGraphDir}</echo>
-	</target>
 </project>
