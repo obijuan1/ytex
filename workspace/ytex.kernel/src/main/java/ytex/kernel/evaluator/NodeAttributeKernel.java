@@ -33,13 +33,13 @@ public class NodeAttributeKernel implements Kernel {
 	public double evaluate(Object o1, Object o2) {
 		Node n1 = (Node) o1;
 		Node n2 = (Node) o2;
-		if (n1 != null && n2 != null && n1.getType().equals(n2.getType())
-				&& n1.getValue().get(attributeName) != null
-				&& n2.getValue().get(attributeName) != null) {
-			return delegateKernel.evaluate(n1.getValue().get(attributeName), n2
-					.getValue().get(attributeName));
-		} else {
-			return 0;
+		if (n1 != null && n2 != null && n1.getType().equals(n2.getType())) {
+			Object attr1 = n1.getValue().get(attributeName);
+			Object attr2 = n2.getValue().get(attributeName);
+			if (n1 != null && n2 != null) {
+				return delegateKernel.evaluate(attr1, attr2);
+			}
 		}
+		return 0;
 	}
 }

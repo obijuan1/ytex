@@ -78,10 +78,14 @@ public class FileUtil {
 				builder.append(File.separator);
 		}
 		if (label != null && label.length() > 0) {
-			builder.append("label").append(label).append("_");
+			builder.append("label").append(label);
+			if ((run != null && run > 0) || (fold != null && fold > 0))
+				builder.append(label).append("_");
 		}
 		if (run != null && run > 0) {
 			builder.append("run").append(Integer.toString(run)).append("_");
+			if (fold != null && fold > 0)
+				builder.append(label).append("_");
 		}
 		if (fold != null && fold > 0) {
 			builder.append("fold").append(Integer.toString(fold));
@@ -105,10 +109,13 @@ public class FileUtil {
 		StringBuilder builder = new StringBuilder(getFoldFilePrefix(outdir,
 				label, run, fold));
 		if (train != null) {
+			if ((label != null && label.length() > 0)
+					|| (run != null && run > 0) || (fold != null && fold > 0))
+				builder.append("_");
 			if (train.booleanValue())
-				builder.append("_train");
+				builder.append("train");
 			else
-				builder.append("_test");
+				builder.append("test");
 		}
 		return builder.toString();
 	}

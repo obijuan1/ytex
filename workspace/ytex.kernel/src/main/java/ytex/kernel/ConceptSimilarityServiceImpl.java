@@ -26,6 +26,11 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private ConceptDao conceptDao;
 	private CorpusDao corpusDao;
 	ConceptGraph cg = null;
+	@Override
+	public ConceptGraph getConceptGraph() {
+		return cg;
+	}
+
 	private PlatformTransactionManager transactionManager;
 
 	/**

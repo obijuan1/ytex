@@ -30,6 +30,9 @@ public class ConceptDaoImpl implements ConceptDao {
 	private UMLSDao umlsDao;
 	private String conceptGraphDir;
 
+	/**
+	 * ignore forbidden concepts.  list Taken from umls-interface
+	 */
 	private static final String forbiddenConceptArr[] = new String[] {
 			"C1274012", "C1274013", "C1276325", "C1274014", "C1274015",
 			"C1274021", "C1443286", "C1274012", "C2733115" };

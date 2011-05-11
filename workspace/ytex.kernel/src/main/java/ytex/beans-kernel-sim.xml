@@ -17,6 +17,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<value>cmc-suj</value>
 				-->
 				<value>i2b2.2008</value>
+				<value>i2b2.2008-rb</value>
 			</list>
 		</property>
 	</bean>

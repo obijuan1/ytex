@@ -152,7 +152,7 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 				Node parent = nodeKeyMap.get(new NodeKey(parentTmp));
 				if (parent == null) {
 					if (log.isWarnEnabled()) {
-						log.warn("couldn't find node for key: " + parent);
+						log.warn("couldn't find node for key: " + parentTmp);
 					}
 				} else {
 					// found the parent - add the subtree
