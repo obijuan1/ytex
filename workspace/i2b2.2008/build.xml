@@ -111,6 +111,58 @@
 			<param name="export.dir" value="${export.dir}" />
 		</antcall>
 	</target>
+	<target name="export.test" description="export libsvm data for train/test sets">
+		<property name="experiment.base" value="bocuis" />
+		<property name="export.dir" value="libsvm/${experiment.base}-test" />
+		<mkdir dir="${export.dir}" />
+		<copy todir="${export.dir}" overwrite="yes">
+			<fileset dir="libsvm/${experiment.base}" includes="export-test.xml,get_best_param.sql" />
+		</copy>
+		<!-- export optimal parameters -->
+		<exec executable="${mysql.home}/mysql" dir="${export.dir}" output="${export.dir}/optimalParams.properties">
+			<arg line="${mysql.line}" />
+			<arg value="-s" />
+			<arg value="-e" />
+			<arg value="source get_best_param.sql" />
+		</exec>
+		<!-- export the data -->
+		<antcall target="SparseDataExporter">
+			<param name="export.type" value="libsvm" />
+			<param name="export.dir" value="${export.dir}" />
+			<param name="export.prop" value="export-test.xml" />
+		</antcall>
+	</target>
+	<target name="eval.test.all" description="export data, run libsvm, run post-processing scripts">
+		<property name="experiment.base" value="bocuis" />
+		<!-- select optimal params based on cross-validation -->
+		<antcall target="mysql">
+			<param name="mysql.dir" value="./libsvm/${experiment.base}" />
+			<param name="mysql.script" value="update_i2b2_best_libsvm.sql" />
+		</antcall>
+		<!-- prepare zero-vector truth table -->
+		<antcall target="mysql">
+			<param name="mysql.dir" value="./libsvm/${experiment.base}" />
+			<param name="mysql.script" value="insert_hotspot_zero_vector_tt_test.sql" />
+		</antcall>
+		<!-- export test data -->
+		<antcall target="export.test" />
+		<!-- export test data -->
+		<antcall target="test.eval.all" />
+		<!-- create truth table with zero vectors -->
+		<antcall target="mysql">
+			<param name="mysql.dir" value="./libsvm/${experiment.base}" />
+			<param name="mysql.script" value="insert_classifier_eval_irzv_test.sql" />
+		</antcall>
+	</target>
+	<target name="test.eval.all" description="evaluate libsvm on test data">
+		<property name="experiment.base" value="ambert" />
+		<!-- run libsvm on test data -->
+		<ant antfile="build.xml" dir="../ytex.kernel/libsvm" target="test.eval.all" inheritall="false">
+			<property name="ytex.home" value="../.." />
+			<property name="libsvm.experiment" value="${experiment.base}-test" />
+			<property name="libsvm.data" value="../../i2b2.2008/libsvm/${experiment.base}-test" />
+		</ant>
+	</target>
 	<target name="bocuis.libsvm.cutoffs" description="run libsvm on all cutoffs">
 		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
 			<sequential>
