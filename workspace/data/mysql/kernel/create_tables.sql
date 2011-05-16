@@ -237,16 +237,6 @@ create table cv_fold_instance (
   train bit not null default 0,
   unique index nk_cv_fold_instance (cv_fold_id, instance_id, train)
 );
-create table feature_infogain (
-  feature_infogain_id int auto_increment not null primary key,
-  name varchar(50) not null,
-  label varchar(50) not null,
-  cv_fold_id int null,
-  feature_name varchar(50) not null,
-  infogain double not null,
-  rank int not null,
-  unique index nk_feature_infogain(name, cv_fold_id, feature_name)
-);
 
 
 drop table feature_eval;
