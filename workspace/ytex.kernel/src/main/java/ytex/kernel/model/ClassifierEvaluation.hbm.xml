@@ -53,6 +53,8 @@
 		<property name="algorithm" />
 		<property name="label" />
 		<property name="options" />
+		<property name="param1" />
+		<property name="param2" />
 		<property name="model" column="model" type="binary" />
 		<map name="classifierIRStats" inverse="true"
 			table="classifier_eval_ir">

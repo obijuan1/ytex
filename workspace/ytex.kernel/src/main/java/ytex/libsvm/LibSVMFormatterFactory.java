@@ -28,20 +28,20 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		return new LibSVMFormatter();
 	}
 
-	public class LibSVMFormatter implements SparseDataFormatter {
-		String outdir = null;
+	public static class LibSVMFormatter implements SparseDataFormatter {
+		protected String outdir = null;
 		/*
 		 * indices to sparse data column for numeric attributes
 		 */
-		Map<String, Integer> numericAttributeMap = new HashMap<String, Integer>();
+		protected Map<String, Integer> numericAttributeMap = new HashMap<String, Integer>();
 		/*
 		 * indices to sparse data column for nominal attributes
 		 */
-		Map<String, Map<String, Integer>> nominalAttributeMap = new HashMap<String, Map<String, Integer>>();
+		protected Map<String, Map<String, Integer>> nominalAttributeMap = new HashMap<String, Map<String, Integer>>();
 		/*
 		 * class name to index map. classes are sorted by
 		 */
-		Map<String, Map<String, Integer>> labelToClassIndexMap = new HashMap<String, Map<String, Integer>>();
+		protected Map<String, Map<String, Integer>> labelToClassIndexMap = new HashMap<String, Map<String, Integer>>();
 
 		/**
 		 * write a file with the attribute names corresponding to the indices in
@@ -51,7 +51,11 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		public void initializeFold(SparseData sparseData, String label,
 				Integer run, Integer fold) throws IOException {
 			String filename = FileUtil.getFoldFilePrefix(outdir, label, run,
-					fold) + "_attributes.txt";
+					fold);
+			if (filename.length() > 0 && !filename.endsWith("/")
+					&& !filename.endsWith("\\") && !filename.endsWith("."))
+				filename += "_";
+			filename += "attributes.txt";
 			exportAttributeNames(filename, sparseData);
 		}
 
@@ -66,7 +70,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 *            for nominal indices, create an index for each value.
 		 * @throws IOException
 		 */
-		private void exportAttributeNames(String bFileName,
+		protected void exportAttributeNames(String bFileName,
 				SparseData sparseData) throws IOException {
 			// libsvm indices 1-based
 			int index = 1;
@@ -109,9 +113,11 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 				SortedMap<Integer, String> instanceClassMap, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			String filename = FileUtil.getDataFilePrefix(outdir, label, run,
-					fold, train) + "_data.txt";
+					fold, train)
+					+ "_data.txt";
 			String idFilename = FileUtil.getDataFilePrefix(outdir, label, run,
-					fold, train) + "_id.txt";
+					fold, train)
+					+ "_id.txt";
 			exportDataForLabel(filename, idFilename, sparseData,
 					instanceClassMap, this.labelToClassIndexMap.get(label));
 		}
@@ -128,7 +134,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 * @param label
 		 * @throws IOException
 		 */
-		private void exportDataForLabel(String filename, String idFilename,
+		protected void exportDataForLabel(String filename, String idFilename,
 				SparseData bagOfWordsData,
 				SortedMap<Integer, String> instanceClassMap,
 				Map<String, Integer> classToIndexMap) throws IOException {
@@ -180,7 +186,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 * @param instanceId
 		 * @return
 		 */
-		private SortedMap<Integer, Double> getSparseLineValues(
+		protected SortedMap<Integer, Double> getSparseLineValues(
 				SparseData bagOfWordsData,
 				Map<String, Integer> numericAttributeMap,
 				Map<String, Map<String, Integer>> nominalAttributeMap,
@@ -192,9 +198,8 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 				for (Map.Entry<String, Double> numericValue : bagOfWordsData
 						.getInstanceNumericWords().get(instanceId).entrySet()) {
 					// look up index for attribute and put in map
-					instanceValues.put(
-							numericAttributeMap.get(numericValue.getKey()),
-							numericValue.getValue());
+					instanceValues.put(numericAttributeMap.get(numericValue
+							.getKey()), numericValue.getValue());
 				}
 			}
 			if (bagOfWordsData.getInstanceNominalWords()

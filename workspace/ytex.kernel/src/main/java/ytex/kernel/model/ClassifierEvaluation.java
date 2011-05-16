@@ -19,6 +19,21 @@ public class ClassifierEvaluation implements Serializable {
 	String label;
 	String options;
 	byte[] model;
+	Double param1;
+	String param2;
+	
+	public Double getParam1() {
+		return param1;
+	}
+	public void setParam1(Double param1) {
+		this.param1 = param1;
+	}
+	public String getParam2() {
+		return param2;
+	}
+	public void setParam2(String param2) {
+		this.param2 = param2;
+	}
 	Map<Integer, ClassifierInstanceEvaluation> classifierInstanceEvaluations = new HashMap<Integer, ClassifierInstanceEvaluation>();
 	Map<Integer, ClassifierEvaluationIRStat> classifierIRStats = new HashMap<Integer, ClassifierEvaluationIRStat>();
 	

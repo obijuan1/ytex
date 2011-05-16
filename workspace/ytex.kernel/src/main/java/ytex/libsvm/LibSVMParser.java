@@ -20,7 +20,7 @@ public class LibSVMParser {
 	public static Pattern pKernel = Pattern.compile("-t\\s+(\\d)");
 	public static Pattern pGamma = Pattern.compile("-g\\s+([\\d\\.-e]+)");
 	public static Pattern pCost = Pattern.compile("-c\\s+([\\d\\.-e]+)");
-	public static Pattern pWeight = Pattern.compile("-w\\d\\s+[\\d\\.]+\\b");
+	public static Pattern pWeight = Pattern.compile("-w-{0,1}\\d\\s+[\\d\\.]+\\b");
 	public static Pattern pDegree = Pattern.compile("-d\\s+(\\d+)");
 
 	/**

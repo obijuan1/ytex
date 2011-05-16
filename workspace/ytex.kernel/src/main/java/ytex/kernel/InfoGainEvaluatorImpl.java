@@ -27,8 +27,10 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -85,7 +87,8 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 			PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
 		txNew = new TransactionTemplate(transactionManager);
-		txNew.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
+		txNew
+				.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 	}
 
 	public ClassifierEvaluationDao getClassifierEvaluationDao() {
@@ -137,7 +140,8 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 	 * @author vijay
 	 * 
 	 */
-	public class InfoGainRowCallbackHandler implements RowCallbackHandler {
+	@SuppressWarnings("unchecked")
+	public class InfoGainResultSetExtractor implements ResultSetExtractor {
 		private Map<Integer, List<FeatureRank>> foldInfogainMap;
 		int currentFold;
 		String currentFeature;
@@ -152,7 +156,7 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 		Map<String, FeatureInfo> featureInfoMap;
 		Map<Integer, Double> foldEntropy;
 
-		public InfoGainRowCallbackHandler(
+		public InfoGainResultSetExtractor(
 				Map<Integer, List<FeatureRank>> foldInfogainMap,
 				Map<Integer, Map<String, Integer>> foldClassCountMap,
 				Map<String, FeatureInfo> featureInfoMap,
@@ -164,7 +168,6 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 			this.foldEntropy = foldEntropy;
 		}
 
-		@Override
 		public void processRow(ResultSet rs) throws SQLException {
 			Integer foldId = rs.getInt(1);
 			String featureName = rs.getString(2).toLowerCase();
@@ -186,15 +189,13 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 				currentBins.put(className, featureBinMap);
 			}
 			featureBinMap.put(featureBin, binCount);
-			// if we hit the end, add the info gain
-			if (currentFeature != null && rs.isLast())
-				addInfoGain();
 		}
 
 		private void addInfoGain() {
 			if (!this.featureInfoMap.containsKey(currentFeature.toLowerCase())) {
-				log.warn("bins and marginal probabilities for feature not defined, skipping; featureName="
-						+ currentFeature);
+				log
+						.warn("bins and marginal probabilities for feature not defined, skipping; featureName="
+								+ currentFeature);
 				return;
 			}
 			List<Integer> binCounts = new ArrayList<Integer>();
@@ -209,9 +210,9 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 				// keep track of how many instances have already been allocated
 				// to a feature bin
 				int classFeatureCount = 0;
-				for (String binName : this.featureInfoMap
-						.get(currentFeature.toLowerCase())
-						.getBinToFrequencyMap().keySet()) {
+				for (String binName : this.featureInfoMap.get(
+						currentFeature.toLowerCase()).getBinToFrequencyMap()
+						.keySet()) {
 					// iterate over 'columns' i.e. the feature bins
 					int binCount = 0;
 					if (currentBins.containsKey(className)
@@ -241,6 +242,18 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 				foldInfogainList.add(new FeatureRank(currentFeature, infogain));
 			}
 		}
+
+		@Override
+		public Object extractData(ResultSet rs) throws SQLException,
+				DataAccessException {
+			while (rs.next()) {
+				this.processRow(rs);
+			}
+			// if we hit the end, add the info gain
+			if (currentFeature != null)
+				addInfoGain();
+			return null;
+		}
 	}
 
 	private void storeInfoGain(final String name, final String label,
@@ -250,11 +263,12 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 		final Map<Integer, List<FeatureRank>> foldInfogainMap = new HashMap<Integer, List<FeatureRank>>();
 		final Map<Integer, Double> foldEntropy = this
 				.calculateFoldEntropy(foldClassCountMap);
-		final InfoGainRowCallbackHandler handler = new InfoGainRowCallbackHandler(
+		final InfoGainResultSetExtractor handler = new InfoGainResultSetExtractor(
 				foldInfogainMap, foldClassCountMap, featureInfoMap,
 				foldEntropy, minInfo);
 		txNew.execute(new TransactionCallback<Object>() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public Object doInTransaction(TransactionStatus txStatus) {
 				jdbcTemplate.query(new PreparedStatementCreator() {
@@ -414,8 +428,8 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 				.entrySet()) {
 			Map<String, Integer> classCountMap = foldClass.getValue();
 			int total = 0;
-			List<Double> classProbs = new ArrayList<Double>(
-					classCountMap.size());
+			List<Double> classProbs = new ArrayList<Double>(classCountMap
+					.size());
 			// calculate total number of instances in this fold
 			for (Integer classCount : classCountMap.values()) {
 				total += classCount;
@@ -449,17 +463,18 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 	@SuppressWarnings("static-access")
 	public static void main(String args[]) throws ParseException, IOException {
 		Options options = new Options();
-		options.addOption(OptionBuilder
-				.withArgName("prop")
-				.hasArg()
-				.isRequired()
-				.withDescription(
-						"property file with queries and other parameters.  Expected properties:\ninfogain.name name"
-								+ "\nlabel.query query to get Y, i.e. class labels, fold, and class count"
-								+ "\nfeature.query query to get X, i.e. feature names, bins, and bin frequencies"
-								+ "\nclassfeature.query to get XxY per label, i.e. fold, feature, class, bin, count"
-								+ "\nmin.info optional minimum infogain feature must have to be stored")
-				.create("prop"));
+		options
+				.addOption(OptionBuilder
+						.withArgName("prop")
+						.hasArg()
+						.isRequired()
+						.withDescription(
+								"property file with queries and other parameters.  Expected properties:\ninfogain.name name"
+										+ "\nlabel.query query to get Y, i.e. class labels, fold, and class count"
+										+ "\nfeature.query query to get X, i.e. feature names, bins, and bin frequencies"
+										+ "\nclassfeature.query to get XxY per label, i.e. fold, feature, class, bin, count"
+										+ "\nmin.info optional minimum infogain feature must have to be stored")
+						.create("prop"));
 		try {
 			if (args.length == 0)
 				printHelp(options);
@@ -492,11 +507,10 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 				}
 				if (labelQuery != null && name != null && featureQuery != null
 						&& classFeatureQuery != null) {
-					KernelContextHolder
-							.getApplicationContext()
-							.getBean(InfoGainEvaluator.class)
-							.storeInfoGain(name, labelQuery, featureQuery,
-									classFeatureQuery, minInfo);
+					KernelContextHolder.getApplicationContext().getBean(
+							InfoGainEvaluator.class).storeInfoGain(name,
+							labelQuery, featureQuery, classFeatureQuery,
+							minInfo);
 				} else {
 					printHelp(options);
 				}

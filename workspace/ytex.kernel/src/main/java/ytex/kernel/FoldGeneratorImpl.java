@@ -37,15 +37,15 @@ import ytex.libsvm.LibSVMUtil;
  * @author vijay
  */
 public class FoldGeneratorImpl implements FoldGenerator {
-	LibSVMUtil libsvmUtil;
+	KernelUtil kernelUtil;
 	ClassifierEvaluationDao classifierEvaluationDao;
 
-	public LibSVMUtil getLibsvmUtil() {
-		return libsvmUtil;
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
 	}
 
-	public void setLibsvmUtil(LibSVMUtil libsvmUtil) {
-		this.libsvmUtil = libsvmUtil;
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
 	}
 
 	public ClassifierEvaluationDao getClassifierEvaluationDao() {
@@ -66,15 +66,14 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	@Override
 	public void generateRuns(String name, String query, int nFolds,
 			int nMinPerClass, Integer nSeed, int nRuns) {
-		Random r = new Random(nSeed != null ? nSeed
-				: System.currentTimeMillis());
+		Random r = new Random(nSeed != null ? nSeed : System
+				.currentTimeMillis());
 		SortedSet<String> labels = new TreeSet<String>();
-		SortedMap<Integer, Map<String, Integer>> mapInstanceToClassLabel = libsvmUtil
-				.loadClassLabels(query, labels);
+		InstanceData instances = kernelUtil.loadInstances(query);
 		this.getClassifierEvaluationDao().deleteCrossValidationFoldByName(name);
 		for (int run = 1; run <= nRuns; run++) {
-			generateFolds(labels, mapInstanceToClassLabel, name, run, query,
-					nFolds, nMinPerClass, r);
+			generateFolds(labels, instances, name, run, query, nFolds,
+					nMinPerClass, r);
 		}
 	}
 
@@ -90,33 +89,38 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * @param nMinPerClass
 	 * @param r
 	 */
-	public void generateFolds(Set<String> labels,
-			Map<Integer, Map<String, Integer>> mapInstanceToClassLabel,
+	public void generateFolds(Set<String> labels, InstanceData instances,
 			String name, int run, String query, int nFolds, int nMinPerClass,
 			Random r) {
-		for (String label : labels) {
-			Map<Integer, List<Integer>> mapClassToInstanceId = new TreeMap<Integer, List<Integer>>();
-			for (Map.Entry<Integer, Map<String, Integer>> instance : mapInstanceToClassLabel
+		for (String label : instances.getLabelToInstanceMap().keySet()) {
+			// there should not be any runs/folds/train test split - just unpeel
+			// until we get to the instance - class map
+			SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> runMap = instances
+					.getLabelToInstanceMap().get(label);
+			SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>> foldMap = runMap
+					.values().iterator().next();
+			SortedMap<Boolean, SortedMap<Integer, String>> trainMap = foldMap
+					.values().iterator().next();
+			SortedMap<Integer, String> mapInstanceIdToClass = trainMap.values()
+					.iterator().next();
+			// invert the mapInstanceIdToClass
+			Map<String, List<Integer>> mapClassToInstanceId = new TreeMap<String, List<Integer>>();
+			for (Map.Entry<Integer, String> instance : mapInstanceIdToClass
 					.entrySet()) {
-				if (instance.getValue().containsKey(label)) {
-					// instance has a class assignment for the given label - add
-					// it to mapclassToInstanceId
-					List<Integer> classInstanceIds = mapClassToInstanceId
-							.get(instance.getValue().get(label));
-					if (classInstanceIds == null) {
-						// allocate array for instance's class because it hasn't
-						// been added yet
-						classInstanceIds = new ArrayList<Integer>();
-						mapClassToInstanceId.put(
-								instance.getValue().get(label),
-								classInstanceIds);
-					}
-					// add instance id
-					classInstanceIds.add(instance.getKey());
+				String className = instance.getValue();
+				int instanceId = instance.getKey();
+				List<Integer> classInstanceIds = mapClassToInstanceId
+						.get(className);
+				if (classInstanceIds == null) {
+					classInstanceIds = new ArrayList<Integer>();
+					mapClassToInstanceId.put(className, classInstanceIds);
 				}
+				classInstanceIds.add(instanceId);
 			}
+			// stratified split into folds
 			List<Set<Integer>> folds = createFolds(mapClassToInstanceId,
 					nFolds, nMinPerClass, r);
+			// insert the folds
 			insertFolds(folds, name, label, run);
 		}
 	}
@@ -167,11 +171,11 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * @return list with nFolds sets of line numbers corresponding to the folds
 	 */
 	private static List<Set<Integer>> createFolds(
-			Map<Integer, List<Integer>> mapClassToInstanceId, int nFolds,
+			Map<String, List<Integer>> mapClassToInstanceId, int nFolds,
 			int nMinPerClass, Random r) {
 		List<Set<Integer>> folds = new ArrayList<Set<Integer>>(nFolds);
-		Map<Integer, List<Set<Integer>>> mapLabelFolds = new HashMap<Integer, List<Set<Integer>>>();
-		for (Map.Entry<Integer, List<Integer>> classToInstanceId : mapClassToInstanceId
+		Map<String, List<Set<Integer>>> mapLabelFolds = new HashMap<String, List<Set<Integer>>>();
+		for (Map.Entry<String, List<Integer>> classToInstanceId : mapClassToInstanceId
 				.entrySet()) {
 			List<Integer> instanceIds = classToInstanceId.getValue();
 			Collections.shuffle(instanceIds, r);
@@ -230,18 +234,20 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	public static void main(String args[]) throws ParseException, IOException {
 		Options options = new Options();
 		OptionGroup group = new OptionGroup();
-		group.addOption(OptionBuilder
-				.withArgName("query")
-				.hasArg()
-				.withDescription(
-						"query to retrieve instance id - label - class triples")
-				.create("query"));
-		group.addOption(OptionBuilder
-				.withArgName("prop")
-				.hasArg()
-				.withDescription(
-						"property file with query to retrieve instance id - label - class triples")
-				.create("prop"));
+		group
+				.addOption(OptionBuilder
+						.withArgName("query")
+						.hasArg()
+						.withDescription(
+								"query to retrieve instance id - label - class triples")
+						.create("query"));
+		group
+				.addOption(OptionBuilder
+						.withArgName("prop")
+						.hasArg()
+						.withDescription(
+								"property file with query to retrieve instance id - label - class triples")
+						.create("prop"));
 		group.isRequired();
 		options.addOptionGroup(group);
 		options.addOption(OptionBuilder.withArgName("name").hasArg()
@@ -253,9 +259,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 		options.addOption(OptionBuilder.withArgName("minPerClass").hasArg()
 				.withDescription("minimum instances per class, default 1")
 				.create("minPerClass"));
-		options.addOption(OptionBuilder
-				.withArgName("rand")
-				.hasArg()
+		options.addOption(OptionBuilder.withArgName("rand").hasArg()
 				.withDescription(
 						"random number seed; default current time in millis")
 				.create("rand"));
@@ -285,18 +289,16 @@ public class FoldGeneratorImpl implements FoldGenerator {
 							props.loadFromXML(is);
 						else
 							props.load(is);
-						query = props.getProperty("train.instance.query");
+						query = props.getProperty("instanceClassQuery");
 					} finally {
 						if (is != null)
 							is.close();
 					}
 				}
 				if (query != null && name != null) {
-					KernelContextHolder
-							.getApplicationContext()
-							.getBean(FoldGenerator.class)
-							.generateRuns(name, query, folds, minPerClass,
-									rand, runs);
+					KernelContextHolder.getApplicationContext().getBean(
+							FoldGenerator.class).generateRuns(name, query,
+							folds, minPerClass, rand, runs);
 				} else {
 					printHelp(options);
 				}

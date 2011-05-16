@@ -83,9 +83,9 @@ public class FileUtil {
 				builder.append(label).append("_");
 		}
 		if (run != null && run > 0) {
-			builder.append("run").append(Integer.toString(run)).append("_");
+			builder.append("run").append(Integer.toString(run));
 			if (fold != null && fold > 0)
-				builder.append(label).append("_");
+				builder.append("_");
 		}
 		if (fold != null && fold > 0) {
 			builder.append("fold").append(Integer.toString(fold));

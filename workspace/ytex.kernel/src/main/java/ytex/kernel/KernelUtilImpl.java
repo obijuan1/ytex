@@ -103,8 +103,11 @@ public class KernelUtilImpl implements KernelUtil {
 				String className = rs.getString(2);
 				if (rs.getMetaData().getColumnCount() >= 3)
 					train = rs.getBoolean(3);
-				if (rs.getMetaData().getColumnCount() >= 4)
+				if (rs.getMetaData().getColumnCount() >= 4) {
 					label = rs.getString(4);
+					if(label == null)
+						label = "";
+				}
 				if (rs.getMetaData().getColumnCount() >= 5)
 					fold = rs.getInt(5);
 				if (rs.getMetaData().getColumnCount() >= 6)

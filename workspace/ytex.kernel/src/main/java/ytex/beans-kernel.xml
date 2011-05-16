@@ -7,16 +7,20 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
 
-	<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
-		below) -->
+	<!--
+		the transactional advice (what 'happens'; see the <aop:advisor/> bean
+		below)
+	-->
 	<tx:advice id="txAdvice" transaction-manager="transactionManager">
 		<!-- the transactional semantics... -->
 		<tx:attributes>
 			<tx:method name="*" propagation="REQUIRED" />
 		</tx:attributes>
 	</tx:advice>
-	<!-- ensure that the above transactional advice runs for any execution of 
-		an operation defined by the FooService interface -->
+	<!--
+		ensure that the above transactional advice runs for any execution of
+		an operation defined by the FooService interface
+	-->
 	<aop:config>
 		<aop:pointcut id="daoOperation"
 			expression="execution(* ytex.kernel.dao.*Dao.*(..))" />
@@ -67,7 +71,9 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="gramMatrixExporter" class="ytex.weka.GramMatrixExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
-		<!-- property name="bagOfWordsExporter" ref="wekaBagOfWordsExporter" / -->
+		<!--
+			property name="bagOfWordsExporter" ref="wekaBagOfWordsExporter" /
+		-->
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="documentResultInstanceImporter" class="ytex.weka.DocumentResultInstanceImporter">
@@ -83,11 +89,14 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="classifierEvaluationDao" class="ytex.kernel.dao.ClassifierEvaluationDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-	<!-- <bean id="conceptSimilarityService" class="ytex.kernel.ConceptSimilarityServiceImpl" 
-		init-method="init"> <property name="transactionManager" ref="transactionManager" 
-		/> <property name="conceptDao" ref="conceptDao" /> <property name="corpusDao" 
-		ref="corpusDao" /> <property name="corpusNames"> <list> <value>cmc-ctakes</value> 
-		</list> </property> </bean> -->
+	<!--
+		<bean id="conceptSimilarityService"
+		class="ytex.kernel.ConceptSimilarityServiceImpl" init-method="init">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="conceptDao" ref="conceptDao" /> <property
+		name="corpusDao" ref="corpusDao" /> <property name="corpusNames">
+		<list> <value>cmc-ctakes</value> </list> </property> </bean>
+	-->
 	<bean id="libSVMGramMatrixExporter" class="ytex.libsvm.LibSVMGramMatrixExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
@@ -148,7 +157,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 
 	<bean id="foldGenerator" class="ytex.kernel.FoldGeneratorImpl">
-		<property name="libsvmUtil" ref="libsvmUtil" />
+		<property name="kernelUtil" ref="kernelUtil" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 	</bean>
 
@@ -170,8 +179,16 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="nameToFormatterMap">
 			<map>
 				<entry>
-					<key><value>libsvm</value></key>
-					<ref bean="libSVMFormatterFactory"/>
+					<key>
+						<value>libsvm</value>
+					</key>
+					<ref bean="libSVMFormatterFactory" />
+				</entry>
+				<entry>
+					<key>
+						<value>matlab</value>
+					</key>
+					<ref bean="matlabFormatterFactory" />
 				</entry>
 			</map>
 		</property>
@@ -179,7 +196,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 
 	<bean id="libSVMFormatterFactory" class="ytex.libsvm.LibSVMFormatterFactory">
 	</bean>
-	
-
+	<bean id="matlabFormatterFactory" class="ytex.matlab.MatlabFormatterFactory">
+	</bean>
 
 </beans>

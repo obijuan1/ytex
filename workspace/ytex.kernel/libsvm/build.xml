@@ -22,7 +22,7 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="cv.storeProb" value="no" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
 	<property name="cv.numFolds" value="10" />
-	<property name="cv.costs" value="0.01,0.1,1,10,100" />
+	<property name="cv.costs" value="0.001,0.01,0.1,1,10,100,1000" />
 	<property name="cv.rbf.gammas" value="0.01,0.1,1,10,100" />
 	<property name="cv.slices" value="24" />
 	<property name="cv.local.slices" value="1,2" />
@@ -233,16 +233,20 @@ cv.eval.line=${cv.eval.line}
 		</antcall>
 	</target>
 	<target name="cv.iter.label" description="process folds for label">
-		<property name="cv.classLabel" value="1" />
-		<echo>cv.iter.label cv.classLabel=${cv.classLabel}</echo>
+		<property name="cv.classLabel" value="0" />
+		<echo>cv.iter.label cv.classLabel=${cv.classLabel} libsvm.data=${libsvm.data}</echo>
+		<condition property="labelprefix" value="" else="label${cv.classLabel}_">
+			<equals arg1="${cv.classLabel}" arg2="0"/>
+		</condition>
 		<property name="label.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
+		<mkdir dir="${label.dir}"/>
 		<!-- copy files for the specified label -->
 		<copy todir="${label.dir}">
-			<fileset dir="${libsvm.data}" includes="label${cv.classLabel}_*.*" />
+			<fileset dir="${libsvm.data}" includes="${labelprefix}*.*" />
 		</copy>
 		<!-- iterate over files -->
 		<for param="training.file" parallel="${parallel.folds}" threadCount="${libsvm.threads}">
-			<fileset dir="${label.dir}" includes="label${cv.classLabel}_*train_data.txt" />
+			<fileset dir="${label.dir}" includes="${labelprefix}*train_data.txt" />
 			<sequential>
 				<antcall target="cv.iter.fold">
 					<param name="cv.fold.training" value="@{training.file}" />
@@ -269,10 +273,12 @@ cv.eval.line=${cv.eval.line}
 	</target>
 
 	<target name="cv.all.folds.local" description="generate all folds, evaluate libsvm" unless="ytex.cluster">
+		<echo>cv.all.folds.local ${libsvm.data}</echo>
 		<for list="${libsvm.classLabels}" param="classLabel" parallel="${parallel.labels}" threadCount="${libsvm.threads}">
 			<sequential>
 				<antcall target="cv.iter.label">
 					<param name="cv.classLabel" value="@{classLabel}" />
+					<param name="libsvm.data" value="${libsvm.data}" />
 				</antcall>
 			</sequential>
 		</for>
@@ -384,7 +390,9 @@ cv.eval.line=${cv.eval.line}
 		</for>
 	</target>
 	<target name="cv.init.classWeights" description="load property with class weights to iterate over for the given class label">
-		<property name="cv.classLabel" value="1" />
+		<property name="cv.classLabel" value="0" />
+		<echo>libsvm.classweights=${libsvm.classweights}</echo>
+		<echo>cv.classLabel=${cv.classLabel}</echo>
 		<if>
 			<available file="${libsvm.classweights}" />
 			<then>
@@ -399,6 +407,7 @@ cv.eval.line=${cv.eval.line}
 				</loadfile>
 			</then>
 		</if>
+		<echo>classWeights=${classWeights}</echo>
 		<!-- for precomputed gram matrix or linear kernel, iterate over cost params -->
 		<echo>kernel.type = ${kernel.type}</echo>
 		<condition property="cv.iter.target" value="cv.iter.cost">
@@ -493,9 +502,12 @@ cv.eval.line=${cv.eval.line}
 			<arg line="-b 1 ${cv.fold.test} ${cv.outdir}/model.txt ${cv.outdir}/predict.txt" />
 		</exec>
 		<!-- store libsvm options -->
-		<echo file="${label.dir}/${cv.outdir}/options.properties">
-cv.eval.line=${cv.eval.line}
-</echo>
+		<echoproperties destfile="${label.dir}/${cv.outdir}/options.properties">
+			<propertyset>
+				<propertyref prefix="libsvm."/>
+				<propertyref prefix="cv."/>
+			</propertyset>
+		</echoproperties>
 	</target>
 	<target name="cv.extractResults.db.fold">
 		<property name="cv.classLabel" value="1" />
