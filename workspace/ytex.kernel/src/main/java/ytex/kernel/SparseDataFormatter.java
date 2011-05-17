@@ -22,10 +22,11 @@ public interface SparseDataFormatter {
 	 * @param label
 	 * @param run
 	 * @param fold
+	 * @param foldInstanceLabelMap 
 	 * @throws IOException
 	 */
 	void initializeFold(SparseData sparseData, String label, Integer run,
-			Integer fold) throws IOException;
+			Integer fold, SortedMap<Boolean,SortedMap<Integer,String>> foldInstanceLabelMap) throws IOException;
 
 	/**
 	 * export the fold train/test set. called once per train/test set, 2x per

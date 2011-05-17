@@ -1,6 +1,6 @@
 package ytex.kernel.model;
 
-public class LibSVMClassifierEvaluation extends ClassifierEvaluation {
+public class SVMClassifierEvaluation extends ClassifierEvaluation {
 	/**
 	 * 
 	 */
@@ -11,6 +11,14 @@ public class LibSVMClassifierEvaluation extends ClassifierEvaluation {
 	Double gamma;
 	Integer kernel;
 	Integer supportVectors;
+	Double vcdim;
+	
+	public Double getVcdim() {
+		return vcdim;
+	}
+	public void setVcdim(Double vcdim) {
+		this.vcdim = vcdim;
+	}
 	public Double getCost() {
 		return cost;
 	}

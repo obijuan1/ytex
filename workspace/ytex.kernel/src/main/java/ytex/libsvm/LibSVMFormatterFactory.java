@@ -48,8 +48,13 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 * the libsvm data file
 		 */
 		@Override
-		public void initializeFold(SparseData sparseData, String label,
-				Integer run, Integer fold) throws IOException {
+		public void initializeFold(
+				SparseData sparseData,
+				String label,
+				Integer run,
+				Integer fold,
+				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
+				throws IOException {
 			String filename = FileUtil.getFoldFilePrefix(outdir, label, run,
 					fold);
 			if (filename.length() > 0 && !filename.endsWith("/")
@@ -143,36 +148,44 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 			try {
 				wData = new BufferedWriter(new FileWriter(filename));
 				wId = new BufferedWriter(new FileWriter(idFilename));
-				for (Map.Entry<Integer, String> instanceClass : instanceClassMap
-						.entrySet()) {
-					int instanceId = instanceClass.getKey();
-					// allocate line with sparse attribute indices and values
-					SortedMap<Integer, Double> instanceValues = getSparseLineValues(
-							bagOfWordsData, numericAttributeMap,
-							nominalAttributeMap, instanceId);
-					// data file
-					// write class id
-					int classId = classToIndexMap.get(instanceClass.getValue());
-					// write id to id file
-					wId.write(Integer.toString(instanceId));
-					wId.newLine();
-					wData.write(Integer.toString(classId));
-					// write attributes
-					// add the attributes
-					for (SortedMap.Entry<Integer, Double> instanceValue : instanceValues
-							.entrySet()) {
-						wData.write("\t");
-						wData.write(Integer.toString(instanceValue.getKey()));
-						wData.write(":");
-						wData.write(Double.toString(instanceValue.getValue()));
-					}
-					wData.newLine();
-				}
+				exportDataForInstances(bagOfWordsData, instanceClassMap,
+						classToIndexMap, wData, wId);
 			} finally {
 				if (wData != null)
 					wData.close();
 				if (wId != null)
 					wId.close();
+			}
+		}
+
+		protected void exportDataForInstances(SparseData bagOfWordsData,
+				SortedMap<Integer, String> instanceClassMap,
+				Map<String, Integer> classToIndexMap, BufferedWriter wData,
+				BufferedWriter wId) throws IOException {
+			for (Map.Entry<Integer, String> instanceClass : instanceClassMap
+					.entrySet()) {
+				int instanceId = instanceClass.getKey();
+				// allocate line with sparse attribute indices and values
+				SortedMap<Integer, Double> instanceValues = getSparseLineValues(
+						bagOfWordsData, numericAttributeMap,
+						nominalAttributeMap, instanceId);
+				// data file
+				// write class id
+				int classId = classToIndexMap.get(instanceClass.getValue());
+				// write id to id file
+				wId.write(Integer.toString(instanceId));
+				wId.newLine();
+				wData.write(Integer.toString(classId));
+				// write attributes
+				// add the attributes
+				for (SortedMap.Entry<Integer, Double> instanceValue : instanceValues
+						.entrySet()) {
+					wData.write("\t");
+					wData.write(Integer.toString(instanceValue.getKey()));
+					wData.write(":");
+					wData.write(Double.toString(instanceValue.getValue()));
+				}
+				wData.newLine();
 			}
 		}
 

@@ -190,10 +190,23 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					</key>
 					<ref bean="matlabFormatterFactory" />
 				</entry>
+				<entry>
+					<key>
+						<value>R</value>
+					</key>
+					<ref bean="matlabFormatterFactory" />
+				</entry>
+				<entry>
+					<key>
+						<value>svmlight</value>
+					</key>
+					<ref bean="svmLightFormatterFactory" />
+				</entry>
 			</map>
 		</property>
 	</bean>
-
+	<bean id="svmLightFormatterFactory" class="ytex.svmlight.SVMLightFormatterFactory">
+	</bean>
 	<bean id="libSVMFormatterFactory" class="ytex.libsvm.LibSVMFormatterFactory">
 	</bean>
 	<bean id="matlabFormatterFactory" class="ytex.matlab.MatlabFormatterFactory">

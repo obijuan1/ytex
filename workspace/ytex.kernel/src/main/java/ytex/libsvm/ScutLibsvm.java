@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import ytex.kernel.IRMetrics;
 import ytex.kernel.MetricUtil;
 import ytex.kernel.SCut;
+import ytex.kernel.SVMResults;
 
 public class ScutLibsvm {
 
@@ -43,7 +44,7 @@ public class ScutLibsvm {
 			String instanceFile) throws IOException, Exception {
 		SCut scut = new SCut();
 		LibSVMParser p = new LibSVMParser();
-		LibSVMResults results = p.parse(predictionFile, instanceFile);
+		SVMResults results = p.parse(predictionFile, instanceFile);
 		int scutLabels[] = new int[results.getResults().size()];
 		double scutThreshold = scut.getScutThreshold(
 				results.getProbabilities(), results.getTargetClassIds(), 1,
@@ -69,7 +70,7 @@ public class ScutLibsvm {
 			double scutThreshold) throws Exception {
 		SCut scut = new SCut();
 		LibSVMParser p = new LibSVMParser();
-		LibSVMResults results = p.parse(predictionFile, instanceFile);
+		SVMResults results = p.parse(predictionFile, instanceFile);
 		int scutLabels[] = scut.applyScutThreshold(results.getProbabilities(),
 				scutThreshold);
 		return new Object[] {

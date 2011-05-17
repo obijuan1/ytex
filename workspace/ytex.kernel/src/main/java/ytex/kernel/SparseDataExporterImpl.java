@@ -265,7 +265,8 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 							properties.getProperty("numericWordQuery"),
 							properties.getProperty("nominalWordQuery"),
 							bDecorator, label, fold, run);
-					formatter.initializeFold(sparseData, label, run, fold);
+					formatter.initializeFold(sparseData, label, run, fold, instanceLabel.getLabelToInstanceMap()
+							.get(label).get(run).get(fold));
 					for (boolean train : instanceLabel.getLabelToInstanceMap()
 							.get(label).get(run).get(fold).keySet()) {
 						formatter.export(sparseData, instanceLabel

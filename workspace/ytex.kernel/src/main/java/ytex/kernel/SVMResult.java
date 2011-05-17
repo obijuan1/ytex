@@ -1,6 +1,6 @@
-package ytex.libsvm;
+package ytex.kernel;
 
-public class LibSVMResult {
+public class SVMResult {
 	int targetClassId;
 	int predictedClassId;
 	int instanceId;

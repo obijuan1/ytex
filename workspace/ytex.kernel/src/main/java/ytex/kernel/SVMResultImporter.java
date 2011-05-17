@@ -1,4 +1,4 @@
-package ytex.libsvm;
+package ytex.kernel;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,13 +15,13 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import ytex.kernel.KernelContextHolder;
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.ClassifierEvaluation;
+import ytex.libsvm.LibSVMParser;
+import ytex.svmlight.SVMLightParser;
 
-public class LibSVMResultImporter {
-	private static final Log log = LogFactory
-			.getLog(LibSVMResultImporter.class);
+public class SVMResultImporter {
+	private static final Log log = LogFactory.getLog(SVMResultImporter.class);
 
 	@SuppressWarnings("static-access")
 	private static Options initOptions() {
@@ -30,30 +30,40 @@ public class LibSVMResultImporter {
 				.withDescription("fold cross-validation results directory")
 				.create("cvDir"));
 		options.addOption(OptionBuilder.withArgName("model").hasArg()
-				.withDescription("libsvm model file").create("model"));
-		options.addOption(OptionBuilder.withArgName("predict").hasArg()
-				.withDescription("libsvm output file").create("output"));
+				.withDescription("svm model file").create("model"));
+		options.addOption(OptionBuilder.withArgName("output").hasArg()
+				.withDescription("svm training output").create("output"));
+		options
+				.addOption(OptionBuilder.withArgName("predict").hasArg()
+						.withDescription("svm test predictions file").create(
+								"predict"));
 		options.addOption(OptionBuilder.withArgName("test").hasArg()
-				.withDescription("libsvm input test data file").isRequired()
-				.create("test"));
-		options.addOption(OptionBuilder.withArgName("instanceId").hasArg()
-				.withDescription("file with instance ids").create("instanceId"));
+				.withDescription("input test data file").isRequired().create(
+						"test"));
+		options
+				.addOption(OptionBuilder.withArgName("instanceId").hasArg()
+						.withDescription("file with instance ids").create(
+								"instanceId"));
 		options.addOption(OptionBuilder.withArgName("name").hasArg()
 				.withDescription("name").isRequired().create("name"));
 		options.addOption(OptionBuilder.withArgName("experiment").hasArg()
 				.withDescription("experiment").create("experiment"));
 		options.addOption(OptionBuilder.withArgName("options").hasArg()
-				.withDescription("libsvm training options").create("options"));
+				.withDescription("svm training options").create("options"));
 		options.addOption(OptionBuilder.withArgName("fold").hasArg()
 				.withDescription("fold").create("fold"));
 		options.addOption(OptionBuilder.withArgName("label").hasArg()
 				.withDescription("label").create("label"));
+		options
+				.addOption(OptionBuilder.withArgName("type").hasArg()
+						.withDescription("libsvm (default) or svmlight")
+						.create("type"));
 		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
 				.withDescription("store instance evaluations, default no")
 				.create("storeInstanceEval"));
 		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
-				.withDescription("store probabilities, default no")
-				.create("storeProb"));
+				.withDescription("store probabilities, default no").create(
+						"storeProb"));
 		return options;
 	}
 
@@ -72,22 +82,22 @@ public class LibSVMResultImporter {
 				if (line.hasOption("cvDir")) {
 					importDirectory(line);
 				} else {
-					LibSVMParser lparser = new LibSVMParser();
+					SVMParser lparser = getParser(line);
 					ClassifierEvaluation eval = lparser
 							.parseClassifierEvaluation(line
 									.getOptionValue("name"), line
 									.getOptionValue("experiment"), line
 									.getOptionValue("label"), line
 									.getOptionValue("options"), line
-									.getOptionValue("output"), line
+									.getOptionValue("predict"), line
 									.getOptionValue("test"), line
 									.getOptionValue("model"), line
-									.getOptionValue("instanceId"), "yes"
+									.getOptionValue("instanceId"), line
+									.getOptionValue("output"), "yes"
 									.equals(line.getOptionValue("storeProb",
 											"no")));
-					KernelContextHolder
-							.getApplicationContext()
-							.getBean(ClassifierEvaluationDao.class)
+					KernelContextHolder.getApplicationContext().getBean(
+							ClassifierEvaluationDao.class)
 							.saveClassifierEvaluation(
 									eval,
 									"yes".equals(line.getOptionValue(
@@ -98,6 +108,13 @@ public class LibSVMResultImporter {
 				throw e;
 			}
 		}
+	}
+
+	private static SVMParser getParser(CommandLine line) {
+		String type = line.getOptionValue("type", "libsvm");
+		SVMParser lparser = "libsvm".equals(type) ? new LibSVMParser()
+				: new SVMLightParser();
+		return lparser;
 	}
 
 	/**
@@ -114,11 +131,12 @@ public class LibSVMResultImporter {
 	 * @throws Exception
 	 */
 	private static void importDirectory(CommandLine line) throws Exception {
-		LibSVMParser lparser = new LibSVMParser();
+		SVMParser lparser = getParser(line);
 		File cvDir = new File(line.getOptionValue("cvDir"));
 		for (File resultDir : cvDir.listFiles()) {
+			String output = resultDir + File.separator + "output.txt";
 			String model = resultDir + File.separator + "model.txt";
-			String output = resultDir + File.separator + "predict.txt";
+			String predict = resultDir + File.separator + "predict.txt";
 			String optionsFile = resultDir + File.separator
 					+ "options.properties";
 			if (checkFileRead(model) && checkFileRead(output)
@@ -140,14 +158,14 @@ public class LibSVMResultImporter {
 										.getOptionValue("name"), line
 										.getOptionValue("experiment"), line
 										.getOptionValue("label"), options,
-										output, line.getOptionValue("test"),
+										predict, line.getOptionValue("test"),
 										model, line
 												.getOptionValue("instanceId"),
-										"yes".equals(line.getOptionValue(
-												"storeProb", "no")));
-						KernelContextHolder
-								.getApplicationContext()
-								.getBean(ClassifierEvaluationDao.class)
+										output, "yes".equals(line
+												.getOptionValue("storeProb",
+														"no")));
+						KernelContextHolder.getApplicationContext().getBean(
+								ClassifierEvaluationDao.class)
 								.saveClassifierEvaluation(
 										eval,
 										"yes".equals(line.getOptionValue(

@@ -18,6 +18,7 @@ zip up cv.tmpdir and put in processed data dir
 	<property name="libsvm.name" value="test" />
 	<property name="libsvm.timeout" value="240000" />
 	<property name="libsvm.classweights" value="${libsvm.data}/classWeights.properties" />
+	<property name="svm.type" value="libsvm" />
 	<property name="cv.storeInstanceEval" value="no" />
 	<property name="cv.storeProb" value="no" />
 	<property name="cv.tmpdir" value="${java.io.tmpdir}" />
@@ -236,10 +237,10 @@ cv.eval.line=${cv.eval.line}
 		<property name="cv.classLabel" value="0" />
 		<echo>cv.iter.label cv.classLabel=${cv.classLabel} libsvm.data=${libsvm.data}</echo>
 		<condition property="labelprefix" value="" else="label${cv.classLabel}_">
-			<equals arg1="${cv.classLabel}" arg2="0"/>
+			<equals arg1="${cv.classLabel}" arg2="0" />
 		</condition>
 		<property name="label.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
-		<mkdir dir="${label.dir}"/>
+		<mkdir dir="${label.dir}" />
 		<!-- copy files for the specified label -->
 		<copy todir="${label.dir}">
 			<fileset dir="${libsvm.data}" includes="${labelprefix}*.*" />
@@ -370,9 +371,12 @@ cv.eval.line=${cv.eval.line}
 	</target>
 
 	<target name="cv.iter.fold" description="run libsvm on specified fold, store results in database">
-		<property name="cv.classLabel" value="1" />
+		<property name="cv.classLabel" value="0" />
+		<condition property="labelprefix" value="" else="label${cv.classLabel}_">
+			<equals arg1="${cv.classLabel}" arg2="0" />
+		</condition>		
 		<property name="label.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" />
-		<property name="cv.fold.training" value="${label.dir}/label${cv.classLabel}_run1_fold1_train_data.txt" />
+		<property name="cv.fold.training" value="${label.dir}/${labelprefix}run1_fold1_train_data.txt" />
 		<basename file="${cv.fold.training}" property="cv.fold.base.prefix" suffix="_train_data.txt" />
 		<basename file="${cv.fold.base.prefix}" property="cv.fold.base" />
 		<property name="cv.result.dir" value="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}/${cv.fold.base}" />
@@ -394,7 +398,10 @@ cv.eval.line=${cv.eval.line}
 		<echo>libsvm.classweights=${libsvm.classweights}</echo>
 		<echo>cv.classLabel=${cv.classLabel}</echo>
 		<if>
-			<available file="${libsvm.classweights}" />
+			<and>
+				<available file="${libsvm.classweights}" />
+				<equals arg1="${svm.type}" arg2="libsvm" />
+			</and>
 			<then>
 				<loadfile srcfile="${libsvm.classweights}" property="classWeights">
 					<filterchain>
@@ -479,7 +486,8 @@ cv.eval.line=${cv.eval.line}
 			</sequential>
 		</for>
 	</target>
-	<target name="cv.evaluate" description="train on cv training set, eval on cv test set, store results in fold-specific timestamped directory">
+
+	<target name="cv.evaluate.init">
 		<!-- want to put each result in a different directory, use timestamp, but libsvm is fast -->
 		<sleep seconds="1" />
 		<tstamp>
@@ -492,6 +500,36 @@ cv.eval.line=${cv.eval.line}
 		<property name="cv.fold.base" value="label${cv.classLabel}_run1_fold1" />
 		<property name="cv.fold.train" value="${cv.fold.base}_train_data.txt" />
 		<property name="cv.fold.test" value="${cv.fold.base}_test_data.txt" />
+		<condition property="svmlight">
+			<equals arg1="${svm.type}" arg2="svmlight" />
+		</condition>
+	</target>
+
+	<target name="cv.evaluate" depends="cv.evaluate.init" description="call libsvm/svmlight">
+		<antcall target="cv.evaluate.svmlight" />
+		<antcall target="cv.evaluate.libsvm" />
+	</target>
+	
+	<target name="cv.evaluate.svmlight" if="svmlight" description="call svmlight">
+		<!-- train the svm -->
+		<property name="cv.eval.line" value="-t ${kernel.type}  -l ${cv.outdir}/transduct.txt ${cv.libsvm.line} ${cv.fold.train} ${cv.outdir}/model.txt" />
+		<exec executable="${svmlight.bin}/svm_learn" dir="${label.dir}" failonerror="yes" output="${label.dir}/${cv.outdir}/output.txt">
+			<arg line="${cv.eval.line}" />
+		</exec>
+		<!-- test the svm -->
+		<exec executable="${svmlight.bin}/svm_classify" dir="${label.dir}" failonerror="yes">
+			<arg line="${cv.fold.test} ${cv.outdir}/model.txt ${cv.outdir}/predict.txt" />
+		</exec>
+		<!-- store svmlight options -->
+		<echoproperties destfile="${label.dir}/${cv.outdir}/options.properties">
+			<propertyset>
+				<propertyref prefix="libsvm." />
+				<propertyref prefix="cv." />
+			</propertyset>
+		</echoproperties>
+	</target>
+
+	<target name="cv.evaluate.libsvm" unless="svmlight" description="train on cv training set, eval on cv test set, store results in fold-specific timestamped directory">
 		<!-- train the svm -->
 		<property name="cv.eval.line" value="-q -b 1 -t ${kernel.type} ${cv.libsvm.line} ${cv.fold.train} ${cv.outdir}/model.txt" />
 		<exec executable="${libsvm.bin}/svm-train" dir="${label.dir}" failonerror="yes">
@@ -504,15 +542,15 @@ cv.eval.line=${cv.eval.line}
 		<!-- store libsvm options -->
 		<echoproperties destfile="${label.dir}/${cv.outdir}/options.properties">
 			<propertyset>
-				<propertyref prefix="libsvm."/>
-				<propertyref prefix="cv."/>
+				<propertyref prefix="libsvm." />
+				<propertyref prefix="cv." />
 			</propertyset>
 		</echoproperties>
 	</target>
 	<target name="cv.extractResults.db.fold">
 		<property name="cv.classLabel" value="1" />
 		<property name="cv.fold.base" value="label1_run1_fold1" />
-		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failOnError="yes">
+		<java classname="ytex.kernel.SVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${cv.tmpdir}/${libsvm.experiment}-${cv.classLabel}" failOnError="yes">
 			<arg value="-name" />
 			<arg value="${libsvm.name}" />
 			<arg value="-experiment" />
@@ -529,6 +567,8 @@ cv.eval.line=${cv.eval.line}
 			<arg value="${cv.storeInstanceEval}" />
 			<arg value="-storeProb" />
 			<arg value="${cv.storeProb}" />
+			<arg value="-type" />
+			<arg value="${svm.type}" />
 			<jvmarg value="${log4j.param}" />
 		</java>
 	</target>
@@ -571,7 +611,7 @@ cv.eval.line=${cv.eval.line}
 			<arg line="-b 1 ${test.test} ${test.model} ${test.predict}" />
 		</exec>
 		<!-- extract results -->
-		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${libsvm.data}" failOnError="yes">
+		<java classname="ytex.kernel.SVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${libsvm.data}" failOnError="yes">
 			<arg value="-name" />
 			<arg value="${libsvm.name}" />
 			<arg value="-experiment" />
@@ -582,7 +622,7 @@ cv.eval.line=${cv.eval.line}
 			<arg value="${test.test}" />
 			<arg value="-instanceId" />
 			<arg value="${test.id}" />
-			<arg value="-output" />
+			<arg value="-predict" />
 			<arg value="${test.predict}" />
 			<arg value="-model" />
 			<arg value="${test.model}" />
@@ -633,7 +673,7 @@ cv.eval.line=${cv.eval.line}
 		<property name="test.id" value="test_id_${test.classLabel}.txt" />
 		<property name="test.model" value="model_${test.classLabel}.txt" />
 		<property name="test.predict" value="predict_${test.classLabel}.txt" />
-		<java classname="ytex.libsvm.LibSVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${libsvm.data}">
+		<java classname="ytex.kernel.SVMResultImporter" classpathref="${libsvm.cp}" fork="yes" dir="${libsvm.data}">
 			<arg value="-name" />
 			<arg value="${libsvm.name}" />
 			<arg value="-experiment" />
@@ -648,7 +688,7 @@ cv.eval.line=${cv.eval.line}
 			<arg value="test" />
 			<arg value="-model" />
 			<arg value="${test.model}" />
-			<arg value="-output" />
+			<arg value="-predict" />
 			<arg value="${test.predict}" />
 			<arg value="-options" />
 			<arg value="${test.eval.line}" />

@@ -68,8 +68,8 @@
 			<map-key column="instance_id" type="int" />
 			<one-to-many class="ClassifierInstanceEvaluation" />
 		</map>
-		<joined-subclass name="LibSVMClassifierEvaluation"
-			table="classifier_eval_libsvm">
+		<joined-subclass name="SVMClassifierEvaluation"
+			table="classifier_eval_svm">
 			<key column="classifier_eval_id" />
 			<property name="cost" />
 			<property name="weight" />
@@ -77,6 +77,7 @@
 			<property name="gamma" />
 			<property name="kernel" />
 			<property name="supportVectors" />
+			<property name="vcdim" />
 		</joined-subclass>
 	</class>
 	<class name="ClassifierEvaluationIRStat" table="classifier_eval_ir">
