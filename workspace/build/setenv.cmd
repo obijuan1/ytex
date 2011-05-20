@@ -106,9 +106,10 @@
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\slf4j-api-1.5.8.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\slf4j-jcl-1.5.8.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\jchronic-0.2.3.jar
+@set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\commons-cli-1.2.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\weka.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\ytex.model.jar
-@set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\ytex.kernel.jar
+@set YTEX_CP=%YTEX_CP%;%YTEX_HOME%\lib\ytex.kernel.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_HOME%\lib\ytex.negex.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_HOME%\lib\ytex.uima.jar
 
