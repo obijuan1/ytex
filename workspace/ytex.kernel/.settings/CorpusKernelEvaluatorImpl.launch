@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/ytex.kernel/src/ytex/kernel/evaluator/CorpusKernelEvaluatorImpl.java"/>
+<listEntry value="/ytex.kernel/src/main/java/ytex/kernel/evaluator/CorpusKernelEvaluatorImpl.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-beans /beans-corpus-kernel.xml"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="cmc"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-beans segkern.xml"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="i2b2.2008"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g"/>
-<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:cmc/libsvm/ctakes-tree}"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:i2b2.2008/libsvm/segkern/0.07/14}"/>
 </launchConfiguration>
