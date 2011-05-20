@@ -7,20 +7,16 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
 
-	<!--
-		the transactional advice (what 'happens'; see the <aop:advisor/> bean
-		below)
-	-->
+	<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
+		below) -->
 	<tx:advice id="txAdvice" transaction-manager="transactionManager">
 		<!-- the transactional semantics... -->
 		<tx:attributes>
 			<tx:method name="*" propagation="REQUIRED" />
 		</tx:attributes>
 	</tx:advice>
-	<!--
-		ensure that the above transactional advice runs for any execution of
-		an operation defined by the FooService interface
-	-->
+	<!-- ensure that the above transactional advice runs for any execution of 
+		an operation defined by the FooService interface -->
 	<aop:config>
 		<aop:pointcut id="ytexDaoOperation" expression="execution(* ytex.dao.*Dao.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="ytexDaoOperation" />
@@ -39,4 +35,5 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="segmentRegexDao" class="ytex.dao.SegmentRegexDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
+
 </beans>
