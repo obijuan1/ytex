@@ -13,11 +13,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
+import org.springframework.context.ApplicationContext;
 
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.model.ConcRel;
@@ -28,10 +30,18 @@ public class ConceptDaoImpl implements ConceptDao {
 	private SessionFactory sessionFactory;
 	private static final Log log = LogFactory.getLog(ConceptDaoImpl.class);
 	private UMLSDao umlsDao;
-	private String conceptGraphDir;
+	private Properties ytexProperties;
+
+	public Properties getYtexProperties() {
+		return ytexProperties;
+	}
+
+	public void setYtexProperties(Properties ytexProperties) {
+		this.ytexProperties = ytexProperties;
+	}
 
 	/**
-	 * ignore forbidden concepts.  list Taken from umls-interface
+	 * ignore forbidden concepts. list Taken from umls-interface
 	 */
 	private static final String forbiddenConceptArr[] = new String[] {
 			"C1274012", "C1274013", "C1276325", "C1274014", "C1274015",
@@ -58,11 +68,8 @@ public class ConceptDaoImpl implements ConceptDao {
 	 */
 
 	public String getConceptGraphDir() {
-		return conceptGraphDir;
-	}
-
-	public void setConceptGraphDir(String conceptGraphDir) {
-		this.conceptGraphDir = conceptGraphDir;
+		return ytexProperties.getProperty("ytex.conceptGraphDir",
+				System.getProperty("java.io.tmpdir"));
 	}
 
 	public SessionFactory getSessionFactory() {
@@ -165,7 +172,8 @@ public class ConceptDaoImpl implements ConceptDao {
 			Set<String> roots, Object[] conceptPair) {
 		String childCUI = (String) conceptPair[0];
 		String parentCUI = (String) conceptPair[1];
-		if(forbiddenConcepts.contains(childCUI) || forbiddenConcepts.contains(parentCUI)) {
+		if (forbiddenConcepts.contains(childCUI)
+				|| forbiddenConcepts.contains(parentCUI)) {
 			// ignore relationships to useless concepts
 			return;
 		}
