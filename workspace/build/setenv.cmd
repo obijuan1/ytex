@@ -108,6 +108,7 @@
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\jchronic-0.2.3.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\weka.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\ytex.model.jar
+@set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\ytex.kernel.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_HOME%\lib\ytex.negex.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_HOME%\lib\ytex.uima.jar
 
