@@ -242,5 +242,7 @@ create table anno_contain (
   child_uima_type_id int not null comment 'child type',
   key ix_child_id (child_anno_base_id),
   key ix_parent_id (parent_anno_base_id),
+  key IX_parent_id_child_type (parent_anno_base_id, child_uima_type_id),
+  key IX_child_id_parent_type (child_anno_base_id, parent_uima_type_id),  
   primary key pk_anno_contain (parent_anno_base_id, child_anno_base_id)
 ) engine=myisam, comment 'containment relationships between annotations';

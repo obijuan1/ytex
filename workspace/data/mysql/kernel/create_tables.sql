@@ -1,16 +1,26 @@
-DROP TABLE IF EXISTS `kernel_eval`;
-CREATE TABLE  `kernel_eval` (
-  `kernel_eval_id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL DEFAULT '',
-  `instance_id1` int(11) NOT NULL,
-  `instance_id2` int(11) NOT NULL,
-  `similarity` double NOT NULL,
-  PRIMARY KEY (`kernel_eval_id`),
-  UNIQUE KEY `NK_kernel_eval` (`name`,`instance_id1`,`instance_id2`),
-  KEY `NK_kernel_eval1` (`name`,`instance_id1`),
-  KEY `NK_kernel_eval2` (`name`,`instance_id2`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+DROP TABLE IF EXISTS kernel_eval;
+DROP TABLE IF EXISTS kernel_eval_instance;
 
+CREATE TABLE  kernel_eval (
+	kernel_eval_id int(11) NOT NULL AUTO_INCREMENT,
+	name varchar(50) NOT NULL DEFAULT '' comment 'corpus name',
+	experiment varchar(50) not null comment 'experiment - type of kernel',
+	label varchar(50) not NULL default '' comment 'class label',
+	cv_fold_id int not null default 0 comment 'fk cv_fold',
+	PRIMARY KEY (kernel_eval_id),
+	UNIQUE KEY NK_kernel_eval (name, experiment, label, cv_fold_id)
+) ENGINE=MyISAM comment 'set of all kernel evaluations';
+
+create table kernel_eval_instance (
+	kernel_eval_instance int not null auto_increment primary key,
+	kernel_eval_id int not null comment 'fk kernel_eval',
+	instance_id1 int(11) NOT NULL,
+	instance_id2 int(11) NOT NULL,
+	similarity double NOT NULL,
+	KEY IX_kernel_eval1 (kernel_eval_id, instance_id1),
+	KEY IX_kernel_eval2 (kernel_eval_id, instance_id2),
+	UNIQUE KEY NK_kernel_eval (kernel_eval_id, instance_id1, instance_id2)
+) ENGINE=MyISAM comment 'kernel instance evaluation';
 
 drop table if exists concept_graph;
 create table concept_graph (
@@ -202,6 +212,40 @@ create table classifier_eval_libsvm (
 	supportVectors int default null
 ) comment 'evaluation of a libsvm classifier on a dataset';
 
+create table classifier_eval_ir (
+	classifier_eval_ir_id int not null auto_increment primary key,
+	classifier_eval_id int not null comment 'fk classifier_eval',
+	ir_class_id int not null comment 'class id for ir stats',
+	tp int not null,
+	tn int not null,
+	fp int not null,
+	fn int not null,
+	ppv double not null,
+	npv double not null,
+	sens double not null,
+	spec double not null,
+	f1 double not null,
+	unique key NK_classifier_eval_ir (classifier_eval_id, ir_class_id),
+	key IX_classifier_eval_id (classifier_eval_id)
+) comment 'ir statistics of a classifier on a dataset';
+
+create table classifier_eval_irzv (
+	classifier_eval_irzv_id int not null auto_increment primary key,
+	classifier_eval_id int not null comment 'fk classifier_eval',
+	ir_class_id int not null comment 'class id for ir stats',
+	tp int not null,
+	tn int not null,
+	fp int not null,
+	fn int not null,
+	ppv double not null,
+	npv double not null,
+	sens double not null,
+	spec double not null,
+	f1 double not null,
+	unique key NK_classifier_eval_ir (classifier_eval_id, ir_class_id),
+	key IX_classifier_eval_id (classifier_eval_id)
+) comment 'ir statistics of a classifier on a dataset with zero vectors added';
+
 create table classifier_instance_eval (
 	classifier_instance_eval_id int not null auto_increment primary key,
 	classifier_eval_id int not null comment 'fk classifier_eval',
@@ -274,15 +318,16 @@ ALTER TABLE `hotspot` ADD INDEX `ix_instance_id`(`instance_id`),
  ADD INDEX `ix_anno_base_id`(`anno_base_id`),
  ADD INDEX `ix_feature_rank_id`(`feature_rank_id`);
 
-drop table hotspot_zero_vector;
+drop table if exists hotspot_zero_vector;
 create table hotspot_zero_vector (
   hotspot_zero_vector_id int not null auto_increment primary key,
-  label varchar(50) not null,
-  instance_id int not null,
-  cutoff double not null,
-  unique index nk_zero_vector (label, instance_id, cutoff),
-  index ix_instance_id (instance_id)
-);
+  name varchar(50) not null comment 'corpus/feature set name',
+  label varchar(50) not null comment 'class label',
+  instance_id int not null comment 'instance id',
+  cutoff double not null comment 'hotspot infogain cutoff',
+  unique index nk_zero_vector (name, label, instance_id, cutoff),
+  index ix_instance_id (name, label, instance_id)
+) engine=myisam;
 
 
 create table hotspot_feature (
@@ -295,6 +340,36 @@ create table hotspot_feature (
 	index ix_rank (instance_id, rank)
 );
 
+
+CREATE TABLE `hotspot_feature_eval` (
+  `hotspot_feature_eval_id` int(11) NOT NULL AUTO_INCREMENT,
+  name varchar(50) not null,
+  `label` varchar(50) NOT NULL,
+  `instance_id` int(11) NOT NULL,
+  `feature_name` varchar(50) NOT NULL,
+  `evaluation` double NOT NULL,
+  PRIMARY KEY (`hotspot_feature_eval_id`),
+  UNIQUE KEY `nk_hotspot_feature` (name, `label`,`instance_id`,`feature_name`),
+  KEY `ix_rank` (name, `instance_id`,`evaluation`)
+) ENGINE=MyISAM;
+
+create table hotspot_zero_vector_tt
+(
+  hotspot_zero_vector_tt int auto_increment not null primary key,
+  name varchar(50) not null comment 'corpus name',
+  experiment varchar(50) not null comment 'classifier_eval.experiment',
+  label varchar(50) not null comment 'classifier_eval.label',
+  run int not null default 0 comment 'classifier_eval.run',
+  fold int not null default 0 comment 'classifier_eval.fold',
+  ir_class_id int not null comment 'truth table wrt this class',
+  cutoff double not null comment 'zero vector cutoff',
+  tp int not null,
+  tn int not null,
+  fp int not null,
+  fn int not null,
+  unique key NK_hotspot_zero_vector_tt (name, experiment, label, run, fold, ir_class_id)
+) engine=myisam comment 'truth table for hotspot zero vectors'
+;
 
 create view v_classifier_eval_ir_classes
 as
