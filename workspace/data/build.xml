@@ -163,13 +163,33 @@ quit</echo>
 			</sequential>
 		</for>
 	</target>
-	<target name="vacs.all" description="drop and create ytex vacs, ctakes, and uima tables" depends="vacs.drop,uima.all,vacs.create" />
+	<target name="vacs.all" description="drop and create ytex vacs, ctakes, and uima tables" depends="kernel.drop,vacs.drop,uima.all,vacs.create,kernel.create" />
 
 	<target name="esld.all" description="create esld views, add esld terms">
 		<for list="create_document.sql,create_view.sql,insert_reference.sql" param="sqlcmd.script">
 			<sequential>
 				<antcall target="sqlcmd">
 					<param name="sqlcmd.dir" value="esld" />
+					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="kernel.drop" description="create tables for data mining">
+		<for list="drop_view.sql,drop_table.sql" param="sqlcmd.script">
+			<sequential>
+				<antcall target="sqlcmd">
+					<param name="sqlcmd.dir" value="kernel" />
+					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="kernel.create" description="create tables for data mining">
+		<for list="create_table.sql,create_view.sql" param="sqlcmd.script">
+			<sequential>
+				<antcall target="sqlcmd">
+					<param name="sqlcmd.dir" value="kernel" />
 					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
 				</antcall>
 			</sequential>
