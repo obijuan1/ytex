@@ -1,5 +1,6 @@
 -- drop 'operational' data
 drop table $(db_schema).document_class;
+drop table $(db_schema).anno_contain;
 drop table $(db_schema).anno_source_doc_info;
 drop table $(db_schema).anno_num_token;
 drop table $(db_schema).anno_word_token;

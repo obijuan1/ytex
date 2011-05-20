@@ -41,7 +41,7 @@ CREATE INDEX IX_anno_dockey_uid ON $(db_schema).anno_dockey
 
 CREATE INDEX IX_anno_id_uid ON $(db_schema).anno_dockey
 (
-	anno_id,
+	anno_base_id,
 	uid
 )
 ;

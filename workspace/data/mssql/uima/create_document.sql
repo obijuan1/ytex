@@ -1,22 +1,13 @@
 
 
 CREATE TABLE $(db_schema).[document](
-	[document_id] [int] IDENTITY(1,1) NOT NULL,
+	[document_id] [int] IDENTITY(1,1) NOT NULL primary key,
 	[analysis_batch] [varchar](50) NOT NULL,
 	[cas] [varbinary](max) NULL,
-	[doc_text] [nvarchar](max) NULL,
- CONSTRAINT [PK_document] PRIMARY KEY CLUSTERED 
-(
-	[document_id]
-)
+	[doc_text] [nvarchar](max) NULL
 )
 ;
 
-CREATE NONCLUSTERED INDEX [IX_document_analysis_batch] ON $(db_schema).[document] 
-(
-	[analysis_batch]
-)
-;
 
 CREATE NONCLUSTERED INDEX [IX_document_analysis_batch] ON $(db_schema).[document] 
 (
@@ -89,8 +80,8 @@ create table $(db_schema).anno_ontology_concept (
 	foreign key (anno_base_id) references $(db_schema).anno_named_entity(anno_base_id)  ON DELETE CASCADE
 );
 
-create index IX_onto_concept_code on ${db_schema}.anno_ontology_concept (code);
-create index IX_onto_concept_anno_code on ${db_schema}.anno_ontology_concept (anno_base_id, code);
+create index IX_onto_concept_code on $(db_schema).anno_ontology_concept (code);
+create index IX_onto_concept_anno_code on $(db_schema).anno_ontology_concept (anno_base_id, code);
 
 create table $(db_schema).anno_umls_concept (
 	anno_ontology_concept_id int not null,
@@ -218,3 +209,20 @@ create table $(db_schema).anno_date (
 	primary key (anno_base_id),
 	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
 );
+
+
+
+create table $(db_schema).anno_contain (
+  parent_anno_base_id int not null foreign key references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE,
+  parent_uima_type_id int not null,
+  child_anno_base_id int not null,
+  child_uima_type_id int not null,
+  primary key clustered (parent_anno_base_id, child_anno_base_id)
+);
+
+create index ix_child_id on $(db_schema).anno_contain(child_anno_base_id);
+create index ix_parent_id on $(db_schema).anno_contain(parent_anno_base_id);
+create index IX_parent_id_child_type on $(db_schema).anno_contain(parent_anno_base_id, child_uima_type_id);
+create index IX_child_id_parent_type on $(db_schema).anno_contain(child_anno_base_id, parent_uima_type_id);
+
+
