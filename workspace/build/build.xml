@@ -258,10 +258,11 @@
 		</copy>
 	</target>
 	<target name="zip.dist">
-		<zip destfile="${dist.home}/ytex.zip">
+		<delete dir="${dist.home}" includes="ytex*.zip"/>
+		<zip destfile="${dist.home}/ytex.zip" update="no">
 			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
 		</zip>
-		<zip destfile="${dist.home}/ytex-with-dependencies.zip">
+		<zip destfile="${dist.home}/ytex-with-dependencies.zip" update="no">
 			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
 			<zipfileset dir="${nlp.home}" includes="${tomcat.dir}/**/*.*" excludes="${tomcat.dir}/webapps/**/*.*" />
 			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
