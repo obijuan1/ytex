@@ -733,7 +733,7 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 		if (!storeAsInterval) {
 			if (possible)
 				ne.setCertainty(-1);
-			if (negated && (this.negatePossibilities && possible))
+			if (negated || (this.negatePossibilities && possible))
 				ne.setConfidence(-1);
 
 		} else {
