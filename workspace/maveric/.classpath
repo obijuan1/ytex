@@ -23,6 +23,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/uima-document-annotation.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/uima-tools.jar"/>
 	<classpathentry exported="true" kind="lib" path="ext/mavericPipeline-1.0.0.jar" sourcepath="E:/projects/VA/MavericPipeline/src/main/java"/>
-	<classpathentry kind="lib" path="lib/lvg2010dist.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lvg2010dist.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
