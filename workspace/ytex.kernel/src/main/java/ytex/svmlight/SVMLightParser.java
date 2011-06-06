@@ -9,8 +9,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ytex.kernel.SVMResult;
-import ytex.kernel.SVMResults;
+import ytex.kernel.ClassifierEvaluationResult;
+import ytex.kernel.ClassifierEvaluationResults;
+import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.SVMClassifierEvaluation;
 import ytex.libsvm.LibSVMParser;
 
@@ -31,10 +32,10 @@ public class SVMLightParser extends LibSVMParser {
 	 * @throws Exception
 	 * @throws IOException
 	 */
-	public SVMResults parse(String predictionFile, String instanceFile)
+	public ClassifierEvaluationResults parse(String predictionFile, String instanceFile)
 			throws Exception, IOException {
-		SVMResults results = new SVMResults();
-		List<SVMResult> listResults = new ArrayList<SVMResult>();
+		ClassifierEvaluationResults results = new ClassifierEvaluationResults();
+		List<ClassifierEvaluationResult> listResults = new ArrayList<ClassifierEvaluationResult>();
 		results.setResults(listResults);
 		BufferedReader instanceReader = null;
 		BufferedReader predictionReader = null;
@@ -48,7 +49,7 @@ public class SVMLightParser extends LibSVMParser {
 			while (((instanceLine = instanceReader.readLine()) != null)
 					&& ((predictionLine = predictionReader.readLine()) != null)) {
 				nLine++;
-				SVMResult result = new SVMResult();
+				ClassifierEvaluationResult result = new ClassifierEvaluationResult();
 				listResults.add(result);
 				String classIdTarget = extractFirstToken(instanceLine,
 						wsPattern);
@@ -86,7 +87,7 @@ public class SVMLightParser extends LibSVMParser {
 	}
 
 	@Override
-	public SVMClassifierEvaluation parseClassifierEvaluation(String name,
+	public ClassifierEvaluation parseClassifierEvaluation(String name,
 			String experiment, String label, String options,
 			String predictionFile, String instanceFile, String modelFile,
 			String instanceIdFile, String trainOutputFile,

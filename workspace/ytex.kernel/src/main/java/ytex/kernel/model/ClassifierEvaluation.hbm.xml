@@ -79,6 +79,17 @@
 			<property name="supportVectors" />
 			<property name="vcdim" />
 		</joined-subclass>
+		<joined-subclass name="SemiLClassifierEvaluation"
+			table="classifier_eval_semil">
+			<key column="classifier_eval_id" />
+			<property name="distanceType" column="dist_type"/>
+			<property name="softLabel" column="soft_label"/>
+			<property name="normalizedLaplacian" column="norm_laplace"/>
+			<property name="mu" column="mu"/>
+			<property name="lambda" column="lambda"/>
+			<property name="gamma" column="gamma"/>
+			<property name="percentLabeled" column="pct_labeled"/>
+		</joined-subclass>
 	</class>
 	<class name="ClassifierEvaluationIRStat" table="classifier_eval_ir">
 		<id name="classifierEvaluationIRStatId" column="classifier_instance_eval_id">

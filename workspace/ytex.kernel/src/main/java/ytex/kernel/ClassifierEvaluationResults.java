@@ -2,7 +2,7 @@ package ytex.kernel;
 
 import java.util.List;
 
-public class SVMResults {
+public class ClassifierEvaluationResults {
 	public List<Integer> getClassIds() {
 		return classIds;
 	}
@@ -11,18 +11,18 @@ public class SVMResults {
 		this.classIds = labels;
 	}
 
-	public List<SVMResult> getResults() {
+	public List<ClassifierEvaluationResult> getResults() {
 		return results;
 	}
 
-	public void setResults(List<SVMResult> results) {
+	public void setResults(List<ClassifierEvaluationResult> results) {
 		this.results = results;
 	}
 
 	public int[] getPredictedClassIds() {
 		int predictedClassLabels[] = new int[getResults().size()];
 		int i = 0;
-		for (SVMResult result : getResults()) {
+		for (ClassifierEvaluationResult result : getResults()) {
 			predictedClassLabels[i] = result.getPredictedClassId();
 			i++;
 		}
@@ -32,7 +32,7 @@ public class SVMResults {
 	public int[] getTargetClassIds() {
 		int targetClassLabels[] = new int[getResults().size()];
 		int i = 0;
-		for (SVMResult result : getResults()) {
+		for (ClassifierEvaluationResult result : getResults()) {
 			targetClassLabels[i] = result.getTargetClassId();
 			i++;
 		}
@@ -42,7 +42,7 @@ public class SVMResults {
 	public double[] getProbabilities() {
 		double probabilities[] = new double[getResults().size()];
 		int i = 0;
-		for (SVMResult result : getResults()) {
+		for (ClassifierEvaluationResult result : getResults()) {
 			probabilities[i] = result.getProbabilities()[0];
 			i++;
 		}
@@ -50,5 +50,5 @@ public class SVMResults {
 	}
 
 	private List<Integer> classIds;
-	private List<SVMResult> results;
+	private List<ClassifierEvaluationResult> results;
 }

@@ -29,6 +29,15 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 	}
 
 	public static class LibSVMFormatter implements SparseDataFormatter {
+		@Override
+		public void initializeLabel(
+				String label,
+				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> labelInstances,
+				Properties properties, SparseData sparseData)  throws IOException {
+			// TODO Auto-generated method stub
+			
+		}
+
 		protected String outdir = null;
 		/*
 		 * indices to sparse data column for numeric attributes
@@ -42,6 +51,10 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 * class name to index map. classes are sorted by
 		 */
 		protected Map<String, Map<String, Integer>> labelToClassIndexMap = new HashMap<String, Map<String, Integer>>();
+		
+		protected int maxAttributeIndex = 0;
+		
+		protected Properties exportProperties;
 
 		/**
 		 * write a file with the attribute names corresponding to the indices in
@@ -75,7 +88,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 *            for nominal indices, create an index for each value.
 		 * @throws IOException
 		 */
-		protected void exportAttributeNames(String bFileName,
+		protected int exportAttributeNames(String bFileName,
 				SparseData sparseData) throws IOException {
 			// libsvm indices 1-based
 			int index = 1;
@@ -104,6 +117,8 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 					nominalAttributeMap.put(nominalAttribute.getKey(),
 							attrValueIndexMap);
 				}
+				this.maxAttributeIndex = index;
+				return index;
 			} finally {
 				if (w != null)
 					w.close();
@@ -114,7 +129,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 * export the given train/test set
 		 */
 		@Override
-		public void export(SparseData sparseData,
+		public void exportFold(SparseData sparseData,
 				SortedMap<Integer, String> instanceClassMap, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			String filename = FileUtil.getDataFilePrefix(outdir, label, run,
@@ -235,8 +250,9 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 * class name's alphabetical order.
 		 */
 		@Override
-		public void initializeInstances(InstanceData instanceLabel,
-				Properties properties) throws IOException {
+		public void initializeExport(InstanceData instanceLabel,
+				Properties properties, SparseData sparseData) throws IOException {
+			this.exportProperties = properties;
 			this.outdir = properties.getProperty("outdir");
 			FileUtil.createOutdir(outdir);
 			for (Map.Entry<String, SortedSet<String>> labelToClass : instanceLabel
@@ -270,6 +286,11 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 			this.nominalAttributeMap.clear();
 		}
 
+		@Override
+		public void clearLabel() {
+			// TODO Auto-generated method stub
+			
+		}
 	}
 
 }

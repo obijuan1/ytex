@@ -8,16 +8,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ytex.kernel.FileUtil;
-import ytex.kernel.SVMParser;
-import ytex.kernel.SVMResult;
-import ytex.kernel.SVMResults;
+import ytex.kernel.BaseClassifierEvaluationParser;
+import ytex.kernel.ClassifierEvaluationResult;
+import ytex.kernel.ClassifierEvaluationResults;
+import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
 import ytex.kernel.model.SVMClassifierEvaluation;
 
-public class LibSVMParser implements SVMParser {
-	public static Pattern wsPattern = Pattern.compile("\\s|\\z");
-	public static Pattern wsDotPattern = Pattern.compile("\\s|\\.|\\z");
+public class LibSVMParser extends BaseClassifierEvaluationParser {
 	public static Pattern labelsPattern = Pattern.compile("labels\\s+(.*)");
 	public static Pattern totalSVPattern = Pattern.compile("total_sv (\\d+)");
 	public static Pattern pKernel = Pattern.compile("-t\\s+(\\d)");
@@ -67,10 +65,10 @@ public class LibSVMParser implements SVMParser {
 	 * @throws Exception
 	 * @throws IOException
 	 */
-	public SVMResults parse(String predictionFile, String instanceFile)
+	public ClassifierEvaluationResults parse(String predictionFile, String instanceFile)
 			throws Exception, IOException {
-		SVMResults results = new SVMResults();
-		List<SVMResult> listResults = new ArrayList<SVMResult>();
+		ClassifierEvaluationResults results = new ClassifierEvaluationResults();
+		List<ClassifierEvaluationResult> listResults = new ArrayList<ClassifierEvaluationResult>();
 		results.setResults(listResults);
 		BufferedReader instanceReader = null;
 		BufferedReader predictionReader = null;
@@ -91,7 +89,7 @@ public class LibSVMParser implements SVMParser {
 			while (((instanceLine = instanceReader.readLine()) != null)
 					&& ((predictionLine = predictionReader.readLine()) != null)) {
 				nLine++;
-				SVMResult result = new SVMResult();
+				ClassifierEvaluationResult result = new ClassifierEvaluationResult();
 				listResults.add(result);
 				String predictTokens[] = wsPattern.split(predictionLine);
 				String classIdPredicted = predictTokens[0];
@@ -129,15 +127,6 @@ public class LibSVMParser implements SVMParser {
 		return results;
 	}
 
-	public static String extractFirstToken(String line, Pattern tokDelimPattern) {
-		Matcher wsMatcher = tokDelimPattern.matcher(line);
-		String token = null;
-		if (wsMatcher.find() && wsMatcher.start() > 0) {
-			token = line.substring(0, wsMatcher.start());
-		}
-		return token;
-	}
-
 	protected List<Integer> parseClassIds(BufferedReader predictionReader)
 			throws IOException {
 		List<Integer> labels = null;
@@ -154,27 +143,10 @@ public class LibSVMParser implements SVMParser {
 		return labels;
 	}
 
-	public List<Integer> parseInstanceIds(String instanceIdFile)
-			throws IOException {
-		BufferedReader instanceIdReader = null;
-		List<Integer> instanceIds = new ArrayList<Integer>();
-		try {
-			instanceIdReader = new BufferedReader(
-					new FileReader(instanceIdFile));
-			String instanceId = null;
-			while ((instanceId = instanceIdReader.readLine()) != null)
-				instanceIds.add(Integer.parseInt(instanceId));
-			return instanceIds;
-		} finally {
-			if (instanceIdReader != null)
-				instanceIdReader.close();
-		}
-	}
-
 	/* (non-Javadoc)
 	 * @see ytex.libsvm.SVMParser#parseClassifierEvaluation(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	public SVMClassifierEvaluation parseClassifierEvaluation(String name,
+	public ClassifierEvaluation parseClassifierEvaluation(String name,
 			String experiment, String label, String options,
 			String predictionFile, String instanceFile, String modelFile,
 			String instanceIdFile, String trainOutputFile,
@@ -184,7 +156,7 @@ public class LibSVMParser implements SVMParser {
 		eval.setAlgorithm("libsvm");
 		eval.setSupportVectors(this.parseModel(modelFile));
 		parseOptions(eval, options);
-		return storeSVMResults(predictionFile, instanceIdFile,
+		return storeSVMResults(predictionFile, instanceFile,
 				storeProbabilities, instanceIdFile, eval);
 	}
 
@@ -192,13 +164,18 @@ public class LibSVMParser implements SVMParser {
 			String experiment, String label, String options,
 			String instanceIdFile) {
 		SVMClassifierEvaluation eval = new SVMClassifierEvaluation();
-		eval.setFold(FileUtil.parseFoldFromFileName(instanceIdFile));
-		eval.setRun(FileUtil.parseRunFromFileName(instanceIdFile));
+		initClassifierEval(name, experiment, label, options, instanceIdFile,
+				eval);
+		return eval;
+	}
+
+	private void initClassifierEval(String name, String experiment,
+			String label, String options, String instanceIdFile,
+			ClassifierEvaluation eval) {
+		initClassifierEvaluation(instanceIdFile, eval);
 		eval.setName(name);
 		eval.setExperiment(experiment);
 		eval.setOptions(options);
-		eval.setLabel(label);
-		return eval;
 	}
 
 	protected SVMClassifierEvaluation storeSVMResults(String predictionFile,
@@ -208,9 +185,9 @@ public class LibSVMParser implements SVMParser {
 		List<Integer> instanceIds = null;
 		if (instanceIdFile != null)
 			instanceIds = parseInstanceIds(instanceIdFile);
-		SVMResults results = this.parse(predictionFile, instanceFile);
+		ClassifierEvaluationResults results = this.parse(predictionFile, instanceFile);
 		int j = 0;
-		for (SVMResult result : results.getResults()) {
+		for (ClassifierEvaluationResult result : results.getResults()) {
 			int instanceId = j++;
 			if (instanceIds != null)
 				instanceId = instanceIds.get(instanceId);
@@ -263,39 +240,6 @@ public class LibSVMParser implements SVMParser {
 		}
 		if (bWeightParam)
 			return bWeight.toString();
-		else
-			return null;
-	}
-
-	/**
-	 * parse a number out of the libsvm command line that matches the specified
-	 * pattern.
-	 * 
-	 * @param pCost
-	 * @param options
-	 * @return null if option not present
-	 */
-	protected Double parseDoubleOption(Pattern pCost, String options) {
-		Matcher m = pCost.matcher(options);
-		if (m.find())
-			return Double.parseDouble(m.group(1));
-		else
-			return null;
-	}
-
-	/**
-	 * 
-	 * parse a number out of the libsvm command line that matches the specified
-	 * pattern.
-	 * 
-	 * @param pKernel
-	 * @param options
-	 * @return null if option not present
-	 */
-	protected Integer parseIntOption(Pattern pKernel, String options) {
-		Matcher m = pKernel.matcher(options);
-		if (m.find())
-			return Integer.parseInt(m.group(1));
 		else
 			return null;
 	}

@@ -1,6 +1,6 @@
 package ytex.kernel;
 
-public class SVMResult {
+public class ClassifierEvaluationResult {
 	int targetClassId;
 	int predictedClassId;
 	int instanceId;

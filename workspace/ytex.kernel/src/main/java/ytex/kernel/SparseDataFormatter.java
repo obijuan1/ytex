@@ -22,11 +22,13 @@ public interface SparseDataFormatter {
 	 * @param label
 	 * @param run
 	 * @param fold
-	 * @param foldInstanceLabelMap 
+	 * @param foldInstanceLabelMap
 	 * @throws IOException
 	 */
 	void initializeFold(SparseData sparseData, String label, Integer run,
-			Integer fold, SortedMap<Boolean,SortedMap<Integer,String>> foldInstanceLabelMap) throws IOException;
+			Integer fold,
+			SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
+			throws IOException;
 
 	/**
 	 * export the fold train/test set. called once per train/test set, 2x per
@@ -40,9 +42,9 @@ public interface SparseDataFormatter {
 	 * @param fold
 	 * @throws IOException
 	 */
-	void export(SparseData sparseData, SortedMap<Integer, String> sortedMap,
-			boolean train, String label, Integer run, Integer fold)
-			throws IOException;
+	void exportFold(SparseData sparseData,
+			SortedMap<Integer, String> sortedMap, boolean train, String label,
+			Integer run, Integer fold) throws IOException;
 
 	/**
 	 * initialize export - called once
@@ -51,12 +53,19 @@ public interface SparseDataFormatter {
 	 * @param properties
 	 * @throws IOException
 	 */
-	void initializeInstances(InstanceData instanceLabel, Properties properties)
-			throws IOException;
+	void initializeExport(InstanceData instanceLabel, Properties properties,
+			SparseData sparseData) throws IOException;
 
 	/**
 	 * clear all data structures set up during initializeFold
 	 */
 	void clearFold();
+
+	void initializeLabel(
+			String label,
+			SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> labelInstances,
+			Properties properties, SparseData sparseData) throws IOException;
+
+	void clearLabel();
 
 }

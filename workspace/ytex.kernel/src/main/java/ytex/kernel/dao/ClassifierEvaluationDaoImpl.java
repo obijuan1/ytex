@@ -31,8 +31,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void deleteCrossValidationFoldByName(String name) {
-		Query q = this.getSessionFactory().getCurrentSession()
-				.getNamedQuery("getCrossValidationFoldByName");
+		Query q = this.getSessionFactory().getCurrentSession().getNamedQuery(
+				"getCrossValidationFoldByName");
 		q.setString("name", name);
 		List<CrossValidationFold> folds = q.list();
 		for (CrossValidationFold fold : folds)
@@ -48,8 +48,15 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	 */
 	public void saveClassifierEvaluation(ClassifierEvaluation eval,
 			boolean saveInstanceEval) {
+		saveClassifierEvaluation(eval, saveInstanceEval, true, null);
+	}
+
+	public void saveClassifierEvaluation(ClassifierEvaluation eval,
+			boolean saveInstanceEval, boolean saveIRStats,
+			Integer excludeTargetClassId) {
 		this.getSessionFactory().getCurrentSession().save(eval);
-		this.saveIRStats(eval);
+		if (saveIRStats)
+			this.saveIRStats(eval, excludeTargetClassId);
 		if (saveInstanceEval) {
 			for (ClassifierInstanceEvaluation instanceEval : eval
 					.getClassifierInstanceEvaluations().values()) {
@@ -58,47 +65,71 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		}
 	}
 
-	private void saveIRStats(ClassifierEvaluation eval) {
-		Set<Integer> classIds = this.getClassIds(eval);
+	void saveIRStats(ClassifierEvaluation eval, Integer excludeTargetClassId) {
+		Set<Integer> classIds = this.getClassIds(eval, excludeTargetClassId);
 		// setup stats
 		for (Integer irClassId : classIds) {
-			ClassifierEvaluationIRStat irStat = calcIRStats(irClassId, eval);
+			ClassifierEvaluationIRStat irStat = calcIRStats(irClassId, eval,
+					excludeTargetClassId);
 			this.getSessionFactory().getCurrentSession().save(irStat);
 			eval.getClassifierIRStats().put(irClassId, irStat);
 		}
 	}
 
+	/**
+	 * 
+	 * @param irClassId
+	 *            the target class id with respect to ir statistics will be
+	 *            calculated
+	 * @param eval
+	 *            the object to update
+	 * @param excludeTargetClassId
+	 *            class id to be excluded from computation of ir stats.
+	 * @return
+	 */
 	private ClassifierEvaluationIRStat calcIRStats(Integer irClassId,
-			ClassifierEvaluation eval) {
+			ClassifierEvaluation eval, Integer excludeTargetClassId) {
 		int tp = 0;
 		int tn = 0;
 		int fp = 0;
 		int fn = 0;
-		for (ClassifierInstanceEvaluation instanceEval : eval.getClassifierInstanceEvaluations()
-				.values()) {
-			if (instanceEval.getTargetClassId() == irClassId) {
-				if (instanceEval.getPredictedClassId() ==  instanceEval.getTargetClassId()) {
-					tp++;
+		for (ClassifierInstanceEvaluation instanceEval : eval
+				.getClassifierInstanceEvaluations().values()) {
+
+			if (instanceEval.getTargetClassId() != null
+					&& (excludeTargetClassId == null || instanceEval
+							.getTargetClassId() != excludeTargetClassId
+							.intValue())) {
+				if (instanceEval.getTargetClassId() == irClassId) {
+					if (instanceEval.getPredictedClassId() == instanceEval
+							.getTargetClassId()) {
+						tp++;
+					} else {
+						fn++;
+					}
 				} else {
-					fn++;
-				}
-			} else {
-				if (instanceEval.getPredictedClassId() == irClassId) {
-					fp++;
-				} else {
-					tn++;
+					if (instanceEval.getPredictedClassId() == irClassId) {
+						fp++;
+					} else {
+						tn++;
+					}
 				}
 			}
 		}
 		return new ClassifierEvaluationIRStat(eval, irClassId, tp, tn, fp, fn);
 	}
 
-	private Set<Integer> getClassIds(ClassifierEvaluation eval) {
+	private Set<Integer> getClassIds(ClassifierEvaluation eval,
+			Integer excludeTargetClassId) {
 		Set<Integer> classIds = new HashSet<Integer>();
 		for (ClassifierInstanceEvaluation instanceEval : eval
 				.getClassifierInstanceEvaluations().values()) {
 			classIds.add(instanceEval.getPredictedClassId());
-			classIds.add(instanceEval.getTargetClassId());
+			if (instanceEval.getTargetClassId() != null
+					&& (excludeTargetClassId == null || instanceEval
+							.getTargetClassId() != excludeTargetClassId
+							.intValue()))
+				classIds.add(instanceEval.getTargetClassId());
 		}
 		return classIds;
 	}
@@ -122,8 +153,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 
 	@Override
 	public void deleteFeatureEvaluationByNameAndType(String name, String type) {
-		Query q = this.getSessionFactory().getCurrentSession()
-				.getNamedQuery("getFeatureEvaluationByNameAndType");
+		Query q = this.getSessionFactory().getCurrentSession().getNamedQuery(
+				"getFeatureEvaluationByNameAndType");
 		q.setString("name", name);
 		q.setString("type", type);
 		for (FeatureEvaluation fe : (List<FeatureEvaluation>) q.list())

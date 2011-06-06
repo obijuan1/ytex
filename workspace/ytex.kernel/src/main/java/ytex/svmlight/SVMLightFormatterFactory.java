@@ -39,13 +39,13 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 	}
 
 	public static class SVMLightFormatter extends LibSVMFormatter {
-		SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap;
+		protected SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap;
 
 		/**
 		 * export the given train/test set
 		 */
 		@Override
-		public void export(SparseData sparseData,
+		public void exportFold(SparseData sparseData,
 				SortedMap<Integer, String> instanceClassMap, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			String filename = FileUtil.getDataFilePrefix(outdir, label, run,
@@ -119,42 +119,42 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 		 * @param instanceId
 		 * @return
 		 */
-		protected SortedMap<Integer, Double> getSparseLineValues(
-				SparseData bagOfWordsData,
-				Map<String, Integer> numericAttributeMap,
-				Map<String, Map<String, Integer>> nominalAttributeMap,
-				int instanceId) {
-			SortedMap<Integer, Double> instanceValues = new TreeMap<Integer, Double>();
-			// get numeric values for instance
-			if (bagOfWordsData.getInstanceNumericWords()
-					.containsKey(instanceId)) {
-				for (Map.Entry<String, Double> numericValue : bagOfWordsData
-						.getInstanceNumericWords().get(instanceId).entrySet()) {
-					// look up index for attribute and put in map
-					instanceValues.put(numericAttributeMap.get(numericValue
-							.getKey()), numericValue.getValue());
-				}
-			}
-			if (bagOfWordsData.getInstanceNominalWords()
-					.containsKey(instanceId)) {
-				for (Map.Entry<String, String> nominalValue : bagOfWordsData
-						.getInstanceNominalWords().get(instanceId).entrySet()) {
-					// look up index for attribute and value and put in map
-					instanceValues.put(
-							nominalAttributeMap.get(nominalValue.getKey()).get(
-									nominalValue.getValue()), 1d);
-				}
-			}
-			return instanceValues;
-		}
+//		protected SortedMap<Integer, Double> getSparseLineValues(
+//				SparseData bagOfWordsData,
+//				Map<String, Integer> numericAttributeMap,
+//				Map<String, Map<String, Integer>> nominalAttributeMap,
+//				int instanceId) {
+//			SortedMap<Integer, Double> instanceValues = new TreeMap<Integer, Double>();
+//			// get numeric values for instance
+//			if (bagOfWordsData.getInstanceNumericWords()
+//					.containsKey(instanceId)) {
+//				for (Map.Entry<String, Double> numericValue : bagOfWordsData
+//						.getInstanceNumericWords().get(instanceId).entrySet()) {
+//					// look up index for attribute and put in map
+//					instanceValues.put(numericAttributeMap.get(numericValue
+//							.getKey()), numericValue.getValue());
+//				}
+//			}
+//			if (bagOfWordsData.getInstanceNominalWords()
+//					.containsKey(instanceId)) {
+//				for (Map.Entry<String, String> nominalValue : bagOfWordsData
+//						.getInstanceNominalWords().get(instanceId).entrySet()) {
+//					// look up index for attribute and value and put in map
+//					instanceValues.put(
+//							nominalAttributeMap.get(nominalValue.getKey()).get(
+//									nominalValue.getValue()), 1d);
+//				}
+//			}
+//			return instanceValues;
+//		}
 
 		/**
 		 * add the "0" class for transductive learning
 		 */
 		@Override
-		public void initializeInstances(InstanceData instanceLabel,
-				Properties properties) throws IOException {
-			super.initializeInstances(instanceLabel, properties);
+		public void initializeExport(InstanceData instanceLabel,
+				Properties properties, SparseData sparseData) throws IOException {
+			super.initializeExport(instanceLabel, properties, sparseData);
 			for (Map<String, Integer> classIndexMap : labelToClassIndexMap
 					.values()) {
 				classIndexMap.put("0", 0);

@@ -251,8 +251,23 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 	public void exportData(InstanceData instanceLabel,
 			SparseDataFormatter formatter, Properties properties,
 			BagOfWordsDecorator bDecorator) throws IOException {
-		formatter.initializeInstances(instanceLabel, properties);
+		String scope = properties.getProperty("scope", null);
+		SparseData sparseData = null;
+		if(scope == null) {
+			sparseData = this.loadData(instanceLabel,
+					properties.getProperty("numericWordQuery"),
+					properties.getProperty("nominalWordQuery"),
+					bDecorator, null, null, null);
+		}
+		formatter.initializeExport(instanceLabel, properties, sparseData);
 		for (String label : instanceLabel.getLabelToInstanceMap().keySet()) {
+			if("label".equals(scope)) {
+				sparseData = this.loadData(instanceLabel,
+						properties.getProperty("numericWordQuery"),
+						properties.getProperty("nominalWordQuery"),
+						bDecorator, "label", null, null);
+			}
+			formatter.initializeLabel(label, instanceLabel.getLabelToInstanceMap().get(label), properties, sparseData);
 			for (int run : instanceLabel.getLabelToInstanceMap().get(label)
 					.keySet()) {
 				for (int fold : instanceLabel.getLabelToInstanceMap()
@@ -261,15 +276,17 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 							&& (label.length() > 0 || run > 0 || fold > 0))
 						log.info("exporting, label " + label + " run " + run
 								+ " fold " + fold);
-					SparseData sparseData = this.loadData(instanceLabel,
-							properties.getProperty("numericWordQuery"),
-							properties.getProperty("nominalWordQuery"),
-							bDecorator, label, fold, run);
+					if("fold".equals(scope)) {
+						sparseData = this.loadData(instanceLabel,
+								properties.getProperty("numericWordQuery"),
+								properties.getProperty("nominalWordQuery"),
+								bDecorator, "label", fold, run);
+					}
 					formatter.initializeFold(sparseData, label, run, fold, instanceLabel.getLabelToInstanceMap()
 							.get(label).get(run).get(fold));
 					for (boolean train : instanceLabel.getLabelToInstanceMap()
 							.get(label).get(run).get(fold).keySet()) {
-						formatter.export(sparseData, instanceLabel
+						formatter.exportFold(sparseData, instanceLabel
 								.getLabelToInstanceMap().get(label).get(run)
 								.get(fold).get(train), train, label,
 								0 == run ? null : run, 0 == fold ? null : fold);
@@ -277,6 +294,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 					formatter.clearFold();
 				}
 			}
+			formatter.clearLabel();
 		}
 	}
 

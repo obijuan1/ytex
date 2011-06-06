@@ -3,7 +3,11 @@ package ytex.kernel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -15,13 +19,24 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import ytex.kernel.ClassifierEvaluationParser.ParseOption;
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.ClassifierEvaluation;
-import ytex.libsvm.LibSVMParser;
-import ytex.svmlight.SVMLightParser;
 
-public class SVMResultImporter {
-	private static final Log log = LogFactory.getLog(SVMResultImporter.class);
+public class ClassifierEvaluationImporter {
+	private static final Log log = LogFactory
+			.getLog(ClassifierEvaluationImporter.class);
+
+	private Map<String, ClassifierEvaluationParser> nameToParserMap;
+
+	public Map<String, ClassifierEvaluationParser> getNameToParserMap() {
+		return nameToParserMap;
+	}
+
+	public void setNameToParserMap(
+			Map<String, ClassifierEvaluationParser> nameToParserMap) {
+		this.nameToParserMap = nameToParserMap;
+	}
 
 	@SuppressWarnings("static-access")
 	private static Options initOptions() {
@@ -54,16 +69,22 @@ public class SVMResultImporter {
 				.withDescription("fold").create("fold"));
 		options.addOption(OptionBuilder.withArgName("label").hasArg()
 				.withDescription("label").create("label"));
-		options
-				.addOption(OptionBuilder.withArgName("type").hasArg()
-						.withDescription("libsvm (default) or svmlight")
-						.create("type"));
+		options.addOption(OptionBuilder.withArgName("type").hasArg()
+				.withDescription("libsvm (default) or svmlight or semil")
+				.create("type"));
 		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
 				.withDescription("store instance evaluations, default no")
 				.create("storeInstanceEval"));
 		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
 				.withDescription("store probabilities, default no").create(
 						"storeProb"));
+		options
+				.addOption(OptionBuilder
+						.withArgName("yes/no")
+						.hasArg()
+						.withDescription(
+								"store instance evaluations for unlabeled data (relevant only for transductive learning), default no")
+						.create("storeUnlabeled"));
 		return options;
 	}
 
@@ -77,12 +98,19 @@ public class SVMResultImporter {
 			printHelp(options);
 		} else {
 			CommandLineParser oparser = new GnuParser();
+			ClassifierEvaluationImporter importer = KernelContextHolder
+					.getApplicationContext().getBean(
+							ClassifierEvaluationImporter.class);
+			ClassifierEvaluationDao dao = KernelContextHolder
+					.getApplicationContext().getBean(
+							ClassifierEvaluationDao.class);
 			try {
 				CommandLine line = oparser.parse(options, args);
 				if (line.hasOption("cvDir")) {
-					importDirectory(line);
+					importer.importDirectory(line);
 				} else {
-					SVMParser lparser = getParser(line);
+					ClassifierEvaluationParser lparser = importer
+							.getParser(line);
 					ClassifierEvaluation eval = lparser
 							.parseClassifierEvaluation(line
 									.getOptionValue("name"), line
@@ -96,12 +124,8 @@ public class SVMResultImporter {
 									.getOptionValue("output"), "yes"
 									.equals(line.getOptionValue("storeProb",
 											"no")));
-					KernelContextHolder.getApplicationContext().getBean(
-							ClassifierEvaluationDao.class)
-							.saveClassifierEvaluation(
-									eval,
-									"yes".equals(line.getOptionValue(
-											"storeInstanceEval", "no")));
+					dao.saveClassifierEvaluation(eval, "yes".equals(line
+							.getOptionValue("storeInstanceEval", "no")));
 				}
 			} catch (ParseException e) {
 				printHelp(options);
@@ -110,11 +134,9 @@ public class SVMResultImporter {
 		}
 	}
 
-	private static SVMParser getParser(CommandLine line) {
+	private ClassifierEvaluationParser getParser(CommandLine line) {
 		String type = line.getOptionValue("type", "libsvm");
-		SVMParser lparser = "libsvm".equals(type) ? new LibSVMParser()
-				: new SVMLightParser();
-		return lparser;
+		return this.nameToParserMap.get(type);
 	}
 
 	/**
@@ -130,24 +152,50 @@ public class SVMResultImporter {
 	 * @param line
 	 * @throws Exception
 	 */
-	private static void importDirectory(CommandLine line) throws Exception {
-		SVMParser lparser = getParser(line);
+	private void importDirectory(CommandLine line) throws Exception {
+		ClassifierEvaluationParser lparser = getParser(line);
+		boolean storeInstanceEval = "yes".equals(line.getOptionValue(
+				"storeInstanceEval", "no"));
 		File cvDir = new File(line.getOptionValue("cvDir"));
+		String type = line.getOptionValue("type", "libsvm");
+		Set<ParseOption> parseOptionsTmp = new HashSet<ParseOption>();
+		if (storeInstanceEval)
+			parseOptionsTmp.add(ParseOption.STORE_INSTANCE_EVAL);
+		if ("yes".equals(line.getOptionValue("storeProb", "no")))
+			parseOptionsTmp.add(ParseOption.STORE_PROBABILITIES);
+		if ("yes".equals(line.getOptionValue("storeUnlabeled", "no")))
+			parseOptionsTmp.add(ParseOption.STORE_UNLABELED);
+		EnumSet<ParseOption> parseOptions = parseOptionsTmp.isEmpty() ? EnumSet
+				.noneOf(ParseOption.class) : EnumSet.copyOf(parseOptionsTmp);
 		for (File resultDir : cvDir.listFiles()) {
 			String output = resultDir + File.separator + "output.txt";
 			String model = resultDir + File.separator + "model.txt";
 			String predict = resultDir + File.separator + "predict.txt";
 			String optionsFile = resultDir + File.separator
 					+ "options.properties";
-			if (checkFileRead(model) && checkFileRead(output)
+			if ("semil".equals(type) && checkFileRead(optionsFile)) {
+				lparser.parseDirectory(new File("."), resultDir, parseOptions);
+			} else if (("libsvm".equals(type) || "svmlight".equals(type))
+					&& checkFileRead(model) && checkFileRead(predict)
 					&& checkFileRead(optionsFile)) {
 				String options = null;
+				Double param1 = null;
+				String param2 = null;
 				InputStream isOptions = null;
 				try {
 					isOptions = new FileInputStream(optionsFile);
 					Properties props = new Properties();
 					props.load(isOptions);
-					options = props.getProperty("cv.eval.line");
+					options = props.getProperty("kernel.eval.line");
+					String strParam1 = props.getProperty("kernel.param1", null);
+					if (strParam1 != null) {
+						try {
+							param1 = Double.parseDouble(strParam1);
+						} catch (Exception e) {
+							log.warn("error parasing param1: " + strParam1, e);
+						}
+					}
+					param2 = props.getProperty("kernel.param2");
 				} finally {
 					isOptions.close();
 				}
@@ -164,12 +212,12 @@ public class SVMResultImporter {
 										output, "yes".equals(line
 												.getOptionValue("storeProb",
 														"no")));
+						eval.setParam1(param1);
+						eval.setParam2(param2);
 						KernelContextHolder.getApplicationContext().getBean(
 								ClassifierEvaluationDao.class)
-								.saveClassifierEvaluation(
-										eval,
-										"yes".equals(line.getOptionValue(
-												"storeInstanceEval", "no")));
+								.saveClassifierEvaluation(eval,
+										storeInstanceEval);
 					} catch (Exception e) {
 						// continue processing - don't give up because of one
 						// bad file
@@ -187,7 +235,8 @@ public class SVMResultImporter {
 
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java ytex.libsvm.LibSVMResultImporter\n", options);
+		formatter.printHelp("java ytex.libsvm.ClassifierEvaluationImporter\n",
+				options);
 	}
 
 }

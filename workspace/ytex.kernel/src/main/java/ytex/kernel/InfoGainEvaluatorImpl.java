@@ -260,6 +260,8 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 			final Map<Integer, Map<String, Integer>> foldClassCountMap,
 			final Map<String, FeatureInfo> featureInfoMap,
 			final String featureQuery, double minInfo) {
+		if(log.isDebugEnabled())
+			log.debug("processing label: " + label);
 		final Map<Integer, List<FeatureRank>> foldInfogainMap = new HashMap<Integer, List<FeatureRank>>();
 		final Map<Integer, Double> foldEntropy = this
 				.calculateFoldEntropy(foldClassCountMap);

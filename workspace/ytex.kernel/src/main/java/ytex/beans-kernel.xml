@@ -171,6 +171,38 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
 	</bean>
+	<bean id="semiLEvaluationParser" class="ytex.semil.SemiLEvaluationParser">
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
+	</bean>
+	<bean id="libSVMParser" class="ytex.libsvm.LibSVMParser">
+	</bean>
+	<bean id="svmLightParser" class="ytex.svmlight.SVMLightParser">
+	</bean>
+
+	<bean id="ClassifierEvaluationImporter" class="ytex.kernel.ClassifierEvaluationImporter">
+		<property name="nameToParserMap">
+			<map>
+				<entry>
+					<key>
+						<value>libsvm</value>
+					</key>
+					<ref bean="libSVMParser" />
+				</entry>
+				<entry>
+					<key>
+						<value>svmlight</value>
+					</key>
+					<ref bean="svmLightParser" />
+				</entry>
+				<entry>
+					<key>
+						<value>semil</value>
+					</key>
+					<ref bean="semiLEvaluationParser" />
+				</entry>
+			</map>
+		</property>
+	</bean>
 
 	<bean id="sparseDataExporter" class="ytex.kernel.SparseDataExporterImpl">
 		<property name="dataSource" ref="dataSource" />
@@ -202,6 +234,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					</key>
 					<ref bean="svmLightFormatterFactory" />
 				</entry>
+				<entry>
+					<key>
+						<value>semiL</value>
+					</key>
+					<ref bean="semiLFormatterFactory" />
+				</entry>
 			</map>
 		</property>
 	</bean>
@@ -210,6 +248,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="libSVMFormatterFactory" class="ytex.libsvm.LibSVMFormatterFactory">
 	</bean>
 	<bean id="matlabFormatterFactory" class="ytex.matlab.MatlabFormatterFactory">
+	</bean>
+	<bean id="semiLFormatterFactory" class="ytex.semil.SemiLFormatterFactory">
 	</bean>
 
 </beans>
