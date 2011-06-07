@@ -1,11 +1,7 @@
 package ytex.kernel;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
-
-import ytex.kernel.evaluator.SemanticTypeKernel;
-import ytex.kernel.model.ConceptGraph;
 import junit.framework.TestCase;
+import ytex.kernel.model.ConceptGraph;
 
 public class ConceptSimilarityServiceTest extends TestCase {
 	private static final String conceptsToTest[][] = new String[][] {
@@ -21,22 +17,30 @@ public class ConceptSimilarityServiceTest extends TestCase {
 					"Nasal oxygen catheter" },
 			new String[] { "C0008320", "C0020699", "Cholecystectomy",
 					"Hysterectomy" },
+			new String[] { "C0008320", "C0003611", "Cholecystectomy",
+					"Appendectomy" },
+			new String[] { "C0008320", "C0162575", "Cholecystectomy",
+					"Embolectomy" },
+			new String[] { "C0008320", "C0027695", "Cholecystectomy",
+					"Nephrectomy" },
 			new String[] { "C0579044", "C0579042", "Bruise of tongue",
 					"Bruise of palate" },
 			new String[] { "C0579044", "C0542526", "Bruise of tongue",
 					"Bruise of oral cavity" } };
 
 	private ConceptSimilarityService conceptSimilarityService;
-//	private SemanticTypeKernel semanticTypeKernel;
+
+	// private SemanticTypeKernel semanticTypeKernel;
 
 	protected void setUp() throws Exception {
 		super.setUp();
 		conceptSimilarityService = SimSvcContextHolder.getApplicationContext()
 				.getBean(ConceptSimilarityService.class);
-//		ApplicationContext appCtxSource = new FileSystemXmlApplicationContext(
-//				new String[] { "./i2b2.2008/libsvm/segrbkn/0.07/14/segrbkn.xml" },
-//				SimSvcContextHolder.getApplicationContext());
-//		semanticTypeKernel = appCtxSource.getBean(SemanticTypeKernel.class);
+		// ApplicationContext appCtxSource = new
+		// FileSystemXmlApplicationContext(
+		// new String[] { "./i2b2.2008/libsvm/segrbkn/0.07/14/segrbkn.xml" },
+		// SimSvcContextHolder.getApplicationContext());
+		// semanticTypeKernel = appCtxSource.getBean(SemanticTypeKernel.class);
 	}
 
 	public void testSim() {
