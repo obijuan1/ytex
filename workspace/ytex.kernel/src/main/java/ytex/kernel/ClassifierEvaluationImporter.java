@@ -1,13 +1,9 @@
 package ytex.kernel;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.EnumSet;
-import java.util.HashSet;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -19,10 +15,16 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import ytex.kernel.ClassifierEvaluationParser.ParseOption;
-import ytex.kernel.dao.ClassifierEvaluationDao;
-import ytex.kernel.model.ClassifierEvaluation;
-
+/**
+ * parse classifier evaluation results.
+ * expect input data files to classifier in working directory.
+ * expect output in dir option or subdirectories thereof.
+ * expect an options.properties in each directory that contains classifier output.
+ * See {@link #ClassifierEvaluationImporter()} for a list of options in options.properties.
+ * You can override options via system properties (java -D options).
+ * 
+ * @author vijay
+ */
 public class ClassifierEvaluationImporter {
 	private static final Log log = LogFactory
 			.getLog(ClassifierEvaluationImporter.class);
@@ -42,49 +44,11 @@ public class ClassifierEvaluationImporter {
 	private static Options initOptions() {
 		Options options = new Options();
 		options.addOption(OptionBuilder.withArgName("cvDir").hasArg()
-				.withDescription("fold cross-validation results directory")
-				.create("cvDir"));
-		options.addOption(OptionBuilder.withArgName("model").hasArg()
-				.withDescription("svm model file").create("model"));
-		options.addOption(OptionBuilder.withArgName("output").hasArg()
-				.withDescription("svm training output").create("output"));
-		options
-				.addOption(OptionBuilder.withArgName("predict").hasArg()
-						.withDescription("svm test predictions file").create(
-								"predict"));
-		options.addOption(OptionBuilder.withArgName("test").hasArg()
-				.withDescription("input test data file").isRequired().create(
-						"test"));
-		options
-				.addOption(OptionBuilder.withArgName("instanceId").hasArg()
-						.withDescription("file with instance ids").create(
-								"instanceId"));
-		options.addOption(OptionBuilder.withArgName("name").hasArg()
-				.withDescription("name").isRequired().create("name"));
-		options.addOption(OptionBuilder.withArgName("experiment").hasArg()
-				.withDescription("experiment").create("experiment"));
-		options.addOption(OptionBuilder.withArgName("options").hasArg()
-				.withDescription("svm training options").create("options"));
-		options.addOption(OptionBuilder.withArgName("fold").hasArg()
-				.withDescription("fold").create("fold"));
-		options.addOption(OptionBuilder.withArgName("label").hasArg()
-				.withDescription("label").create("label"));
+				.withDescription("results directory, defaults to working directory").isRequired(false)
+				.create("dir"));
 		options.addOption(OptionBuilder.withArgName("type").hasArg()
 				.withDescription("libsvm (default) or svmlight or semil")
-				.create("type"));
-		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
-				.withDescription("store instance evaluations, default no")
-				.create("storeInstanceEval"));
-		options.addOption(OptionBuilder.withArgName("yes/no").hasArg()
-				.withDescription("store probabilities, default no").create(
-						"storeProb"));
-		options
-				.addOption(OptionBuilder
-						.withArgName("yes/no")
-						.hasArg()
-						.withDescription(
-								"store instance evaluations for unlabeled data (relevant only for transductive learning), default no")
-						.create("storeUnlabeled"));
+				.isRequired(true).create("type"));
 		return options;
 	}
 
@@ -101,32 +65,9 @@ public class ClassifierEvaluationImporter {
 			ClassifierEvaluationImporter importer = KernelContextHolder
 					.getApplicationContext().getBean(
 							ClassifierEvaluationImporter.class);
-			ClassifierEvaluationDao dao = KernelContextHolder
-					.getApplicationContext().getBean(
-							ClassifierEvaluationDao.class);
 			try {
 				CommandLine line = oparser.parse(options, args);
-				if (line.hasOption("cvDir")) {
-					importer.importDirectory(line);
-				} else {
-					ClassifierEvaluationParser lparser = importer
-							.getParser(line);
-					ClassifierEvaluation eval = lparser
-							.parseClassifierEvaluation(line
-									.getOptionValue("name"), line
-									.getOptionValue("experiment"), line
-									.getOptionValue("label"), line
-									.getOptionValue("options"), line
-									.getOptionValue("predict"), line
-									.getOptionValue("test"), line
-									.getOptionValue("model"), line
-									.getOptionValue("instanceId"), line
-									.getOptionValue("output"), "yes"
-									.equals(line.getOptionValue("storeProb",
-											"no")));
-					dao.saveClassifierEvaluation(eval, "yes".equals(line
-							.getOptionValue("storeInstanceEval", "no")));
-				}
+				importer.importDirectory(line);
 			} catch (ParseException e) {
 				printHelp(options);
 				throw e;
@@ -152,85 +93,99 @@ public class ClassifierEvaluationImporter {
 	 * @param line
 	 * @throws Exception
 	 */
-	private void importDirectory(CommandLine line) throws Exception {
+	public void importDirectory(CommandLine line) throws IOException {
 		ClassifierEvaluationParser lparser = getParser(line);
-		boolean storeInstanceEval = "yes".equals(line.getOptionValue(
-				"storeInstanceEval", "no"));
-		File cvDir = new File(line.getOptionValue("cvDir"));
-		String type = line.getOptionValue("type", "libsvm");
-		Set<ParseOption> parseOptionsTmp = new HashSet<ParseOption>();
-		if (storeInstanceEval)
-			parseOptionsTmp.add(ParseOption.STORE_INSTANCE_EVAL);
-		if ("yes".equals(line.getOptionValue("storeProb", "no")))
-			parseOptionsTmp.add(ParseOption.STORE_PROBABILITIES);
-		if ("yes".equals(line.getOptionValue("storeUnlabeled", "no")))
-			parseOptionsTmp.add(ParseOption.STORE_UNLABELED);
-		EnumSet<ParseOption> parseOptions = parseOptionsTmp.isEmpty() ? EnumSet
-				.noneOf(ParseOption.class) : EnumSet.copyOf(parseOptionsTmp);
-		for (File resultDir : cvDir.listFiles()) {
-			String output = resultDir + File.separator + "output.txt";
-			String model = resultDir + File.separator + "model.txt";
-			String predict = resultDir + File.separator + "predict.txt";
+		File directory = new File(line.getOptionValue("dir", "."));
+		importDirectory(directory, lparser);
+	}
+
+	/**
+	 * recursively import directory. We assume this directory contains
+	 * evaluation results if we find a file named options.properties. Else we
+	 * look in subdirectories.
+	 * 
+	 * @param directory
+	 * @param lparser
+	 * @throws IOException
+	 */
+	public void importDirectory(File directory,
+			ClassifierEvaluationParser lparser) throws IOException {
+		for (File resultDir : directory.listFiles()) {
 			String optionsFile = resultDir + File.separator
 					+ "options.properties";
-			if ("semil".equals(type) && checkFileRead(optionsFile)) {
-				lparser.parseDirectory(new File("."), resultDir, parseOptions);
-			} else if (("libsvm".equals(type) || "svmlight".equals(type))
-					&& checkFileRead(model) && checkFileRead(predict)
-					&& checkFileRead(optionsFile)) {
-				String options = null;
-				Double param1 = null;
-				String param2 = null;
-				InputStream isOptions = null;
+			if (FileUtil.checkFileRead(optionsFile)) {
+				// assume this is a 'results' directory
 				try {
-					isOptions = new FileInputStream(optionsFile);
-					Properties props = new Properties();
-					props.load(isOptions);
-					options = props.getProperty("kernel.eval.line");
-					String strParam1 = props.getProperty("kernel.param1", null);
-					if (strParam1 != null) {
-						try {
-							param1 = Double.parseDouble(strParam1);
-						} catch (Exception e) {
-							log.warn("error parasing param1: " + strParam1, e);
-						}
-					}
-					param2 = props.getProperty("kernel.param2");
-				} finally {
-					isOptions.close();
+					lparser.parseDirectory(new File("."), resultDir);
+				} catch (IOException ioe) {
+					log.error("error parsing directory: " + resultDir, ioe);
 				}
-				if (options != null) {
-					try {
-						ClassifierEvaluation eval = lparser
-								.parseClassifierEvaluation(line
-										.getOptionValue("name"), line
-										.getOptionValue("experiment"), line
-										.getOptionValue("label"), options,
-										predict, line.getOptionValue("test"),
-										model, line
-												.getOptionValue("instanceId"),
-										output, "yes".equals(line
-												.getOptionValue("storeProb",
-														"no")));
-						eval.setParam1(param1);
-						eval.setParam2(param2);
-						KernelContextHolder.getApplicationContext().getBean(
-								ClassifierEvaluationDao.class)
-								.saveClassifierEvaluation(eval,
-										storeInstanceEval);
-					} catch (Exception e) {
-						// continue processing - don't give up because of one
-						// bad file
-						log.warn("error importing results, resultDir="
-								+ resultDir.getAbsolutePath(), e);
+			} else {
+				// look in subdirectories
+				for (File subdir : resultDir.listFiles(new FileFilter() {
+					@Override
+					public boolean accept(File pathname) {
+						return pathname.isDirectory();
 					}
+				})) {
+					importDirectory(subdir, lparser);
 				}
 			}
 		}
-	}
-
-	private static boolean checkFileRead(String file) {
-		return (new File(file)).canRead();
+		//
+		// if ("semil".equals(type) && checkFileRead(optionsFile)) {
+		// lparser.parseDirectory(new File("."), resultDir);
+		// } else if (("libsvm".equals(type) || "svmlight".equals(type))
+		// && checkFileRead(model) && checkFileRead(predict)
+		// && checkFileRead(optionsFile)) {
+		// String options = null;
+		// Double param1 = null;
+		// String param2 = null;
+		// InputStream isOptions = null;
+		// try {
+		// isOptions = new FileInputStream(optionsFile);
+		// Properties props = new Properties();
+		// props.load(isOptions);
+		// options = props.getProperty("kernel.eval.line");
+		// String strParam1 = props.getProperty("kernel.param1", null);
+		// if (strParam1 != null) {
+		// try {
+		// param1 = Double.parseDouble(strParam1);
+		// } catch (Exception e) {
+		// log.warn("error parasing param1: " + strParam1, e);
+		// }
+		// }
+		// param2 = props.getProperty("kernel.param2");
+		// } finally {
+		// isOptions.close();
+		// }
+		// if (options != null) {
+		// try {
+		// ClassifierEvaluation eval = lparser
+		// .parseClassifierEvaluation(line
+		// .getOptionValue("name"), line
+		// .getOptionValue("experiment"), line
+		// .getOptionValue("label"), options,
+		// predict, line.getOptionValue("test"),
+		// model, line
+		// .getOptionValue("instanceId"),
+		// output, "yes".equals(line
+		// .getOptionValue("storeProb",
+		// "no")));
+		// eval.setParam1(param1);
+		// eval.setParam2(param2);
+		// KernelContextHolder.getApplicationContext().getBean(
+		// ClassifierEvaluationDao.class)
+		// .saveClassifierEvaluation(eval,
+		// storeInstanceEval);
+		// } catch (Exception e) {
+		// // continue processing - don't give up because of one
+		// // bad file
+		// log.warn("error importing results, resultDir="
+		// + resultDir.getAbsolutePath(), e);
+		// }
+		// }
+		// }
 	}
 
 	private static void printHelp(Options options) {

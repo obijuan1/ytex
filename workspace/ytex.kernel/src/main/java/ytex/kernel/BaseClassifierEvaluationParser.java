@@ -9,14 +9,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.ClassifierEvaluation;
 
 /**
@@ -30,6 +28,17 @@ public abstract class BaseClassifierEvaluationParser implements
 
 	public static Pattern wsPattern = Pattern.compile("\\s|\\z");
 	public static Pattern wsDotPattern = Pattern.compile("\\s|\\.|\\z");
+
+	private ClassifierEvaluationDao classifierEvaluationDao;
+
+	public ClassifierEvaluationDao getClassifierEvaluationDao() {
+		return classifierEvaluationDao;
+	}
+
+	public void setClassifierEvaluationDao(
+			ClassifierEvaluationDao classifierEvaluationDao) {
+		this.classifierEvaluationDao = classifierEvaluationDao;
+	}
 
 	public static String extractFirstToken(String line, Pattern tokDelimPattern) {
 		Matcher wsMatcher = tokDelimPattern.matcher(line);
@@ -105,12 +114,9 @@ public abstract class BaseClassifierEvaluationParser implements
 		if (strParam1 != null)
 			eval.setParam1(Double.parseDouble(strParam1));
 		eval.setParam2(props.getProperty("kernel.param2"));
+		eval.setOptions(props.getProperty(ParseOption.EVAL_LINE.getOptionKey()));
 	}
 
-	public void parseDirectory(File dataDir, File outputDir,
-			EnumSet<ParseOption> parseOptions) throws IOException {
-
-	}
 
 	/**
 	 * load properties from <tt>outputDir/options.properties</tt>. returns empty
@@ -126,9 +132,9 @@ public abstract class BaseClassifierEvaluationParser implements
 		Properties kernelProps = new Properties();
 		InputStream is = null;
 		try {
-			is = new BufferedInputStream(new FileInputStream(outputDir
-					.getPath()
-					+ File.separator + "options.properties"));
+			is = new BufferedInputStream(
+					new FileInputStream(outputDir.getPath() + File.separator
+							+ "options.properties"));
 			kernelProps.load(is);
 		} catch (FileNotFoundException fe) {
 			// do nothing - options not required
@@ -138,5 +144,35 @@ public abstract class BaseClassifierEvaluationParser implements
 		}
 		kernelProps.putAll(System.getProperties());
 		return kernelProps;
+	}
+
+	protected boolean checkFileRead(String file) {
+		return (new File(file)).canRead();
+	}
+
+	protected String getFileBaseName(Properties kernelProps) {
+		String tmpFileBaseName = kernelProps.getProperty(
+				ParseOption.FOLD_BASE.getOptionKey(),
+				ParseOption.FOLD_BASE.getDefaultValue());
+		if (tmpFileBaseName.length() > 0)
+			tmpFileBaseName = tmpFileBaseName + "_";
+		final String fileBaseName = tmpFileBaseName;
+		return fileBaseName;
+	}
+
+	protected void storeSemiSupervised(Properties kernelProps,
+			ClassifierEvaluation ce) {
+		boolean storeInstanceEval = YES.equalsIgnoreCase(kernelProps
+				.getProperty(ParseOption.STORE_INSTANCE_EVAL.getOptionKey(),
+						ParseOption.STORE_INSTANCE_EVAL.getDefaultValue()));
+		boolean storeUnlabeled = YES.equalsIgnoreCase(kernelProps.getProperty(
+				ParseOption.STORE_UNLABELED.getOptionKey(),
+				ParseOption.STORE_UNLABELED.getDefaultValue()));
+		boolean storeIR = YES.equalsIgnoreCase(kernelProps.getProperty(
+				ParseOption.STORE_IRSTATS.getOptionKey(),
+				ParseOption.STORE_IRSTATS.getDefaultValue()));
+		// save the classifier evaluation
+		this.getClassifierEvaluationDao().saveClassifierEvaluation(ce,
+				storeInstanceEval || storeUnlabeled, storeIR, 0);
 	}
 }

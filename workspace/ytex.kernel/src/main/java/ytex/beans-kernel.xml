@@ -7,20 +7,16 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
 
-	<!--
-		the transactional advice (what 'happens'; see the <aop:advisor/> bean
-		below)
-	-->
+	<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
+		below) -->
 	<tx:advice id="txAdvice" transaction-manager="transactionManager">
 		<!-- the transactional semantics... -->
 		<tx:attributes>
 			<tx:method name="*" propagation="REQUIRED" />
 		</tx:attributes>
 	</tx:advice>
-	<!--
-		ensure that the above transactional advice runs for any execution of
-		an operation defined by the FooService interface
-	-->
+	<!-- ensure that the above transactional advice runs for any execution of 
+		an operation defined by the FooService interface -->
 	<aop:config>
 		<aop:pointcut id="daoOperation"
 			expression="execution(* ytex.kernel.dao.*Dao.*(..))" />
@@ -63,17 +59,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
-	<bean id="libsvmBagOfWordsExporter" class="ytex.libsvm.LibSVMBagOfWordsExporterImpl">
-		<property name="dataSource" ref="dataSource" />
-		<property name="libsvmUtil" ref="libsvmUtil" />
-		<property name="transactionManager" ref="transactionManager" />
-	</bean>
 	<bean id="gramMatrixExporter" class="ytex.weka.GramMatrixExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
-		<!--
-			property name="bagOfWordsExporter" ref="wekaBagOfWordsExporter" /
-		-->
+		<!-- property name="bagOfWordsExporter" ref="wekaBagOfWordsExporter" / -->
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="documentResultInstanceImporter" class="ytex.weka.DocumentResultInstanceImporter">
@@ -89,14 +78,11 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="classifierEvaluationDao" class="ytex.kernel.dao.ClassifierEvaluationDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-	<!--
-		<bean id="conceptSimilarityService"
-		class="ytex.kernel.ConceptSimilarityServiceImpl" init-method="init">
-		<property name="transactionManager" ref="transactionManager" />
-		<property name="conceptDao" ref="conceptDao" /> <property
-		name="corpusDao" ref="corpusDao" /> <property name="corpusNames">
-		<list> <value>cmc-ctakes</value> </list> </property> </bean>
-	-->
+	<!-- <bean id="conceptSimilarityService" class="ytex.kernel.ConceptSimilarityServiceImpl" 
+		init-method="init"> <property name="transactionManager" ref="transactionManager" 
+		/> <property name="conceptDao" ref="conceptDao" /> <property name="corpusDao" 
+		ref="corpusDao" /> <property name="corpusNames"> <list> <value>cmc-ctakes</value> 
+		</list> </property> </bean> -->
 	<bean id="libSVMGramMatrixExporter" class="ytex.libsvm.LibSVMGramMatrixExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
@@ -171,13 +157,15 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
 	</bean>
-	<bean id="semiLEvaluationParser" class="ytex.semil.SemiLEvaluationParser">
+
+	<bean id="baseClassifierEvaluationParser" abstract="true">
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 	</bean>
-	<bean id="libSVMParser" class="ytex.libsvm.LibSVMParser">
-	</bean>
-	<bean id="svmLightParser" class="ytex.svmlight.SVMLightParser">
-	</bean>
+	<bean id="semiLEvaluationParser" class="ytex.semil.SemiLEvaluationParser"
+		parent="baseClassifierEvaluationParser" />
+	<bean id="libSVMParser" class="ytex.libsvm.LibSVMParser" parent="baseClassifierEvaluationParser" />
+	<bean id="svmLightParser" class="ytex.svmlight.SVMLightParser"
+		parent="baseClassifierEvaluationParser" />
 
 	<bean id="ClassifierEvaluationImporter" class="ytex.kernel.ClassifierEvaluationImporter">
 		<property name="nameToParserMap">

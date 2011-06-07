@@ -2,7 +2,6 @@ package ytex.kernel;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumSet;
 
 import ytex.kernel.model.ClassifierEvaluation;
 
@@ -43,7 +42,12 @@ public interface ClassifierEvaluationParser {
 		 * key <tt>kernel.distance</tt>
 		 * distance measure for semiL. 1 - euclidean, 2 - cosine.
 		 */
-		DISTANCE("kernel.distance", "1");
+		DISTANCE("kernel.distance", "1"),
+		/**
+		 * key <tt>cv.eval.line</tt>
+		 * options used to train model.
+		 */
+		EVAL_LINE("cv.eval.line", null);
 		String optionKey;
 		public String getOptionKey() {
 			return optionKey;
@@ -61,13 +65,6 @@ public interface ClassifierEvaluationParser {
 		}
 	}
 
-	public abstract ClassifierEvaluation parseClassifierEvaluation(String name,
-			String experiment, String label, String options,
-			String predictionFile, String instanceFile, String modelFile,
-			String instanceIdFile, String trainOutputFile,
-			boolean storeProbabilities) throws Exception;
-
-	public void parseDirectory(File dataDir, File outputDir,
-			EnumSet<ParseOption> parseOptions) throws IOException;
+	public void parseDirectory(File dataDir, File outputDir) throws IOException;
 
 }

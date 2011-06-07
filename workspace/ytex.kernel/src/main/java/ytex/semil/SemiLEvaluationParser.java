@@ -1,21 +1,14 @@
 package ytex.semil;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -23,14 +16,12 @@ import org.apache.commons.logging.LogFactory;
 
 import ytex.kernel.BaseClassifierEvaluationParser;
 import ytex.kernel.KernelContextHolder;
-import ytex.kernel.dao.ClassifierEvaluationDao;
-import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
 import ytex.kernel.model.SemiLClassifierEvaluation;
 
 /**
- * With semiL there is no test data set - just training data & unlabelled data.
- * Need the following files:
+ * Parse semiL output, store in DB. With semiL there is no test data set - just
+ * training data & unlabelled data. Need the following files:
  * <ul>
  * <li>*.output - semil prediction output
  * <li>options.properties - options passed to semil (semil.distance), other
@@ -66,29 +57,6 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	public static Pattern pPercent = Pattern
 			.compile("labeled points =([\\d\\.\\-\\+e]+)");
 
-	private ClassifierEvaluationDao classifierEvaluationDao;
-
-	public ClassifierEvaluationDao getClassifierEvaluationDao() {
-		return classifierEvaluationDao;
-	}
-
-	public void setClassifierEvaluationDao(
-			ClassifierEvaluationDao classifierEvaluationDao) {
-		this.classifierEvaluationDao = classifierEvaluationDao;
-	}
-
-	/**
-	 * dummy
-	 */
-	@Override
-	public ClassifierEvaluation parseClassifierEvaluation(String name,
-			String experiment, String label, String options,
-			String predictionFile, String trainInstanceFile, String modelFile,
-			String trainInstanceIdFile, String testInstanceIdFile,
-			boolean storeProbabilities) throws Exception {
-		return null;
-	}
-
 	/**
 	 * 
 	 * @param fileBaseName
@@ -100,11 +68,7 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	 */
 	public void parseDirectory(File dataDir, File outputDir) throws IOException {
 		Properties kernelProps = this.loadProps(outputDir);
-		String tmpFileBaseName = kernelProps.getProperty(ParseOption.FOLD_BASE
-				.getOptionKey(), ParseOption.FOLD_BASE.getDefaultValue());
-		if (tmpFileBaseName.length() > 0)
-			tmpFileBaseName = tmpFileBaseName + "_";
-		final String fileBaseName = tmpFileBaseName;
+		final String fileBaseName = getFileBaseName(kernelProps);
 		File testDataFile = new File(dataDir.getPath() + File.separator
 				+ fileBaseName + "test_data.txt");
 		File trainInstanceIdFile = new File(dataDir.getPath() + File.separator
@@ -123,7 +87,8 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.startsWith(fileBaseName) && name.endsWith(".output");
+				return name.startsWith(fileBaseName)
+						&& name.endsWith(".output");
 			}
 		})) {
 			parseSemiLOutput(fileBaseName, kernelProps, output,
@@ -165,23 +130,14 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 				this.initClassifierEvaluationFromProperties(kernelProps, ce);
 				// parse options
 				parseOptions(ce, optionsLine, kernelProps);
-				boolean storeInstanceEval = YES.equalsIgnoreCase(kernelProps
-						.getProperty(ParseOption.STORE_INSTANCE_EVAL
-								.getOptionKey(),
-								ParseOption.STORE_INSTANCE_EVAL
-										.getDefaultValue()));
 				boolean storeUnlabeled = YES.equalsIgnoreCase(kernelProps
 						.getProperty(
 								ParseOption.STORE_UNLABELED.getOptionKey(),
 								ParseOption.STORE_UNLABELED.getDefaultValue()));
-				boolean storeIR = YES.equalsIgnoreCase(kernelProps.getProperty(
-						ParseOption.STORE_IRSTATS.getOptionKey(),
-						ParseOption.STORE_IRSTATS.getDefaultValue()));
 				parsePredictedClasses(ce, predictLine, trainInstanceIdList,
 						testInstanceIdClassMap, storeUnlabeled);
 				// save the classifier evaluation
-				this.getClassifierEvaluationDao().saveClassifierEvaluation(ce,
-						storeInstanceEval || storeUnlabeled, storeIR, 0);
+				this.storeSemiSupervised(kernelProps, ce);
 			}
 		} finally {
 			if (outputReader != null) {
@@ -248,13 +204,11 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 		ce.setLambda(this.parseDoubleOption(pLambda, optionsLine));
 		ce.setMu(this.parseDoubleOption(pMu, optionsLine));
 		ce.setPercentLabeled(this.parseDoubleOption(pPercent, optionsLine));
-		ce
-				.setNormalizedLaplacian(this.parseIntOption(pLaplacian,
-						optionsLine) == 1);
+		ce.setNormalizedLaplacian(this.parseIntOption(pLaplacian, optionsLine) == 1);
 		ce.setSoftLabel(this.parseIntOption(pLabel, optionsLine) == 1);
 		ce.setDistanceType(Integer.parseInt(kernelProps.getProperty(
-				ParseOption.DISTANCE.getOptionKey(), ParseOption.DISTANCE
-						.getDefaultValue())));
+				ParseOption.DISTANCE.getOptionKey(),
+				ParseOption.DISTANCE.getDefaultValue())));
 		ce.setAlgorithm("semiL");
 	}
 
@@ -300,7 +254,7 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 					+ SemiLEvaluationParser.class.getName()
 					+ "dataDir outputDir");
 		} else {
-			SemiLEvaluationParser parser = KernelContextHolder
+			BaseClassifierEvaluationParser parser = KernelContextHolder
 					.getApplicationContext().getBean(
 							SemiLEvaluationParser.class);
 			parser.parseDirectory(new File(args[0]), new File(args[1]));

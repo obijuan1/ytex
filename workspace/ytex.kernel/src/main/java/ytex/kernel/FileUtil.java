@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public class FileUtil {
 	static Pattern pFold = Pattern.compile("fold(\\d+)_");
 	static Pattern pRun = Pattern.compile("run(\\d+)_");
-	static Pattern pLabel = Pattern.compile("label(\\w+)_");
+	static Pattern pLabel = Pattern.compile("label([\\w&&[^_]]+)_");
 
 	/**
 	 * extract fold from file name produced by file util
@@ -136,6 +136,11 @@ public class FileUtil {
 			}
 		}
 
+	}
+
+
+	public static boolean checkFileRead(String file) {
+		return (new File(file)).canRead();
 	}
 
 }

@@ -1,20 +1,26 @@
 package ytex.svmlight;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ytex.kernel.ClassifierEvaluationResult;
-import ytex.kernel.ClassifierEvaluationResults;
 import ytex.kernel.model.ClassifierEvaluation;
+import ytex.kernel.model.ClassifierInstanceEvaluation;
 import ytex.kernel.model.SVMClassifierEvaluation;
 import ytex.libsvm.LibSVMParser;
 
+/**
+ * same as libsvm with following changes:
+ * <ul>
+ * <li>parse output.txt - contains vcdim and number support vectors <
+ * </ul>
+ */
 public class SVMLightParser extends LibSVMParser {
 	static final Pattern psv = Pattern.compile("Number of SV:\\s(\\d+)\\s.*");
 	static final Pattern pvc = Pattern
@@ -29,14 +35,18 @@ public class SVMLightParser extends LibSVMParser {
 	 * @param predictionFile
 	 * @param instanceFile
 	 * @return
-	 * @throws Exception
 	 * @throws IOException
 	 */
-	public ClassifierEvaluationResults parse(String predictionFile, String instanceFile)
-			throws Exception, IOException {
-		ClassifierEvaluationResults results = new ClassifierEvaluationResults();
-		List<ClassifierEvaluationResult> listResults = new ArrayList<ClassifierEvaluationResult>();
-		results.setResults(listResults);
+	@Override
+	protected void parsePredictions(String predictionFile, String instanceFile,
+			Properties props, String instanceIdFile,
+			SVMClassifierEvaluation eval) throws IOException {
+		List<Integer> instanceIds = null;
+		if (instanceIdFile != null)
+			instanceIds = parseInstanceIds(instanceIdFile);
+		boolean bStoreUnlabeled = YES.equals(props.getProperty(
+				ParseOption.STORE_UNLABELED.getOptionKey(),
+				ParseOption.STORE_UNLABELED.getDefaultValue()));
 		BufferedReader instanceReader = null;
 		BufferedReader predictionReader = null;
 		try {
@@ -48,24 +58,34 @@ public class SVMLightParser extends LibSVMParser {
 			int nLine = 0;
 			while (((instanceLine = instanceReader.readLine()) != null)
 					&& ((predictionLine = predictionReader.readLine()) != null)) {
+				int instanceId = instanceIds.size() > nLine ? instanceIds
+						.get(nLine) : nLine;
 				nLine++;
-				ClassifierEvaluationResult result = new ClassifierEvaluationResult();
-				listResults.add(result);
-				String classIdTarget = extractFirstToken(instanceLine,
-						wsPattern);
-				result.setTargetClassId(Integer.parseInt(classIdTarget));
-				int classIdPredicted = 0;
-				try {
-					double dPredict = Double.parseDouble(predictionLine);
-					if (dPredict > 0)
-						classIdPredicted = 1;
-					else
-						classIdPredicted = -1;
-				} catch (NumberFormatException nfe) {
-					System.err.println("error parsing:" + predictionLine);
-					nfe.printStackTrace(System.err);
+				int classIdTarget = Integer.parseInt(extractFirstToken(
+						instanceLine, wsPattern));
+				// only store unlabeled instances if configured to do so
+				if (bStoreUnlabeled || classIdTarget != 0) {
+					ClassifierInstanceEvaluation result = new ClassifierInstanceEvaluation();
+					// target class id is null for unlabeled instances
+					result.setTargetClassId(classIdTarget == 0 ? null
+							: classIdTarget);
+					int classIdPredicted = 0;
+					try {
+						double dPredict = Double.parseDouble(predictionLine);
+						if (dPredict > 0)
+							classIdPredicted = 1;
+						else
+							classIdPredicted = -1;
+					} catch (NumberFormatException nfe) {
+						System.err.println("error parsing:" + predictionLine);
+						nfe.printStackTrace(System.err);
+					}
+					result.setPredictedClassId(classIdPredicted);
+					result.setInstanceId(instanceId);
+					result.setClassifierEvaluation(eval);
+					eval.getClassifierInstanceEvaluations().put(instanceId,
+							result);
 				}
-				result.setPredictedClassId(classIdPredicted);
 			}
 		} finally {
 			if (instanceReader != null) {
@@ -83,23 +103,6 @@ public class SVMLightParser extends LibSVMParser {
 				}
 			}
 		}
-		return results;
-	}
-
-	@Override
-	public ClassifierEvaluation parseClassifierEvaluation(String name,
-			String experiment, String label, String options,
-			String predictionFile, String instanceFile, String modelFile,
-			String instanceIdFile, String trainOutputFile,
-			boolean storeProbabilities) throws Exception {
-		SVMClassifierEvaluation eval = super.initClassifierEval(name,
-				experiment, label, options, instanceIdFile);
-		eval.setAlgorithm("svmlight");
-		this.parseTrainOutput(eval, trainOutputFile);
-		// svmlight options identical to libsvm, with the exception of weight
-		parseOptions(eval, options);
-		return storeSVMResults(predictionFile, instanceFile, false,
-				instanceIdFile, eval);
 	}
 
 	/**
@@ -138,4 +141,25 @@ public class SVMLightParser extends LibSVMParser {
 				r.close();
 		}
 	}
+
+	/**
+	 * parse output.txt - contains vcdim and number support vectors
+	 */
+	@Override
+	protected void parseResults(File dataDir, File outputDir, String model,
+			String predict, SVMClassifierEvaluation eval, Properties props)
+			throws IOException {
+		super.parseResults(dataDir, outputDir, model, predict, eval, props);
+		eval.setAlgorithm("svmlight");
+		parseTrainOutput(eval, outputDir + File.separator + "output.txt");
+	}
+
+	/**
+	 * store semi supervised results.
+	 */
+	@Override
+	protected void storeResults(Properties props, SVMClassifierEvaluation eval) {
+		this.storeSemiSupervised(props, eval);
+	}
+
 }

@@ -1,16 +1,16 @@
 package ytex.libsvm;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ytex.kernel.BaseClassifierEvaluationParser;
-import ytex.kernel.ClassifierEvaluationResult;
-import ytex.kernel.ClassifierEvaluationResults;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
 import ytex.kernel.model.SVMClassifierEvaluation;
@@ -56,77 +56,85 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 		return null;
 	}
 
+//	/**
+//	 * Parse svm-predict input (instance file) and predictions (prediction file)
+//	 * 
+//	 * @param predictionFile
+//	 * @param instanceFile
+//	 * @return
+//	 * @throws Exception
+//	 * @throws IOException
+//	 */
+//	public ClassifierEvaluationResults parse(String predictionFile,
+//			String instanceFile, Properties props) throws IOException {
+//		ClassifierEvaluationResults results = new ClassifierEvaluationResults();
+//		List<ClassifierEvaluationResult> listResults = new ArrayList<ClassifierEvaluationResult>();
+//		results.setResults(listResults);
+//		BufferedReader instanceReader = null;
+//		BufferedReader predictionReader = null;
+//		try {
+//			instanceReader = new BufferedReader(new FileReader(instanceFile));
+//			predictionReader = new BufferedReader(
+//					new FileReader(predictionFile));
+//			String instanceLine = null;
+//			String predictionLine = null;
+//			int nLine = 0;
+//			// 1st line in libSVMOutputReader lists labels
+//
+//			results.setClassIds(parseClassIds(predictionReader));
+//			// when working with high cutoffs resulting in mainly zero vectors
+//			// we sometimes have a trivial classification problem (1 class)
+//			// if (results.getClassIds().size() < 2)
+//			// throw new Exception("error parsing class ids");
+//			while (((instanceLine = instanceReader.readLine()) != null)
+//					&& ((predictionLine = predictionReader.readLine()) != null)) {
+//				nLine++;
+//				ClassifierEvaluationResult result = new ClassifierEvaluationResult();
+//				listResults.add(result);
+//				String predictTokens[] = wsPattern.split(predictionLine);
+//				String classIdPredicted = predictTokens[0];
+//				String classIdTarget = extractFirstToken(instanceLine,
+//						wsPattern);
+//				result.setTargetClassId(Integer.parseInt(classIdTarget));
+//				result.setPredictedClassId(Integer.parseInt(classIdPredicted));
+//				if (predictTokens.length > 1) {
+//					double probabilities[] = new double[results.getClassIds()
+//							.size()];
+//					for (int i = 1; i < predictTokens.length; i++) {
+//						probabilities[i - 1] = Double
+//								.parseDouble(predictTokens[i]);
+//					}
+//					result.setProbabilities(probabilities);
+//				}
+//			}
+//		} finally {
+//			if (instanceReader != null) {
+//				try {
+//					instanceReader.close();
+//				} catch (Exception e) {
+//					System.err.println("testGramReader");
+//					e.printStackTrace(System.err);
+//				}
+//			}
+//			if (predictionReader != null) {
+//				try {
+//					predictionReader.close();
+//				} catch (Exception e) {
+//					e.printStackTrace(System.err);
+//				}
+//			}
+//		}
+//		return results;
+//	}
+
 	/**
-	 * Parse svm-predict input (instance file) and predictions (prediction file)
+	 * parse class ids from first line in prediction file. this correspond to
+	 * probabilities
 	 * 
-	 * @param predictionFile
-	 * @param instanceFile
+	 * @param predictionReader
 	 * @return
-	 * @throws Exception
 	 * @throws IOException
 	 */
-	public ClassifierEvaluationResults parse(String predictionFile, String instanceFile)
-			throws Exception, IOException {
-		ClassifierEvaluationResults results = new ClassifierEvaluationResults();
-		List<ClassifierEvaluationResult> listResults = new ArrayList<ClassifierEvaluationResult>();
-		results.setResults(listResults);
-		BufferedReader instanceReader = null;
-		BufferedReader predictionReader = null;
-		try {
-			instanceReader = new BufferedReader(new FileReader(instanceFile));
-			predictionReader = new BufferedReader(
-					new FileReader(predictionFile));
-			String instanceLine = null;
-			String predictionLine = null;
-			int nLine = 0;
-			// 1st line in libSVMOutputReader lists labels
-
-			results.setClassIds(parseClassIds(predictionReader));
-			// when working with high cutoffs resulting in mainly zero vectors
-			// we sometimes have a trivial classification problem (1 class)
-			// if (results.getClassIds().size() < 2)
-			// throw new Exception("error parsing class ids");
-			while (((instanceLine = instanceReader.readLine()) != null)
-					&& ((predictionLine = predictionReader.readLine()) != null)) {
-				nLine++;
-				ClassifierEvaluationResult result = new ClassifierEvaluationResult();
-				listResults.add(result);
-				String predictTokens[] = wsPattern.split(predictionLine);
-				String classIdPredicted = predictTokens[0];
-				String classIdTarget = extractFirstToken(instanceLine,
-						wsPattern);
-				result.setTargetClassId(Integer.parseInt(classIdTarget));
-				result.setPredictedClassId(Integer.parseInt(classIdPredicted));
-				if (predictTokens.length > 1) {
-					double probabilities[] = new double[results.getClassIds()
-							.size()];
-					for (int i = 1; i < predictTokens.length; i++) {
-						probabilities[i - 1] = Double
-								.parseDouble(predictTokens[i]);
-					}
-					result.setProbabilities(probabilities);
-				}
-			}
-		} finally {
-			if (instanceReader != null) {
-				try {
-					instanceReader.close();
-				} catch (Exception e) {
-					System.err.println("testGramReader");
-					e.printStackTrace(System.err);
-				}
-			}
-			if (predictionReader != null) {
-				try {
-					predictionReader.close();
-				} catch (Exception e) {
-					e.printStackTrace(System.err);
-				}
-			}
-		}
-		return results;
-	}
-
 	protected List<Integer> parseClassIds(BufferedReader predictionReader)
 			throws IOException {
 		List<Integer> labels = null;
@@ -141,23 +149,6 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 			}
 		}
 		return labels;
-	}
-
-	/* (non-Javadoc)
-	 * @see ytex.libsvm.SVMParser#parseClassifierEvaluation(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
-	 */
-	public ClassifierEvaluation parseClassifierEvaluation(String name,
-			String experiment, String label, String options,
-			String predictionFile, String instanceFile, String modelFile,
-			String instanceIdFile, String trainOutputFile,
-			boolean storeProbabilities) throws Exception {
-		SVMClassifierEvaluation eval = initClassifierEval(name, experiment,
-				label, options, instanceIdFile);
-		eval.setAlgorithm("libsvm");
-		eval.setSupportVectors(this.parseModel(modelFile));
-		parseOptions(eval, options);
-		return storeSVMResults(predictionFile, instanceFile,
-				storeProbabilities, instanceIdFile, eval);
 	}
 
 	protected SVMClassifierEvaluation initClassifierEval(String name,
@@ -178,35 +169,89 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 		eval.setOptions(options);
 	}
 
-	protected SVMClassifierEvaluation storeSVMResults(String predictionFile,
-			String instanceFile, boolean storeProbabilities,
-			String instanceIdFile, SVMClassifierEvaluation eval)
-			throws Exception, IOException {
+	/**
+	 * parse predicted class ids, probabilities; correlate to target class ids
+	 * and instance ids.
+	 * 
+	 * @param predictionFile
+	 *            prediction (output)
+	 * @param instanceFile
+	 *            input data file; contains target class ids
+	 * @param props
+	 * @param instanceIdFile
+	 *            instance ids corresponding to lines in input data file
+	 * @param eval
+	 * @throws IOException
+	 */
+	protected void parsePredictions(String predictionFile, String instanceFile,
+			Properties props, String instanceIdFile,
+			SVMClassifierEvaluation eval) throws IOException {
+		boolean storeProbabilities = YES.equalsIgnoreCase(props.getProperty(
+				ParseOption.STORE_PROBABILITIES.getOptionKey(),
+				ParseOption.STORE_PROBABILITIES.getDefaultValue()));
 		List<Integer> instanceIds = null;
 		if (instanceIdFile != null)
 			instanceIds = parseInstanceIds(instanceIdFile);
-		ClassifierEvaluationResults results = this.parse(predictionFile, instanceFile);
-		int j = 0;
-		for (ClassifierEvaluationResult result : results.getResults()) {
-			int instanceId = j++;
-			if (instanceIds != null)
-				instanceId = instanceIds.get(instanceId);
-			ClassifierInstanceEvaluation instanceEval = new ClassifierInstanceEvaluation();
-			instanceEval.setPredictedClassId(result.getPredictedClassId());
-			instanceEval.setTargetClassId(result.getTargetClassId());
-			instanceEval.setClassifierEvaluation(eval);
-			instanceEval.setInstanceId(instanceId);
-			if (storeProbabilities) {
-				for (int i = 0; i < result.getProbabilities().length; i++) {
-					instanceEval.getClassifierInstanceProbabilities().put(
-							results.getClassIds().get(i),
-							result.getProbabilities()[i]);
+		BufferedReader instanceReader = null;
+		BufferedReader predictionReader = null;
+		try {
+			instanceReader = new BufferedReader(new FileReader(instanceFile));
+			predictionReader = new BufferedReader(
+					new FileReader(predictionFile));
+			String instanceLine = null;
+			String predictionLine = null;
+			int nLine = 0;
+			// 1st line in libSVMOutputReader lists class ids - parse them out
+			List<Integer> classIds = parseClassIds(predictionReader);
+			// iterate through input data file and output predictions
+			// simultaneously
+			while (((instanceLine = instanceReader.readLine()) != null)
+					&& ((predictionLine = predictionReader.readLine()) != null)) {
+				// get instance id corresponding to this line
+				int instanceId = instanceIds.size() > nLine ? instanceIds
+						.get(nLine) : nLine;
+				nLine++;
+				// allocate instanceEval
+				ClassifierInstanceEvaluation instanceEval = new ClassifierInstanceEvaluation();
+				// parse out predicted class from output predictions
+				String predictTokens[] = wsPattern.split(predictionLine);
+				String classIdPredicted = predictTokens[0];
+				String classIdTarget = extractFirstToken(instanceLine,
+						wsPattern);
+				// parse out target class from input data file
+				instanceEval.setTargetClassId(Integer.parseInt(classIdTarget));
+				instanceEval.setPredictedClassId(Integer
+						.parseInt(classIdPredicted));
+				instanceEval.setInstanceId(instanceId);
+				instanceEval.setClassifierEvaluation(eval);
+				// add the instance to the map
+				eval.getClassifierInstanceEvaluations().put(instanceId,
+						instanceEval);
+				// parse class id probabilities
+				if (storeProbabilities && predictTokens.length > 1) {
+					for (int i = 1; i < predictTokens.length; i++) {
+						instanceEval.getClassifierInstanceProbabilities().put(
+								classIds.get(i - 1),
+								Double.parseDouble(predictTokens[i]));
+					}
 				}
 			}
-			eval.getClassifierInstanceEvaluations().put(instanceId,
-					instanceEval);
+		} finally {
+			if (instanceReader != null) {
+				try {
+					instanceReader.close();
+				} catch (Exception e) {
+					e.printStackTrace(System.err);
+				}
+			}
+			if (predictionReader != null) {
+				try {
+					predictionReader.close();
+				} catch (Exception e) {
+					e.printStackTrace(System.err);
+				}
+			}
 		}
-		return eval;
 	}
 
 	protected void parseOptions(SVMClassifierEvaluation eval, String options) {
@@ -214,7 +259,7 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 		// training_data_11_fold9_model.txt
 		if (options != null) {
 			eval.setKernel(parseIntOption(pKernel, options));
-			if(eval.getKernel() == null)
+			if (eval.getKernel() == null)
 				eval.setKernel(0);
 			eval.setDegree(parseIntOption(pDegree, options));
 			eval.setWeight(parseWeight(options));
@@ -245,22 +290,81 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 	}
 
 	/**
-	 * for testing
-	 * 
-	 * @param args
-	 * @throws Exception
+	 * parse directory. Expect following files:
+	 * <ul>
+	 * <li>model.txt - libsvm model file
+	 * <li>options.properties - properties file with needed parameter settings
+	 * (see ParseOption)
+	 * <li>predict.txt - predictions on test set
+	 * </ul>
 	 */
-	public static void main(String args[]) throws Exception {
-		LibSVMParser parser = new LibSVMParser();
-		parser
-				.parse(
-						"E:\\projects\\ytex\\sujeevan\\processedData\\predict_35.txt",
-						"E:\\projects\\ytex\\sujeevan\\processedData\\test_gram_35.txt");
-		SVMClassifierEvaluation eval = new SVMClassifierEvaluation();
-		parser
-				.parseOptions(
-						eval,
-						"-q -b 1 -t 0 -w0 0.13 -w1 0.87 -c 1 label1_run2_fold1_train_data.txt label1_run2_fold1/071022701/model.txt");
-
+	@Override
+	public void parseDirectory(File dataDir, File outputDir) throws IOException {
+		String model = outputDir.getPath() + File.separator + "model.txt";
+		String predict = outputDir.getPath() + File.separator + "predict.txt";
+		String optionsFile = outputDir.getPath() + File.separator
+				+ "options.properties";
+		if (checkFileRead(model) && checkFileRead(predict)
+				&& checkFileRead(optionsFile)) {
+			// read options.properties
+			Properties props = this.loadProps(outputDir);
+			SVMClassifierEvaluation eval = new SVMClassifierEvaluation();
+			// set algorithm
+			eval.setAlgorithm("libsvm");
+			// parse results
+			parseResults(dataDir, outputDir, model, predict, eval, props);
+			// store results
+			storeResults(props, eval);
+		}
 	}
+
+	/**
+	 * store the parsed classifier evaluation
+	 * 
+	 * @param props
+	 * @param eval
+	 */
+	protected void storeResults(Properties props, SVMClassifierEvaluation eval) {
+		// store the classifier evaluation
+		getClassifierEvaluationDao().saveClassifierEvaluation(
+				eval,
+				YES.equalsIgnoreCase(props.getProperty(
+						ParseOption.STORE_INSTANCE_EVAL.getOptionKey(),
+						ParseOption.STORE_INSTANCE_EVAL.getDefaultValue())));
+	}
+
+	/**
+	 * parse the results in the specified output dir. use reference data from
+	 * dataDir.
+	 * 
+	 * @param dataDir
+	 * @param outputDir
+	 * @param model
+	 * @param predict
+	 * @param eval
+	 * @param props
+	 * @throws IOException
+	 */
+	protected void parseResults(File dataDir, File outputDir, String model,
+			String predict, SVMClassifierEvaluation eval, Properties props)
+			throws IOException {
+		// initialize common properties
+		initClassifierEvaluationFromProperties(props, eval);
+		// parse number of support vectors from model
+		eval.setSupportVectors(this.parseModel(model));
+		// parse options from command line
+		parseOptions(eval,
+				props.getProperty(ParseOption.EVAL_LINE.getOptionKey()));
+		// parse fold, run, label from file base name
+		String fileBaseName = this.getFileBaseName(props);
+		initClassifierEvaluation(fileBaseName, eval);
+		// parse predictions
+		String instanceIdFile = dataDir + File.separator + fileBaseName
+				+ "test_id.txt";
+		String instanceFile = dataDir + File.separator + fileBaseName
+				+ "test_data.txt";
+		this.parsePredictions(predict, instanceFile, props, instanceIdFile,
+				eval);
+	}
+
 }
