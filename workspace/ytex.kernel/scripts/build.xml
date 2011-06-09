@@ -270,24 +270,24 @@
 		</exec>
 		<antcall target="cv.store.options" />
 	</target>
-	
+
 	<target name="cv.iter.semil" description="evaluate w/ semil. iterate over distance types, gamma" depends="cv.init">
-		<property name="cv.fold.base" value="run5_fold1"/>
+		<property name="cv.fold.base" value="run5_fold1" />
 		<for list="${cv.semil.distances}" param="kernel.distance">
 			<sequential>
 				<antcall target="cv.iter.semil.distance">
-					<param name="kernel.distance" value="@{kernel.distance}"/>
+					<param name="kernel.distance" value="@{kernel.distance}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
 	<target name="cv.iter.semil.distance" depends="cv.init">
-		<property name="kernel.distance" value="1"/>
-		<property name="cv.fold.base" value="run1_fold1"/>
+		<property name="kernel.distance" value="1" />
+		<property name="cv.fold.base" value="run1_fold1" />
 		<property name="label.dir" value="${cv.tmpdir}/${kernel.experiment}-${kernel.label}" />
 		<property name="cv.outdir" value="${cv.fold.base}/${kernel.distance}" />
 		<mkdir dir="${label.dir}/${cv.outdir}" />
-		<antcall target="cv.semil.dist"/>
+		<antcall target="cv.semil.dist" />
 		<antcall target="cv.store.options" />
 		<for list="${cv.rbf.gammas}" param="cv.rbf.gamma">
 			<sequential>
@@ -297,40 +297,126 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="cv.semil.dist" depends="cv.init">
+	<target name="cv.semil.iter.metric" depends="cv.init" description="iterate over cv.semil.iter.metric, call cv.semil.iter.degree">
+		<for list="${cv.semil.metrics}" param="kernel.metric">
+			<sequential>
+				<antcall target="cv.semil.iter.degree">
+					<param name="kernel.metric" value="@{kernel.metric}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cv.semil.iter.degree" depends="cv.init" description="iterate over cv.semil.degrees, call cv.semil.iter.dist">
+		<for list="${cv.semil.degrees}" param="kernel.degree">
+			<sequential>
+				<antcall target="cv.semil.iter.dist">
+					<param name="kernel.degree" value="@{kernel.degree}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cv.semil.iter.dist" description="iterate over data files, call semil.dist">
+		<property name="cv.semil.target" value="cv.semil.iter.label" />
+		<for param="kernel.data.file">
+			<fileset dir="${kernel.data}" includes="*data.txt" />
+			<sequential>
+				<antcall target="${cv.semil.target}">
+					<param name="kernel.data.file" value="@{kernel.data.file}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+
+	<target name="semil.dist.init" description="setup properties based on kernel.data.file, metric, and degree">
+		<property name="kernel.metric" value="euclidean" />
+		<property name="kernel.degree" value="10" />
+		<property name="kernel.data.file" value="./label1_data.txt" />
+		<basename file="${kernel.data.file}" property="kernel.dist.file" />
+		<basename file="${kernel.dist.file}" property="kernel.basename" suffix="data.txt" />
+		<property name="kernel.dist.subdir" value="${kernel.metric}/${kernel.degree}" />
+		<property name="kernel.dist.dir" value="${kernel.data}/${kernel.metric}/${kernel.degree}" />
+	</target>
+
+	<target name="semil.dist" depends="semil.dist.init" description="generate distance matrix by calling semil_dist.R script">
 		<!--
 		semil distance computation will not work on windows
 		requires interactive shell - otherwise fails
-		
-		<property name="cv.fold.base" value="run1_fold1"/>
-		<property name="label.dir" value="${cv.tmpdir}/tfidf-autocon-sbinu-0" />
-		<property name="semil.dist" value="${cv.fold.base}_dist.txt" />
-		<property name="semil.dist.line" value="-t 2 -d 10 -l 1 -h 1 -k ${cv.semil.k} -g 10 -u ${cv.semil.u} -lambda ${cv.semil.lambda} -mu ${cv.semil.mu} ${cv.fold.base}_train_data.txt" />
-		<echo>semil.dist.line ${semil.dist.line}</echo>
-		<exec executable="${basedir}/semil.bat" dir="${label.dir}" vmlauncher="false" newenvironment="yes">
-			<arg line="${semil.dist.line}"/>
-		</exec>
+		created R script to generate distance matrix
 		-->
+		<echo>kernel.data.file ${kernel.data.file}</echo>
+		<mkdir dir="${kernel.dist.dir}" />
+		<exec executable="${R.bin}/R" dir="${kernel.data}">
+			<arg line="--slave --file=${basedir}/semil_dist.R --args ${kernel.data.file} ${kernel.metric} ${kernel.dist.subdir}/${kernel.dist.file} ${kernel.degree}" />
+		</exec>
 	</target>
+
+	<target name="cv.semil.iter.label" depends="semil.dist.init" description="iterate over label files for a given data file, call semil.iter.method">
+		<for param="kernel.label.file">
+			<fileset dir="${kernel.data}" includes="${kernel.basename}*label.txt" />
+			<sequential>
+				<antcall target="cv.semil.iter.method">
+					<param name="kernel.label.file" value="@{kernel.label.file}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+
+	<target name="cv.semil.iter.method" description="iterate over methods, call cv.semil.iter.gamma">
+		<echo>kernel.label.file ${kernel.label.file}</echo>
+		<basename file="${kernel.label.file}" property="kernel.label.basename" suffix=".txt" />
+		<property name="kernel.label.dir" value="${cv.tmpdir}/${kernel.experiment}/${kernel.dist.subdir}/${kernel.label.basename}" />
+		<echo>kernel.label.dir ${kernel.label.dir}</echo>
+		<mkdir dir="${kernel.label.dir}" />
+		<!-- store semil options -->
+		<echoproperties destfile="${kernel.label.dir}/options.properties">
+			<propertyset>
+				<propertyref prefix="kernel." />
+				<propertyref prefix="cv." />
+			</propertyset>
+		</echoproperties>
+		<copy file="${kernel.dist.dir}/${kernel.dist.file}" todir="${kernel.label.dir}"/>
+		<for list="${cv.semil.methods}" param="kernel.method">
+			<sequential>
+				<antcall target="cv.semil.iter.gamma">
+					<param name="kernel.line" value="@{kernel.method}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cv.semil.iter.gamma" description="iterate over gammas, call semil.evaluate">
+		<for list="${cv.rbf.gammas}" param="kernel.rbf.gamma">
+			<sequential>
+				<antcall target="semil.evaluate">
+					<param name="kernel.line" value="-g @{kernel.rbf.gamma} ${kernel.line}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="semil.evaluate">
+		<exec executable="${semil.bin}/Semil" dir="${kernel.label.dir}">
+			<arg line="${kernel.line} ${semil.line} ${kernel.dist.file} ${kernel.label.file}" />
+		</exec>
+	</target>
+
 	<target name="cv.evaluate.semil" depends="cv.init">
-		<property name="cv.fold.base" value="run1_fold1"/>
+		<property name="cv.fold.base" value="run1_fold1" />
 		<property name="label.dir" value="${cv.tmpdir}/${kernel.experiment}-${kernel.label}" />
 		<property name="cv.rbf.gamma" value="10" />
-		<property name="cv.outdir" value="run1_fold1/2"/>
+		<property name="cv.outdir" value="run1_fold1/2" />
 		<property name="semil.dist" value="${cv.fold.base}_dist.txt" />
 		<property name="cv.semil.line" value="-k ${cv.semil.k} -g ${cv.rbf.gamma} -u ${cv.semil.u} -lambda ${cv.semil.lambda} -mu ${cv.semil.mu} -ocl 0 ${semil.dist} ${semil.dist}.label " />
 		<echo>cv.semil.line ${cv.semil.line}</echo>
 		<echo>dir ${label.dir}/${cv.outdir}</echo>
 		<!-- consistency method -->
 		<exec executable="${semil.bin}/Semil" dir="${label.dir}/${cv.outdir}">
-			<arg line="-l 1 -h 1 ${cv.semil.line}"/>
+			<arg line="-l 1 -h 1 ${cv.semil.line}" />
 		</exec>
 		<!-- gaussian random field -->
 		<exec executable="${semil.bin}/Semil" dir="${label.dir}/${cv.outdir}">
-			<arg line="-l 0 -h 0 ${cv.semil.line}"/>
+			<arg line="-l 0 -h 0 ${cv.semil.line}" />
 		</exec>
 	</target>
-	
+
 	<target name="cv.store.options" description="store options">
 		<!-- store libsvm options -->
 		<echoproperties destfile="${label.dir}/${cv.outdir}/options.properties">
@@ -359,7 +445,7 @@
 		<for list="${dirs}" param="cv.fold.base">
 			<sequential>
 				<antcall target="cv.extractResults.db.fold">
-					<param name="cv.fold.base" value="@{cv.fold.base}"/>
+					<param name="cv.fold.base" value="@{cv.fold.base}" />
 				</antcall>
 			</sequential>
 		</for>

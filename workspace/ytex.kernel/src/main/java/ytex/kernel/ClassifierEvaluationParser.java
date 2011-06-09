@@ -40,9 +40,14 @@ public interface ClassifierEvaluationParser {
 		FOLD_BASE("cv.fold.base", ""),
 		/**
 		 * key <tt>kernel.distance</tt>
-		 * distance measure for semiL. 1 - euclidean, 2 - cosine.
+		 * distance measure for semiL. default is euclidean.
 		 */
-		DISTANCE("kernel.distance", "1"),
+		DISTANCE("kernel.distance", "euclidean"),
+		/**
+		 * key <tt>kernel.degree</tt>
+		 * degree for knn graph for semiL. default is 10
+		 */
+		DEGREE("kernel.degree", "10"),
 		/**
 		 * key <tt>cv.eval.line</tt>
 		 * options used to train model.
