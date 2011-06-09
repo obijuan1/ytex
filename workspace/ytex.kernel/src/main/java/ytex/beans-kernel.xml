@@ -224,7 +224,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				</entry>
 				<entry>
 					<key>
-						<value>semiL</value>
+						<value>semil</value>
 					</key>
 					<ref bean="semiLFormatterFactory" />
 				</entry>

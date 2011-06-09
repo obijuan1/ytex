@@ -16,12 +16,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * parse classifier evaluation results.
- * expect input data files to classifier in working directory.
- * expect output in dir option or subdirectories thereof.
- * expect an options.properties in each directory that contains classifier output.
- * See {@link #ClassifierEvaluationImporter()} for a list of options in options.properties.
- * You can override options via system properties (java -D options).
+ * parse classifier evaluation results. expect input data files to classifier in
+ * working directory. expect output in dir option or subdirectories thereof.
+ * expect an options.properties in each directory that contains classifier
+ * output. See {@link #ClassifierEvaluationImporter()} for a list of options in
+ * options.properties. You can override options via system properties (java -D
+ * options).
  * 
  * @author vijay
  */
@@ -43,9 +43,12 @@ public class ClassifierEvaluationImporter {
 	@SuppressWarnings("static-access")
 	private static Options initOptions() {
 		Options options = new Options();
-		options.addOption(OptionBuilder.withArgName("cvDir").hasArg()
-				.withDescription("results directory, defaults to working directory").isRequired(false)
-				.create("dir"));
+		options.addOption(OptionBuilder
+				.withArgName("cvDir")
+				.hasArg()
+				.withDescription(
+						"results directory, defaults to working directory")
+				.isRequired(false).create("dir"));
 		options.addOption(OptionBuilder.withArgName("type").hasArg()
 				.withDescription("libsvm (default) or svmlight or semil")
 				.isRequired(true).create("type"));
@@ -101,7 +104,7 @@ public class ClassifierEvaluationImporter {
 
 	/**
 	 * recursively import directory. We assume this directory contains
-	 * evaluation results if we find a file named options.properties. Else we
+	 * evaluation results if it has no subdirectories. Else we
 	 * look in subdirectories.
 	 * 
 	 * @param directory
@@ -110,26 +113,18 @@ public class ClassifierEvaluationImporter {
 	 */
 	public void importDirectory(File directory,
 			ClassifierEvaluationParser lparser) throws IOException {
-		for (File resultDir : directory.listFiles()) {
-			String optionsFile = resultDir + File.separator
-					+ "options.properties";
-			if (FileUtil.checkFileRead(optionsFile)) {
-				// assume this is a 'results' directory
-				try {
-					lparser.parseDirectory(new File("."), resultDir);
-				} catch (IOException ioe) {
-					log.error("error parsing directory: " + resultDir, ioe);
-				}
-			} else {
-				// look in subdirectories
-				for (File subdir : resultDir.listFiles(new FileFilter() {
-					@Override
-					public boolean accept(File pathname) {
-						return pathname.isDirectory();
-					}
-				})) {
-					importDirectory(subdir, lparser);
-				}
+		File subdirs[] = directory.listFiles(new FileUtil.DirectoryFileFilter());
+		if(subdirs == null || subdirs.length == 0) {
+			// no subdirectories - assume this is a 'results' directory
+			try {
+				lparser.parseDirectory(new File("."), directory);
+			} catch (IOException ioe) {
+				log.error("error parsing directory: " + directory, ioe);
+			}
+		} else {
+			// look in subdirectories
+			for (File subdir : subdirs) {
+				importDirectory(subdir, lparser);
 			}
 		}
 		//

@@ -5,8 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -14,6 +17,7 @@ import java.util.TreeSet;
 import ytex.kernel.FileUtil;
 import ytex.kernel.InstanceData;
 import ytex.kernel.SparseData;
+import ytex.kernel.SparseDataExporter.ScopeEnum;
 import ytex.kernel.SparseDataFormatter;
 import ytex.kernel.SparseDataFormatterFactory;
 import ytex.svmlight.SVMLightFormatterFactory.SVMLightFormatter;
@@ -50,7 +54,12 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 	public static class SemiLDataFormatter extends SVMLightFormatter {
 		NumberFormat semilNumberFormat = new DecimalFormat("#.######");
 		InstanceData instanceLabel = null;
-		SortedSet<Integer> instanceIds;
+		/**
+		 * instance ids of the current data set we are exporting. This is set in
+		 * exportSemiL - a single file is exported for all folds. This is read
+		 * in exportFold - for each fold, we generate a different label file.
+		 */
+		List<Integer> instanceIds;
 
 		// /**
 		// * cosine distance: <tt>1-aa'/sqrt(aa' * bb')</tt>
@@ -78,27 +87,13 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 			this.instanceLabel = instanceLabel;
 			if (properties.getProperty("scope") == null
 					|| properties.getProperty("scope").length() == 0) {
-				exportAttributeNames(
-						FileUtil.getFoldFilePrefix(outdir, null, null, null),
-						sparseData);
 				// all instance ids assumed to be identical across all folds
 				SortedMap<Boolean, SortedMap<Integer, String>> fold = instanceLabel
 						.getLabelToInstanceMap().values().iterator().next()/* runs */
 						.values().iterator().next() /* folds */
 						.values().iterator().next();
-				// get all instance Ids
-				SortedSet<Integer> instanceIds = new TreeSet<Integer>();
-				initializeInstanceIds(fold, instanceIds);
-				// exportDistance(sparseData, null, null, null);
+				exportSemiL(fold, sparseData, null, null, null);
 			}
-		}
-
-		private void initializeInstanceIds(
-				SortedMap<Boolean, SortedMap<Integer, String>> fold,
-				SortedSet<Integer> instanceIds) {
-			instanceIds.addAll(fold.get(true).keySet());
-			instanceIds.addAll(fold.get(true).keySet());
-			this.instanceIds = instanceIds;
 		}
 
 		@Override
@@ -109,13 +104,9 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				throws IOException {
 			super.initializeLabel(label, labelInstances, properties, sparseData);
 			if ("label".equals(this.exportProperties.getProperty("scope"))) {
-				exportAttributeNames(
-						FileUtil.getFoldFilePrefix(outdir, label, null, null),
-						sparseData);
 				SortedMap<Boolean, SortedMap<Integer, String>> fold = labelInstances
 						.values().iterator().next().values().iterator().next();
-				initializeInstanceIds(fold, instanceIds);
-				// exportDistance(sparseData, label, null, null);
+				exportSemiL(fold, sparseData, label, null, null);
 			}
 		}
 
@@ -128,21 +119,47 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
 				throws IOException {
 			if ("fold".equals(this.exportProperties.getProperty("scope"))) {
-				exportAttributeNames(
-						FileUtil.getFoldFilePrefix(outdir, label, run, fold),
-						sparseData);
-				initializeInstanceIds(foldInstanceLabelMap, instanceIds);
-				// exportDistance(sparseData, label, run, fold);
+				exportSemiL(foldInstanceLabelMap, sparseData, label, run, fold);
 			}
-			String idFilename = FileUtil.getFoldFilePrefix(outdir, label, run,
-					fold) + "_id.txt";
-			String lblFilename = FileUtil.getFoldFilePrefix(outdir, label, run,
-					fold) + "_data.txt.lbl";
-			// train and test set available - export transductive data
-			export(idFilename, lblFilename, sparseData,
+			String labelFileName = FileUtil.getFoldFilePrefix(outdir, label,
+					run, fold) + "_label.txt";
+			String idFileName = FileUtil.getFoldFilePrefix(outdir, label, run,
+					fold) + "_class.txt";
+			exportLabel(idFileName, labelFileName,
 					foldInstanceLabelMap.get(true),
 					foldInstanceLabelMap.get(false),
 					this.labelToClassIndexMap.get(label));
+		}
+
+		/**
+		 * 
+		 * @param foldInstanceLabelMap
+		 * @param sparseData
+		 * @param label
+		 * @param run
+		 * @param fold
+		 * @throws IOException
+		 */
+		private void exportSemiL(
+				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap,
+				SparseData sparseData, String label, Integer run, Integer fold)
+				throws IOException {
+			exportAttributeNames(sparseData, label, run, fold);
+			String filename = FileUtil.getFoldFilePrefix(outdir, label, run,
+					fold) + "_data.txt";
+			String idFilename = FileUtil.getFoldFilePrefix(outdir, label, run,
+					fold) + "_id.txt";
+			String format = this.exportProperties.getProperty("semil.format",
+					"libsvm");
+			if ("sparseMatrix".equals(format)) {
+				this.instanceIds = exportSparseMatrix(filename, sparseData,
+						foldInstanceLabelMap);
+			} else {
+				this.instanceIds = exportTransductiveData(filename, idFilename,
+						sparseData, foldInstanceLabelMap.get(Boolean.TRUE),
+						foldInstanceLabelMap.get(Boolean.FALSE).keySet(),
+						this.labelToClassIndexMap.get(label));
+			}
 		}
 
 		// private void exportDistance(SparseData sparseData, String label,
@@ -173,6 +190,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		// this.writeDistanceMatrix(data, filename);
 		// }
 
+
 		@Override
 		public void exportFold(SparseData sparseData,
 				SortedMap<Integer, String> instanceClassMap, boolean train,
@@ -192,8 +210,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		 * @param classToIndexMap
 		 * @throws IOException
 		 */
-		private void export(String idFilename, String lblFilename,
-				SparseData bagOfWordsData,
+		private void exportLabel(String idFilename, String lblFilename,
 				SortedMap<Integer, String> trainInstanceClassMap,
 				SortedMap<Integer, String> testInstanceClassMap,
 				Map<String, Integer> classToIndexMap) throws IOException {
@@ -291,19 +308,19 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		// }
 		// }
 
-		/**
-		 * round double to specified precision
-		 * 
-		 * @param Rval
-		 * @param Rpl
-		 * @return
-		 */
-		private double round(double Rval, int Rpl) {
-			double p = (double) Math.pow(10, Rpl);
-			Rval = Rval * p;
-			double tmp = Math.round(Rval);
-			return (double) tmp / p;
-		}
+		// /**
+		// * round double to specified precision
+		// *
+		// * @param Rval
+		// * @param Rpl
+		// * @return
+		// */
+		// private double round(double Rval, int Rpl) {
+		// double p = (double) Math.pow(10, Rpl);
+		// Rval = Rval * p;
+		// double tmp = Math.round(Rval);
+		// return (double) tmp / p;
+		// }
 
 	}
 

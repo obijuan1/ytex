@@ -265,7 +265,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 				sparseData = this.loadData(instanceLabel,
 						properties.getProperty("numericWordQuery"),
 						properties.getProperty("nominalWordQuery"),
-						bDecorator, "label", null, null);
+						bDecorator, label, null, null);
 			}
 			formatter.initializeLabel(label, instanceLabel.getLabelToInstanceMap().get(label), properties, sparseData);
 			for (int run : instanceLabel.getLabelToInstanceMap().get(label)
@@ -280,7 +280,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 						sparseData = this.loadData(instanceLabel,
 								properties.getProperty("numericWordQuery"),
 								properties.getProperty("nominalWordQuery"),
-								bDecorator, "label", fold, run);
+								bDecorator, label, fold, run);
 					}
 					formatter.initializeFold(sparseData, label, run, fold, instanceLabel.getLabelToInstanceMap()
 							.get(label).get(run).get(fold));
@@ -309,7 +309,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 			throws IOException, InvalidPropertiesFormatException {
 		Properties props = new Properties();
 		this.getKernelUtil().loadProperties(propertiesFile, props);
-		this.exportData(props, nameToFormatterMap.get(format).getFormatter(),
+		this.exportData(props, nameToFormatterMap.get(format.toLowerCase()).getFormatter(),
 				null);
 	}
 

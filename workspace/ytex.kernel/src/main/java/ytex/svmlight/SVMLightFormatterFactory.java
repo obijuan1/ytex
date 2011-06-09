@@ -3,6 +3,8 @@ package ytex.svmlight;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -78,20 +80,22 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 		 * @param numericAttributeMap
 		 * @param nominalAttributeMap
 		 * @param label
+		 * @return instance ids in order they are in the output file
 		 * @throws IOException
 		 */
-		private void exportTransductiveData(String filename, String idFilename,
+		protected List<Integer> exportTransductiveData(String filename, String idFilename,
 				SparseData bagOfWordsData,
 				SortedMap<Integer, String> trainClassMap,
 				Set<Integer> testInstances, Map<String, Integer> classToIndexMap)
 				throws IOException {
+			List<Integer> instanceIds = new ArrayList<Integer>();
 			BufferedWriter wData = null;
 			BufferedWriter wId = null;
 			try {
 				wData = new BufferedWriter(new FileWriter(filename));
 				wId = new BufferedWriter(new FileWriter(idFilename));
-				exportDataForInstances(bagOfWordsData, trainClassMap,
-						classToIndexMap, wData, wId);
+				instanceIds.addAll(exportDataForInstances(bagOfWordsData, trainClassMap,
+						classToIndexMap, wData, wId));
 				SortedMap<Integer, String> testClassMap = new TreeMap<Integer, String>();
 				for (Integer instanceId : testInstances) {
 					// for sparse datasets may duplicate instances in train/test
@@ -99,8 +103,9 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 					if (!trainClassMap.containsKey(instanceId))
 						testClassMap.put(instanceId, "0");
 				}
-				exportDataForInstances(bagOfWordsData, testClassMap,
-						classToIndexMap, wData, wId);
+				instanceIds.addAll(exportDataForInstances(bagOfWordsData, testClassMap,
+						classToIndexMap, wData, wId));
+				return instanceIds;
 			} finally {
 				if (wData != null)
 					wData.close();

@@ -342,25 +342,12 @@
 	</target>
 	<target name="cv.extractResults.db.fold" description="store results in db" depends="cv.init">
 		<property name="kernel.label" value="0" />
-		<property name="cv.fold.base" value="run1_fold1" />
+		<property name="cv.fold.base" value="label1_run1_fold1" />
 		<property name="cv.result.dir" value="${cv.tmpdir}/${kernel.experiment}-${kernel.label}/${cv.fold.base}" />
+		<echo>cv.result.dir ${cv.result.dir}</echo>
 		<java classname="ytex.kernel.ClassifierEvaluationImporter" classpathref="${kernel.cp}" fork="yes" dir="${cv.tmpdir}/${kernel.experiment}-${kernel.label}" failOnError="yes">
-			<arg value="-name" />
-			<arg value="${kernel.name}" />
-			<arg value="-experiment" />
-			<arg value="${kernel.experiment}" />
-			<arg value="-label" />
-			<arg value="${kernel.label}" />
-			<arg value="-test" />
-			<arg value="${cv.fold.base}_test_data.txt" />
-			<arg value="-instanceId" />
-			<arg value="${cv.fold.base}_test_id.txt" />
-			<arg value="-cvDir" />
+			<arg value="-dir" />
 			<arg value="${cv.result.dir}" />
-			<arg value="-storeInstanceEval" />
-			<arg value="${cv.storeInstanceEval}" />
-			<arg value="-storeProb" />
-			<arg value="${cv.storeProb}" />
 			<arg value="-type" />
 			<arg value="${svm.type}" />
 			<jvmarg value="${log4j.arg}" />

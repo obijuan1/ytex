@@ -65,19 +65,7 @@ public class MatlabFormatterFactory implements SparseDataFormatterFactory {
 					wId.write(Integer.toString(classId));
 					wId.write("\n");
 					// write attributes
-					// add the attributes
-					for (SortedMap.Entry<Integer, Double> instanceValue : instanceValues
-							.entrySet()) {
-						// row = instance number
-						wData.write(Integer.toString(row));
-						wData.write("\t");
-						// column = attribute index
-						wData.write(Integer.toString(instanceValue.getKey()));
-						wData.write("\t");
-						// value = value
-						wData.write(Double.toString(instanceValue.getValue()));
-						wData.write("\n");
-					}
+					exportSparseRow(bagOfWordsData, instanceId, wData, row);
 					// increment row index
 					row++;
 				}

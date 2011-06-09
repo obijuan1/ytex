@@ -1,6 +1,7 @@
 package ytex.kernel;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,7 +81,7 @@ public class FileUtil {
 		if (label != null && label.length() > 0) {
 			builder.append("label").append(label);
 			if ((run != null && run > 0) || (fold != null && fold > 0))
-				builder.append(label).append("_");
+				builder.append("_");
 		}
 		if (run != null && run > 0) {
 			builder.append("run").append(Integer.toString(run));
@@ -138,9 +139,20 @@ public class FileUtil {
 
 	}
 
-
 	public static boolean checkFileRead(String file) {
 		return (new File(file)).canRead();
+	}
+
+	/**
+	 * file filter to get directories
+	 * @author vijay
+	 *
+	 */
+	public static class DirectoryFileFilter implements FileFilter {
+		@Override
+		public boolean accept(File pathname) {
+			return pathname.isDirectory();
+		}
 	}
 
 }
