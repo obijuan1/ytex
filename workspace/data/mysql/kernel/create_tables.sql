@@ -185,10 +185,12 @@ CREATE TABLE  `stopword` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf-8;
 
 
-drop table classifier_eval;
-drop table classifier_eval_libsvm;
-drop table classifier_instance_eval;
 drop table classifier_instance_eval_prob;
+drop table classifier_instance_eval;
+drop table classifier_eval_libsvm;
+drop table classifier_eval_semil;
+drop table classifier_eval_ir;
+drop table classifier_eval;
 
 create table classifier_eval (
 	classifier_eval_id int AUTO_INCREMENT not null primary key,
@@ -202,15 +204,28 @@ create table classifier_eval (
 	model longblob null
 ) comment 'evaluation of a classifier on a dataset';
 
-create table classifier_eval_libsvm (
+create table classifier_eval_svm (
 	classifier_eval_id int not null comment 'fk classifier_eval' primary key,
 	cost double DEFAULT '0',
   	weight varchar(50),
 	degree int DEFAULT '0',
 	gamma double DEFAULT '0',
 	kernel int DEFAULT NULL,
-	supportVectors int default null
+	supportVectors int default null,
+	vcdim double null
 ) comment 'evaluation of a libsvm classifier on a dataset';
+
+create table classifier_eval_semil (
+	classifier_eval_id int not null comment 'fk classifier_eval' primary key,
+	distance varchar(50),
+	degree int not null default 0,
+	gamma double not null default 0,
+	soft_label bit not null default 0,
+	norm_laplace bit not null default 0,
+	mu double not null default 0,
+	lambda double not null default 0,
+	pct_labeled double not null default 0
+) comment 'evaluation of a semil classifier on a dataset';
 
 create table classifier_eval_ir (
 	classifier_eval_ir_id int not null auto_increment primary key,
