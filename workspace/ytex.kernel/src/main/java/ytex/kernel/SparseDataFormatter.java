@@ -15,6 +15,24 @@ import java.util.SortedMap;
 public interface SparseDataFormatter {
 
 	/**
+	 * scope property key
+	 */
+	public static final String SCOPE = "scope";
+	/**
+	 * fold value for scope
+	 */
+	public static final String SCOPE_FOLD = "fold";
+	/**
+	 * label value for scope
+	 */
+	public static final String SCOPE_LABEL = "label";
+	/**
+	 * value <tt>instance_id</tt>. SparseMatrix adds the instance_id attribute
+	 * to the matrix. This is a reserved attribute name.
+	 */
+	public static final String ATTR_INSTANCE_ID = "instance_id";
+
+	/**
 	 * initialize data structures for the fold that will be exported. called
 	 * before export.
 	 * 

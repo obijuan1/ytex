@@ -160,10 +160,7 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 		public void initializeExport(InstanceData instanceLabel,
 				Properties properties, SparseData sparseData) throws IOException {
 			super.initializeExport(instanceLabel, properties, sparseData);
-			for (Map<String, Integer> classIndexMap : labelToClassIndexMap
-					.values()) {
-				classIndexMap.put("0", 0);
-			}
+			updateLabelClassMapTransductive();
 		}
 
 		/**

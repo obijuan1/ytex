@@ -16,6 +16,10 @@ import java.util.TreeSet;
  */
 public class SparseData {
 	/**
+	 * the instance ids in this sparse data set
+	 */
+	SortedSet<Integer> instanceIds = new TreeSet<Integer>();
+	/**
 	 * instance nominal attribute values
 	 */
 	Map<Integer, SortedMap<String, String>> instanceNominalWords = new HashMap<Integer, SortedMap<String, String>>();
@@ -23,7 +27,6 @@ public class SparseData {
 	 * map if instance id to map of attribute name - value pairs
 	 */
 	Map<Integer, SortedMap<String, Double>> instanceNumericWords = new HashMap<Integer, SortedMap<String, Double>>();
-
 
 	/**
 	 * nominal attribute names and values
@@ -34,18 +37,29 @@ public class SparseData {
 	 * numeric attribute labels
 	 */
 	SortedSet<String> numericWords = new TreeSet<String>();
+	
+	
 
+	public SortedSet<Integer> getInstanceIds() {
+		return instanceIds;
+	}
 
+	public void setInstanceIds(SortedSet<Integer> instanceIds) {
+		this.instanceIds = instanceIds;
+	}
 
 	public Map<Integer, SortedMap<String, String>> getInstanceNominalWords() {
 		return instanceNominalWords;
 	}
+
 	public Map<Integer, SortedMap<String, Double>> getInstanceNumericWords() {
 		return instanceNumericWords;
 	}
+
 	public SortedMap<String, SortedSet<String>> getNominalWordValueMap() {
 		return nominalWordValueMap;
 	}
+
 	public SortedSet<String> getNumericWords() {
 		return numericWords;
 	}

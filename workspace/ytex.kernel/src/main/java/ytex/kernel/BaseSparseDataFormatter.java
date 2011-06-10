@@ -12,24 +12,55 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 
+	/**
+	 * directory to export files to, with trailing separator added on if
+	 * necessary
+	 */
 	protected String outdir = null;
+	/**
+	 * map of numeric attribute - attribute index.
+	 */
 	protected Map<String, Integer> numericAttributeMap = new HashMap<String, Integer>();
+	/**
+	 * map of nominal attribute - [nominal attribute value - attribute index].
+	 */
 	protected Map<String, Map<String, Integer>> nominalAttributeMap = new HashMap<String, Map<String, Integer>>();
+	/**
+	 * map of label - [class name - class index]
+	 */
 	protected Map<String, Map<String, Integer>> labelToClassIndexMap = new HashMap<String, Map<String, Integer>>();
+	/**
+	 * 1-based attribute index
+	 */
 	protected int maxAttributeIndex = 0;
+	/**
+	 * export properties - properties file that controls what to do for this
+	 * export
+	 */
 	protected Properties exportProperties;
 
 	protected void exportAttributeNames(SparseData sparseData, String label,
 			Integer run, Integer fold) throws IOException {
-		String filename = FileUtil.getFoldFilePrefix(outdir, label, run, fold);
-		if (filename.length() > 0 && !filename.endsWith("/")
-				&& !filename.endsWith("\\") && !filename.endsWith("."))
-			filename += "_";
-		filename += "attributes.txt";
-		exportAttributeNames(filename, sparseData);
+		// reset attribute name/index state
+		this.nominalAttributeMap.clear();
+		this.numericAttributeMap.clear();
+		this.maxAttributeIndex = 0;
+		// construct file name
+		String filename = FileUtil.getScopedFileName(outdir, label, run, fold,
+				"attributes.txt");
+		BufferedWriter w = null;
+		try {
+			w = new BufferedWriter(new FileWriter(filename));
+			// write attributes
+			exportAttributeNames(w, sparseData);
+		} finally {
+			if (w != null)
+				w.close();
+		}
 	}
 
 	/**
@@ -43,41 +74,37 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 	 *            for nominal indices, create an index for each value.
 	 * @throws IOException
 	 */
-	protected int exportAttributeNames(String bFileName, SparseData sparseData)
+	protected int exportAttributeNames(BufferedWriter w, SparseData sparseData)
 			throws IOException {
-		// libsvm indices 1-based
-		int index = 1;
-		BufferedWriter w = null;
-		try {
-			w = new BufferedWriter(new FileWriter(bFileName.toString()));
-			// add numeric indices
-			for (String attributeName : sparseData.getNumericWords()) {
-				w.write(attributeName);
-				w.newLine();
-				numericAttributeMap.put(attributeName, index++);
-			}
-			// add nominal indices
-			for (SortedMap.Entry<String, SortedSet<String>> nominalAttribute : sparseData
-					.getNominalWordValueMap().entrySet()) {
-				Map<String, Integer> attrValueIndexMap = new HashMap<String, Integer>(
-						nominalAttribute.getValue().size());
-				for (String attrValue : nominalAttribute.getValue()) {
-					w.write(nominalAttribute.getKey());
-					if (nominalAttribute.getValue().size() > 1) {
-						w.write("\t");
-						w.write(attrValue);
-					}
-					attrValueIndexMap.put(attrValue, index++);
-				}
-				nominalAttributeMap.put(nominalAttribute.getKey(),
-						attrValueIndexMap);
-			}
-			this.maxAttributeIndex = index;
-			return index;
-		} finally {
-			if (w != null)
-				w.close();
+		// add numeric indices
+		for (String attributeName : sparseData.getNumericWords()) {
+			addNumericAttribute(w, attributeName);
 		}
+		// add nominal indices
+		for (SortedMap.Entry<String, SortedSet<String>> nominalAttribute : sparseData
+				.getNominalWordValueMap().entrySet()) {
+			Map<String, Integer> attrValueIndexMap = new HashMap<String, Integer>(
+					nominalAttribute.getValue().size());
+			for (String attrValue : nominalAttribute.getValue()) {
+				w.write(nominalAttribute.getKey());
+				if (nominalAttribute.getValue().size() > 1) {
+					w.write("\t");
+					w.write(attrValue);
+				}
+				w.write("\n");
+				attrValueIndexMap.put(attrValue, ++maxAttributeIndex);
+			}
+			nominalAttributeMap.put(nominalAttribute.getKey(),
+					attrValueIndexMap);
+		}
+		return maxAttributeIndex;
+	}
+
+	protected void addNumericAttribute(BufferedWriter w, String attributeName)
+			throws IOException {
+		w.write(attributeName);
+		w.write("\n");
+		numericAttributeMap.put(attributeName, ++maxAttributeIndex);
 	}
 
 	/**
@@ -117,8 +144,8 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 		return instanceValues;
 	}
 
-	protected void exportSparseRow(SparseData bagOfWordsData,
-			int instanceId, BufferedWriter wData, int row) throws IOException {
+	protected void exportSparseRow(SparseData bagOfWordsData, int instanceId,
+			BufferedWriter wData, int row) throws IOException {
 		SortedMap<Integer, Double> instanceValues = getSparseLineValues(
 				bagOfWordsData, numericAttributeMap, nominalAttributeMap,
 				instanceId);
@@ -137,26 +164,27 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 			wData.write("\n");
 		}
 	}
-	protected List<Integer> exportSparseMatrix(
-			String filename,
-			SparseData sparseData,
-			SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
+
+	/**
+	 * export sparse matrix data for use in matlab/R. creates _data.txt with
+	 * following columns:
+	 * <ul>
+	 * <li>row (int)
+	 * <li>column (int)
+	 * <li>cell value (double)
+	 * </ul>
+	 * also exports instance data (instance.txt). By default tab delimited
+	 * without header. This can be read as a normal 3-column matrix into
+	 * matlab/R, and then converted into a sparse matrix using
+	 * Matrix::sparseMatrix (R) or sparse (matlab).
+	 */
+	protected void exportSparseMatrix(String filename, SparseData sparseData)
 			throws IOException {
-		List<Integer> instanceIds = new ArrayList<Integer>();
-		instanceIds.addAll(foldInstanceLabelMap.get(true).keySet());
-		Set<Integer> testInstanceIds = foldInstanceLabelMap
-				.containsKey(false) ? foldInstanceLabelMap.get(false)
-				.keySet() : null;
-		if (testInstanceIds != null) {
-			testInstanceIds.removeAll(foldInstanceLabelMap.get(true)
-					.keySet());
-			instanceIds.addAll(testInstanceIds);
-		}
 		BufferedWriter wData = null;
 		try {
 			wData = new BufferedWriter(new FileWriter(filename));
 			int row = 1;
-			for (int instanceId : instanceIds) {
+			for (int instanceId : sparseData.getInstanceIds()) {
 				exportSparseRow(sparseData, instanceId, wData, row);
 				row++;
 			}
@@ -164,42 +192,74 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 			if (wData != null)
 				wData.close();
 		}
+	}
+
+	protected List<Integer> getInstanceIdsForScope(InstanceData instanceLabel,
+			String label, Integer run, Integer fold) {
+		List<Integer> instanceIds = new ArrayList<Integer>();
+		SortedSet<Integer> sortedInstanceIds = new TreeSet<Integer>();
+		if (label == null || label.length() == 0) {
+			// add all instance ids
+			for (SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> runMap : instanceLabel.labelToInstanceMap
+					.values()) {
+				for (SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>> foldMap : runMap
+						.values()) {
+					for (SortedMap<Boolean, SortedMap<Integer, String>> trainTestFold : foldMap
+							.values()) {
+						for (SortedMap<Integer, String> trainMap : trainTestFold
+								.values())
+							sortedInstanceIds.addAll(trainMap.keySet());
+					}
+				}
+			}
+		} else if (label != null && label.length() > 0 && run == null) {
+			// label scope
+		}
 		return instanceIds;
 	}
 
 	/**
-	 * get needed properties out of outdir. convert class names into
-	 * integers for libsvm. attempt to parse the class name into an integer.
-	 * if this fails, use an index that we increment. index corresponds to
-	 * class name's alphabetical order.
+	 * get needed properties out of outdir. convert class names into integers
+	 * for libsvm. attempt to parse the class name into an integer. if this
+	 * fails, use an index that we increment. index corresponds to class name's
+	 * alphabetical order.
 	 */
 	@Override
-	public void initializeExport(InstanceData instanceLabel, Properties properties, SparseData sparseData)
-			throws IOException {
-				this.exportProperties = properties;
-				this.outdir = properties.getProperty("outdir");
-				FileUtil.createOutdir(outdir);
-				for (Map.Entry<String, SortedSet<String>> labelToClass : instanceLabel
-						.getLabelToClassMap().entrySet()) {
-					Map<String, Integer> classToIndexMap = new HashMap<String, Integer>(
-							labelToClass.getValue().size());
-					this.labelToClassIndexMap.put(labelToClass.getKey(),
-							classToIndexMap);
-					int nIndex = 1;
-					for (String className : labelToClass.getValue()) {
-						Integer classNumber = null;
-						try {
-							classNumber = Integer.parseInt(className);
-						} catch (NumberFormatException fe) {
-						}
-						if (classNumber == null) {
-							classToIndexMap.put(className, nIndex++);
-						} else {
-							classToIndexMap.put(className, classNumber);
-						}
-					}
+	public void initializeExport(InstanceData instanceLabel,
+			Properties properties, SparseData sparseData) throws IOException {
+		this.exportProperties = properties;
+		this.outdir = properties.getProperty("outdir");
+		FileUtil.createOutdir(outdir);
+		for (Map.Entry<String, SortedSet<String>> labelToClass : instanceLabel
+				.getLabelToClassMap().entrySet()) {
+			Map<String, Integer> classToIndexMap = new HashMap<String, Integer>(
+					labelToClass.getValue().size());
+			this.labelToClassIndexMap.put(labelToClass.getKey(),
+					classToIndexMap);
+			int nIndex = 1;
+			for (String className : labelToClass.getValue()) {
+				Integer classNumber = null;
+				try {
+					classNumber = Integer.parseInt(className);
+				} catch (NumberFormatException fe) {
+				}
+				if (classNumber == null) {
+					classToIndexMap.put(className, nIndex++);
+				} else {
+					classToIndexMap.put(className, classNumber);
 				}
 			}
-	
+		}
+	}
+
+	/**
+	 * add the 'unlabeled' class id to the classIndexMap if it isn't there
+	 * already
+	 */
+	protected void updateLabelClassMapTransductive() {
+		for (Map<String, Integer> classIndexMap : labelToClassIndexMap.values()) {
+			classIndexMap.put("0", 0);
+		}
+	}
 
 }

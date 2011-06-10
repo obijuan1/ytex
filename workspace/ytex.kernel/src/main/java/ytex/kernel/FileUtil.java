@@ -95,6 +95,35 @@ public class FileUtil {
 	}
 
 	/**
+	 * generate file name for given outdir and 'scope'
+	 * @param outdir @see #getFoldFilePrefix
+	 * @param label @see #getFoldFilePrefix
+	 * @param run @see #getFoldFilePrefix
+	 * @param fold @see #getFoldFilePrefix
+	 * @param suffix added to file
+	 * @return 
+	 */
+	public static String getScopedFileName(String outdir, String label, Integer run, Integer fold, String suffix) {
+		String filename = FileUtil.getFoldFilePrefix(outdir, label, run, fold);
+		if (filename.length() > 0 && !filename.endsWith("/")
+				&& !filename.endsWith("\\") && !filename.endsWith("."))
+			filename += "_";
+		filename += suffix;
+		return filename;
+	}
+	
+	public static String addFilenameToDir(String outdir, String filename) {
+		StringBuilder builder = new StringBuilder();
+		if (outdir != null && outdir.length() > 0) {
+			builder.append(outdir);
+			if (!outdir.endsWith("/") && !outdir.endsWith("\\"))
+				builder.append(File.separator);
+		}
+		builder.append(filename);
+		return builder.toString();
+	}
+	
+	/**
 	 * construct file name for train/test set, will be like
 	 * <tt>label[label]_run[run]_fold[fold]_train</tt>
 	 * 

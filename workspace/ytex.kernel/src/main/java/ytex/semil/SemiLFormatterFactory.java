@@ -5,19 +5,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import ytex.kernel.FileUtil;
 import ytex.kernel.InstanceData;
 import ytex.kernel.SparseData;
-import ytex.kernel.SparseDataExporter.ScopeEnum;
 import ytex.kernel.SparseDataFormatter;
 import ytex.kernel.SparseDataFormatterFactory;
 import ytex.svmlight.SVMLightFormatterFactory.SVMLightFormatter;
@@ -26,19 +21,19 @@ import ytex.svmlight.SVMLightFormatterFactory.SVMLightFormatter;
  * Export data for use with SemiL. I would have liked to have computed the
  * distance using the COLT library; however this was far too slow.
  * 
- * for each fold produce 3 files:
+ * Produce following files:
  * <ul>
- * <li>_id.txt - contains instance ids and class labels. 3 columns: instance id,
- * train/test, class
- * <li>_data.txt - sparse data file with class labels of first fold. This must
- * be converted into a distance matrix using semiL. By default in libsvm format
- * (compatible with SemiL). Can be exported in sparseMatrix format for so that
- * you can compute the distance yourself in e.g. R or Matlab.
- * <li>_data.txt.lbl - label file, on for each fold. class labels corresponding
- * to rows. test data automatically unlabeled. The same distance matrix can be
- * used with different label files - the rows across folds refer to the same
- * instance ids. What differs is the labels for the test instances (0 for test
- * instance's fold).
+ * <li>[scope]_data.txt - sparse data file. Can be converted into distance
+ * matrix for SemiL using R or Matlab. R script provided. If you want to use
+ * semiL to generate a distance matrix, use the libsvm formatter.
+ * <li>[fold]_label.txt - semiL label file, one for each fold. class labels
+ * corresponding to rows. test data automatically unlabeled. The same
+ * data/distance matrix can be used with different label files - the rows across
+ * folds refer to the same instance ids. What differs is the labels for the test
+ * instances (0 for test instance's fold).
+ * <li>[fold]_class.txt - contains instance ids and target class ids for each
+ * fold. matrix with 3 columns: instance id, train/test, target class id. Used
+ * by SemiLEvaluationParser to evaluate SemiL predictions.
  * </ul>
  * 
  * @author vhacongarlav
@@ -54,12 +49,6 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 	public static class SemiLDataFormatter extends SVMLightFormatter {
 		NumberFormat semilNumberFormat = new DecimalFormat("#.######");
 		InstanceData instanceLabel = null;
-		/**
-		 * instance ids of the current data set we are exporting. This is set in
-		 * exportSemiL - a single file is exported for all folds. This is read
-		 * in exportFold - for each fold, we generate a different label file.
-		 */
-		List<Integer> instanceIds;
 
 		// /**
 		// * cosine distance: <tt>1-aa'/sqrt(aa' * bb')</tt>
@@ -85,14 +74,9 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				throws IOException {
 			super.initializeExport(instanceLabel, properties, sparseData);
 			this.instanceLabel = instanceLabel;
-			if (properties.getProperty("scope") == null
-					|| properties.getProperty("scope").length() == 0) {
-				// all instance ids assumed to be identical across all folds
-				SortedMap<Boolean, SortedMap<Integer, String>> fold = instanceLabel
-						.getLabelToInstanceMap().values().iterator().next()/* runs */
-						.values().iterator().next() /* folds */
-						.values().iterator().next();
-				exportSemiL(fold, sparseData, null, null, null);
+			if (properties.getProperty(SCOPE) == null
+					|| properties.getProperty(SCOPE).length() == 0) {
+				exportSemiL(sparseData, null, null, null);
 			}
 		}
 
@@ -103,10 +87,8 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				Properties properties, SparseData sparseData)
 				throws IOException {
 			super.initializeLabel(label, labelInstances, properties, sparseData);
-			if ("label".equals(this.exportProperties.getProperty("scope"))) {
-				SortedMap<Boolean, SortedMap<Integer, String>> fold = labelInstances
-						.values().iterator().next().values().iterator().next();
-				exportSemiL(fold, sparseData, label, null, null);
+			if ("label".equals(this.exportProperties.getProperty(SCOPE))) {
+				exportSemiL(sparseData, label, null, null);
 			}
 		}
 
@@ -118,17 +100,18 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				Integer fold,
 				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
 				throws IOException {
-			if ("fold".equals(this.exportProperties.getProperty("scope"))) {
-				exportSemiL(foldInstanceLabelMap, sparseData, label, run, fold);
+			if ("fold".equals(this.exportProperties.getProperty(SCOPE))) {
+				exportSemiL(sparseData, label, run, fold);
 			}
-			String labelFileName = FileUtil.getFoldFilePrefix(outdir, label,
-					run, fold) + "_label.txt";
-			String idFileName = FileUtil.getFoldFilePrefix(outdir, label, run,
-					fold) + "_class.txt";
+			String labelFileName = FileUtil.getScopedFileName(outdir, label,
+					run, fold, "label.txt");
+			String idFileName = FileUtil.getScopedFileName(outdir, label, run,
+					fold, "class.txt");
 			exportLabel(idFileName, labelFileName,
 					foldInstanceLabelMap.get(true),
 					foldInstanceLabelMap.get(false),
-					this.labelToClassIndexMap.get(label));
+					this.labelToClassIndexMap.get(label),
+					sparseData.getInstanceIds());
 		}
 
 		/**
@@ -140,26 +123,13 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		 * @param fold
 		 * @throws IOException
 		 */
-		private void exportSemiL(
-				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap,
-				SparseData sparseData, String label, Integer run, Integer fold)
-				throws IOException {
+		private void exportSemiL(SparseData sparseData, String label,
+				Integer run, Integer fold) throws IOException {
 			exportAttributeNames(sparseData, label, run, fold);
-			String filename = FileUtil.getFoldFilePrefix(outdir, label, run,
-					fold) + "_data.txt";
-			String idFilename = FileUtil.getFoldFilePrefix(outdir, label, run,
-					fold) + "_id.txt";
-			String format = this.exportProperties.getProperty("semil.format",
-					"libsvm");
-			if ("sparseMatrix".equals(format)) {
-				this.instanceIds = exportSparseMatrix(filename, sparseData,
-						foldInstanceLabelMap);
-			} else {
-				this.instanceIds = exportTransductiveData(filename, idFilename,
-						sparseData, foldInstanceLabelMap.get(Boolean.TRUE),
-						foldInstanceLabelMap.get(Boolean.FALSE).keySet(),
-						this.labelToClassIndexMap.get(label));
-			}
+			String filename = FileUtil.getScopedFileName(outdir, label, run,
+					fold, "data.txt");
+			exportSparseMatrix(filename, sparseData);
+
 		}
 
 		// private void exportDistance(SparseData sparseData, String label,
@@ -190,7 +160,6 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		// this.writeDistanceMatrix(data, filename);
 		// }
 
-
 		@Override
 		public void exportFold(SparseData sparseData,
 				SortedMap<Integer, String> instanceClassMap, boolean train,
@@ -213,13 +182,14 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		private void exportLabel(String idFilename, String lblFilename,
 				SortedMap<Integer, String> trainInstanceClassMap,
 				SortedMap<Integer, String> testInstanceClassMap,
-				Map<String, Integer> classToIndexMap) throws IOException {
+				Map<String, Integer> classToIndexMap,
+				SortedSet<Integer> instanceIds) throws IOException {
 			BufferedWriter wId = null;
 			BufferedWriter wLabel = null;
 			try {
 				wId = new BufferedWriter(new FileWriter(idFilename));
 				wLabel = new BufferedWriter(new FileWriter(lblFilename));
-				for (Integer instanceId : this.instanceIds) {
+				for (Integer instanceId : instanceIds) {
 					// for training default to unlabeled
 					int classIdTrain = 0;
 					if (trainInstanceClassMap.containsKey(instanceId)) {

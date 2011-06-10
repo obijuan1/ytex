@@ -206,15 +206,9 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				</entry>
 				<entry>
 					<key>
-						<value>matlab</value>
+						<value>sparsematrix</value>
 					</key>
-					<ref bean="matlabFormatterFactory" />
-				</entry>
-				<entry>
-					<key>
-						<value>R</value>
-					</key>
-					<ref bean="matlabFormatterFactory" />
+					<ref bean="sparseMatrixFormatterFactory" />
 				</entry>
 				<entry>
 					<key>
@@ -235,9 +229,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="libSVMFormatterFactory" class="ytex.libsvm.LibSVMFormatterFactory">
 	</bean>
-	<bean id="matlabFormatterFactory" class="ytex.matlab.MatlabFormatterFactory">
+	<bean id="sparseMatrixFormatterFactory" class="ytex.sparsematrix.SparseMatrixFormatterFactory">
+		<property name="instanceDataExporter" ref="instanceDataExporter" />
 	</bean>
 	<bean id="semiLFormatterFactory" class="ytex.semil.SemiLFormatterFactory">
+	</bean>
+	<bean id="instanceDataExporter" class="ytex.sparsematrix.InstanceDataExporterImpl">
 	</bean>
 
 </beans>

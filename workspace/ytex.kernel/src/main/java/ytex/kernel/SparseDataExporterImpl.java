@@ -71,8 +71,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 			PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
 		txNew = new TransactionTemplate(transactionManager);
-		txNew
-				.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
+		txNew.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 	}
 
 	public SparseDataExporterImpl() {
@@ -105,16 +104,16 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 			public Object doInTransaction(TransactionStatus txStatus) {
 				namedJdbcTemplate.query(sql, params
 				// new PreparedStatementCreator() {
-						//
-						// @Override
-						// public PreparedStatement createPreparedStatement(
-						// Connection conn) throws SQLException {
-						// return conn.prepareStatement(sql,
-						// ResultSet.TYPE_FORWARD_ONLY,
-						// ResultSet.CONCUR_READ_ONLY);
-						// }
-						//
-						// }
+				//
+				// @Override
+				// public PreparedStatement createPreparedStatement(
+				// Connection conn) throws SQLException {
+				// return conn.prepareStatement(sql,
+				// ResultSet.TYPE_FORWARD_ONLY,
+				// ResultSet.CONCUR_READ_ONLY);
+				// }
+				//
+				// }
 						, new RowCallbackHandler() {
 
 							@Override
@@ -135,6 +134,9 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 
 	protected void addNumericWordToInstance(SparseData sparseData,
 			int instanceId, String word, double wordValue) {
+		// add the instance id to the set of instance ids if necessary
+		if (!sparseData.getInstanceIds().contains(instanceId))
+			sparseData.getInstanceIds().add(instanceId);
 		// add the numeric word to the map of words for this document
 		SortedMap<String, Double> words = sparseData.getInstanceNumericWords()
 				.get(instanceId);
@@ -148,6 +150,9 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 
 	protected void addNominalWordToInstance(SparseData sparseData,
 			int instanceId, String word, String wordValue) {
+		// add the instance id to the set of instance ids if necessary
+		if (!sparseData.getInstanceIds().contains(instanceId))
+			sparseData.getInstanceIds().add(instanceId);
 		SortedMap<String, String> instanceWords = sparseData
 				.getInstanceNominalWords().get(instanceId);
 		SortedSet<String> wordValueSet = sparseData.getNominalWordValueMap()
@@ -228,17 +233,18 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 					params);
 		// added to support adding gram matrix index in GramMatrixExporter
 		if (bDecorator != null)
-			bDecorator.decorateNumericInstanceWords(sparseData
-					.getInstanceNumericWords(), sparseData.getNumericWords());
+			bDecorator.decorateNumericInstanceWords(
+					sparseData.getInstanceNumericWords(),
+					sparseData.getNumericWords());
 		// load nominal attributes
 		if (instanceNominalWordQuery != null
 				&& instanceNominalWordQuery.trim().length() > 0)
 			this.getNominalInstanceWords(instanceNominalWordQuery, sparseData,
 					params);
 		if (bDecorator != null)
-			bDecorator.decorateNominalInstanceWords(sparseData
-					.getInstanceNominalWords(), sparseData
-					.getNominalWordValueMap());
+			bDecorator.decorateNominalInstanceWords(
+					sparseData.getInstanceNominalWords(),
+					sparseData.getNominalWordValueMap());
 		return sparseData;
 	}
 
@@ -253,21 +259,24 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 			BagOfWordsDecorator bDecorator) throws IOException {
 		String scope = properties.getProperty("scope", null);
 		SparseData sparseData = null;
-		if(scope == null) {
+		if (scope == null) {
 			sparseData = this.loadData(instanceLabel,
 					properties.getProperty("numericWordQuery"),
-					properties.getProperty("nominalWordQuery"),
-					bDecorator, null, null, null);
+					properties.getProperty("nominalWordQuery"), bDecorator,
+					null, null, null);
 		}
 		formatter.initializeExport(instanceLabel, properties, sparseData);
 		for (String label : instanceLabel.getLabelToInstanceMap().keySet()) {
-			if("label".equals(scope)) {
+			if ("label".equals(scope)) {
 				sparseData = this.loadData(instanceLabel,
 						properties.getProperty("numericWordQuery"),
-						properties.getProperty("nominalWordQuery"),
-						bDecorator, label, null, null);
+						properties.getProperty("nominalWordQuery"), bDecorator,
+						label, null, null);
 			}
-			formatter.initializeLabel(label, instanceLabel.getLabelToInstanceMap().get(label), properties, sparseData);
+			formatter
+					.initializeLabel(label, instanceLabel
+							.getLabelToInstanceMap().get(label), properties,
+							sparseData);
 			for (int run : instanceLabel.getLabelToInstanceMap().get(label)
 					.keySet()) {
 				for (int fold : instanceLabel.getLabelToInstanceMap()
@@ -276,14 +285,15 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 							&& (label.length() > 0 || run > 0 || fold > 0))
 						log.info("exporting, label " + label + " run " + run
 								+ " fold " + fold);
-					if("fold".equals(scope)) {
+					if ("fold".equals(scope)) {
 						sparseData = this.loadData(instanceLabel,
 								properties.getProperty("numericWordQuery"),
 								properties.getProperty("nominalWordQuery"),
 								bDecorator, label, fold, run);
 					}
-					formatter.initializeFold(sparseData, label, run, fold, instanceLabel.getLabelToInstanceMap()
-							.get(label).get(run).get(fold));
+					formatter.initializeFold(sparseData, label, run, fold,
+							instanceLabel.getLabelToInstanceMap().get(label)
+									.get(run).get(fold));
 					for (boolean train : instanceLabel.getLabelToInstanceMap()
 							.get(label).get(run).get(fold).keySet()) {
 						formatter.exportFold(sparseData, instanceLabel
@@ -309,8 +319,8 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 			throws IOException, InvalidPropertiesFormatException {
 		Properties props = new Properties();
 		this.getKernelUtil().loadProperties(propertiesFile, props);
-		this.exportData(props, nameToFormatterMap.get(format.toLowerCase()).getFormatter(),
-				null);
+		this.exportData(props, nameToFormatterMap.get(format.toLowerCase())
+				.getFormatter(), null);
 	}
 
 	/*
@@ -338,14 +348,17 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 	@SuppressWarnings("static-access")
 	public static void main(String args[]) throws IOException {
 		Options options = new Options();
-		options.addOption(OptionBuilder.withArgName("prop").hasArg()
-				.isRequired().withDescription(
+		options.addOption(OptionBuilder
+				.withArgName("prop")
+				.hasArg()
+				.isRequired()
+				.withDescription(
 						"property file with queries and other parameters.")
 				.create("prop"));
 		options.addOption(OptionBuilder.withArgName("type").hasArg()
-				.isRequired().withDescription(
-						"export format; valid values: weka, libsvm").create(
-						"type"));
+				.isRequired()
+				.withDescription("export format; valid values: weka, libsvm")
+				.create("type"));
 		if (args.length == 0)
 			printHelp(options);
 		else {
