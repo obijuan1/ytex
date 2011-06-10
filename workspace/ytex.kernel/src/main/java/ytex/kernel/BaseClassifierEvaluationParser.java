@@ -111,7 +111,7 @@ public abstract class BaseClassifierEvaluationParser implements
 		eval.setName(props.getProperty("kernel.name"));
 		eval.setExperiment(props.getProperty("kernel.experiment"));
 		String strParam1 = props.getProperty("kernel.param1");
-		if (strParam1 != null)
+		if (strParam1 != null && strParam1.length() > 0)
 			eval.setParam1(Double.parseDouble(strParam1));
 		eval.setParam2(props.getProperty("kernel.param2"));
 		eval.setOptions(props.getProperty(ParseOption.EVAL_LINE.getOptionKey()));
@@ -152,8 +152,8 @@ public abstract class BaseClassifierEvaluationParser implements
 
 	protected String getFileBaseName(Properties kernelProps) {
 		String tmpFileBaseName = kernelProps.getProperty(
-				ParseOption.FOLD_BASE.getOptionKey(),
-				ParseOption.FOLD_BASE.getDefaultValue());
+				ParseOption.DATA_BASENAME.getOptionKey(),
+				ParseOption.DATA_BASENAME.getDefaultValue());
 		if (tmpFileBaseName.length() > 0)
 			tmpFileBaseName = tmpFileBaseName + "_";
 		final String fileBaseName = tmpFileBaseName;

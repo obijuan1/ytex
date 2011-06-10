@@ -33,11 +33,11 @@ public interface ClassifierEvaluationParser {
 		 */
 		STORE_IRSTATS("kernel.StoreIRStats", YES),
 		/**
-		 * key <tt>cv.fold.base</tt>
+		 * key <tt>kernel.data.basename</tt>
 		 * base name of file; other file names constructed relative to this.
-		 * fold/run taken from this file name. 
+		 * label/fold/run taken from this file name. 
 		 */
-		FOLD_BASE("cv.fold.base", ""),
+		DATA_BASENAME("kernel.data.basename", ""),
 		/**
 		 * key <tt>kernel.distance</tt>
 		 * distance measure for semiL. default is euclidean.
@@ -49,10 +49,10 @@ public interface ClassifierEvaluationParser {
 		 */
 		DEGREE("kernel.degree", "10"),
 		/**
-		 * key <tt>cv.eval.line</tt>
+		 * key <tt>kernel.train.line</tt>
 		 * options used to train model.
 		 */
-		EVAL_LINE("cv.eval.line", null);
+		EVAL_LINE("kernel.train.line", null);
 		String optionKey;
 		public String getOptionKey() {
 			return optionKey;
