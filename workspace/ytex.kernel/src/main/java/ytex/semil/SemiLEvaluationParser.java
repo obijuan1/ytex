@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -58,6 +59,11 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	public static Pattern pLaplacian = Pattern.compile("Laplacian=([01])");
 	public static Pattern pPercent = Pattern
 			.compile("labeled points =([\\d\\.\\-\\+e]+)");
+	/**
+	 * distance files of the form <tt>label1_dist_pearson_5.txt</tt> parse out
+	 * the metric and degree from the file name.
+	 */
+	public static Pattern pOutput = Pattern.compile("dist_(\\w+)_(\\d+)");
 
 	/**
 	 * 
@@ -72,23 +78,30 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 		Properties kernelProps = this.loadProps(outputDir);
 		// get the name of the label file
 		String labelBase = kernelProps.getProperty("kernel.label.basename");
-		// construct the name of the class.txt file
-		String classFileName = dataDir + File.separator
-				+ labelBase.substring(0, labelBase.length() - "label".length())
-				+ "class.txt";
-		// load instance ids and their class ids
-		List<List<Integer>> listClassInfo = loadClassInfo(classFileName);
-		// process .output files
-		if (listClassInfo != null) {
-			for (File output : outputDir.listFiles(new FilenameFilter() {
+		if (labelBase != null && labelBase.length() > 0) {
+			// construct the name of the class.txt file
+			String classFileName = dataDir
+					+ File.separator
+					+ labelBase.substring(0,
+							labelBase.length() - "label".length())
+					+ "class.txt";
+			// load instance ids and their class ids
+			List<List<Integer>> listClassInfo = loadClassInfo(classFileName);
+			// process .output files
+			if (listClassInfo != null) {
+				for (File output : outputDir.listFiles(new FilenameFilter() {
 
-				@Override
-				public boolean accept(File dir, String name) {
-					return name.endsWith(".output");
+					@Override
+					public boolean accept(File dir, String name) {
+						return name.endsWith(".output");
+					}
+				})) {
+					parseSemiLOutput(labelBase, kernelProps, output,
+							listClassInfo);
 				}
-			})) {
-				parseSemiLOutput(labelBase, kernelProps, output, listClassInfo);
 			}
+		} else {
+			log.warn("couldn't parse directory; kernel.label.base not defined. Dir: " + outputDir);
 		}
 	}
 
@@ -136,7 +149,9 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	/**
 	 * parse semil output file
 	 * 
-	 * @param fileBaseName parse label, run and fold out of this, e.g. label1_run1_fold1_xxx
+	 * @param fileBaseName
+	 *            parse label, run and fold out of this, e.g.
+	 *            label1_run1_fold1_xxx
 	 * @param kernelProps
 	 *            from options.properties
 	 * @param output
@@ -162,7 +177,7 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 				// set name, experiment
 				this.initClassifierEvaluationFromProperties(kernelProps, ce);
 				// parse options
-				parseOptions(ce, optionsLine, kernelProps);
+				parseOptions(ce, optionsLine, kernelProps, output.getName());
 				boolean storeUnlabeled = YES.equalsIgnoreCase(kernelProps
 						.getProperty(
 								ParseOption.STORE_UNLABELED.getOptionKey(),
@@ -231,7 +246,7 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	 * @param optionsLine
 	 */
 	private void parseOptions(SemiLClassifierEvaluation ce, String optionsLine,
-			Properties kernelProps) {
+			Properties kernelProps, String outputName) {
 		ce.setOptions(optionsLine);
 		ce.setGamma(this.parseDoubleOption(pGamma, optionsLine));
 		ce.setLambda(this.parseDoubleOption(pLambda, optionsLine));
@@ -239,12 +254,17 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 		ce.setPercentLabeled(this.parseDoubleOption(pPercent, optionsLine));
 		ce.setNormalizedLaplacian(this.parseIntOption(pLaplacian, optionsLine) == 1);
 		ce.setSoftLabel(this.parseIntOption(pLabel, optionsLine) == 1);
-		ce.setDistance(kernelProps.getProperty(
-				ParseOption.DISTANCE.getOptionKey(),
-				ParseOption.DISTANCE.getDefaultValue()));
-		ce.setDegree(Integer.parseInt(kernelProps.getProperty(
-				ParseOption.DEGREE.getOptionKey(),
-				ParseOption.DEGREE.getDefaultValue())));
+		Matcher mOutput = pOutput.matcher(outputName);
+		if (mOutput.find()) {
+			ce.setDistance(mOutput.group(1));
+			ce.setDegree(Integer.parseInt(mOutput.group(2)));
+		}
+		// ce.setDistance(kernelProps.getProperty(
+		// ParseOption.DISTANCE.getOptionKey(),
+		// ParseOption.DISTANCE.getDefaultValue()));
+		// ce.setDegree(Integer.parseInt(kernelProps.getProperty(
+		// ParseOption.DEGREE.getOptionKey(),
+		// ParseOption.DEGREE.getDefaultValue())));
 		ce.setAlgorithm("semiL");
 	}
 

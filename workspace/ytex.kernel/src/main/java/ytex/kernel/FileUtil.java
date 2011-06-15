@@ -1,8 +1,13 @@
 package ytex.kernel;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -96,14 +101,21 @@ public class FileUtil {
 
 	/**
 	 * generate file name for given outdir and 'scope'
-	 * @param outdir @see #getFoldFilePrefix
-	 * @param label @see #getFoldFilePrefix
-	 * @param run @see #getFoldFilePrefix
-	 * @param fold @see #getFoldFilePrefix
-	 * @param suffix added to file
-	 * @return 
+	 * 
+	 * @param outdir
+	 * @see #getFoldFilePrefix
+	 * @param label
+	 * @see #getFoldFilePrefix
+	 * @param run
+	 * @see #getFoldFilePrefix
+	 * @param fold
+	 * @see #getFoldFilePrefix
+	 * @param suffix
+	 *            added to file
+	 * @return
 	 */
-	public static String getScopedFileName(String outdir, String label, Integer run, Integer fold, String suffix) {
+	public static String getScopedFileName(String outdir, String label,
+			Integer run, Integer fold, String suffix) {
 		String filename = FileUtil.getFoldFilePrefix(outdir, label, run, fold);
 		if (filename.length() > 0 && !filename.endsWith("/")
 				&& !filename.endsWith("\\") && !filename.endsWith("."))
@@ -111,7 +123,7 @@ public class FileUtil {
 		filename += suffix;
 		return filename;
 	}
-	
+
 	public static String addFilenameToDir(String outdir, String filename) {
 		StringBuilder builder = new StringBuilder();
 		if (outdir != null && outdir.length() > 0) {
@@ -122,7 +134,7 @@ public class FileUtil {
 		builder.append(filename);
 		return builder.toString();
 	}
-	
+
 	/**
 	 * construct file name for train/test set, will be like
 	 * <tt>label[label]_run[run]_fold[fold]_train</tt>
@@ -174,14 +186,73 @@ public class FileUtil {
 
 	/**
 	 * file filter to get directories
+	 * 
 	 * @author vijay
-	 *
+	 * 
 	 */
 	public static class DirectoryFileFilter implements FileFilter {
 		@Override
 		public boolean accept(File pathname) {
 			return pathname.isDirectory();
 		}
+	}
+
+	/**
+	 * get files that start with specified prefix. just the file name, not
+	 * preceding directories, are checked.
+	 * 
+	 * @author vijay
+	 * 
+	 */
+	public static class PrefixFileFilter implements FileFilter {
+		String prefix = null;
+
+		public PrefixFileFilter(String prefix) {
+			this.prefix = prefix;
+		}
+
+		@Override
+		public boolean accept(File pathname) {
+			return pathname.getName().startsWith(prefix);
+		}
+
+	}
+	
+	/**
+	 * filter files by suffix
+	 * @author vijay
+	 *
+	 */
+	public static class SuffixFileFilter implements FileFilter {
+		String suffix = null;
+
+		public SuffixFileFilter(String prefix) {
+			this.suffix = prefix;
+		}
+
+		@Override
+		public boolean accept(File pathname) {
+			return pathname.getName().endsWith(suffix);
+		}
+
+	}
+
+	public static Properties loadProperties(String fileName,
+			boolean systemOverride) throws IOException {
+		Properties kernelProps = new Properties();
+		InputStream is = null;
+		try {
+			is = new BufferedInputStream(new FileInputStream(fileName));
+			kernelProps.load(is);
+		} catch (FileNotFoundException fe) {
+			// do nothing - options not required
+		} finally {
+			if (is != null)
+				is.close();
+		}
+		if (systemOverride)
+			kernelProps.putAll(System.getProperties());
+		return kernelProps;
 	}
 
 }

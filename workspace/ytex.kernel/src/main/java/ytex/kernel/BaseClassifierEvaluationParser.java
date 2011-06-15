@@ -117,7 +117,6 @@ public abstract class BaseClassifierEvaluationParser implements
 		eval.setOptions(props.getProperty(ParseOption.EVAL_LINE.getOptionKey()));
 	}
 
-
 	/**
 	 * load properties from <tt>outputDir/options.properties</tt>. returns empty
 	 * properties if the file does not exist
@@ -129,21 +128,8 @@ public abstract class BaseClassifierEvaluationParser implements
 	 */
 	public Properties loadProps(File outputDir) throws FileNotFoundException,
 			IOException {
-		Properties kernelProps = new Properties();
-		InputStream is = null;
-		try {
-			is = new BufferedInputStream(
-					new FileInputStream(outputDir.getPath() + File.separator
-							+ "options.properties"));
-			kernelProps.load(is);
-		} catch (FileNotFoundException fe) {
-			// do nothing - options not required
-		} finally {
-			if (is != null)
-				is.close();
-		}
-		kernelProps.putAll(System.getProperties());
-		return kernelProps;
+		return FileUtil.loadProperties(outputDir.getPath() + File.separator
+				+ "options.properties", true);
 	}
 
 	protected boolean checkFileRead(String file) {

@@ -38,16 +38,16 @@ public interface ClassifierEvaluationParser {
 		 * label/fold/run taken from this file name. 
 		 */
 		DATA_BASENAME("kernel.data.basename", ""),
-		/**
-		 * key <tt>kernel.distance</tt>
-		 * distance measure for semiL. default is euclidean.
-		 */
-		DISTANCE("kernel.distance", "euclidean"),
-		/**
-		 * key <tt>kernel.degree</tt>
-		 * degree for knn graph for semiL. default is 10
-		 */
-		DEGREE("kernel.degree", "10"),
+//		/**
+//		 * key <tt>kernel.distance</tt>
+//		 * distance measure for semiL. default is euclidean.
+//		 */
+//		DISTANCE("kernel.distance", "euclidean"),
+//		/**
+//		 * key <tt>kernel.degree</tt>
+//		 * degree for knn graph for semiL. default is 10
+//		 */
+//		DEGREE("kernel.degree", "10"),
 		/**
 		 * key <tt>kernel.train.line</tt>
 		 * options used to train model.

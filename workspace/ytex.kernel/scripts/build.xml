@@ -255,127 +255,130 @@
 	semil.dist - generate distance matrix by calling R script
 	cv.semil.evaluate - iterate over methods (grf/cm), gamma, and label.txt and evaluate semil
 	-->
-	<target name="cv.semil.process.dir" depends="cv.init.dir,cv.semil.createDistances,cv.semil.evaluate,cv.semil.storeResults" description="generate distance matrices, run semil" />
-	<target name="cv.semil.createDistances" depends="cv.init.dir" description="generate distance matrices">
-		<antcall target="cv.semil.iter.metric" parallel="${parallel.folds}" threadCount="${kernel.threads}">
-			<param name="cv.semil.target" value="semil.dist" />
-		</antcall>
+	<target name="semil.process.dir" depends="cv.init.dir,semil.createDistances,cv.semil.genParams,semil.evaluate,semil.storeResults" description="generate distance matrices, run semil" />
+	<target name="cv.semil.genParams" depends="cv.init.dir" unless="no.semil.genParams">
+		<propertyset id="kernel.props">
+			<propertyref prefix="kernel." />
+		</propertyset>
+		<propertyset id="cv.props">
+			<propertyref prefix="cv." />
+		</propertyset>
+		<java classname="ytex.kernel.ClassifierEvalUtil" classpathref="${kernel.cp}">
+			<syspropertyset>
+				<propertyset refid="cv.props" />
+				<propertyset refid="kernel.props" />
+			</syspropertyset>
+		</java>
 	</target>
-	<target name="cv.semil.evaluate" depends="cv.init.dir" description="evaluate semil on each label file and corresponding distance matrix">
-		<antcall target="cv.semil.iter.metric">
-			<param name="cv.semil.target" value="cv.semil.iter.label" />
-		</antcall>
-	</target>
-	<target name="cv.semil.storeResults" depends="cv.init.dir" description="store results in db, cleanup temp dirs">
-		<antcall target="eval.store.db">
-			<param name="kernel.workdir" value="${cv.kernel.tmpdir}" />
-		</antcall>
-		<mkdir dir="${kernel.data}/cv" />
-		<zip destfile="${kernel.data}/cv/cv.zip" update="no">
-			<fileset dir="${cv.kernel.tmpdir}" excludes="**/*_data.txt" />
-		</zip>
-		<delete quiet="yes" includeemptydirs="yes" dir="${cv.kernel.tmpdir}" />
-	</target>
-	<target name="cv.semil.iter.metric" depends="cv.init.dir" description="iterate over cv.semil.iter.metric, call cv.semil.iter.degree">
-		<for list="${cv.semil.metrics}" param="kernel.metric">
-			<sequential>
-				<antcall target="cv.semil.iter.degree">
-					<param name="kernel.metric" value="@{kernel.metric}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="cv.semil.iter.degree" depends="cv.init.dir" description="iterate over cv.semil.degrees, call cv.semil.iter.dist">
-		<for list="${cv.semil.degrees}" param="kernel.degree">
-			<sequential>
-				<antcall target="cv.semil.iter.dist">
-					<param name="kernel.degree" value="@{kernel.degree}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-
-	<target name="cv.semil.iter.dist" description="iterate over data files, call semil.dist">
-		<property name="cv.semil.target" value="cv.semil.iter.label" />
+	<target name="semil.createDistances" depends="cv.init.dir">
 		<for param="kernel.data.file">
 			<fileset dir="${kernel.data}" includes="*data.txt" />
 			<sequential>
-				<antcall target="${cv.semil.target}">
+				<antcall target="semil.createDistance">
 					<param name="kernel.data.file" value="@{kernel.data.file}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-
-	<target name="semil.dist.init" description="setup properties based on kernel.data.file, metric, and degree">
-		<property name="kernel.metric" value="euclidean" />
-		<property name="kernel.degree" value="10" />
-		<property name="kernel.data.file" value="./label1_data.txt" />
-		<basename file="${kernel.data.file}" property="kernel.dist.file" />
-		<basename file="${kernel.dist.file}" property="kernel.basename" suffix="data.txt" />
-		<property name="kernel.dist.subdir" value="${kernel.metric}/${kernel.degree}" />
-		<property name="kernel.dist.dir" value="${kernel.data}/${kernel.metric}/${kernel.degree}" />
-	</target>
-
-	<target name="semil.dist" depends="semil.dist.init" description="generate distance matrix by calling semil_dist.R script">
+	<target name="semil.createDistance" description="generate distance matrix by calling semil_dist.R script">
 		<!--
 		semil distance computation will not work on windows
 		requires interactive shell - otherwise fails
 		created R script to generate distance matrix
+		
+		default to cross-validation settings.
+		this can be overridden by eval.properties
 		-->
 		<echo>kernel.data.file ${kernel.data.file}</echo>
+		<property name="kernel.data.file" value="./label1_data.txt" />
+		<!-- strip off the directory -->
+		<basename file="${kernel.data.file}" property="kernel.data.file.name" />
+		<!-- strip off the data.txt prefix - this is the prefix for the distance file -->
+		<basename file="${kernel.data.file.name}" property="kernel.basename" suffix="data.txt" />
+		<!-- load label.properties file - can override default cv.semil.metrics and cv.semil.degrees there -->
+		<property file="${kernel.data}/${kernel.basename}label.properties" />
+		<property name="semil.metrics" value="${cv.semil.metrics}" />
+		<property name="semil.degrees" value="${cv.semil.degrees}" />
+		<echo>semil.metrics ${semil.metrics}</echo>
+		<echo>semil.degrees ${semil.degrees}</echo>
 		<mkdir dir="${kernel.dist.dir}" />
 		<exec executable="${R.bin}/R" dir="${kernel.data}">
-			<arg line="--slave --file=${basedir}/semil_dist.R --args ${kernel.data.file} ${kernel.metric} ${kernel.dist.subdir}/${kernel.dist.file} ${kernel.degree}" />
+			<arg line="--slave --file=${basedir}/semil_dist.R --args ${kernel.data.file} ${semil.metrics} ${kernel.basename} ${semil.degrees}" />
 		</exec>
 	</target>
-
-	<target name="cv.semil.iter.label" depends="semil.dist.init" description="iterate over label files for a given data file, call semil.iter.method">
+	<target name="semil.evaluate" depends="cv.init.dir" description="iterate over *label.txt, call semil.processLabelFile">
 		<for param="kernel.label.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
-			<fileset dir="${kernel.data}" includes="${kernel.basename}*label.txt" />
+			<fileset dir="${kernel.data}" includes="*label.txt" />
 			<sequential>
-				<antcall target="cv.semil.processFold">
+				<antcall target="semil.processLabelFile">
 					<param name="kernel.label.file" value="@{kernel.label.file}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-
-	<target name="cv.semil.processFold" description="iterate over methods, call cv.semil.iter.gamma">
-		<basename file="${kernel.label.file}" property="kernel.label.basename" suffix=".txt" />
-		<property name="kernel.label.dir" value="${cv.kernel.tmpdir}/${kernel.dist.subdir}/${kernel.label.basename}" />
+	<target name="semil.processLabelFile" depends="cv.init.dir" description="iterate over kernel.distFiles, call semil.iter.evalLines">
+		<property name="kernel.label.file" value="${kernel.data}/label1_run1_fold1_label.txt"/>
+		<basename file="${kernel.label.file}" property="kernel.label.filename" />
+		<basename file="${kernel.label.filename}" property="kernel.label.basename" suffix=".txt" />
+		<!-- load properties kernel.distFiles and kernel.evalLines defined -->
+		<property file="${kernel.data}/${kernel.label.basename}.properties" />
+		<property name="kernel.label.dir" value="${cv.kernel.tmpdir}-${kernel.label.basename}" />
 		<echo>kernel.label.dir ${kernel.label.dir}</echo>
 		<mkdir dir="${kernel.label.dir}" />
+		<!-- copy distance files to working directory -->
+		<copy todir="${kernel.label.dir}">
+			<fileset dir="${kernel.data}" includes="${kernel.distFiles}" />
+			<fileset dir="${kernel.data}" includes="${kernel.label.filename}" />
+		</copy>
+		<!-- iterate over distance files -->
+		<for list="${kernel.distFiles}" param="kernel.dist.file">
+			<sequential>
+				<antcall target="semil.iter.evalLines">
+					<param name="kernel.dist.file" value="@{kernel.dist.file}"/>
+				</antcall>
+			</sequential>
+		</for>
+		<!-- copy results -->
+		<mkdir dir="${kernel.data}/eval/${kernel.label.basename}"/>
+		<copy todir="${kernel.data}/eval/${kernel.label.basename}">
+			<fileset dir="${kernel.label.dir}" includes="*.output"/>
+		</copy>
 		<!-- store semil options -->
-		<echoproperties destfile="${kernel.label.dir}/options.properties">
+		<echoproperties destfile="${kernel.data}/eval/${kernel.label.basename}/options.properties">
 			<propertyset>
 				<propertyref prefix="kernel." />
 			</propertyset>
 		</echoproperties>
-		<!-- copy files to working directory -->
-		<copy file="${kernel.dist.dir}/${kernel.dist.file}" todir="${kernel.label.dir}" />
-		<for list="${cv.semil.methods}" param="kernel.method">
+		<!-- delete unneeded files -->
+		<delete dir="${kernel.label.dir}" quiet="yes"/>
+	</target>
+	
+	<target name="semil.iter.evalLines" description="iterate over kernel.evalLines, call semil.eval.label">
+		<for list="${kernel.evalLines}" param="kernel.line">
 			<sequential>
-				<antcall target="cv.semil.iter.gamma">
-					<param name="kernel.line" value="@{kernel.method}" />
+				<antcall target="semil.eval.label">
+					<param name="kernel.line" value="@{kernel.line}"/>
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-	<target name="cv.semil.iter.gamma" description="iterate over gammas, call semil.evaluate">
-		<for list="${cv.rbf.gammas}" param="kernel.rbf.gamma">
-			<sequential>
-				<antcall target="semil.evaluate">
-					<param name="kernel.line" value="-g @{kernel.rbf.gamma} ${kernel.line}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="semil.evaluate" description="evaluate semil">
+	
+	<target name="semil.eval.label" description="evaluate semil">
 		<exec executable="${semil.bin}/Semil" dir="${kernel.label.dir}">
-			<arg line="${kernel.line} ${semil.line} ${kernel.dist.file} ${kernel.label.file}" />
+			<arg line="${kernel.line} ${kernel.dist.file} ${kernel.label.filename}" />
 		</exec>
 	</target>
+	<target name="semil.storeResults" depends="cv.init.dir" description="store results in db, cleanup temp dirs">
+		<antcall target="eval.store.db">
+			<param name="kernel.workdir" value="${kernel.data}/eval" />
+		</antcall>
+		<mkdir dir="${kernel.data}/eval" />
+		<zip destfile="${kernel.data}/eval.zip" update="no">
+			<fileset dir="${kernel.data}/eval" />
+		</zip>
+		<delete quiet="yes" includeemptydirs="yes" dir="${kernel.data}/eval" />
+	</target>
+
 
 	<target name="eval.store.options" description="store options">
 		<!-- store libsvm options -->
