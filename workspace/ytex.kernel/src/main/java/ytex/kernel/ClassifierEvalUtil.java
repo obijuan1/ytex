@@ -40,11 +40,106 @@ public class ClassifierEvalUtil {
 		String algo = System.getProperty("kernel.algo");
 		if ("semil".equalsIgnoreCase(algo)) {
 			generateSemilEvalParams();
+		} else if ("svmlight".equalsIgnoreCase(algo)
+				|| "libsvm".equalsIgnoreCase(algo)) {
+			generateSvmEvalParams(algo.toLowerCase());
 		}
 	}
 
+	private void generateSvmEvalParams(String svmType) throws IOException {
+		File kernelDataDir = new File(props.getProperty("kernel.data", "."));
+		File[] trainFiles = kernelDataDir.listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.endsWith("train_data.txt");
+			}
+		});
+		if (trainFiles != null && trainFiles.length > 0) {
+			// iterate over label files
+			for (File trainFile : trainFiles) {
+				writeSvmEvalFile(trainFile, kernelDataDir, svmType);
+			}
+		}
+	}
+
+	/**
+	 * generate parameter grid for each training file
+	 * 
+	 * @param trainFile
+	 * @param kernelDataDir
+	 * @param svmType
+	 * @throws IOException
+	 */
+	private void writeSvmEvalFile(File trainFile, File kernelDataDir,
+			String svmType) throws IOException {
+		// list to hold the svm command lines
+		List<String> evalLines = new ArrayList<String>();
+		// label-specific weight parameters from a property file
+		List<String> weightParams = getWeightParams(trainFile, svmType);
+		// kernels to test
+		List<String> kernels = Arrays.asList(props.getProperty("kernel.types")
+				.split(","));
+		// cost params
+		List<String> costs = Arrays.asList(addOptionPrefix(
+				props.getProperty("cv.costs").split(","), "-c "));
+		// other general params
+		List<String> libsvmEval = Arrays.asList(props.getProperty(
+				svmType + ".train.line", "").split(","));
+		// iterate through kernel types, generate parameter grids
+		for (String kernel : kernels) {
+			List<String> kernelOpts = Arrays.asList(new String[] { "-t "
+					+ kernel });
+			if ("0".equals(kernel)) {
+				// linear/custom kernel - just cost & weight param
+				evalLines.addAll(parameterGrid(libsvmEval, kernelOpts, costs,
+						weightParams));
+			} else if ("1".equals(kernel)) {
+				// polynomial kernel - cost & weight & degree param
+				evalLines.addAll(parameterGrid(libsvmEval, kernelOpts, costs,
+						weightParams, Arrays.asList(addOptionPrefix(props
+								.getProperty("cv.poly.degrees").split(","),
+								"-d "))));
+			} else if ("2".equals(kernel) || "3".equals(kernel)) {
+				// polynomial kernel - cost & weight & gamma param
+				evalLines.addAll(parameterGrid(libsvmEval, kernelOpts, costs,
+						weightParams, Arrays
+								.asList(addOptionPrefix(
+										props.getProperty("cv.rbf.gammas")
+												.split(","), "-g "))));
+			}
+		}
+		if (evalLines.size() > 0) {
+			String evalFile = trainFile.getPath().substring(0,
+					trainFile.getPath().length() - 3)
+					+ "properties";
+			Properties evalProps = new Properties();
+			evalProps.put("kernel.evalLines", listToString(evalLines));
+			writeProps(evalFile, evalProps);
+		}
+	}
+
+	private List<String> getWeightParams(File trainFile, String svmType)
+			throws IOException {
+		if ("libsvm".equals(svmType)) {
+			String label = FileUtil.parseLabelFromFileName(trainFile.getName());
+			if (label != null && label.length() > 0) {
+				Properties weightProps = null;
+				if (props.getProperty("kernel.classweights") != null) {
+					weightProps = FileUtil.loadProperties(
+							props.getProperty("kernel.classweights"), false);
+					String weights = weightProps.getProperty("class.weight."
+							+ label);
+					if (weights != null && weights.length() > 0) {
+						return Arrays.asList(weights.split(","));
+					}
+				}
+			}
+		}
+		return new ArrayList<String>(0);
+	}
+
 	private void generateSemilEvalParams() throws IOException {
-		File kernelDataDir = new File(System.getProperty("kernel.data", "."));
+		File kernelDataDir = new File(props.getProperty("kernel.data", "."));
 		List<String> evalLines = generateSemilEvalLines();
 		File[] labelFiles = kernelDataDir.listFiles(new FilenameFilter() {
 
@@ -92,17 +187,29 @@ public class ClassifierEvalUtil {
 	 */
 	private void writeSemilEvalFile(List<String> distFiles,
 			List<String> evalLines, File labelFile) throws IOException {
+		String labelFileName = labelFile.getPath();
+		String evalFileName = labelFileName.substring(0,
+				labelFileName.length() - 3) + "properties";
+		Properties props = new Properties();
+		props.setProperty("kernel.distFiles", listToString(distFiles));
+		props.setProperty("kernel.evalLines", listToString(evalLines));
+		writeProps(evalFileName, props);
+	}
+
+	private void writeProps(String evalFileName, Properties evalProps)
+			throws IOException {
+		if("no".equalsIgnoreCase(props.getProperty("kernel.overwriteEvalFile", "yes"))) {
+			File evalFile = new File(evalFileName);
+			if(evalFile.exists()) {
+				log.warn("skipping because eval file exists: " + evalFileName);
+				return;
+			}
+		}
 		BufferedWriter w = null;
 		try {
-			String labelFileName = labelFile.getPath();
-			String evalFileName = labelFileName.substring(0,
-					labelFileName.length() - 3)
-					+ "properties";
+			
 			w = new BufferedWriter(new FileWriter(evalFileName));
-			Properties props = new Properties();
-			props.setProperty("kernel.distFiles", listToString(distFiles));
-			props.setProperty("kernel.evalLines", listToString(evalLines));
-			props.store(w, null);
+			evalProps.store(w, null);
 		} finally {
 			if (w != null)
 				w.close();
@@ -165,7 +272,8 @@ public class ClassifierEvalUtil {
 		}
 	}
 
-	private List<String> getSemilDistFilesForLabel(File labelFile, File kernelDataDir) {
+	private List<String> getSemilDistFilesForLabel(File labelFile,
+			File kernelDataDir) {
 		String labelFileName = labelFile.getName();
 		String label = FileUtil.parseLabelFromFileName(labelFileName);
 		Integer run = FileUtil.parseRunFromFileName(labelFileName);

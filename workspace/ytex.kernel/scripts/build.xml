@@ -30,19 +30,19 @@
 	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" onerror="ignore" classpathref="${kernel.cp}" />
 	<taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" onerror="ignore" classpathref="${kernel.cp}" />
 
-	<target name="cv.iter.experiment" description="iterate over ${kernel.dirs} in ${kernel.exp.base}">
+	<target name="iter.dirs" description="iterate over ${kernel.dirs} in ${kernel.exp.base}, call process.dir">
 		<echo>kernel.exp.base ${kernel.exp.base}</echo>
 		<echo>kernel.dirs ${kernel.dirs}</echo>
 		<for param="kernel.data">
 			<dirset dir="${kernel.exp.base}" includes="${kernel.dirs}" />
 			<sequential>
-				<antcall target="cv.process.dir">
+				<antcall target="process.dir">
 					<param name="kernel.data" value="@{kernel.data}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-	<target name="cv.init.dir" description="initialize variables for experiment from ${kernel.data}/kernel.properties">
+	<target name="init.dir" description="initialize variables for experiment from ${kernel.data}/kernel.properties">
 		<fail unless="kernel.data" />
 		<property file="${kernel.data}/kernel.properties" />
 		<property file="${basedir}/kernel-default.properties" />
@@ -60,203 +60,16 @@
 			<equals arg1="${kernel.algo}" arg2="semil" />
 		</condition>
 		<!-- set flags to control which machine learning target to run on each fold -->
-		<condition property="cv.process.dir.target" value="cv.semil.process.dir" else="cv.svm.process.dir">
+		<condition property="process.dir.target" value="semil.process.dir" else="svm.process.dir">
 			<isset property="semil" />
 		</condition>
-		<property name="cv.kernel.tmpdir" value="${cv.tmpdir}/${kernel.name}-${kernel.experiment}-${kernel.algo}${kernel.param1}${kernel.param2}" />
+		<property name="kernel.eval.tmpdir" value="${java.io.tmpdir}" />
+		<property name="kernel.tmpdir" value="${eval.tmpdir}/${kernel.name}-${kernel.experiment}-${kernel.algo}${kernel.param1}${kernel.param2}" />
 	</target>
-	<target name="cv.process.dir" description="run cross validation on directory kernel.data" depends="cv.init.dir">
-		<antcall target="${cv.process.dir.target}" />
+	<target name="process.dir" description="evaluate ${kernel.algo} on all files in directory ${kernel.data}" depends="init.dir">
+		<antcall target="${process.dir.target}" />
 	</target>
-	<target name="cv.svm.process.dir" description="iterate over ${kernel.data}/*train_data.txt, evaluate svm.  call cv.svm.processFold" depends="cv.init.dir">
-		<echo>kernel.data ${kernel.data}</echo>
-		<!-- iterate over files -->
-		<for param="training.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
-			<fileset dir="${kernel.data}" includes="*train_data.txt" />
-			<sequential>
-				<antcall target="cv.svm.processFold">
-					<param name="kernel.train.data" value="@{training.file}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="cv.svm.processFold" depends="cv.init.dir" description="iterate over parameter grid and run svm on specified fold, store results in database. call cv.iter.kernel">
-		<property name="kernel.train.data" value="${kernel.data}/label1_run1_fold1_train_data.txt" />
-		<basename file="${kernel.train.data}" property="kernel.data.basename.prefix1" suffix="train_data.txt" />
-		<basename file="${kernel.data.basename.prefix1}" property="kernel.data.basename" suffix="_" />
-		<property name="kernel.workdir" value="${cv.kernel.tmpdir}-${kernel.data.basename}" />
-		<echo>kernel.data.basename ${kernel.data.basename}</echo>
-		<echo>kernel.workdir ${kernel.workdir}</echo>
-		<mkdir dir="${kernel.workdir}" />
-		<copy todir="${kernel.workdir}">
-			<fileset dir="${kernel.data}" includes="${kernel.data.basename}*.*" />
-		</copy>
-		<antcall target="cv.svm.iter.kernel" />
-		<antcall target="eval.store.db" />
-		<!-- cleanup -->
-		<mkdir dir="${kernel.data}/cv" />
-		<zip destfile="${kernel.data}/cv/${kernel.data.basename}.zip" update="yes">
-			<fileset dir="${kernel.workdir}" excludes="*.*" />
-		</zip>
-		<delete quiet="yes" includeemptydirs="yes" dir="${kernel.workdir}" />
-	</target>
-	<target name="cv.svm.iter.kernel" description="run cross-validation with all specified kernels, delegate to cv.iter.weight">
-		<for list="${kernel.types}" param="kernel.type">
-			<sequential>
-				<echo>kernel.type = @{kernel.type}</echo>
-				<antcall target="cv.svm.iter.weight">
-					<param name="kernel.type" value="@{kernel.type}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="cv.svm.init.classWeights" description="load property with class weights to iterate over for the given class label">
-		<property name="kernel.label" value="0" />
-		<echo>kernel.classweights=${kernel.classweights}</echo>
-		<echo>kernel.label=${kernel.label}</echo>
-		<if>
-			<and>
-				<available file="${kernel.classweights}" />
-				<equals arg1="${kernel.algo}" arg2="libsvm" />
-			</and>
-			<then>
-				<loadfile srcfile="${kernel.classweights}" property="classWeights">
-					<filterchain>
-						<linecontains>
-							<contains value="class.weight.${kernel.label}=" />
-						</linecontains>
-						<replacestring from="class.weight.${kernel.label}=" to="" />
-						<striplinebreaks />
-					</filterchain>
-				</loadfile>
-			</then>
-		</if>
-		<echo>classWeights=${classWeights}</echo>
-		<!-- for precomputed gram matrix or linear kernel, iterate over cost params -->
-		<echo>kernel.type = ${kernel.type}</echo>
-		<condition property="cv.svm.iter.target" value="cv.svm.iter.cost">
-			<or>
-				<equals arg1="${kernel.type}" arg2="4" />
-				<equals arg1="${kernel.type}" arg2="0" />
-			</or>
-		</condition>
-		<!-- for polynomial kernel, iterate over degrees -->
-		<condition property="cv.svm.iter.target" value="cv.svm.iter.degree">
-			<equals arg1="${kernel.type}" arg2="1" />
-		</condition>
-		<!-- for rbg/sigmoid iterate over gamma -->
-		<condition property="cv.svm.iter.target" value="cv.svm.iter.gamma">
-			<or>
-				<equals arg1="${kernel.type}" arg2="2" />
-				<equals arg1="${kernel.type}" arg2="3" />
-			</or>
-		</condition>
-	</target>
-	<target name="cv.svm.iter.weight" depends="cv.svm.init.classWeights" description="iterate over class weights">
-		<if>
-			<isset property="classWeights" />
-			<then>
-				<for list="${classWeights}" param="classWeight">
-					<sequential>
-						<echo>classWeight = @{classWeight}</echo>
-						<antcall target="${cv.svm.iter.target}">
-							<param name="cv.weight" value="@{classWeight}" />
-							<param name="cv.kernel.line" value="@{classWeight}" />
-						</antcall>
-					</sequential>
-				</for>
-			</then>
-			<else>
-				<antcall target="${cv.svm.iter.target}">
-					<param name="cv.kernel.line" value="" />
-				</antcall>
-			</else>
-		</if>
-	</target>
-	<target name="cv.svm.iter.degree" description="iterate polynomial kernel degree, delegate to cv.iter.cost">
-		<for list="${cv.poly.degrees}" param="degree">
-			<sequential>
-				<antcall target="cv.svm.iter.cost">
-					<param name="cv.degree" value="@{degree}" />
-					<param name="cv.kernel.line" value="${cv.kernel.line} -d @{degree}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="cv.svm.iter.gamma" description="iterate rbg kernel gamma, delegate to cv.iter.cost">
-		<for list="${cv.rbf.gammas}" param="gamma">
-			<sequential>
-				<antcall target="cv.svm.iter.cost">
-					<param name="cv.gamma" value="@{gamma}" />
-					<param name="cv.kernel.line" value="${cv.kernel.line} -g @{gamma}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="cv.svm.iter.cost" description="iterate over cost parameters, delegate to cv.evaluate">
-		<for list="${cv.costs}" param="cost">
-			<sequential>
-				<antcall target="cv.svm.evaluate">
-					<param name="cv.cost" value="@{cost}" />
-					<param name="cv.kernel.line" value="${cv.kernel.line} -c @{cost}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-
-	<target name="cv.svm.evaluate.init">
-		<!-- want to put each result in a different directory, use timestamp, but libsvm is fast -->
-		<sleep milliseconds="10" />
-		<tstamp>
-			<format property="cv.tstamp" pattern="dd-hh-mm-s.S" />
-		</tstamp>
-		<property name="kernel.outdir" value="${cv.tstamp}" />
-		<mkdir dir="${kernel.workdir}/${kernel.outdir}" />
-		<property name="kernel.label" value="1" />
-		<property name="kernel.data.basename" value="label${kernel.label}_run1_fold1" />
-		<property name="kernel.train.data" value="${kernel.data.basename}_train_data.txt" />
-		<property name="kernel.test.data" value="${kernel.data.basename}_test_data.txt" />
-	</target>
-
-	<target name="cv.svm.evaluate" depends="cv.svm.evaluate.init" description="call libsvm/svmlight">
-		<antcall target="evaluate.svmlight" />
-		<antcall target="evaluate.libsvm" />
-	</target>
-
-	<target name="evaluate.svmlight" if="svmlight" description="call svmlight">
-		<!-- train the svm -->
-		<property name="kernel.train.line" value="-t ${kernel.type} -l ${kernel.outdir}/transduct.txt ${cv.kernel.line} ${kernel.train.data} ${kernel.outdir}/model.txt" />
-		<exec executable="${svmlight.bin}/svm_learn" dir="${kernel.workdir}" failonerror="no" output="${label.dir}/${kernel.outdir}/output.txt" timeout="${kernel.timeout}">
-			<arg line="${kernel.train.line}" />
-		</exec>
-		<!-- test the svm -->
-		<exec executable="${svmlight.bin}/svm_classify" dir="${kernel.workdir}" failonerror="no" timeout="${kernel.timeout}">
-			<arg line="${kernel.test.data} ${kernel.outdir}/model.txt ${kernel.outdir}/predict.txt" />
-		</exec>
-		<antcall target="eval.store.options" />
-	</target>
-
-	<target name="evaluate.libsvm" if="libsvm" description="train on cv training set, eval on cv test set, store results in fold-specific timestamped directory">
-		<!-- train the svm -->
-		<property name="kernel.train.line" value="-q -b 1 -t ${kernel.type} ${cv.kernel.line} ${kernel.train.data} ${kernel.outdir}/model.txt" />
-		<exec executable="${libsvm.bin}/svm-train" dir="${kernel.workdir}" failonerror="yes">
-			<arg line="${kernel.train.line}" />
-		</exec>
-		<!-- test the svm -->
-		<exec executable="${libsvm.bin}/svm-predict" dir="${kernel.workdir}" failonerror="yes">
-			<arg line="-b 1 ${kernel.test.data} ${kernel.outdir}/model.txt ${kernel.outdir}/predict.txt" />
-		</exec>
-		<antcall target="eval.store.options" />
-	</target>
-	<!--
-	semil targets:
-	cv.semil.iter.dir - generate distance matrices, evaluate semil for all files, calls cv.semil.iter
-	cv.semil.iter - iterate over degree, metric, *data.txt, call either semil.dist or cv.semil.evaluate
-	semil.dist - generate distance matrix by calling R script
-	cv.semil.evaluate - iterate over methods (grf/cm), gamma, and label.txt and evaluate semil
-	-->
-	<target name="semil.process.dir" depends="cv.init.dir,semil.createDistances,cv.semil.genParams,semil.evaluate,semil.storeResults" description="generate distance matrices, run semil" />
-	<target name="cv.semil.genParams" depends="cv.init.dir" unless="no.semil.genParams">
+	<target name="kernel.genParams" depends="init.dir" unless="no.genParams" description="call ClassifierEvalUtil to generate parameter grid for each training file.  skipped if no.genParams is set">
 		<propertyset id="kernel.props">
 			<propertyref prefix="kernel." />
 		</propertyset>
@@ -269,8 +82,132 @@
 				<propertyset refid="kernel.props" />
 			</syspropertyset>
 		</java>
+	</target>	
+	<target name="kernel.storeResults" depends="init.dir,kernel.storeDB" description="store results in db, cleanup temp dirs">
+		<zip destfile="${kernel.data}/eval.zip" update="no">
+			<fileset dir="${kernel.data}/eval" />
+		</zip>
+		<delete quiet="yes" includeemptydirs="yes" dir="${kernel.data}/eval" />
 	</target>
-	<target name="semil.createDistances" depends="cv.init.dir">
+	<target name="kernel.storeDB" description="store results in db.  take results from ${kernel.evaldir}, relative to ${kernel.data}" depends="init.dir">
+		<property name="kernel.evaldir" value="eval"/>
+		<echo>kernel.data ${kernel.data}</echo>
+		<echo>kernel.evaldir ${kernel.evaldir}</echo>
+		<java classname="ytex.kernel.ClassifierEvaluationImporter" classpathref="${kernel.cp}" fork="yes" dir="${kernel.data}" failOnError="yes">
+			<arg value="-dir" />
+			<arg value="${kernel.evaldir}" />
+			<arg value="-type" />
+			<arg value="${kernel.algo}" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	
+	<!--
+	svm targets
+	-->
+	<target name="svm.process.dir" depends="init.dir,kernel.genParams,svm.iter.train,kernel.storeResults" description="generate paramter grids, evaluate svm, store results" />
+	<target name="svm.iter.train" description="iterate over ${kernel.data}/*train_data.txt, evaluate svm.  call svm.processFile" depends="init.dir">
+		<echo>kernel.data ${kernel.data}</echo>
+		<!-- iterate over files -->
+		<for param="training.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
+			<fileset dir="${kernel.data}" includes="*train_data.txt" />
+			<sequential>
+				<antcall target="svm.processFile">
+					<param name="kernel.train.data" value="@{training.file}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="svm.processFile" depends="init.dir" description="iterate over parameter grid and run svm on specified file. calls svm.evaluate on ${kernel.train.data} for each command line in ${kernel.evalLines}">
+		<property name="kernel.train.data" value="${kernel.data}/label1_run1_fold1_train_data.txt" />
+		<echo>${kernel.train.data}</echo>
+		<basename file="${kernel.train.data}" property="kernel.data.filename" suffix=".txt" />
+		<basename file="${kernel.data.filename}" property="kernel.data.basename" suffix="train_data" />
+		<property name="kernel.workdir" value="${kernel.tmpdir}-${kernel.data.filename}" />
+		<!-- load parameter grid -->
+		<property file="${kernel.data}/${kernel.data.filename}.properties" />
+		<echo>kernel.data.filename ${kernel.data.filename}</echo>
+		<echo>kernel.data.basename ${kernel.data.basename}</echo>
+		<echo>kernel.evalLines ${kernel.evalLines}</echo>
+		<fail unless="kernel.evalLines" />
+		<echo>kernel.data.basename ${kernel.data.basename}</echo>
+		<echo>kernel.workdir ${kernel.workdir}</echo>
+		<mkdir dir="${kernel.workdir}" />
+		<copy todir="${kernel.workdir}">
+			<fileset dir="${kernel.data}" includes="${kernel.data.basename}*.*" />
+		</copy>
+		<for param="kernel.evalLine" list="${kernel.evalLines}">
+			<sequential>
+				<antcall target="svm.evaluate">
+					<param name="kernel.evalLine" value="@{kernel.evalLine}" />
+				</antcall>
+			</sequential>
+		</for>
+		<!-- copy svm output -->
+		<mkdir dir="${kernel.data}/eval/${kernel.data.filename}" />
+		<copy todir="${kernel.data}/eval/${kernel.data.filename}">
+			<fileset dir="${kernel.workdir}" excludes="*.*" />
+		</copy>
+		<!-- cleanup temp dir -->
+		<delete quiet="yes" includeemptydirs="yes" dir="${kernel.workdir}" />
+	</target>
+	<target name="svm.evaluate.init" description="create temp dir to store svm results">
+		<!-- want to put each result in a different directory, use timestamp, but libsvm is fast -->
+		<sleep milliseconds="10" />
+		<tstamp>
+			<format property="cv.tstamp" pattern="dd-hh-mm-s.S" />
+		</tstamp>
+		<property name="kernel.outdir" value="${cv.tstamp}" />
+		<mkdir dir="${kernel.workdir}/${kernel.outdir}" />
+		<echo>kernel.data.basename ${kernel.data.basename}</echo>
+		<property name="eval.train.data" value="${kernel.data.basename}train_data.txt" />
+		<property name="eval.test.data" value="${kernel.data.basename}test_data.txt" />
+	</target>
+	<target name="svm.evaluate" depends="svm.evaluate.init" description="call libsvm/svmlight">
+		<antcall target="svm.evaluate.svmlight" />
+		<antcall target="svm.evaluate.libsvm" />
+	</target>
+	<target name="svm.evaluate.svmlight" if="svmlight" description="call svmlight">
+		<!-- train the svm -->
+		<property name="kernel.train.line" value="${kernel.evalLine} -l ${kernel.outdir}/transduct.txt ${eval.train.data} ${kernel.outdir}/model.txt" />
+		<echo>kernel.train.line ${kernel.train.line}</echo>
+		<exec executable="${svmlight.bin}/svm_learn" dir="${kernel.workdir}" failonerror="no" output="${label.dir}/${kernel.outdir}/output.txt" timeout="${kernel.timeout}">
+			<arg line="${kernel.train.line}" />
+		</exec>
+		<!-- test the svm -->
+		<exec executable="${svmlight.bin}/svm_classify" dir="${kernel.workdir}" failonerror="no" timeout="${kernel.timeout}">
+			<arg line="${eval.test.data} ${kernel.outdir}/model.txt ${kernel.outdir}/predict.txt" />
+		</exec>
+		<antcall target="svm.store.options" />
+	</target>
+	<target name="svm.evaluate.libsvm" if="libsvm" description="call libsvm">
+		<!-- train the svm -->
+		<property name="kernel.train.line" value="${kernel.evalLine} ${eval.train.data} ${kernel.outdir}/model.txt" />
+		<echo>kernel.train.line ${kernel.train.line}</echo>
+		<exec executable="${libsvm.bin}/svm-train" dir="${kernel.workdir}" failonerror="yes">
+			<arg line="${kernel.train.line}" />
+		</exec>
+		<!-- test the svm -->
+		<exec executable="${libsvm.bin}/svm-predict" dir="${kernel.workdir}" failonerror="yes">
+			<arg line="${libsvm.test.line} ${eval.test.data} ${kernel.outdir}/model.txt ${kernel.outdir}/predict.txt" />
+		</exec>
+		<antcall target="svm.store.options" />
+	</target>
+	<target name="svm.store.options" description="store options">
+		<!-- store svm options -->
+		<echoproperties destfile="${kernel.workdir}/${kernel.outdir}/options.properties">
+			<propertyset>
+				<propertyref prefix="kernel." />
+			</propertyset>
+		</echoproperties>
+	</target>
+	
+	<!--
+	semil targets:
+	-->
+	<target name="semil.process.dir" depends="init.dir,semil.createDistances,kernel.genParams,semil.evaluate,kernel.storeResults" description="generate distance matrices, run semil" />
+	<target name="semil.createDistances" depends="init.dir" description="iterate of data files, generate distance matrices">
 		<for param="kernel.data.file">
 			<fileset dir="${kernel.data}" includes="*data.txt" />
 			<sequential>
@@ -306,7 +243,7 @@
 			<arg line="--slave --file=${basedir}/semil_dist.R --args ${kernel.data.file} ${semil.metrics} ${kernel.basename} ${semil.degrees}" />
 		</exec>
 	</target>
-	<target name="semil.evaluate" depends="cv.init.dir" description="iterate over *label.txt, call semil.processLabelFile">
+	<target name="semil.evaluate" depends="init.dir" description="iterate over *label.txt, call semil.processLabelFile">
 		<for param="kernel.label.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
 			<fileset dir="${kernel.data}" includes="*label.txt" />
 			<sequential>
@@ -316,13 +253,13 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="semil.processLabelFile" depends="cv.init.dir" description="iterate over kernel.distFiles, call semil.iter.evalLines">
-		<property name="kernel.label.file" value="${kernel.data}/label1_run1_fold1_label.txt"/>
+	<target name="semil.processLabelFile" depends="init.dir" description="iterate over kernel.distFiles, call semil.iter.evalLines">
+		<property name="kernel.label.file" value="${kernel.data}/label1_run1_fold1_label.txt" />
 		<basename file="${kernel.label.file}" property="kernel.label.filename" />
 		<basename file="${kernel.label.filename}" property="kernel.label.basename" suffix=".txt" />
 		<!-- load properties kernel.distFiles and kernel.evalLines defined -->
 		<property file="${kernel.data}/${kernel.label.basename}.properties" />
-		<property name="kernel.label.dir" value="${cv.kernel.tmpdir}-${kernel.label.basename}" />
+		<property name="kernel.label.dir" value="${kernel.tmpdir}-${kernel.label.basename}" />
 		<echo>kernel.label.dir ${kernel.label.dir}</echo>
 		<mkdir dir="${kernel.label.dir}" />
 		<!-- copy distance files to working directory -->
@@ -334,14 +271,14 @@
 		<for list="${kernel.distFiles}" param="kernel.dist.file">
 			<sequential>
 				<antcall target="semil.iter.evalLines">
-					<param name="kernel.dist.file" value="@{kernel.dist.file}"/>
+					<param name="kernel.dist.file" value="@{kernel.dist.file}" />
 				</antcall>
 			</sequential>
 		</for>
 		<!-- copy results -->
-		<mkdir dir="${kernel.data}/eval/${kernel.label.basename}"/>
+		<mkdir dir="${kernel.data}/eval/${kernel.label.basename}" />
 		<copy todir="${kernel.data}/eval/${kernel.label.basename}">
-			<fileset dir="${kernel.label.dir}" includes="*.output"/>
+			<fileset dir="${kernel.label.dir}" includes="*.output" />
 		</copy>
 		<!-- store semil options -->
 		<echoproperties destfile="${kernel.data}/eval/${kernel.label.basename}/options.properties">
@@ -350,53 +287,22 @@
 			</propertyset>
 		</echoproperties>
 		<!-- delete unneeded files -->
-		<delete dir="${kernel.label.dir}" quiet="yes"/>
+		<delete dir="${kernel.label.dir}" quiet="yes" />
 	</target>
-	
+
 	<target name="semil.iter.evalLines" description="iterate over kernel.evalLines, call semil.eval.label">
 		<for list="${kernel.evalLines}" param="kernel.line">
 			<sequential>
 				<antcall target="semil.eval.label">
-					<param name="kernel.line" value="@{kernel.line}"/>
+					<param name="kernel.line" value="@{kernel.line}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-	
+
 	<target name="semil.eval.label" description="evaluate semil">
 		<exec executable="${semil.bin}/Semil" dir="${kernel.label.dir}">
 			<arg line="${kernel.line} ${kernel.dist.file} ${kernel.label.filename}" />
 		</exec>
-	</target>
-	<target name="semil.storeResults" depends="cv.init.dir" description="store results in db, cleanup temp dirs">
-		<antcall target="eval.store.db">
-			<param name="kernel.workdir" value="${kernel.data}/eval" />
-		</antcall>
-		<mkdir dir="${kernel.data}/eval" />
-		<zip destfile="${kernel.data}/eval.zip" update="no">
-			<fileset dir="${kernel.data}/eval" />
-		</zip>
-		<delete quiet="yes" includeemptydirs="yes" dir="${kernel.data}/eval" />
-	</target>
-
-
-	<target name="eval.store.options" description="store options">
-		<!-- store libsvm options -->
-		<echoproperties destfile="${kernel.workdir}/${kernel.outdir}/options.properties">
-			<propertyset>
-				<propertyref prefix="kernel." />
-			</propertyset>
-		</echoproperties>
-	</target>
-	<target name="eval.store.db" description="store results in db" depends="cv.init.dir">
-		<echo>kernel.workdir ${kernel.workdir}</echo>
-		<java classname="ytex.kernel.ClassifierEvaluationImporter" classpathref="${kernel.cp}" fork="yes" dir="${kernel.data}" failOnError="yes">
-			<arg value="-dir" />
-			<arg value="${kernel.workdir}" />
-			<arg value="-type" />
-			<arg value="${kernel.algo}" />
-			<jvmarg value="${log4j.arg}" />
-			<jvmarg value="${java.log.arg}" />
-		</java>
 	</target>
 </project>

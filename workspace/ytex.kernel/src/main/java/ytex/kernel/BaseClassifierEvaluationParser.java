@@ -137,13 +137,9 @@ public abstract class BaseClassifierEvaluationParser implements
 	}
 
 	protected String getFileBaseName(Properties kernelProps) {
-		String tmpFileBaseName = kernelProps.getProperty(
+		return kernelProps.getProperty(
 				ParseOption.DATA_BASENAME.getOptionKey(),
 				ParseOption.DATA_BASENAME.getDefaultValue());
-		if (tmpFileBaseName.length() > 0)
-			tmpFileBaseName = tmpFileBaseName + "_";
-		final String fileBaseName = tmpFileBaseName;
-		return fileBaseName;
 	}
 
 	protected void storeSemiSupervised(Properties kernelProps,
