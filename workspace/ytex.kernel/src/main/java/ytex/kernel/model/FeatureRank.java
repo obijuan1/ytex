@@ -12,6 +12,12 @@ public class FeatureRank implements Serializable {
 	private double evaluation;
 	private int rank;
 
+	@Override
+	public String toString() {
+		return "FeatureRank [featureName=" + featureName + ", evaluation="
+				+ evaluation + ", rank=" + rank + "]";
+	}
+
 	public FeatureRank() {
 	}
 

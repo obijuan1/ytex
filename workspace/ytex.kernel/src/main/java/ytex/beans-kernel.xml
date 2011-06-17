@@ -222,6 +222,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					</key>
 					<ref bean="semiLFormatterFactory" />
 				</entry>
+				<entry>
+					<key>
+						<value>weka</value>
+					</key>
+					<ref bean="wekaFormatterFactory" />
+				</entry>
 			</map>
 		</property>
 	</bean>
@@ -234,7 +240,25 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="semiLFormatterFactory" class="ytex.semil.SemiLFormatterFactory">
 	</bean>
+	<bean id="wekaFormatterFactory" class="ytex.weka.WekaFormatterFactory">
+	</bean>
 	<bean id="instanceDataExporter" class="ytex.sparsematrix.InstanceDataExporterImpl">
+	</bean>
+	
+	<bean id="infogainAttributeEval" class="weka.attributeSelection.InfoGainAttributeEval">
+	</bean>
+	<bean id="rankerSearch" class="weka.attributeSelection.Ranker">
+	</bean>
+	<bean id="infogainAttributeSelection" class="weka.attributeSelection.AttributeSelection">
+		<property name="evaluator" ref="infogainAttributeEval"/>
+		<property name="search" ref="rankerSearch"/>
+	</bean>
+	
+	<bean id="wekaAttributeEvaluator" class="ytex.weka.WekaAttributeEvaluatorImpl">
+		<property name="attributeSelection" ref="infogainAttributeSelection"/>
+		<property name="sparseDataExporter" ref="sparseDataExporter" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
+		<property name="asEvaluation" ref="infogainAttributeEval" />
 	</bean>
 
 </beans>

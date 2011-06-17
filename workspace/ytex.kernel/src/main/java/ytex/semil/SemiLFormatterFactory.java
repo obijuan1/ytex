@@ -87,7 +87,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				Properties properties, SparseData sparseData)
 				throws IOException {
 			super.initializeLabel(label, labelInstances, properties, sparseData);
-			if ("label".equals(this.exportProperties.getProperty(SCOPE))) {
+			if (SCOPE_LABEL.equals(this.exportProperties.getProperty(SCOPE))) {
 				exportSemiL(sparseData, label, null, null);
 			}
 		}
@@ -100,7 +100,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				Integer fold,
 				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
 				throws IOException {
-			if ("fold".equals(this.exportProperties.getProperty(SCOPE))) {
+			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {
 				exportSemiL(sparseData, label, run, fold);
 			}
 			String labelFileName = FileUtil.getScopedFileName(outdir, label,

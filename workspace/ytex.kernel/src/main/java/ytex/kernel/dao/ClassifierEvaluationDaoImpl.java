@@ -31,12 +31,24 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void deleteCrossValidationFoldByName(String name) {
-		Query q = this.getSessionFactory().getCurrentSession().getNamedQuery(
-				"getCrossValidationFoldByName");
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getCrossValidationFoldByName");
 		q.setString("name", name);
 		List<CrossValidationFold> folds = q.list();
 		for (CrossValidationFold fold : folds)
 			this.getSessionFactory().getCurrentSession().delete(fold);
+	}
+
+	@Override
+	public CrossValidationFold getCrossValidationFold(String name,
+			String label, int run, int fold) {
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getCrossValidationFold");
+		q.setString("name", name);
+		q.setString("label", label);
+		q.setInteger("run", run);
+		q.setInteger("fold", fold);
+		return (CrossValidationFold) q.uniqueResult();
 	}
 
 	/*
@@ -153,8 +165,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 
 	@Override
 	public void deleteFeatureEvaluationByNameAndType(String name, String type) {
-		Query q = this.getSessionFactory().getCurrentSession().getNamedQuery(
-				"getFeatureEvaluationByNameAndType");
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getFeatureEvaluationByNameAndType");
 		q.setString("name", name);
 		q.setString("type", type);
 		for (FeatureEvaluation fe : (List<FeatureEvaluation>) q.list())

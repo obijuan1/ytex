@@ -241,18 +241,28 @@ public class FileUtil {
 			boolean systemOverride) throws IOException {
 		Properties kernelProps = new Properties();
 		InputStream is = null;
+		boolean propsLoaded = false;
 		try {
 			is = new BufferedInputStream(new FileInputStream(fileName));
-			kernelProps.load(is);
+			if (fileName.endsWith(".xml"))
+				kernelProps.loadFromXML(is);
+			else
+				kernelProps.load(is);		
+			propsLoaded = true;
 		} catch (FileNotFoundException fe) {
 			// do nothing - options not required
 		} finally {
 			if (is != null)
 				is.close();
 		}
-		if (systemOverride)
+		if (systemOverride) {
 			kernelProps.putAll(System.getProperties());
-		return kernelProps;
+			propsLoaded = true;
+		}
+		if(propsLoaded)
+			return kernelProps;
+		else
+			return null;
 	}
 
 }

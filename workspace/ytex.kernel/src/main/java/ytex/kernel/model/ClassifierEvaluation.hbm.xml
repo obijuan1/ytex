@@ -56,8 +56,7 @@
 		<property name="param1" />
 		<property name="param2" />
 		<property name="model" column="model" type="binary" />
-		<map name="classifierIRStats" inverse="true"
-			table="classifier_eval_ir">
+		<map name="classifierIRStats" inverse="true" table="classifier_eval_ir">
 			<key column="classifier_eval_id" />
 			<map-key column="ir_class_id" type="int" />
 			<one-to-many class="ClassifierEvaluationIRStat" />
@@ -68,8 +67,7 @@
 			<map-key column="instance_id" type="int" />
 			<one-to-many class="ClassifierInstanceEvaluation" />
 		</map>
-		<joined-subclass name="SVMClassifierEvaluation"
-			table="classifier_eval_svm">
+		<joined-subclass name="SVMClassifierEvaluation" table="classifier_eval_svm">
 			<key column="classifier_eval_id" />
 			<property name="cost" />
 			<property name="weight" />
@@ -82,14 +80,14 @@
 		<joined-subclass name="SemiLClassifierEvaluation"
 			table="classifier_eval_semil">
 			<key column="classifier_eval_id" />
-			<property name="distance" column="distance"/>
-			<property name="degree" column="degree"/>
-			<property name="softLabel" column="soft_label"/>
-			<property name="normalizedLaplacian" column="norm_laplace"/>
-			<property name="mu" column="mu"/>
-			<property name="lambda" column="lambda"/>
-			<property name="gamma" column="gamma"/>
-			<property name="percentLabeled" column="pct_labeled"/>
+			<property name="distance" column="distance" />
+			<property name="degree" column="degree" />
+			<property name="softLabel" column="soft_label" />
+			<property name="normalizedLaplacian" column="norm_laplace" />
+			<property name="mu" column="mu" />
+			<property name="lambda" column="lambda" />
+			<property name="gamma" column="gamma" />
+			<property name="percentLabeled" column="pct_labeled" />
 		</joined-subclass>
 	</class>
 	<class name="ClassifierEvaluationIRStat" table="classifier_eval_ir">
@@ -100,16 +98,16 @@
 		</id>
 		<many-to-one name="classifierEvaluation" class="ClassifierEvaluation"
 			column="classifier_eval_id" not-null="true" />
-		<property name="irClassId" column="ir_class_id"/>
-		<property name="tp"/>
-		<property name="fp"/>
-		<property name="tn"/>
-		<property name="fn"/>
-		<property name="ppv"/>
-		<property name="npv"/>
-		<property name="sensitivity" column="sens"/>
-		<property name="specificity" column="spec"/>
-		<property name="f1"/>
+		<property name="irClassId" column="ir_class_id" />
+		<property name="tp" />
+		<property name="fp" />
+		<property name="tn" />
+		<property name="fn" />
+		<property name="ppv" />
+		<property name="npv" />
+		<property name="sensitivity" column="sens" />
+		<property name="specificity" column="spec" />
+		<property name="f1" />
 	</class>
 	<class name="ClassifierInstanceEvaluation" table="classifier_instance_eval">
 		<id name="classifierInstanceEvaluationId" column="classifier_instance_eval_id">
@@ -129,12 +127,20 @@
 		</map>
 	</class>
 	<query name="getCrossValidationFoldByName">
-		from CrossValidationFold where name = :name
+		from CrossValidationFold
+		where name = :name
 	</query>
 	<query name="getFeatureEvaluationByNameAndType">
-		from FeatureEvaluation where name = :name and type =
-		:type
+		from FeatureEvaluation
+		where name = :name
+		and type = :type
 	</query>
-
+	<query name="getCrossValidationFold">
+		from CrossValidationFold
+		where name = :name
+		and label = :label
+		and run = :run
+		and fold = :fold
+	</query>
 
 </hibernate-mapping>

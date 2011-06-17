@@ -36,4 +36,7 @@ public interface ClassifierEvaluationDao {
 			boolean saveInstanceEval, boolean saveIRStats,
 			Integer excludeTargetClassId);
 
+	public abstract CrossValidationFold getCrossValidationFold(String name, String label,
+			int run, int fold);
+
 }
