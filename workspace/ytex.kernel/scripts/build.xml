@@ -70,6 +70,7 @@
 		<antcall target="${process.dir.target}" />
 	</target>
 	<target name="kernel.genParams" depends="init.dir" unless="no.genParams" description="call ClassifierEvalUtil to generate parameter grid for each training file.  skipped if no.genParams is set">
+		<echo>kernel.data ${kernel.data}</echo>
 		<propertyset id="kernel.props">
 			<propertyref prefix="kernel." />
 		</propertyset>
@@ -190,7 +191,7 @@
 		</exec>
 		<!-- test the svm -->
 		<exec executable="${libsvm.bin}/svm-predict" dir="${kernel.workdir}" failonerror="yes">
-			<arg line="${libsvm.test.line} ${eval.test.data} ${kernel.outdir}/model.txt ${kernel.outdir}/predict.txt" />
+			<arg line="${kernel.libsvm.test.line} ${eval.test.data} ${kernel.outdir}/model.txt ${kernel.outdir}/predict.txt" />
 		</exec>
 		<antcall target="svm.store.options" />
 	</target>
