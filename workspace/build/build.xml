@@ -170,6 +170,8 @@
 		<copy todir="${ytex.dist.home}">
 			<fileset dir=".">
 				<include name="*.cmd" />
+				<include name="*.sh" />
+				<include name="*.profile" />
 				<include name="build-setup.xml" />
 			</fileset>
 			<fileset dir="../" includes="ytex.kernel/scripts/*.*" />
