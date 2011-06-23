@@ -13,7 +13,7 @@ Maybe we can enter a query in the tableName attribute?
 	
 		<dictionary id="DICT_UMLS_MS" externalResourceKey="DbConnection" caseSensitive="false">
 			<implementation>
-				<jdbcImpl tableName="@db.schema@.V_SNOMED_FWORD_LOOKUP" cacheSize="500"/>
+				<jdbcImpl tableName="@db.schema@.v_snomed_fword_lookup" cacheSize="500"/>
 			</implementation>
 			<lookupField fieldName="fword"/>
 			<metaFields>
