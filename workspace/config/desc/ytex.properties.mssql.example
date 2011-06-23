@@ -20,3 +20,8 @@ db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
 db.initStatements=
 ytex.beanRefContext=classpath*:beanRefContext.xml
 hibernate.dialect=org.hibernate.dialect.SQLServerDialect
+
+# the schema and catalog (database) where umls is installed
+# if not specified, will default to schema/database from ytex
+#umls.schema=dbo
+#umls.catalog=umls

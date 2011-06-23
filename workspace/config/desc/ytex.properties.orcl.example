@@ -32,6 +32,6 @@ db.type=orcl
 db.driver=oracle.jdbc.driver.OracleDriver
 ytex.beanRefContext=classpath*:beanRefContext.orcl.xml
 
-# host name of database server 
-# not used for oracle 
-#db.host=localhost
+# the schema where umls is installed
+# if not specified, will default to schema from ytex
+#umls.schema=umls

@@ -19,3 +19,7 @@ db.driver=com.mysql.jdbc.Driver
 db.initStatements=
 ytex.beanRefContext=classpath*:beanRefContext.xml
 hibernate.dialect=org.hibernate.dialect.MySQLMyISAMDialect
+
+# the schema where umls is installed
+# if not specified, will default to schema from ytex
+#umls.schema=umls
