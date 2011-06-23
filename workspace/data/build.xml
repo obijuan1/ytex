@@ -11,7 +11,7 @@
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<!-- by default umls in same database/catalog as ytex -->
 	<property name="umls.catalog" value="${db.name}" />
-	<property name="umls.schema" value="${ytex.schema}" />
+	<property name="umls.schema" value="${db.schema}" />
 	<include file="${ytex.home}/ytex.kernel/scripts/build-classpath.xml" />
 
 	<target name="all" depends="umls.all,vacs.all" description="call umls.all and vacs.all" />
