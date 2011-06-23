@@ -1,15 +1,18 @@
 <project name="ytex.data.mssql">
-	<taskdef resource="net/sf/antcontrib/antlib.xml" />
-	<property environment="env"/>
-	<property name="ytex.home" value=".."/>
+	<property environment="env" />
+	<property name="ytex.home" value=".." />
 	<property name="ytex.properties" value="${ytex.home}/config/desc/ytex.properties" />
 	<property file="${ytex.properties}" />
 	<property name="sql.dir" value="./${db.type}" />
 	<property name="sqlcmd.line" value="-d ${db.name} -E -S ${db.host} -v db_schema=${db.schema}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<property name="sqlplus.line" value="${db.username}/${db.password}@${db.name}" />
-	<property name="umls.zip" value="${ytex.home}/../umls-${db.type}.zip"/>
-	<property name="mysql.home" value="${env.MYSQL_HOME}"/>
+	<property name="umls.zip" value="${ytex.home}/../umls.zip" />
+	<property name="mysql.home" value="${env.MYSQL_HOME}" />
+	<!-- by default umls in same database/catalog as ytex -->
+	<property name="umls.catalog" value="${db.name}" />
+	<property name="umls.schema" value="${ytex.schema}" />
+	<include file="${ytex.home}/ytex.kernel/scripts/build-classpath.xml" />
 
 	<target name="all" depends="umls.all,vacs.all" description="call umls.all and vacs.all" />
 	<target name="init" description="initialize flags indicating which db is in use">
@@ -22,19 +25,19 @@
 		<condition property="orcl">
 			<equals arg1="${db.type}" arg2="orcl" />
 		</condition>
-		<available file="${umls.zip}" property="umls.zip.available"/>
+		<available file="${umls.zip}" property="umls.zip.available" />
 	</target>
 
 	<target name="sqlcmd.orcl" if="orcl" description="execute sql script for oracle server">
 		<echo>executing ${sqlcmd.dir}/${sqlcmd.script}</echo>
 		<!-- append quit to end of file -->
-		<copy file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}" tofile="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" overwrite="yes"/>
+		<copy file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}" tofile="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" overwrite="yes" />
 		<echo file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" append="yes">
 quit</echo>
 		<exec executable="sqlplus" dir="${sql.dir}/${sqlcmd.dir}">
 			<arg line="${sqlplus.line} @${sqlcmd.script}.tmp" />
 		</exec>
-		<delete file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp"/>
+		<delete file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" />
 	</target>
 	<target name="sqlcmd.mssql" if="mssql" description="execute sql script for ms sql server">
 		<echo>executing ${sqlcmd.dir}/${sqlcmd.script}</echo>
@@ -51,58 +54,125 @@ quit</echo>
 
 	<target name="sqlcmd" depends="init,sqlcmd.mysql,sqlcmd.mssql,sqlcmd.orcl" />
 
-	<target name="unpack.umls.sample" unless="umls.zip.available">
-		<echo>${umls.zip} not available, loading umls sample</echo>
-		<copy todir="${db.type}/umls">
-			<fileset dir="${db.type}/umls" includes="*.bcp"/>
-			<mapper type="glob" from="*_sample.bcp" to="*.bcp"/>
-		</copy>
-		<copy todir="${db.type}/umls">
-			<fileset dir="${db.type}/umls" includes="*.txt"/>
-			<mapper type="glob" from="*_sample.txt" to="*.txt"/>
-		</copy>
+	<target name="umls.check.mrconso.mysql" if="mysql" description="see if mrconso table exists">
+		<exec executable="${mysql.home}/mysql" outputproperty="mrconso.out">
+			<arg line="${mysql.line} --skip-column-names --batch -e &quot;show tables from ${umls.schema} like 'mrconso'&quot;" />
+		</exec>
+		<condition property="mrconso.exists">
+			<equals arg1="mrconso" arg2="${mrconso.out}" />
+		</condition>
+		<echo>${mrconso.exists}</echo>
+	</target>
+	<target name="umls.check.mrconso.mssql" if="mssql" description="see if mrconso table exists">
+		<fail>not yet implemented</fail>
+	</target>
+	<target name="umls.check.mrconso.orcl" if="orcl" description="see if mrconso table exists">
+		<fail>not yet implemented</fail>
+	</target>
+	<target name="umls.all" depends="init" description="setup umls tables from dump or db, depending on existence of mrconso">
+		<!-- 
+		somewhat convoluted: we need to call init so that we can set the database type flags (mysql, mssql, orcl)
+		we then can call umls.setup, which can call all the targets to set mrconso.exists attribute
+		which then controls which target gets called (dump/db)
+		-->
+		<antcall target="umls.setup" />
+	</target>
+	<target name="umls.setup" depends="umls.check.mrconso.mysql,umls.check.mrconso.orcl,umls.check.mrconso.mssql">
+		<antcall target="umls.setup.dump" />
+		<antcall target="umls.setup.db" />
+	</target>
+	<target name="umls.setup.dump" depends="init" unless="mrconso.exists" description="unpack umls_aui_fword and mrconso from dump, and setup ctakes umls lookup view">
+		<echo>${mrconso.exists}</echo>
+		<fail unless="umls.zip.available" message="neither umls tables nor umls.zip available, cannot setup" />
+		<antcall target="umls.init" />
+		<echo>import umls.dump</echo>
+		<antcall target="unpack.umls" />
+		<antcall target="umls.import.mssql" />
+		<antcall target="umls.import.mysql" />
+		<antcall target="umls.import.orcl" />
+		<antcall target="umls.finish" />
+	</target>
+	<target name="umls.setup.db" depends="init" if="mrconso.exists" description="setup umls_aui_fword from mrconso in db, and setup ctakes umls lookup view">
+		<antcall target="umls.init" />
+		<antcall target="umls.setupAuiFword" />
+		<antcall target="umls.finish" />
+	</target>
+	<target name="umls.setupAuiFword" depends="init" description="setup umls_aui_fword from mrconso">
+		<java classname="ytex.umls.dao.SetupAuiFirstWord" fork="yes" classpathref="${kernel.cp}">
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
 	</target>
 	<target name="unpack.umls.zip" if="umls.zip.available">
-		<unzip src="${umls.zip}" dest="${db.type}/umls"/>
+		<unzip src="${umls.zip}" dest="${db.type}/umls" />
 	</target>
-	<target name="unpack.umls" depends="init,unpack.umls.sample,unpack.umls.zip" description="unpack umls from archive, or load umls using just sample"/>
+	<target name="unpack.umls" depends="init,unpack.umls.zip" description="unpack umls from archive" />
 
 	<target name="umls.import.mssql" if="mssql">
+		<fail>not yet implemented</fail>
 		<echo>import umls tables</echo>
+		<!-- todo transform rrf to wide bcp file -->
 		<exec executable="bcp" dir="${sql.dir}/umls">
-			<arg line="${db.name}.${db.schema}.umls_snomed_map in umls_snomed_map.bcp -T -S ${db.host} -w" />
+			<arg line="${db.name}.${db.schema}.umls_aui_fword in umls_aui_fword.bcp -T -S ${db.host} -w" />
 		</exec>
 		<exec executable="bcp" dir="${sql.dir}/umls">
-			<arg line="${db.name}.${db.schema}.umls_ms_2009 in umls_ms_2009.bcp -T -S ${db.host} -w" />
+			<arg line="${umls.catalog}.${umls.schema}.mrconso in mrconso.bcp -T -S ${db.host} -w" />
 		</exec>
 	</target>
 	<target name="umls.import.orcl" if="orcl">
+		<fail>not yet implemented</fail>
 		<echo>import umls tables</echo>
 		<exec executable="sqlldr" dir="${sql.dir}/umls">
-			<arg line="${sqlplus.line} control=umls_ms_2009.ctl" />
+			<arg line="${sqlplus.line} control=umls_aui_fword.ctl" />
 		</exec>
 		<exec executable="sqlldr" dir="${sql.dir}/umls">
-			<arg line="${sqlplus.line} control=umls_snomed_map.ctl" />
+			<arg line="${sqlplus.line} control=mrconso.ctl" />
 		</exec>
 	</target>
-	<target name="umls.all" description="setup UMLS tables" depends="init,unpack.umls">
-		<echo>drop umls tables</echo>
+	<target name="umls.import.mysql" if="mysql">
+		<echo>import umls tables into ${umls.schema} schema</echo>
+		<exec executable="${mysql.home}/mysql" dir="${sql.dir}/umls">
+			<arg line="--user=${db.username} --password=${db.password} --host=${db.host} ${umls.schema} -e &quot;source import_umls.sql&quot;" />
+		</exec>
+		<echo>import umls_aui_fword table</echo>
+		<exec executable="${mysql.home}/mysql" dir="${sql.dir}/umls">
+			<arg line="${mysql.line} -e &quot;load data local infile 'umls_aui_fword.txt' into table umls_aui_fword&quot;" />
+		</exec>
+	</target>
+	<target name="umls.init" description="drop and create umls tables">
+		<echo>drop umls views</echo>
+		<antcall target="sqlcmd">
+			<param name="sqlcmd.dir" value="./umls" />
+			<param name="sqlcmd.script" value="drop_view.sql" />
+		</antcall>
+		<echo>drop ytex umls tables</echo>
 		<antcall target="sqlcmd">
 			<param name="sqlcmd.dir" value="./umls" />
 			<param name="sqlcmd.script" value="drop_tables.sql" />
 		</antcall>
-		<echo>create umls tables</echo>
+		<echo>create ytex umls tables</echo>
 		<antcall target="sqlcmd">
 			<param name="sqlcmd.dir" value="./umls" />
 			<param name="sqlcmd.script" value="create_tables.sql" />
 		</antcall>
-		<!-- import umls tables for oracle and mssql.  import for mysql in create_tables.sql --> 
-		<antcall target="umls.import.orcl"/>
-		<antcall target="umls.import.mssql"/>
+	</target>
+	<target name="umls.create" description="create mrconso table">
+		<echo>create nlm's umls tables</echo>
+		<antcall target="sqlcmd">
+			<param name="sqlcmd.dir" value="./umls" />
+			<param name="sqlcmd.script" value="umls.sql" />
+		</antcall>
+	</target>
+	<target name="umls.finish" description="index umls tables, create lookup view">
 		<echo>index umls tables</echo>
 		<antcall target="sqlcmd">
 			<param name="sqlcmd.dir" value="./umls" />
 			<param name="sqlcmd.script" value="create_indices.sql" />
+		</antcall>
+		<echo>create lookup view</echo>
+		<antcall target="sqlcmd">
+			<param name="sqlcmd.dir" value="./umls" />
+			<param name="sqlcmd.script" value="create_view.sql" />
 		</antcall>
 	</target>
 
@@ -163,7 +233,10 @@ quit</echo>
 			</sequential>
 		</for>
 	</target>
+	<!--
 	<target name="vacs.all" description="drop and create ytex vacs, ctakes, and uima tables" depends="kernel.drop,vacs.drop,uima.all,vacs.create,kernel.create" />
+	-->
+	<target name="vacs.all" description="drop and create ytex vacs, ctakes, and uima tables" depends="vacs.drop,uima.all,vacs.create" />
 
 	<target name="esld.all" description="create esld views, add esld terms">
 		<for list="create_document.sql,create_view.sql,insert_reference.sql" param="sqlcmd.script">
@@ -195,4 +268,5 @@ quit</echo>
 			</sequential>
 		</for>
 	</target>
+
 </project>
