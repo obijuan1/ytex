@@ -27,7 +27,8 @@ and sentence.span_end >= da.span_end
 and sentence.uima_type_id in (select uima_type_id from ref_uima_type t where t.uima_type_name = 'edu.mayo.bmi.uima.core.sentence.type.Sentence')
 ;
 
-
+/*
+ * view performance on mysql is abominable, use a table instead
 create view v_snomed_fword_lookup
 as
 select fword, cui, text
@@ -45,6 +46,7 @@ where
 ) 
 ;
 
+ */
 
 CREATE VIEW v_document_ontoanno
 AS

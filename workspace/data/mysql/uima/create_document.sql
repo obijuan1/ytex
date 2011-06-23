@@ -1,5 +1,3 @@
-
-
 CREATE TABLE document(
 	document_id int AUTO_INCREMENT NOT NULL,
 	analysis_batch varchar(50) NOT NULL,
