@@ -3,7 +3,7 @@ AS
 SELECT anno.*, ur.uima_type_name, substring(doc.doc_text, anno.span_begin+1, anno.span_end-anno.span_begin) anno_text, doc.analysis_batch
 FROM anno_base AS anno 
 INNER JOIN document AS doc ON doc.document_id = anno.document_id
-INNER JOIN REF_UIMA_TYPE AS ur on ur.uima_type_id = anno.uima_type_id
+INNER JOIN ref_uima_type AS ur on ur.uima_type_id = anno.uima_type_id
 ;
 
 
