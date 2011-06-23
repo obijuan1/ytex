@@ -109,7 +109,7 @@
 			<path refid="cp.all" />
 			<fileset dir="${ytex.dist.home}/lib" includes="ytex.model.jar" />
 		</path>
-		<antcall target="compile"  inheritRefs="true">
+		<antcall target="compile" inheritRefs="true">
 			<param name="project.name" value="ytex.kernel" />
 			<param name="project.classpathref" value="cp.ytex.kernel" />
 		</antcall>
@@ -172,7 +172,7 @@
 				<include name="*.cmd" />
 				<include name="build-setup.xml" />
 			</fileset>
-			<fileset dir="../" includes="ytex.kernel/libsvm/*.*" />
+			<fileset dir="../" includes="ytex.kernel/scripts/*.*" />
 		</copy>
 		<copy todir="${ytex.dist.home}/lib">
 			<fileset dir="../libs.system" includes="**/*.*" excludes="**/.svn/**/*.*,*.*,.settings/**/*.*" />
@@ -266,6 +266,7 @@
 			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
 			<zipfileset dir="${nlp.home}" includes="${tomcat.dir}/**/*.*" excludes="${tomcat.dir}/webapps/**/*.*" />
 			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
+			<zipfileset dir="../data/demo" includes="umls.zip" />
 		</zip>
 	</target>
 	<target name="build.all" depends="clean.dist,build.ctakes-patches,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />

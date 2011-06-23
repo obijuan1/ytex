@@ -24,11 +24,29 @@ Call with option -projecthelp for more info.
 		<ant dir="${ytex.home}/data" target="all" />
 	</target>
 	<target name="templateToConfig" description="generate config files from templates using values specified in ytex.properties">
+		<condition property="filter.umls.catalog" value="" else="catalog=&quot;${umls.catalog}&quot;">
+			<or>
+				<!-- for mysql/oracle, no catalog - assume umls in same catalog -->
+				<equals arg1="mysql" arg2="${db.type}" />
+				<equals arg1="oracle" arg2="${db.type}" />
+				<!-- if umls.catalog not set, assume in same catalog -->
+				<not>
+					<isset property="umls.catalog"/>
+				</not>
+				<!-- if umls catalog same as db, don't bother -->
+				<equals arg1="${umls.catalog}" arg2="${db.name}" />
+			</or>
+		</condition>
+		<!-- default umls schema to ytex schema - this will only be set if umls.schema hasn't been defined -->
+		<property name="umls.schema" value="${db.schema}" />
 		<copy todir="${ytex.home}" overwrite="yes">
 			<fileset dir="${ytex.home}" includes="config/desc/**/*.template.xml,examples/**/*.template.xml" />
 			<globmapper from="*.template.xml" to="*.xml" />
 			<filterset>
+				<!-- with a filter set, the last token overrides previous tokens -->
 				<filtersfile file="${ytex.properties}" />
+				<filter token="umls.schema" value="${umls.schema}" />
+				<filter token="filter.umls.catalog" value="${filter.umls.catalog}" />
 			</filterset>
 		</copy>
 		<copy todir="${ytex.home}" overwrite="yes">
@@ -121,16 +139,16 @@ Modify to match your configuration.
 		<manifestclasspath property="ytex.classpath.man" jarfile="${ytex.home}/lib/ytex.model.jar">
 			<classpath>
 				<fileset dir="${catalina.base}/webapps/${context.root}/WEB-INF/lib" includes="*.jar" />
-				<fileset dir="${ytex.home}/lib/mysql-connector-java-5.1.9" includes="**/*.jar"/>
-				<fileset dir="${ytex.home}/lib/oracle11.2.0.1.0" includes="**/*.jar"/>
-				<fileset dir="${ytex.home}/lib/sqljdbc_3.0" includes="**/*.jar"/>
+				<fileset dir="${ytex.home}/lib/mysql-connector-java-5.1.9" includes="**/*.jar" />
+				<fileset dir="${ytex.home}/lib/oracle11.2.0.1.0" includes="**/*.jar" />
+				<fileset dir="${ytex.home}/lib/sqljdbc_3.0" includes="**/*.jar" />
 			</classpath>
 		</manifestclasspath>
 		<manifest file="${ytex.home}/lib/MANIFEST.MF">
 			<attribute name="Class-Path" value="${ytex.classpath.man}" />
 		</manifest>
 		<zip destfile="${ytex.home}/lib/ytex.model.jar" update="yes">
-			<zipfileset dir="${ytex.home}/lib" includes="MANIFEST.MF" prefix="META-INF"/>
+			<zipfileset dir="${ytex.home}/lib" includes="MANIFEST.MF" prefix="META-INF" />
 		</zip>
 	</target>
 </project>
