@@ -30,20 +30,33 @@ import edu.mayo.bmi.uima.core.sentence.type.Sentence;
 
 /**
  * Negex adapted to cTAKES. Checks negation status of named entities. Loads
- * negex triggers from classpath: /ytex/uima/annotators/negex_triggers.txt
+ * negex triggers from classpath:
+ * <tt>/ytex/uima/annotators/negex_triggers.txt</tt>
  * <p/>
- * Default behavior: confidence attribute for negated terms, possibly affirmed,
- * or possibly negated terms set to -1 Configure with following uima
- * initialization parameters:
+ * The meaning of the certainty and confidence attributes is nowhere documented
+ * for cTakes. There are several ways of handling 'maybes', see below. Default
+ * behavior: certainty attribute for negated & possible terms set to -1
+ * Configure with following uima initialization parameters:
  * <li>checkPossibilities : should we check for possibilities
  * <li>negatePossibilities : should possibilities be negated, default = true? if
- * true, negated: confidence=-1, certainty=0; possible: confidence=-1,
- * certainty=-1; affirmed: confidence=0, certainty=0 if false, negated:
- * confidence=-1, certainty=0; possible: confidence=0, certainty=-1; affirmed:
- * confidence=0, certainty=0
- * <li>storeAsInterval : combine certainty and negation status in a single
- * value. negated: confidence = -1, possible: confidence = 0.5, affirmed:
- * confidence = 1
+ * true,
+ * <ul>
+ * <li>negated: certainty=-1, confidence=0
+ * <li>possible: certainty=-1, confidence=-1
+ * <li>affirmed: certainty=0, confidence=0
+ * </ul
+ * if false
+ * <ul>
+ * <li>negated: certainty=-1, confidence=0
+ * <li>possible: certainty=0, confidence=-1
+ * <li>affirmed: certainty=0, confidence=0
+ * </ul>
+ * <li>storeAsInterval
+ * <ul>
+ * <li>negated: certainty=-1, confidence = -1
+ * <li>possible: certainty=-1, confidence = 0.5
+ * <li>affirmed: certainty=0, confidence = 1
+ * </ul>
  * 
  * @author vijay
  * 
@@ -732,11 +745,11 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 			NegexToken t, boolean negated, boolean possible) {
 		if (!storeAsInterval) {
 			if (possible)
-				ne.setCertainty(-1);
-			if (negated || (this.negatePossibilities && possible))
 				ne.setConfidence(-1);
-
+			if (negated || (this.negatePossibilities && possible))
+				ne.setCertainty(-1);
 		} else {
+			ne.setCertainty(negated || possible ? -1 : 0);
 			float confidence = negated ? -1 : 1;
 			if (possible)
 				confidence *= 0.5;
