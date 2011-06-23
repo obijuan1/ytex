@@ -29,7 +29,7 @@ STR,
 SRL,
 SUPPRESS,
 coalesce(CVF,'')
-into outfile 'e:/temp/MRCONSO.rrf'
+into outfile 'e:/temp/MRCONSO.RRF'
 fields terminated by '|' ESCAPED BY '' lines terminated by '\r\n'
 from umls.MRCONSO mrc
 inner join
