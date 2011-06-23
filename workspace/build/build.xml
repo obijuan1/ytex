@@ -160,6 +160,7 @@
 				<exclude name="**/.svn/**/*.*" />
 				<exclude name="**/umls/*.bcp" />
 				<exclude name="**/umls/*.txt" />
+				<exclude name="**/demo/**/*.*" />
 			</fileset>
 			<fileset dir="../">
 				<include name="data/**/umls/*_sample.*" />
