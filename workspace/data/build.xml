@@ -1,4 +1,4 @@
-<project name="ytex.data.mssql">
+<project name="ytex.data">
 	<property environment="env" />
 	<property name="ytex.home" value=".." />
 	<property name="ytex.properties" value="${ytex.home}/config/desc/ytex.properties" />
@@ -56,10 +56,10 @@ quit</echo>
 
 	<target name="umls.check.mrconso.mysql" if="mysql" description="see if mrconso table exists">
 		<exec executable="${mysql.home}/mysql" outputproperty="mrconso.out">
-			<arg line="${mysql.line} --skip-column-names --batch -e &quot;show tables from ${umls.schema} like 'mrconso'&quot;" />
+			<arg line="${mysql.line} --skip-column-names --batch -e &quot;show tables from ${umls.schema} like 'MRCONSO'&quot;" />
 		</exec>
 		<condition property="mrconso.exists">
-			<equals arg1="mrconso" arg2="${mrconso.out}" />
+			<equals arg1="mrconso" arg2="${mrconso.out}" casesensitive="false" trim="true" />
 		</condition>
 		<echo>${mrconso.exists}</echo>
 	</target>
