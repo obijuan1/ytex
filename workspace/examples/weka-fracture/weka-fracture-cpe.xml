@@ -9,7 +9,7 @@
                 <nameValuePair>
                     <name>InputDirectory</name>
                     <value>
-                        <string>.\reference set</string>
+                        <string>./reference set</string>
                     </value>
                 </nameValuePair>
             </configurationParameterSettings>
