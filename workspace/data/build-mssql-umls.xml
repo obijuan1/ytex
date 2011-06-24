@@ -1,0 +1,84 @@
+<project name="umls.mssql">
+	<property environment="env" />
+	<property name="ytex.home" value=".." />
+	<property name="ytex.properties" value="${ytex.home}/config/desc/ytex.properties" />
+	<property file="${ytex.properties}" />
+	<include file="${ytex.home}/ytex.kernel/scripts/build-classpath.xml" />
+	<property name="rrf.home" value="E:/bio/umlsmysql/2010AB" />
+	<property name="rrf.tmp" value="E:/bio/umlsmysql/2010AB/META/unc" />
+	<property name="umls.catalog" value="${db.name}" />
+	<property name="umls.schema" value="${db.schema}" />
+	<property name="umls.sqlcmd.line" value="-d ${umls.catalog} -E -S ${db.host} -v db_schema=${db.schema}" />
+	<!-- MRREL, MRSTY, MRXNS_ENG, MRXNW_ENG used by sujeevan -->
+	<!-- MRREL, MRSTY, MRDOC, MRSAB, MRCONSO, SRDEF used by UMLS::Interface -->
+	<property name="meta.tables" value="MRCUI,MRDOC,MRSAB,MRSTY,MRCONSO,MRREL" />
+	<!-- SU is in a different format -->
+	<property name="net.tables" value="SRDEF,SRFIL,SRFLD,SRSTR,SRSTRE1,SRSTRE2" />
+	<target name="import.file" description="convert rrf file with RRFtoWideTab, import file with bcp">
+		<property name="rrf.suffix" value="" />
+		<if>
+			<available file="${rrf.tmp}/${rrf.base}.txt" />
+			<then>
+				<echo>${rrf.tmp}/${rrf.base}.txt exists, assuming already imported, skipping</echo>
+			</then>
+			<else>
+				<mkdir dir="${rrf.tmp}"/>
+				<echo>${rrf.base}</echo>
+				<java classname="ytex.kernel.RRFtoWideTab" fork="yes" classpathref="${kernel.cp}">
+					<arg value="${rrf.dir}/${rrf.base}${rrf.suffix}" />
+					<arg value="${rrf.tmp}/${rrf.base}.txt" />
+				</java>
+				<pathconvert property="rrf.base.txt" targetos="windows">
+					<path location="${rrf.tmp}/${rrf.base}.txt" />
+				</pathconvert>
+				<echo>${rrf.base.txt}</echo>
+				<exec executable="bcp" failonerror="yes">
+					<arg line="${umls.catalog}.${umls.schema}.${rrf.base} in ${rrf.base.txt} -S ${db.host} -w -T" />
+				</exec>
+			</else>
+		</if>
+	</target>
+	<target name="import.net.all" description="import all umls NET files">
+		<for list="${net.tables}" param="rrf.base">
+			<sequential>
+				<echo>@{rrf.base}</echo>
+				<antcall target="import.file">
+					<param name="rrf.dir" value="${rrf.home}/NET" />
+					<param name="rrf.base" value="@{rrf.base}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="import.meta.all" description="import all umls META files">
+		<for list="${meta.tables}" param="rrf.base">
+			<sequential>
+				<echo>@{rrf.base}</echo>
+				<antcall target="import.file">
+					<param name="rrf.dir" value="${rrf.home}/META" />
+					<param name="rrf.base" value="@{rrf.base}" />
+					<param name="rrf.suffix" value=".rrf" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="sqlcmd" description="execute sql script for ms sql server">
+		<echo>executing ${sqlcmd.script}</echo>
+		<exec executable="sqlcmd" failonerror="yes">
+			<arg line="${umls.sqlcmd.line} -i ${sqlcmd.script}" />
+		</exec>
+	</target>
+	<target name="create.tables" description="execute mssql_tables.sql, mssql_net_tables.sql">
+		<antcall target="sqlcmd">
+			<param name="sqlcmd.script" value="mssql_tables.sql" />
+		</antcall>
+		<antcall target="sqlcmd" description="execute mssql_net_tables.sql">
+			<param name="sqlcmd.script" value="mssql_net_tables.sql" />
+		</antcall>
+	</target>
+	<target name="create.indices" description="execute mssql_indexes.sql">
+		<antcall target="sqlcmd">
+			<param name="sqlcmd.script" value="mssql_indexes.sql" />
+		</antcall>
+	</target>
+	<target name="all" depends="create.tables,import.meta.all,import.net.all,create.indices"/>
+</project>
