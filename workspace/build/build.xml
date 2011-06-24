@@ -158,12 +158,6 @@
 				<exclude name="**/.classpath" />
 				<exclude name="**/.project" />
 				<exclude name="**/.svn/**/*.*" />
-				<exclude name="**/umls/*.bcp" />
-				<exclude name="**/umls/*.txt" />
-				<exclude name="**/demo/**/*.*" />
-			</fileset>
-			<fileset dir="../">
-				<include name="data/**/umls/*_sample.*" />
 			</fileset>
 		</copy>
 	</target>
@@ -261,7 +255,7 @@
 		</copy>
 	</target>
 	<target name="zip.dist">
-		<delete dir="${dist.home}" includes="ytex*.zip"/>
+		<delete dir="${dist.home}" includes="ytex*.zip" />
 		<zip destfile="${dist.home}/ytex.zip" update="no">
 			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
 		</zip>
@@ -269,7 +263,6 @@
 			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
 			<zipfileset dir="${nlp.home}" includes="${tomcat.dir}/**/*.*" excludes="${tomcat.dir}/webapps/**/*.*" />
 			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
-			<zipfileset dir="../data/demo" includes="umls.zip" />
 		</zip>
 	</target>
 	<target name="build.all" depends="clean.dist,build.ctakes-patches,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />
