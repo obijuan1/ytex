@@ -28,24 +28,6 @@ and sentence.uima_type_id in (select uima_type_id from $(db_schema).ref_uima_typ
 ;
 go
 
-create view $(db_schema).[v_snomed_fword_lookup]
-as
-select fword, cui, text
-from $(db_schema).umls_ms_2009
-where 
-(
-	tui in 
-	(
-	'T021','T022','T023','T024','T025','T026','T029','T030','T031',
-	'T059','T060','T061',
-	'T019','T020','T037','T046','T047','T048','T049','T050','T190','T191',
-	'T033','T034','T040','T041','T042','T043','T044','T045','T046','T056','T057','T184'
-	)
-	and sourcetype = 'SNOMEDCT'
-) 
-;
-GO
-
 CREATE VIEW $(db_schema).[v_document_ontoanno]
 AS
 SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.coding_scheme, o.code, d.analysis_batch

@@ -1,19 +1,16 @@
-drop view $(db_schema).[V_ANNOTATION];
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[V_ANNOTATION]') AND type in (N'V'))
+	drop view $(db_schema).[V_ANNOTATION];
 go
 
-drop view $(db_schema).v_document_cui_sent
-;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[v_document_cui_sent]') AND type in (N'V'))
+	drop view $(db_schema).v_document_cui_sent
 go
 
-drop view $(db_schema).[V_SNOMED_FWORD_LOOKUP]
-;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[V_DOCUMENT_ONTOANNO]') AND type in (N'V'))
+	drop VIEW $(db_schema).[V_DOCUMENT_ONTOANNO]
 go
 
-drop VIEW $(db_schema).[V_DOCUMENT_ONTOANNO]
-;
-go
-
-drop view $(db_schema).v_anno_segment
-;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[v_anno_segment]') AND type in (N'V'))
+	drop view $(db_schema).v_anno_segment
 go
 
