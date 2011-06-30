@@ -41,6 +41,7 @@
 		<many-to-one name="corpusLabel" column="corpus_concept_label_eval_id" />
 		<property name="conceptId" column="concept_id" />
 		<property name="mutualInfo" column="mutual_info" />
+		<property name="mutualInfoRaw" column="mutual_info_raw" />
 		<property name="jointDistribution" column="joint_distro" />
 	</class>
 	<query name="getCorpus"><![CDATA[

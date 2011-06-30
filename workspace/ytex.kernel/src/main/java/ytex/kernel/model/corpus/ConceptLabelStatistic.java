@@ -12,7 +12,16 @@ public class ConceptLabelStatistic implements Serializable {
 	CorpusLabelEvaluation corpusLabel;
 	String conceptId;
 	double mutualInfo;
+	Double mutualInfoRaw;
 	String jointDistribution;
+
+	public Double getMutualInfoRaw() {
+		return mutualInfoRaw;
+	}
+
+	public void setMutualInfoRaw(Double mutualInfoRaw) {
+		this.mutualInfoRaw = mutualInfoRaw;
+	}
 
 	public int getCorpusConceptLabelStatisticId() {
 		return corpusConceptLabelStatisticId;

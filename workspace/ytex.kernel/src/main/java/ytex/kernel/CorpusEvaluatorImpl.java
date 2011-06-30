@@ -144,14 +144,19 @@ public class CorpusEvaluatorImpl implements CorpusEvaluator {
 	 */
 	double getFrequency(ConcRel parent, Map<String, Double> conceptFreq,
 			Map<String, Double> rawFreq) {
-		// get raw freq
-		double dFreq = rawFreq.containsKey(parent.getConceptID()) ? rawFreq
-				.get(parent.getConceptID()) : 0d;
-		// recurse
-		for (ConcRel child : parent.children) {
-			dFreq += getFrequency(child, conceptFreq, rawFreq);
+		double dFreq = 0d;
+		if (conceptFreq.containsKey(parent.getConceptID())) {
+			dFreq = conceptFreq.get(parent.getConceptID());
+		} else {
+			// get raw freq
+			dFreq = rawFreq.containsKey(parent.getConceptID()) ? rawFreq
+					.get(parent.getConceptID()) : 0d;
+			// recurse
+			for (ConcRel child : parent.children) {
+				dFreq += getFrequency(child, conceptFreq, rawFreq);
+			}
+			conceptFreq.put(parent.getConceptID(), dFreq);
 		}
-		conceptFreq.put(parent.nodeCUI, dFreq);
 		return dFreq;
 	}
 
