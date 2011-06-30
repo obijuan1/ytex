@@ -8,28 +8,33 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
-import ytex.umls.dao.UMLSDao;
 
 public class ConceptDaoImpl implements ConceptDao {
 	private SessionFactory sessionFactory;
 	private static final Log log = LogFactory.getLog(ConceptDaoImpl.class);
-	private UMLSDao umlsDao;
+	private JdbcTemplate jdbcTemplate;
 	private Properties ytexProperties;
 
 	public Properties getYtexProperties() {
@@ -38,6 +43,14 @@ public class ConceptDaoImpl implements ConceptDao {
 
 	public void setYtexProperties(Properties ytexProperties) {
 		this.ytexProperties = ytexProperties;
+	}
+
+	public void setDataSource(DataSource ds) {
+		this.jdbcTemplate = new JdbcTemplate(ds);
+	}
+
+	public DataSource getDataSource(DataSource ds) {
+		return this.jdbcTemplate.getDataSource();
 	}
 
 	/**
@@ -80,51 +93,54 @@ public class ConceptDaoImpl implements ConceptDao {
 		this.sessionFactory = sessionFactory;
 	}
 
-	public UMLSDao getUmlsDao() {
-		return umlsDao;
-	}
-
-	public void setUmlsDao(UMLSDao umlsDao) {
-		this.umlsDao = umlsDao;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see ytex.kernel.dao.ConceptDao#initializeConceptGraph(java.util.Set)
+	 * @see ytex.kernel.dao.ConceptDao#createConceptGraph
 	 */
-	public ConceptGraph initializeConceptGraph(String sourceVocabularies[]) {
-		ConceptGraph conceptGraph = getConceptGraph(sourceVocabularies);
+	public ConceptGraph createConceptGraph(String name, String query) {
+		ConceptGraph conceptGraph = getConceptGraph(name);
 		if (conceptGraph != null) {
+			if (log.isWarnEnabled())
+				log.warn("initializeConceptGraph(): concept graph already exists, returning concept graph");
 			return conceptGraph;
 		} else {
 			if (log.isInfoEnabled())
 				log.info("initializeConceptGraph(): file not found, initializing concept graph from database.");
-			Map<String, ConcRel> conceptMap = new HashMap<String, ConcRel>();
-			Set<String> roots = new HashSet<String>();
-			List<Object[]> conceptPairs = sourceVocabularies.length == 0 ? umlsDao
-					.getAllRelations() : umlsDao
-					.getRelationsForSABs(sourceVocabularies);
-			for (Object[] conceptPair : conceptPairs) {
-				addRelation(conceptMap, roots, conceptPair);
-			}
+			final Map<String, ConcRel> conceptMap = new HashMap<String, ConcRel>();
+			final Set<String> roots = new HashSet<String>();
+			this.jdbcTemplate.query(query, new RowCallbackHandler() {
+
+				@Override
+				public void processRow(ResultSet rs) throws SQLException {
+					String child = rs.getString(1);
+					String parent = rs.getString(2);
+					addRelation(conceptMap, roots, child, parent);
+				}
+			});
 			ConceptGraph cg = new ConceptGraph();
 			cg.setRoots(roots);
-			cg.setSourceVocabularies(sourceVocabularies);
 			cg.setConceptMap(conceptMap);
 			cg.setDepthMax(calculateDepthMax(roots, conceptMap));
-			writeConceptGraph(cg);
-			// sessionFactory.getCurrentSession().save(cg);
+			writeConceptGraph(name, cg);
 			return cg;
 		}
 	}
 
-	private void writeConceptGraph(ConceptGraph cg) {
+	/**
+	 * write the concept graph, create parent directories as required
+	 * 
+	 * @param name
+	 * @param cg
+	 */
+	private void writeConceptGraph(String name, ConceptGraph cg) {
 		ObjectOutputStream os = null;
+		File cgFile = new File(getConceptGraphFileName(name));
+		if (!cgFile.getParentFile().exists())
+			cgFile.getParentFile().mkdirs();
 		try {
 			os = new ObjectOutputStream(new BufferedOutputStream(
-					new FileOutputStream(this.getConceptGraphDir()
-							+ "/conceptGraph")));
+					new GZIPOutputStream(new FileOutputStream(cgFile))));
 			os.writeObject(cg);
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);
@@ -133,7 +149,6 @@ public class ConceptDaoImpl implements ConceptDao {
 				try {
 					os.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 		}
@@ -143,7 +158,7 @@ public class ConceptDaoImpl implements ConceptDao {
 		ObjectInputStream is = null;
 		try {
 			is = new ObjectInputStream(new BufferedInputStream(
-					new FileInputStream(file)));
+					new GZIPInputStream(new FileInputStream(file))));
 			return (ConceptGraph) is.readObject();
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);
@@ -154,7 +169,6 @@ public class ConceptDaoImpl implements ConceptDao {
 				try {
 					is.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 		}
@@ -169,9 +183,7 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * @param conceptPair
 	 */
 	private void addRelation(Map<String, ConcRel> conceptMap,
-			Set<String> roots, Object[] conceptPair) {
-		String childCUI = (String) conceptPair[0];
-		String parentCUI = (String) conceptPair[1];
+			Set<String> roots, String childCUI, String parentCUI) {
 		if (forbiddenConcepts.contains(childCUI)
 				|| forbiddenConcepts.contains(parentCUI)) {
 			// ignore relationships to useless concepts
@@ -230,20 +242,17 @@ public class ConceptDaoImpl implements ConceptDao {
 		return d;
 	}
 
+	private String getConceptGraphFileName(String name) {
+		return getConceptGraphDir() + File.separator + name + ".gz";
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see ytex.kernel.dao.ConceptDao#getConceptGraph(java.util.Set)
 	 */
-	public ConceptGraph getConceptGraph(String sourceVocabularies[]) {
-		// Query q = this.getSessionFactory().getCurrentSession().getNamedQuery(
-		// "getConceptGraph");
-		// q.setParameter("sourceVocabularies", sourceVocabularies);
-		// ConceptGraph cg = (ConceptGraph) q.uniqueResult();
-		// if (cg != null) {
-		// initializeConceptGraph(cg);
-		// }
-		File f = new File(getConceptGraphDir() + "/conceptGraph");
+	public ConceptGraph getConceptGraph(String name) {
+		File f = new File(getConceptGraphFileName(name));
 		if (log.isInfoEnabled())
 			log.info("getConceptGraph() initializing concept graph from file: "
 					+ f.getPath());
@@ -256,6 +265,12 @@ public class ConceptDaoImpl implements ConceptDao {
 		}
 	}
 
+	/**
+	 * replace cui strings in concrel with references to other nodes.
+	 * 
+	 * @param cg
+	 * @return
+	 */
 	private ConceptGraph initializeConceptGraph(ConceptGraph cg) {
 		Map<String, ConcRel> conceptMap = cg.getConceptMap();
 		for (ConcRel cr : conceptMap.values()) {
@@ -264,9 +279,15 @@ public class ConceptDaoImpl implements ConceptDao {
 		return cg;
 	}
 
+	/**
+	 * create a concept graph. 1st param - name of concept graph. 2nd param -
+	 * query to retrieve parent-child pairs.
+	 * 
+	 * @param args
+	 */
 	public static void main(String args[]) {
 		KernelContextHolder.getApplicationContext().getBean(ConceptDao.class)
-				.initializeConceptGraph(args);
+				.createConceptGraph(args[0], args[1]);
 	}
 
 }

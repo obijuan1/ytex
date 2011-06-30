@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,12 +14,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.kernel.ConceptSimilarityService;
 import ytex.kernel.dao.CorpusDao;
 
 /**
@@ -45,15 +44,16 @@ public class SemanticTypeKernel implements Kernel {
 	private static final String MAINSUI = "MAINSUI";
 	private static final String TUI = "TUI";
 
-	private SimpleJdbcTemplate simpleJdbcTemplate;
+//	private SimpleJdbcTemplate simpleJdbcTemplate;
 	private JdbcTemplate jdbcTemplate;
-	private Map<String, Set<String>> cuiTuiMap = new HashMap<String, Set<String>>();
+	private Map<String, Set<String>> cuiTuiMap = null;
 	private Map<String, Set<Integer>> cuiMainSuiMap = new HashMap<String, Set<Integer>>(
 			cuiTuiMap.size());
 	private PlatformTransactionManager transactionManager;
 	private DataSource dataSource;
 	private String corpusName;
 	private String cuiTuiQuery;
+	private ConceptSimilarityService conceptSimilarityService;
 
 	public String getCuiTuiQuery() {
 		return cuiTuiQuery;
@@ -80,7 +80,7 @@ public class SemanticTypeKernel implements Kernel {
 
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
-		this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
+//		this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
@@ -278,36 +278,6 @@ public class SemanticTypeKernel implements Kernel {
 	}
 
 	/**
-	 * load cui-tui for the specified corpus from the MRSTY table
-	 */
-	public void initCuiTuiMapFromCorpus() {
-		// String query =
-		// "select m.cui, m.tui from umls.MRSTY m inner join (select distinct cui from suj_concept)s  on s.cui = m.cui";
-		// List<Map<String, Object>> results = simpleJdbcTemplate
-		// .queryForList(query);
-		// this.cuiTuiMap = new HashMap<String, Set<String>>();
-		// for (Map<String, Object> result : results) {
-		// String cui = (String) result.get("cui");
-		// String tui = (String) result.get("tui");
-		// Set<String> tuis = cuiTuiMap.get(cui);
-		// if (tuis == null) {
-		// tuis = new HashSet<String>();
-		// cuiTuiMap.put(cui, tuis);
-		// }
-		// tuis.add(tui);
-		// }
-		// don't duplicate tui strings to save memory
-		Map<String, String> tuiMap = new HashMap<String, String>();
-		List<Object[]> listCuiTui = this.getCorpusDao().getCorpusCuiTuis(
-				this.getCorpusName());
-		for (Object[] cuiTui : listCuiTui) {
-			String cui = (String) cuiTui[0];
-			String tui = (String) cuiTui[1];
-			addCuiTuiToMap(tuiMap, cui, tui);
-		}
-	}
-
-	/**
 	 * init the cui -> 'main sui' map.
 	 */
 	private void initCuiMainSuiMap() {
@@ -394,8 +364,9 @@ public class SemanticTypeKernel implements Kernel {
 			public Object doInTransaction(TransactionStatus arg0) {
 				if (cuiTuiQuery != null)
 					initCuiTuiMapFromQuery();
-				else
-					initCuiTuiMapFromCorpus();
+				else {
+					cuiTuiMap = conceptSimilarityService.getCuiTuiMap();
+				}
 				initCuiMainSuiMap();
 				return null;
 			}

@@ -1,19 +1,22 @@
 package ytex.kernel.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.hibernate.Hibernate;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 
-import ytex.kernel.model.Corpus;
-import ytex.kernel.model.CorpusTerm;
-import ytex.kernel.model.InfoContent;
+import ytex.kernel.model.corpus.ConceptInformationContent;
+import ytex.kernel.model.corpus.ConceptLabelStatistic;
+import ytex.kernel.model.corpus.CorpusEvaluation;
+import ytex.kernel.model.corpus.CorpusLabelEvaluation;
 
 public class CorpusDaoImpl implements CorpusDao {
 	private SessionFactory sessionFactory;
-	private static final Log log = LogFactory.getLog(CorpusDaoImpl.class);
+
+	// private static final Log log = LogFactory.getLog(CorpusDaoImpl.class);
 
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
@@ -63,34 +66,94 @@ public class CorpusDaoImpl implements CorpusDao {
 	 */
 
 	@Override
-	public List<CorpusTerm> getTerms(String corpusName) {
+	public Map<String, Double> getInfoContent(String corpusName,
+			String conceptGraphName, String conceptSet) {
 		Query getTerms = this.getSessionFactory().getCurrentSession()
-				.getNamedQuery("getTerms");
+				.getNamedQuery("getInfoContent");
 		getTerms.setString("corpusName", corpusName);
-		return getTerms.list();
+		getTerms.setString("conceptGraphName", conceptGraphName);
+		getTerms.setString("conceptSetName", conceptSet);
+		Map<String, Double> corpusIC = new HashMap<String, Double>();
+		for (Object objIC : getTerms.list()) {
+			ConceptInformationContent ic = (ConceptInformationContent) objIC;
+			corpusIC.put(ic.getConceptId(), ic.getInformationContent());
+		}
+		return corpusIC;
 	}
 
-	public void addInfoContent(InfoContent infoContent) {
+	public void addInfoContent(ConceptInformationContent infoContent) {
 		this.getSessionFactory().getCurrentSession().save(infoContent);
 	}
 
-	public Corpus getCorpus(String corpusName) {
-		Query getTerms = this.getSessionFactory().getCurrentSession()
+	public CorpusEvaluation getCorpus(String corpusName,
+			String conceptGraphName, String conceptSetName) {
+		Query getCorpus = this.getSessionFactory().getCurrentSession()
 				.getNamedQuery("getCorpus");
-		getTerms.setString("corpusName", corpusName);
-		return (Corpus) getTerms.uniqueResult();
+		getCorpus.setString("corpusName", corpusName);
+		getCorpus.setString("conceptGraphName", conceptGraphName);
+		getCorpus.setString("conceptSetName", conceptSetName);
+		return (CorpusEvaluation) getCorpus.uniqueResult();
 	}
 
-	public List<InfoContent> getInfoContent(List<String> corpusNames) {
-		Query getTerms = this.getSessionFactory().getCurrentSession()
-				.getNamedQuery("getInfoContent");
-		getTerms.setParameterList("corpusNames", corpusNames);
-		return getTerms.list();
-	}
-	
-	public List<Object[]> getCorpusCuiTuis(String corpusName) {
-		Query getCorpusCuiTuis = this.getSessionFactory().getCurrentSession().getNamedQuery("getCorpusCuiTuis");
+	@SuppressWarnings("unchecked")
+	public List<Object[]> getCorpusCuiTuis(String corpusName,
+			String conceptGraphName, String conceptSetName) {
+		Query getCorpusCuiTuis = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getCorpusCuiTuis");
 		getCorpusCuiTuis.setString("corpusName", corpusName);
+		getCorpusCuiTuis.setString("conceptGraphName", conceptGraphName);
+		getCorpusCuiTuis.setString("conceptSetName", conceptSetName);
 		return getCorpusCuiTuis.list();
+	}
+
+	@Override
+	public void addCorpus(CorpusEvaluation eval) {
+		this.getSessionFactory().getCurrentSession().save(eval);
+	}
+
+	@Override
+	public void addCorpusLabelEval(CorpusLabelEvaluation eval) {
+		this.getSessionFactory().getCurrentSession().save(eval);
+	}
+
+	@Override
+	public void addLabelStatistic(ConceptLabelStatistic labelStatistic) {
+		this.getSessionFactory().getCurrentSession().save(labelStatistic);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<ConceptLabelStatistic> getLabelStatistic(String corpusName,
+			String conceptGraphName, String conceptSetName, String label,
+			Integer foldId) {
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getLabelStatistic");
+		setCorpusLabelQueryParams(corpusName, conceptGraphName, conceptSetName,
+				label, foldId, q);
+		return q.list();
+	}
+
+	private void setCorpusLabelQueryParams(String corpusName,
+			String conceptGraphName, String conceptSetName, String label,
+			Integer foldId, Query q) {
+		q.setString("corpusName", corpusName);
+		q.setString("conceptGraphName", conceptGraphName);
+		q.setString("conceptSetName", conceptSetName);
+		q.setString("label", label);
+		if (foldId != null)
+			q.setInteger("foldId", foldId);
+		else
+			q.setParameter("foldId", null, Hibernate.INTEGER);
+	}
+
+	@Override
+	public CorpusLabelEvaluation getCorpusLabelEvaluation(String corpusName,
+			String conceptGraphName, String conceptSetName, String label,
+			Integer foldId) {
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getCorpusLabelEvaluation");
+		setCorpusLabelQueryParams(corpusName, conceptGraphName, conceptSetName,
+				label, foldId, q);
+		return (CorpusLabelEvaluation) q.uniqueResult();
 	}
 }

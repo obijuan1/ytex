@@ -1,8 +1,12 @@
 package ytex.kernel;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,95 +19,139 @@ import ytex.kernel.dao.ConceptDao;
 import ytex.kernel.dao.CorpusDao;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
-import ytex.kernel.model.Corpus;
-import ytex.kernel.model.CorpusTerm;
-import ytex.kernel.model.InfoContent;
-import ytex.kernel.model.ObjPair;
 
 public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private static final Log log = LogFactory
 			.getLog(ConceptSimilarityServiceImpl.class);
+	private ConceptGraph cg = null;
 	private ConceptDao conceptDao;
-	private CorpusDao corpusDao;
-	ConceptGraph cg = null;
-	@Override
-	public ConceptGraph getConceptGraph() {
-		return cg;
-	}
-
-	private PlatformTransactionManager transactionManager;
-
 	/**
 	 * information concept cache
 	 */
-	private Map<String, Map<String, Double>> corporaIC = null;
-	private List<String> corpusNames;
+	private Map<String, Double> conceptFreq = null;
+	private String conceptGraphName;
+	private String conceptSetName;
+	private CorpusDao corpusDao;
 
-	public List<String> getCorpusNames() {
-		return corpusNames;
-	}
+	private String corpusName;
 
-	public void setCorpusNames(List<String> corpusNames) {
-		this.corpusNames = corpusNames;
+	private Map<String, Set<String>> cuiTuiMap;
+
+	private PlatformTransactionManager transactionManager;
+
+	private void addCuiTuiToMap(Map<String, Set<String>> cuiTuiMap,
+			Map<String, String> tuiMap, String cui, String tui) {
+		// get 'the' tui string
+		if (tuiMap.containsKey(tui))
+			tui = tuiMap.get(tui);
+		else
+			tuiMap.put(tui, tui);
+		Set<String> tuis = cuiTuiMap.get(cui);
+		if (tuis == null) {
+			tuis = new HashSet<String>();
+			cuiTuiMap.put(cui, tuis);
+		}
+		tuis.add(tui);
 	}
 
 	public ConceptDao getConceptDao() {
 		return conceptDao;
 	}
 
-	public void setConceptDao(ConceptDao conceptDao) {
-		this.conceptDao = conceptDao;
+	@Override
+	public ConceptGraph getConceptGraph() {
+		return cg;
+	}
+
+	public String getConceptGraphName() {
+		return conceptGraphName;
+	}
+
+	public String getConceptSetName() {
+		return conceptSetName;
+	}
+
+	public CorpusDao getCorpusDao() {
+		return corpusDao;
+	}
+
+	public String getCorpusName() {
+		return corpusName;
+	}
+
+	@Override
+	public Map<String, Set<String>> getCuiTuiMap() {
+		return cuiTuiMap;
+	}
+
+	/**
+	 * get the concept with the lowest Information Content of all the LCSs.
+	 * Functionality copied from umls interface.
+	 * 
+	 * @todo make this configurable/add a parameter - avg/min/max/median?
+	 * @param lcses
+	 * @return
+	 */
+	public double getIC(Iterable<ConcRel> lcses) {
+		double ic = 0;
+		for (ConcRel lcs : lcses) {
+			double ictmp = getIC(lcs.getConceptID());
+			if (ic < ictmp)
+				ic = ictmp;
+		}
+		return ic;
+	}
+
+	public double getIC(String concept1) {
+		Double dRetVal = conceptFreq.get(concept1);
+		if (dRetVal != null)
+			return (double) dRetVal;
+		else
+			return 0;
 	}
 
 	public PlatformTransactionManager getTransactionManager() {
 		return transactionManager;
 	}
 
-	public void setTransactionManager(
-			PlatformTransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
-	}
-
-	public double getIC(String corpusName, String concept1) {
-		Map<String, Double> conceptFreq = corporaIC.get(corpusName);
-		if (conceptFreq != null) {
-			Double dRetVal = conceptFreq.get(concept1);
-			if (dRetVal != null)
-				return (double) dRetVal;
-		}
-		return 0;
-	}
-
-	public Object[] lcs(String concept1, String concept2) {
-		ConcRel cr1 = cg.getConceptMap().get(concept1);
-		ConcRel cr2 = cg.getConceptMap().get(concept2);
-		if (cr1 != null && cr2 != null) {
-			ObjPair<ConcRel, Integer> op = ConcRel.getLeastCommonConcept(cr1,
-					cr2);
-			if (op != null) {
-				return new Object[] { op.v1.nodeCUI, op.v2 };
+	public void init() {
+		TransactionTemplate t = new TransactionTemplate(this.transactionManager);
+		t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
+		t.execute(new TransactionCallback<Object>() {
+			@Override
+			public Object doInTransaction(TransactionStatus arg0) {
+				cg = conceptDao.getConceptGraph(conceptGraphName);
+				initInfoContent();
+				initCuiTuiMapFromCorpus();
+				return null;
 			}
-		}
-		return null;
+		});
 	}
 
-	public double lin(String corpusName, String concept1, String concept2) {
-		// if(log.isDebugEnabled())
-		// log.debug("lin("+corpusName+", " + concept1 +"," +concept2+")");
-		double denom = getIC(corpusName, concept1)
-				+ getIC(corpusName, concept2);
-		if (denom != 0) {
-			ConcRel cr1 = cg.getConceptMap().get(concept1);
-			ConcRel cr2 = cg.getConceptMap().get(concept2);
-			if (cr1 != null && cr2 != null) {
-				ObjPair<ConcRel, Integer> op = ConcRel.getLeastCommonConcept(
-						cr1, cr2);
-				if (op != null && op.v1 != null) {
-					return 2 * getIC(corpusName, op.v1.nodeCUI) / denom;
-				}
-			}
+	/**
+	 * load cui-tui for the specified corpus from the MRSTY table
+	 */
+	public void initCuiTuiMapFromCorpus() {
+		// don't duplicate tui strings to save memory
+		Map<String, String> tuiMap = new HashMap<String, String>();
+		Map<String, Set<String>> tmpTuiCuiMap = new HashMap<String, Set<String>>();
+		List<Object[]> listCuiTui = this.getCorpusDao().getCorpusCuiTuis(
+				this.getCorpusName(), this.getConceptGraphName(),
+				this.getConceptSetName());
+		for (Object[] cuiTui : listCuiTui) {
+			String cui = (String) cuiTui[0];
+			String tui = (String) cuiTui[1];
+			addCuiTuiToMap(tmpTuiCuiMap, tuiMap, cui, tui);
 		}
-		return 0;
+		cuiTuiMap = Collections.unmodifiableMap(tmpTuiCuiMap);
+	}
+
+	/**
+	 * initialize information content caches
+	 */
+	public void initInfoContent() {
+		conceptFreq = corpusDao.getInfoContent(corpusName, conceptGraphName,
+				this.conceptSetName);
 	}
 
 	/*
@@ -117,10 +165,12 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		ConcRel cr1 = cg.getConceptMap().get(concept1);
 		ConcRel cr2 = cg.getConceptMap().get(concept2);
 		if (cr1 != null && cr2 != null) {
-			ObjPair<ConcRel, Integer> op = ConcRel.getLeastCommonConcept(cr1,
-					cr2);
+			Set<ConcRel> lcses = new HashSet<ConcRel>();
+			// ObjPair<ConcRel, Integer> op = ConcRel.getLeastCommonConcept(cr1,
+			// cr2);
+			int lcsDist = ConcRel.getLeastCommonConcept(cr1, cr2, lcses, null);
 			// leacock is defined as -log([path length]/(2*[depth])
-			double lch = -Math.log(((double) op.v2.intValue() + 1.0) / dm);
+			double lch = -Math.log(((double) lcsDist + 1.0) / dm);
 			// scale to depth
 			return lch / Math.log(dm);
 		} else {
@@ -134,115 +184,71 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		}
 	}
 
-	/**
-	 * recursively sum frequency of parent and all its childrens' frequencies
-	 * 
-	 * @param parent
-	 *            parent node
-	 * @param conceptFreq
-	 *            results stored here
-	 * @param conceptIdToTermMap
-	 *            raw frequencies here
-	 * @return double sum of concept frequency in the subtree with parent as
-	 *         root
-	 */
-	double getFrequency(ConcRel parent, Map<String, Double> conceptFreq,
-			Map<String, CorpusTerm> conceptIdToTermMap) {
-		double dFreq = 0;
-		// get raw freq
-		CorpusTerm t = conceptIdToTermMap.get(parent.nodeCUI);
-		if (t != null) {
-			dFreq = t.getFrequency();
-		}
-		// recurse
-		for (ConcRel child : parent.children) {
-			dFreq += getFrequency(child, conceptFreq, conceptIdToTermMap);
-		}
-		conceptFreq.put(parent.nodeCUI, dFreq);
-		return dFreq;
-	}
-
-	/**
-	 * initialize information content caches
-	 */
-	public void initICCorpora() {
-		this.corporaIC = new HashMap<String, Map<String, Double>>(
-				getCorpusNames().size());
-		for (InfoContent ic : corpusDao.getInfoContent(getCorpusNames())) {
-			Map<String, Double> corpusFreq = corporaIC.get(ic.getCorpus()
-					.getCorpusName());
-			if (corpusFreq == null) {
-				corpusFreq = new HashMap<String, Double>();
-				corporaIC.put(ic.getCorpus().getCorpusName(), corpusFreq);
-			}
-			corpusFreq.put(ic.getConceptId(), ic.getInformationContent());
-		}
-	}
-
-	/**
-	 * calculate information content for all concepts
-	 */
-	public void updateInformationContent(String corpusName) {
-		List<CorpusTerm> terms = corpusDao.getTerms(corpusName);
-		Corpus corpus = terms.get(0).getCorpus();
-		double totalFreq = 0;
-		//map of cui to term
-		Map<String, CorpusTerm> conceptIdToTermMap = new HashMap<String, CorpusTerm>(
-				terms.size());
-		for (CorpusTerm t : terms) {
-			conceptIdToTermMap.put(t.getConceptId(), t);
-		}
-		//map of cui to cumulative frequency
-		Map<String, Double> conceptFreq = new HashMap<String, Double>(cg
-				.getConceptMap().size());
-		//recurse through the tree
-		for (String conceptId : cg.getRoots()) {
-			totalFreq += getFrequency(cg.getConceptMap().get(conceptId),
-					conceptFreq, conceptIdToTermMap);
-		}
-		//update information content
-		for (Map.Entry<String, Double> cfreq : conceptFreq.entrySet()) {
-			InfoContent ic = new InfoContent();
-			if (cfreq.getValue() > 0) {
-				ic.setConceptId(cfreq.getKey());
-				ic.setCorpus(corpus);
-				ic.setFrequency(cfreq.getValue());
-				ic.setInformationContent(-Math.log(cfreq.getValue() / totalFreq));
-				corpusDao.addInfoContent(ic);
+	public int lcs(String concept1, String concept2,
+			Map<String, List<List<String>>> lcsPath) {
+		ConcRel cr1 = cg.getConceptMap().get(concept1);
+		ConcRel cr2 = cg.getConceptMap().get(concept2);
+		int dist = -1;
+		if (cr1 != null && cr2 != null) {
+			Set<ConcRel> crlcses = new HashSet<ConcRel>();
+			Map<ConcRel, List<List<ConcRel>>> crpaths = new HashMap<ConcRel, List<List<ConcRel>>>();
+			dist = ConcRel.getLeastCommonConcept(cr1, cr2, crlcses, crpaths);
+			for (Map.Entry<ConcRel, List<List<ConcRel>>> crLcsPath : crpaths
+					.entrySet()) {
+				List<List<String>> lcsPaths = new ArrayList<List<String>>(2);
+				for (List<ConcRel> crpath : crLcsPath.getValue()) {
+					List<String> lcsPathEntry = new ArrayList<String>(
+							crpath.size());
+					for (ConcRel cr : crpath)
+						lcsPathEntry.add(cr.getConceptID());
+					lcsPaths.add(lcsPathEntry);
+				}
+				lcsPath.put(crLcsPath.getKey().getConceptID(), lcsPaths);
 			}
 		}
-
+		return dist;
 	}
 
-	public void init() {
-		TransactionTemplate t = new TransactionTemplate(this.transactionManager);
-		t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
-		t.execute(new TransactionCallback<Object>() {
-			@Override
-			public Object doInTransaction(TransactionStatus arg0) {
-				cg = conceptDao.initializeConceptGraph(new String[] {});
-				initICCorpora();
-				return null;
+	public double lin(String concept1, String concept2) {
+		// if(log.isDebugEnabled())
+		// log.debug("lin("+corpusName+", " + concept1 +"," +concept2+")");
+		double denom = getIC(concept1) + getIC(concept2);
+		if (denom != 0) {
+			ConcRel cr1 = cg.getConceptMap().get(concept1);
+			ConcRel cr2 = cg.getConceptMap().get(concept2);
+			if (cr1 != null && cr2 != null) {
+				Set<ConcRel> lcses = new HashSet<ConcRel>();
+				int dist = ConcRel.getLeastCommonConcept(cr1, cr2, lcses, null);
+				if (dist > 0) {
+					return 2 * getIC(lcses) / denom;
+				}
 			}
-		});
+		}
+		return 0;
+	}
+
+	public void setConceptDao(ConceptDao conceptDao) {
+		this.conceptDao = conceptDao;
+	}
+
+	public void setConceptGraphName(String conceptGraphName) {
+		this.conceptGraphName = conceptGraphName;
+	}
+
+	public void setConceptSetName(String conceptSetName) {
+		this.conceptSetName = conceptSetName;
 	}
 
 	public void setCorpusDao(CorpusDao corpusDao) {
 		this.corpusDao = corpusDao;
 	}
 
-	public CorpusDao getCorpusDao() {
-		return corpusDao;
+	public void setCorpusName(String corpusName) {
+		this.corpusName = corpusName;
 	}
 
-	public static void main(String args[]) {
-		if (args.length >= 2) {
-			ConceptSimilarityService s = (ConceptSimilarityService) SimSvcContextHolder
-					.getApplicationContext()
-					.getBean("conceptSimilarityService");
-			if (args[0].equals("-updateIC")) {
-				s.updateInformationContent(args[1]);
-			}
-		}
+	public void setTransactionManager(
+			PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
 	}
 }

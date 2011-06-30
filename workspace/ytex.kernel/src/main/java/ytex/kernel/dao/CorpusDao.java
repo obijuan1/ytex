@@ -1,24 +1,36 @@
 package ytex.kernel.dao;
 
 import java.util.List;
+import java.util.Map;
 
-import ytex.kernel.model.Corpus;
-import ytex.kernel.model.CorpusTerm;
-import ytex.kernel.model.InfoContent;
+import ytex.kernel.model.corpus.ConceptLabelStatistic;
+import ytex.kernel.model.corpus.CorpusEvaluation;
+import ytex.kernel.model.corpus.ConceptInformationContent;
+import ytex.kernel.model.corpus.CorpusLabelEvaluation;
 
 public interface CorpusDao {
 
-	// public abstract Corpus updateCorpusTermFrequency(String corpusName,
-	// Set<String> analysisBatches);
+	public abstract Map<String, Double> getInfoContent(String corpusName,
+			String conceptGraphName, String conceptSetName);
 
-	public abstract List<CorpusTerm> getTerms(String corpusName);
+	public void addCorpus(CorpusEvaluation eval);
 
-	public void addInfoContent(InfoContent infoContent);
+	public void addInfoContent(ConceptInformationContent infoContent);
 
-	public Corpus getCorpus(String corpusName);
+	public CorpusEvaluation getCorpus(String corpusName,
+			String conceptGraphName, String conceptSetName);
 
-	public List<InfoContent> getInfoContent(List<String> corpusNames);
+	public List<Object[]> getCorpusCuiTuis(String corpusName,
+			String conceptGraphName, String conceptSetName);
 
-	public List<Object[]> getCorpusCuiTuis(String corpusName);
+	void addCorpusLabelEval(CorpusLabelEvaluation eval);
+
+	void addLabelStatistic(ConceptLabelStatistic labelStatistic);
+
+	public abstract CorpusLabelEvaluation getCorpusLabelEvaluation(String corpusName, String conceptGraphName,
+			String conceptSetName, String label, Integer foldId);
+
+	public abstract List<ConceptLabelStatistic> getLabelStatistic(String corpusName, String conceptGraphName,
+			String conceptSetName, String label, Integer foldId);
 
 }

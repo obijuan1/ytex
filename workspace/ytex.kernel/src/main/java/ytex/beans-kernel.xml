@@ -29,6 +29,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			expression="execution(* ytex.kernel.tree.*Tree*.*.*(..))" />
 		<aop:pointcut id="utilOperation"
 			expression="execution(* ytex.kernel.KernelUtil*.*(..))" />
+		<aop:pointcut id="corpusEvaluatorOperation"
+			expression="execution(* ytex.kernel.CorpusEvaluator*.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="exporterOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="mapperOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="wekaImporter" />
@@ -36,6 +38,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="umlsDaoOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="treeOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="utilOperation" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="corpusEvaluatorOperation" />
 	</aop:config>
 
 
@@ -48,9 +51,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="conceptDao" class="ytex.kernel.dao.ConceptDaoImpl">
-		<property name="sessionFactory" ref="sessionFactory" />
-		<property name="umlsDao" ref="umlsDao" />
 		<property name="ytexProperties" ref="ytexProperties" />
+		<property name="dataSource" ref="dataSource" />
 	</bean>
 	<bean id="umlsDao" class="ytex.umls.dao.UMLSDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
@@ -244,21 +246,26 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="instanceDataExporter" class="ytex.sparsematrix.InstanceDataExporterImpl">
 	</bean>
-	
+
 	<bean id="infogainAttributeEval" class="weka.attributeSelection.InfoGainAttributeEval">
 	</bean>
 	<bean id="rankerSearch" class="weka.attributeSelection.Ranker">
 	</bean>
 	<bean id="infogainAttributeSelection" class="weka.attributeSelection.AttributeSelection">
-		<property name="evaluator" ref="infogainAttributeEval"/>
-		<property name="search" ref="rankerSearch"/>
+		<property name="evaluator" ref="infogainAttributeEval" />
+		<property name="search" ref="rankerSearch" />
 	</bean>
-	
+
 	<bean id="wekaAttributeEvaluator" class="ytex.weka.WekaAttributeEvaluatorImpl">
-		<property name="attributeSelection" ref="infogainAttributeSelection"/>
+		<property name="attributeSelection" ref="infogainAttributeSelection" />
 		<property name="sparseDataExporter" ref="sparseDataExporter" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="asEvaluation" ref="infogainAttributeEval" />
+	</bean>
+	<bean id="corpusEvaluator" class="ytex.kernel.CorpusEvaluatorImpl">
+		<property name="conceptDao" ref="conceptDao" />
+		<property name="corpusDao" ref="corpusDao" />
+		<property name="dataSource" ref="dataSource" />
 	</bean>
 
 </beans>

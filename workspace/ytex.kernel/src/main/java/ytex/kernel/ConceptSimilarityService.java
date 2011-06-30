@@ -1,17 +1,21 @@
 package ytex.kernel;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import ytex.kernel.model.ConceptGraph;
 
 public interface ConceptSimilarityService {
 
 	public abstract double lch(String concept1, String concept2);
 
-	public abstract double lin(String corpus, String concept1, String concept2);
+	public abstract double lin(String concept1, String concept2);
 
-	public void updateInformationContent(String corpusName);
-
-	public Object[] lcs(String concept1, String concept2);
+	public int lcs(String concept1, String concept2, Map<String, List<List<String>>> lcsPath);
 
 	public abstract ConceptGraph getConceptGraph();
+
+	public abstract Map<String, Set<String>> getCuiTuiMap();
 
 }

@@ -9,15 +9,6 @@ public class LinKernel implements Kernel {
 	private ConceptSimilarityService conceptSimilarityService;
 	private CacheManager cacheManager;
 	private Cache conceptSimCache;
-	private String corpusName;
-
-	public String getCorpusName() {
-		return corpusName;
-	}
-
-	public void setCorpusName(String corpusName) {
-		this.corpusName = corpusName;
-	}
 
 	public ConceptSimilarityService getConceptSimilarityService() {
 		return conceptSimilarityService;
@@ -53,7 +44,7 @@ public class LinKernel implements Kernel {
 					d = (Double) e.getObjectValue();
 				} else {
 					// it's not there - put it there
-					d = conceptSimilarityService.lin(corpusName, c1, c2);
+					d = conceptSimilarityService.lin(c1, c2);
 					conceptSimCache.put(new Element(key, d));
 				}
 			}

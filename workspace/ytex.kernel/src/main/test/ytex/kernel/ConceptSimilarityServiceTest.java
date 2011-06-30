@@ -1,5 +1,9 @@
 package ytex.kernel;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import junit.framework.TestCase;
 import ytex.kernel.model.ConceptGraph;
 
@@ -56,6 +60,7 @@ public class ConceptSimilarityServiceTest extends TestCase {
 		}
 
 		for (String[] line : conceptsToTest) {
+			Map<String, List<List<String>>> lcsPath = new HashMap<String, List<List<String>>>();
 			String cui1 = line[0];
 			String cui2 = line[1];
 			System.out.print(cui1);
@@ -66,13 +71,12 @@ public class ConceptSimilarityServiceTest extends TestCase {
 			System.out.print("\t");
 			System.out.print(line[3]);
 			System.out.print("\t");
-			Object[] lcs = conceptSimilarityService.lcs(cui1, cui2);
-			System.out.print(lcs == null ? "" : lcs[0]);
+			int lcsDist = conceptSimilarityService.lcs(cui1, cui2, lcsPath);
+			System.out.print(lcsDist);
 			System.out.print("\t");
-			System.out.print(lcs == null ? "" : lcs[1]);
+			System.out.print(lcsPath.keySet());
 			System.out.print("\t");
-			System.out.print(conceptSimilarityService.lin("i2b2.2008-rb", cui1,
-					cui2));
+			System.out.print(conceptSimilarityService.lin(cui1, cui2));
 			System.out.print("\t");
 			System.out.println(conceptSimilarityService.lch(cui1, cui2));
 			System.out.print("\t");

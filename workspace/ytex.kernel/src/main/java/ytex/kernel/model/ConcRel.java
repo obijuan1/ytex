@@ -1,11 +1,13 @@
 package ytex.kernel.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,14 +27,22 @@ public class ConcRel implements java.io.Serializable {
 	 * id of this concept
 	 */
 	public String nodeCUI;
+	public String getConceptID() {
+		return nodeCUI;
+	}
+
+	public void setConceptID(String nodeCUI) {
+		this.nodeCUI = nodeCUI;
+	}
+
 	/**
 	 * parents of this concept
 	 */
-	public HashSet<ConcRel> parents;
+	public Set<ConcRel> parents;
 	/**
 	 * children of this concept
 	 */
-	public HashSet<ConcRel> children;
+	public Set<ConcRel> children;
 	/**
 	 * for java object serialization, need to avoid default serializer behavior
 	 * of writing out entire object graph. just write the parent/children object
@@ -83,8 +93,193 @@ public class ConcRel implements java.io.Serializable {
 	}
 
 	/**
+	 * 
+	 * @param c1
+	 *            concept1
+	 * @param c2
+	 *            concept2
+	 * @param lcses
+	 *            least common subsumers, required
+	 * @param paths
+	 *            paths between concepts via lcses, optional. Key - lcs. Value -
+	 *            2 element list corresponding to paths to lcs from c1 and c2
+	 * @return path length
+	 */
+	public static int getLeastCommonConcept(ConcRel c1, ConcRel c2,
+			Set<ConcRel> lcses, Map<ConcRel, List<List<ConcRel>>> paths) {
+		if (log.isLoggable(Level.FINE)) {
+			log.fine("getLeastCommonConcept(" + c1 + "," + c2 + ")");
+		}
+		// concept 1's parent distance map
+		Map<ConcRel, Integer> cand1 = new HashMap<ConcRel, Integer>();
+		// concept 2's parent distance map
+		Map<ConcRel, Integer> cand2 = new HashMap<ConcRel, Integer>();
+		// paths corresponding to parents
+		// we only calculate these if they are asked of us
+		Map<ConcRel, List<ConcRel>> paths1 = paths != null ? new HashMap<ConcRel, List<ConcRel>>()
+				: null;
+		Map<ConcRel, List<ConcRel>> paths2 = paths != null ? new HashMap<ConcRel, List<ConcRel>>()
+				: null;
+
+		// parents of concept 1
+		HashSet<ConcRel> parC1 = new HashSet<ConcRel>();
+		parC1.add(c1);
+		// parents of concept 2
+		HashSet<ConcRel> parC2 = new HashSet<ConcRel>();
+		parC2.add(c2);
+		// temporary hashset for scratch work
+		// not clear if this really reduces memory overhead
+		HashSet<ConcRel> tmp = new HashSet<ConcRel>();
+		HashSet<ConcRel> candidateLCSes = new HashSet<ConcRel>();
+
+		int maxIter = -1;
+		int dist = 0;
+		int minDist = Integer.MAX_VALUE - 1;
+		// continue the search while there are parents left
+		// check maxIter - if this is some non-negative number
+		// then it must be greater than 0
+		while ((!parC1.isEmpty() || !parC2.isEmpty())
+				&& (maxIter < 0 || maxIter != 0)) {
+			// get next iteration of ancestors, save them
+			updateParent(cand1, parC1, tmp, dist, paths1);
+			updateParent(cand2, parC2, tmp, dist, paths2);
+			// get the intersection across the ancestors
+			tmp.clear();
+			tmp.addAll(cand1.keySet());
+			tmp.retainAll(cand2.keySet());
+			tmp.removeAll(candidateLCSes);
+			// if there is something in the intersection, we have a potential
+			// winner. however, we can't stop here
+			// example: ascites/hepatoma in snomed C2239176 C0003962
+			// e.g. one path could be 3-3, but a shorter path could be 4-1
+			// we would only find the 4-1 path after 4 iterations
+			if (!tmp.isEmpty()) {
+				// add candidates so we don't have to look at them in future
+				// iterations
+				candidateLCSes.addAll(tmp);
+				// remove candidates' parents from the parent collections for
+				// the next iterations
+				removeParents(tmp, parC1);
+				removeParents(tmp, parC2);
+				// add the lcs candidates and their path length
+				// even though we have a hit, we can't stop here
+				// there could be uneven path lengths.
+				// to account for this, the 1st time we find an lcs
+				// we set maxIter to the minimum path length to either concept
+				// from the lcs. if we can't find a match after maxIter
+				// iterations, then we know that what we've found is a winner
+				for (ConcRel lcs : tmp) {
+					// path length for current lcs
+					int distTmp = cand1.get(lcs) + cand2.get(lcs) + 1;
+					// only add it to the list of lcses if it is less than or
+					// equal to the current minimal path length
+					if (distTmp <= minDist) {
+						minDist = distTmp;
+						if (distTmp < minDist) {
+							// we have a new best minimal path length
+							// clear the current lcses
+							lcses.clear();
+						}
+						lcses.add(lcs);
+					}
+					// all additional lcses must be found within maxIter
+					// iterations. maxIter is the shortest path between
+					// the lcs and a concept
+					int minLcsToConceptLen = Math.min(cand1.get(lcs),
+							cand2.get(lcs));
+					if (maxIter < 0 || maxIter > minLcsToConceptLen) {
+						maxIter = minLcsToConceptLen;
+					}
+				}
+			}
+			// reduce maximum number of iterations left
+			maxIter--;
+			++dist;
+		}
+		if (lcses.isEmpty())
+			return -1;
+		else {
+			if(paths != null) {
+				for(ConcRel lcs : lcses) {
+					List<List<ConcRel>> lcsPaths = new ArrayList<List<ConcRel>>(2);
+					if(paths1.containsKey(lcs)) {
+						lcsPaths.add(paths1.get(lcs));
+					}
+					if(paths2.containsKey(lcs)) {
+						lcsPaths.add(paths2.get(lcs));
+					}
+					paths.put(lcs, lcsPaths);
+				}
+			}
+			return minDist;
+		}
+	}
+
+	/**
+	 * remove the parents of candidate lcses from the list of parents we were
+	 * planning on looking at in the next iteration
+	 * 
+	 * @param lcses
+	 * @param parents
+	 */
+	private static void removeParents(HashSet<ConcRel> lcses,
+			HashSet<ConcRel> parents) {
+		for (ConcRel lcs : lcses) {
+			parents.removeAll(lcs.parents);
+		}
+	}
+
+	/**
+	 * perform 1 iteration of breadth-first search on lcs. update the various
+	 * collections with the next iteration of ancestors.
+	 * 
+	 * @param cand1
+	 * @param parC1
+	 * @param tmp
+	 * @param dist
+	 */
+	private static void updateParent(Map<ConcRel, Integer> cand1,
+			HashSet<ConcRel> parC1, HashSet<ConcRel> tmp, int dist,
+			Map<ConcRel, List<ConcRel>> paths) {
+		tmp.clear();
+		// go through parents of concept1
+		for (Iterator<ConcRel> it = parC1.iterator(); it.hasNext();) {
+			ConcRel cr = it.next();
+			if (!cand1.containsKey(cr)) {
+				// not in the map - add it to the concept-distance map
+				cand1.put(cr, dist);
+				// add the grandparents to the tmp set
+				tmp.addAll(cr.parents);
+				if (paths != null) {
+					// add the path to the parent to the map of paths
+					List<ConcRel> pathCR = paths.get(cr);
+					for (ConcRel parent : cr.parents) {
+						if (!paths.containsKey(parent)) {
+							// path to parent = path to child + child
+							List<ConcRel> path = new ArrayList<ConcRel>(
+									pathCR != null ? pathCR.size() + 1 : 1);
+							if (pathCR != null)
+								path.addAll(pathCR);
+							path.add(cr);
+							paths.put(parent, path);
+						}
+					}
+				}
+			}
+		}
+		// remove concepts already in concept1's parent distance map from
+		// the grandparent map
+		tmp.removeAll(cand1.keySet());
+		// parents for the next iteration
+		parC1.clear();
+		parC1.addAll(tmp);
+	}
+
+	/**
 	 * get least common subsumer of the specified concepts and its distance from
-	 * root
+	 * root.
+	 * 
+	 * @deprecated
 	 * 
 	 * @param c1
 	 * @param c2
@@ -273,12 +468,12 @@ public class ConcRel implements java.io.Serializable {
 		children.clear();
 		for (String c : parentsArray)
 			parents.add(db.get(c));
-
+		parents = Collections.unmodifiableSet(parents);
 		parentsArray = null;
 
 		for (String c : childrenArray)
 			children.add(db.get(c));
-
+		children = Collections.unmodifiableSet(children);
 		childrenArray = null;
 	}
 

@@ -13,8 +13,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			<list>
 				<value>ytex/kernel/model/KernelEvaluation.hbm.xml</value>
 				<value>ytex/kernel/model/ClassifierEvaluation.hbm.xml</value>
-				<value>ytex/kernel/model/ConceptGraph.hbm.xml</value>
-				<value>ytex/kernel/model/Corpus.hbm.xml</value>
+				<value>ytex/kernel/model/corpus/Corpus.hbm.xml</value>
 				<value>ytex/umls/model/UMLS.hbm.xml</value>
 				<value>ytex/umls/model/FWord.hbm.xml</value>
 				<value>ytex/model/Document.hbm.xml</value>

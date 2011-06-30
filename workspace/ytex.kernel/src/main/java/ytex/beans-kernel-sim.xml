@@ -11,15 +11,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="conceptDao" ref="conceptDao" />
 		<property name="corpusDao" ref="corpusDao" />
-		<property name="corpusNames">
-			<list>
-				<!-- <value>cmc-ctakes</value> 
-				<value>cmc-suj</value>
-				-->
-				<value>i2b2.2008</value>
-				<value>i2b2.2008-rb</value>
-			</list>
-		</property>
+		<property name="corpusName" value="i2b2.2008"/>
+		<property name="conceptGraphName" value="rbpar"/>
 	</bean>
 	<bean id="abstractConceptKernel" class="ytex.kernel.evaluator.ConceptKernel" abstract="true"
 		init-method="init">

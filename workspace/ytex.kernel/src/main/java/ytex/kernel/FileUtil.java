@@ -217,11 +217,12 @@ public class FileUtil {
 		}
 
 	}
-	
+
 	/**
 	 * filter files by suffix
+	 * 
 	 * @author vijay
-	 *
+	 * 
 	 */
 	public static class SuffixFileFilter implements FileFilter {
 		String suffix = null;
@@ -242,24 +243,26 @@ public class FileUtil {
 		Properties kernelProps = new Properties();
 		InputStream is = null;
 		boolean propsLoaded = false;
-		try {
-			is = new BufferedInputStream(new FileInputStream(fileName));
-			if (fileName.endsWith(".xml"))
-				kernelProps.loadFromXML(is);
-			else
-				kernelProps.load(is);		
-			propsLoaded = true;
-		} catch (FileNotFoundException fe) {
-			// do nothing - options not required
-		} finally {
-			if (is != null)
-				is.close();
+		if (fileName != null && fileName.length() > 0) {
+			try {
+				is = new BufferedInputStream(new FileInputStream(fileName));
+				if (fileName.endsWith(".xml"))
+					kernelProps.loadFromXML(is);
+				else
+					kernelProps.load(is);
+				propsLoaded = true;
+			} catch (FileNotFoundException fe) {
+				// do nothing - options not required
+			} finally {
+				if (is != null)
+					is.close();
+			}
 		}
 		if (systemOverride) {
 			kernelProps.putAll(System.getProperties());
 			propsLoaded = true;
 		}
-		if(propsLoaded)
+		if (propsLoaded)
 			return kernelProps;
 		else
 			return null;
