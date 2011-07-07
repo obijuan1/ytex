@@ -42,6 +42,7 @@
 		<property name="conceptId" column="concept_id" />
 		<property name="mutualInfo" column="mutual_info" />
 		<property name="mutualInfoRaw" column="mutual_info_raw" />
+		<property name="distance" column="distance" />
 	</class>
 	<class name="ConceptLabelChild" table="corpus_concept_label_child">
 		<id name="corpusConceptLabelChildId" column="corpus_concept_label_child_id">

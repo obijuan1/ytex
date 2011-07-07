@@ -502,7 +502,8 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	protected TransactionTemplate txNew;
 
 	private JointDistribution calcMergedJointDistribution(
-			Map<String, JointDistribution> conceptJointDistroMap, ConcRel cr,
+			Map<String, JointDistribution> conceptJointDistroMap,
+			Map<String, Integer> conceptDistMap, ConcRel cr,
 			Map<String, JointDistribution> rawJointDistroMap,
 			CorpusLabelEvaluation labelEval, Map<String, Set<Integer>> yMargin,
 			String xMerge, double minInfo, List<String> path) {
@@ -511,10 +512,14 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		} else {
 			List<JointDistribution> distroList = new ArrayList<JointDistribution>(
 					cr.children.size() + 1);
+			int distance = -1;
 			// if this concept is in the raw joint distro map, add it to the
 			// list of joint distributions to merge
 			if (rawJointDistroMap.containsKey(cr.getConceptID())) {
-				distroList.add(rawJointDistroMap.get(cr.getConceptID()));
+				JointDistribution rawJointDistro = rawJointDistroMap.get(cr
+						.getConceptID());
+				distroList.add(rawJointDistro);
+				distance = 0;
 			}
 			// get the joint distributions of children
 			for (ConcRel crc : cr.getChildren()) {
@@ -523,10 +528,19 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 				pathChild.add(crc.getConceptID());
 				// recurse - get joint distribution of children
 				JointDistribution jdChild = calcMergedJointDistribution(
-						conceptJointDistroMap, crc, rawJointDistroMap,
-						labelEval, yMargin, xMerge, minInfo, pathChild);
-				if (jdChild != null)
+						conceptJointDistroMap, conceptDistMap, crc,
+						rawJointDistroMap, labelEval, yMargin, xMerge, minInfo,
+						pathChild);
+				if (jdChild != null) {
 					distroList.add(jdChild);
+					if (distance > 0) {
+						// look at children's distance from raw data, add 1
+						int distChild = conceptDistMap.get(crc.getConceptID());
+						if ((distChild + 1) < distance) {
+							distance = distChild + 1;
+						}
+					}
+				}
 			}
 			// merge the joint distributions
 			JointDistribution mergedDistro;
@@ -549,6 +563,8 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			}
 			// save this in the map
 			conceptJointDistroMap.put(cr.getConceptID(), mergedDistro);
+			if (distance > -1)
+				conceptDistMap.put(cr.getConceptID(), distance);
 			return mergedDistro;
 		}
 	}
@@ -695,7 +711,8 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			int fold, Integer parentConceptThreshold,
 			Double parentConceptMutualInfoThreshold) {
 		if (log.isDebugEnabled())
-			log.debug("evaluateCorpusFold() label = " + label +", fold = " + fold + ", run = " + run);
+			log.debug("evaluateCorpusFold() label = " + label + ", fold = "
+					+ fold + ", run = " + run);
 		// evaluate for the specified fold training set
 		// construct map of class - [instance ids]
 		Map<String, Set<Integer>> yMargin = getFoldYMargin(instanceData, label,
@@ -963,11 +980,12 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		// concept graph
 		Map<String, JointDistribution> conceptJointDistroMap = new HashMap<String, JointDistribution>(
 				cg.getConceptMap().size());
+		Map<String, Integer> conceptDistMap = new HashMap<String, Integer>();
 		for (String cName : cg.getRoots()) {
 			ConcRel cr = cg.getConceptMap().get(cName);
 			// recurse
-			calcMergedJointDistribution(conceptJointDistroMap, cr,
-					rawJointDistroMap, labelEval, yMargin, xMerge, minInfo,
+			calcMergedJointDistribution(conceptJointDistroMap, conceptDistMap,
+					cr, rawJointDistroMap, labelEval, yMargin, xMerge, minInfo,
 					Arrays.asList(new String[] { cr.getConceptID() }));
 		}
 		// save the results
@@ -978,13 +996,14 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			if (distroMerged != null)
 				saveLabelStatistic(conceptID, distroMerged,
 						rawJointDistroMap.get(conceptID), labelEval, yEntropy,
-						minInfo);
+						minInfo, conceptDistMap.get(conceptID));
 		}
 	}
 
 	private void saveLabelStatistic(String conceptID,
 			JointDistribution distroMerged, JointDistribution distroRaw,
-			CorpusLabelEvaluation labelEval, double yEntropy, double minInfo) {
+			CorpusLabelEvaluation labelEval, double yEntropy, double minInfo,
+			int distance) {
 		double miMerged = distroMerged.getMutualInformation(yEntropy);
 		double miRaw = distroRaw != null ? distroRaw
 				.getMutualInformation(yEntropy) : 0;
@@ -995,6 +1014,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			if (distroRaw != null)
 				stat.setMutualInfoRaw(miRaw);
 			stat.setConceptId(conceptID);
+			stat.setDistance(distance);
 			this.corpusDao.addLabelStatistic(stat);
 		}
 	}
