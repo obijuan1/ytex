@@ -43,6 +43,14 @@ public class ConcRel implements java.io.Serializable {
 	 * children of this concept
 	 */
 	public Set<ConcRel> children;
+	public Set<ConcRel> getParents() {
+		return parents;
+	}
+
+	public Set<ConcRel> getChildren() {
+		return children;
+	}
+
 	/**
 	 * for java object serialization, need to avoid default serializer behavior
 	 * of writing out entire object graph. just write the parent/children object

@@ -10,7 +10,8 @@ public interface CorpusLabelEvaluator {
 	public abstract void evaluateCorpus(String corpusName,
 			String conceptGraphName, String conceptSetName, String labelQuery,
 			String classFeatureQuery, Double minInfo, Set<String> xVals,
-			String xLeftover, String xMerge);
+			String xLeftover, String xMerge, Integer parentConceptThreshold,
+			Double parentConceptMutualInfoThreshold);
 
 	public abstract boolean evaluateCorpus(String propFile) throws IOException;
 

@@ -1,8 +1,10 @@
 package ytex.kernel.dao;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import ytex.kernel.model.corpus.ConceptLabelChild;
 import ytex.kernel.model.corpus.ConceptLabelStatistic;
 import ytex.kernel.model.corpus.CorpusEvaluation;
 import ytex.kernel.model.corpus.ConceptInformationContent;
@@ -32,5 +34,15 @@ public interface CorpusDao {
 
 	public abstract List<ConceptLabelStatistic> getLabelStatistic(String corpusName, String conceptGraphName,
 			String conceptSetName, String label, Integer foldId);
+
+	public abstract void saveConceptLabelChildren(
+			Collection<ConceptLabelChild> values);
+
+	public abstract List<ConceptLabelStatistic> getTopCorpusLabelStat(
+			CorpusLabelEvaluation labelEval, Integer parentConceptThreshold);
+
+	public abstract List<ConceptLabelStatistic> getThresholdCorpusLabelStat(
+			CorpusLabelEvaluation labelEval,
+			Double parentConceptMutualInfoThreshold);
 
 }

@@ -1,5 +1,6 @@
 package ytex.kernel.dao;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 
 import ytex.kernel.model.corpus.ConceptInformationContent;
+import ytex.kernel.model.corpus.ConceptLabelChild;
 import ytex.kernel.model.corpus.ConceptLabelStatistic;
 import ytex.kernel.model.corpus.CorpusEvaluation;
 import ytex.kernel.model.corpus.CorpusLabelEvaluation;
@@ -25,45 +27,6 @@ public class CorpusDaoImpl implements CorpusDao {
 	public SessionFactory getSessionFactory() {
 		return sessionFactory;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * ytex.kernel.dao.CorpusDao#updateCorpusTermFrequency(java.lang.String,
-	 * java.util.Set)
-	 */
-	/*
-	 * public Corpus updateCorpusTermFrequency(String corpusName, Set<String>
-	 * analysisBatches) { // delete corpus terms Query qClearCorpusFrequency =
-	 * this.getSessionFactory()
-	 * .getCurrentSession().getNamedQuery("clearCorpusFrequency");
-	 * qClearCorpusFrequency.setString("corpusName", corpusName);
-	 * qClearCorpusFrequency.executeUpdate(); // delete corpus Query
-	 * qClearCorpus = this.getSessionFactory().getCurrentSession()
-	 * .getNamedQuery("clearCorpus"); qClearCorpus.setString("corpusName",
-	 * corpusName); qClearCorpus.executeUpdate(); Corpus c = new Corpus();
-	 * c.setCorpusName(corpusName); // create corpus
-	 * this.getSessionFactory().getCurrentSession().save(c); // update corpus
-	 * frequency Query getTermFrequency =
-	 * this.getSessionFactory().getCurrentSession()
-	 * .getNamedQuery("getTermFrequency");
-	 * getTermFrequency.setParameterList("analysisBatches", analysisBatches);
-	 * List<Object[]> listTerms = getTermFrequency.list(); for (Object[]
-	 * termFreq : listTerms) { CorpusTerm t = new CorpusTerm(); t.setCorpus(c);
-	 * t.setConceptId((String) termFreq[0]); t.setFrequency((Integer)
-	 * termFreq[1]); this.getSessionFactory().getCurrentSession().save(t); } //
-	 * get total number of terms Query getTotalTermCount =
-	 * this.getSessionFactory().getCurrentSession()
-	 * .getNamedQuery("getTotalTermCount");
-	 * getTotalTermCount.setString("corpusName", corpusName); int total =
-	 * (Integer) getTotalTermCount.uniqueResult(); // finalize term counts Query
-	 * finalizeCorpusFrequency = this.getSessionFactory()
-	 * .getCurrentSession().getNamedQuery("finalizeCorpusFrequency");
-	 * finalizeCorpusFrequency.setString("corpusName", corpusName);
-	 * finalizeCorpusFrequency.setInteger("total", total);
-	 * finalizeCorpusFrequency.executeUpdate(); return c; }
-	 */
 
 	@Override
 	public Map<String, Double> getInfoContent(String corpusName,
@@ -155,5 +118,37 @@ public class CorpusDaoImpl implements CorpusDao {
 		setCorpusLabelQueryParams(corpusName, conceptGraphName, conceptSetName,
 				label, foldId, q);
 		return (CorpusLabelEvaluation) q.uniqueResult();
+	}
+
+	@Override
+	public void saveConceptLabelChildren(Collection<ConceptLabelChild> values) {
+		for (ConceptLabelChild chd : values) {
+			this.sessionFactory.getCurrentSession().save(chd);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ConceptLabelStatistic> getTopCorpusLabelStat(
+			CorpusLabelEvaluation labelEval, Integer parentConceptThreshold) {
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getTopCorpusLabelStat");
+		q.setInteger("corpusConceptLabelEvaluationId",
+				labelEval.getCorpusConceptLabelEvaluationId());
+		q.setMaxResults(parentConceptThreshold);
+		return q.list();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ConceptLabelStatistic> getThresholdCorpusLabelStat(
+			CorpusLabelEvaluation labelEval,
+			Double parentConceptMutualInfoThreshold) {
+		Query q = this.getSessionFactory().getCurrentSession()
+				.getNamedQuery("getThresholdCorpusLabelStat");
+		q.setInteger("corpusConceptLabelEvaluationId",
+				labelEval.getCorpusConceptLabelEvaluationId());
+		q.setDouble("mutualInfo", parentConceptMutualInfoThreshold);
+		return q.list();
 	}
 }

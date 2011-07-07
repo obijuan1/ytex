@@ -268,4 +268,30 @@ public class FileUtil {
 			return null;
 	}
 
+	public static Double getDoubleProperty(Properties props, String propKey,
+			Double defaultProp) {
+		Double propValue = null;
+		String propStr = props.getProperty(propKey);
+		if (propStr != null && propStr.length() > 0) {
+			try {
+				propValue = Double.parseDouble(propStr);
+			} catch (NumberFormatException nfe) {
+			}
+		}
+		return propValue != null ? propValue : defaultProp;
+	}
+
+	public static Integer getIntegerProperty(Properties props, String propKey,
+			Integer defaultProp) {
+		Integer propValue = null;
+		String propStr = props.getProperty(propKey);
+		if (propStr != null && propStr.length() > 0) {
+			try {
+				propValue = Integer.parseInt(propStr);
+			} catch (NumberFormatException nfe) {
+			}
+		}
+		return propValue != null ? propValue : defaultProp;
+	}
+
 }

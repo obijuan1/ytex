@@ -2,33 +2,23 @@ package ytex.kernel.model.corpus;
 
 import java.io.Serializable;
 
-public class ConceptLabelStatistic implements Serializable {
+public class ConceptLabelChild implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	int corpusConceptLabelStatisticId;
+	int corpusConceptLabelChildId;
 	CorpusLabelEvaluation corpusLabel;
 	String conceptId;
 	double mutualInfo;
-	Double mutualInfoRaw;
 
-	public Double getMutualInfoRaw() {
-		return mutualInfoRaw;
+	public int getCorpusConceptLabelChildId() {
+		return corpusConceptLabelChildId;
 	}
 
-	public void setMutualInfoRaw(Double mutualInfoRaw) {
-		this.mutualInfoRaw = mutualInfoRaw;
-	}
-
-	public int getCorpusConceptLabelStatisticId() {
-		return corpusConceptLabelStatisticId;
-	}
-
-	public void setCorpusConceptLabelStatisticId(
-			int corpusConceptLabelStatisticId) {
-		this.corpusConceptLabelStatisticId = corpusConceptLabelStatisticId;
+	public void setCorpusConceptLabelChildId(int corpusConceptLabelChildId) {
+		this.corpusConceptLabelChildId = corpusConceptLabelChildId;
 	}
 
 	public CorpusLabelEvaluation getCorpusLabel() {
@@ -54,4 +44,5 @@ public class ConceptLabelStatistic implements Serializable {
 	public void setMutualInfo(double mutualInfo) {
 		this.mutualInfo = mutualInfo;
 	}
+
 }

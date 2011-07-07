@@ -267,5 +267,11 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="corpusDao" ref="corpusDao" />
 		<property name="dataSource" ref="dataSource" />
 	</bean>
+	<bean id="corpusLabelEvaluator" class="ytex.kernel.CorpusLabelEvaluatorImpl">
+		<property name="conceptDao" ref="conceptDao" />
+		<property name="corpusDao" ref="corpusDao" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="kernelUtil" ref="kernelUtil" />
+	</bean>
 
 </beans>

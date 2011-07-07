@@ -22,7 +22,7 @@
 		<property name="frequency" />
 		<property name="informationContent" column="ic" />
 	</class>
-	<class name="CorpusLabelEvaluation" table="corpus_concept_eval">
+	<class name="CorpusLabelEvaluation" table="corpus_concept_label_eval">
 		<id name="corpusConceptLabelEvaluationId" column="corpus_concept_label_eval_id">
 			<generator class="native">
 				<param name="sequence">corpus_concept_label_eval_id</param>
@@ -32,7 +32,7 @@
 		<property name="label" column="label" />
 		<property name="foldId" column="cv_fold_id" />
 	</class>
-	<class name="ConceptLabelStatistic" table="corpus_concept_eval">
+	<class name="ConceptLabelStatistic" table="corpus_concept_label_stat">
 		<id name="corpusConceptLabelStatisticId" column="corpus_concept_label_stat_id">
 			<generator class="native">
 				<param name="sequence">corpus_concept_label_stat_id</param>
@@ -42,7 +42,16 @@
 		<property name="conceptId" column="concept_id" />
 		<property name="mutualInfo" column="mutual_info" />
 		<property name="mutualInfoRaw" column="mutual_info_raw" />
-		<property name="jointDistribution" column="joint_distro" />
+	</class>
+	<class name="ConceptLabelChild" table="corpus_concept_label_child">
+		<id name="corpusConceptLabelChildId" column="corpus_concept_label_child_id">
+			<generator class="native">
+				<param name="sequence">corpus_concept_label_child_id</param>
+			</generator>
+		</id>
+		<many-to-one name="corpusLabel" column="corpus_concept_label_eval_id" />
+		<property name="conceptId" column="concept_id" />
+		<property name="mutualInfo" column="mutual_info" />
 	</class>
 	<query name="getCorpus"><![CDATA[
 		from CorpusEvaluation
@@ -64,7 +73,7 @@
 		and ((ct.corpus.conceptSetName is null and :conceptSetName is null) or (ct.corpus.conceptSetName = :conceptSetName))
 		and ct.conceptId = s.cui
 	]]></query>
-	<query name="getCorpusLabel"><![CDATA[
+	<query name="getCorpusLabelEvaluation"><![CDATA[
 		from CorpusLabelEvaluation
 		where corpus.corpusName = :corpusName 
 		and corpus.conceptGraphName = :conceptGraphName
@@ -80,4 +89,14 @@
 		and ((corpusLabel.label is null and :label is null) or (corpusLabel.label = :label))
 		and ((corpusLabel.foldId is null and :foldId is null) or (corpusLabel.foldId = :foldId))
 	]]></query>
+	<query name="getThresholdCorpusLabelStat"><![CDATA[
+		from ConceptLabelStatistic
+		where corpusLabel.corpusConceptLabelEvaluationId = :corpusConceptLabelEvaluationId
+		and mutualInfo >= :mutualInfo
+	]]></query>	
+	<query name="getTopCorpusLabelStat"><![CDATA[
+		from ConceptLabelStatistic
+		where corpusLabel.corpusConceptLabelEvaluationId = :corpusConceptLabelEvaluationId
+		order by mutualInfo desc
+	]]></query>	
 </hibernate-mapping>
