@@ -22,50 +22,6 @@ create table kernel_eval_instance (
 	UNIQUE KEY NK_kernel_eval (kernel_eval_id, instance_id1, instance_id2)
 ) ENGINE=MyISAM comment 'kernel instance evaluation';
 
-drop table if exists concept_graph;
-create table concept_graph (
-  concept_graph_id int auto_increment not null primary key,
-  depthMax int not null,
-  conceptMap longblob not null,
-  sabs varchar(1000) not null default ''
-);
-
-drop table if exists concept_graph_root;
-create table concept_graph_root (
-	concept_graph_id int not null comment 'fk concept_graph',
-	cui char(10) not null,
-	primary key (concept_graph_id, cui)
-);
-
-drop table if exists corpus;
-create table corpus (
-  corpus_id int auto_increment not null primary key,
-  corpus_name varchar(100) not null,
-  unique key corpus_name (corpus_name)
-);
-
-drop table if exists corpus_term;
-create table corpus_term (
-  corpus_term_id int auto_increment not null primary key,
-  corpus_id int not null comment 'fk corpus',
-  concept_id varchar(10) not null,
-  frequency double not null default 0,
-  info_content double null,
-  unique key nk_corpus_term (corpus_id, concept_id)
-);
-
-drop table if exists info_content;
-create table info_content (
-	info_content_id int auto_increment not null primary key,
-	corpus_id int not null comment 'fk corpus',
-	concept_graph_id int not null default 0 comment 'fk concept_graph',
-	concept_id char(10) not null,
-	frequency double not null default 0,
-	info_content double not null default 0,
-	unique key nk_info_content (corpus_id, concept_graph_id, concept_id)
-);
-
-
 drop table if exists tfidf_doclength; 
 create table tfidf_doclength (
   tfidf_doclength_id int auto_increment not null primary key,
@@ -73,7 +29,7 @@ create table tfidf_doclength (
   instance_id int not null,
   length int not null default 0,
   unique key nk_instance_id (name, instance_id)
-) comment 'doc length for calculating tf-idf';
+) ENGINE=MyISAM comment 'doc length for calculating tf-idf';
 
 drop table if exists tfidf_docfreq; 
 create table tfidf_docfreq (
@@ -82,7 +38,7 @@ create table tfidf_docfreq (
   term varchar(50) not null,
   numdocs int not null default 0,
   unique key nk_docfreq (name, term)
-) comment 'num docs term occurs for calculating tf-idf';
+) ENGINE=MyISAM comment 'num docs term occurs for calculating tf-idf';
 
 drop table tfidf_termfreq;
 create table tfidf_termfreq (
@@ -93,7 +49,7 @@ create table tfidf_termfreq (
   freq int not null,
   unique index NK_tfidif_termfreq (name, instance_id, term),
   index IX_instance(name, instance_id)
-) comment 'per-doc term count';
+) ENGINE=MyISAM comment 'per-doc term count';
 
 DROP TABLE IF EXISTS `weka_results`;
 CREATE TABLE  `weka_results` (
@@ -429,3 +385,52 @@ select *,
 from v_classifier_eval_ir_tt
 ;
 
+
+create table corpus_concept_eval (
+  corpus_concept_eval_id int auto_increment not null primary key,
+  corpus_name varchar(50) not null,
+  conceptgraph_name varchar(50) not null,
+  conceptset_name varchar(50),
+  unique index (corpus_name, conceptgraph_name, conceptset_name)
+) engine=myisam, comment 'ontology-based evaluation of concepts for a corpus';
+
+create table corpus_concept_freq (
+  corpus_concept_ic_id int auto_increment not null primary key,
+  corpus_concept_eval_id int not null comment 'fk corpus_concept_eval',
+  concept_id varchar(10) not null,
+  frequency double,
+  ic double,
+  unique index NK_corpus_concept_stat(corpus_concept_eval_id, concept_id),
+  index FK_corpus_concept_eval(corpus_concept_eval_id)
+) engine=myisam, comment 'information content of concept';
+
+create table corpus_concept_label_eval (
+  corpus_concept_label_eval_id int auto_increment primary key,
+  corpus_concept_eval_id int not null comment 'fk corpus_concept_eval',
+  label varchar(50) null comment 'eval wrt label',
+  cv_fold_id int null comment 'eval wrt fold, fk cv_fold',
+  unique index NK_corpus_concept_label_eval(corpus_concept_eval_id, label),
+  index FK_corpus_concept_eval(corpus_concept_eval_id)
+) engine=myisam comment 'ontology-based supervised evaluation of corpus concepts';
+
+create table corpus_concept_label_stat (
+  corpus_concept_label_stat_id int auto_increment not null primary key,
+  corpus_concept_label_eval_id int not null comment 'fk corpus_concept_label_eval',
+  concept_id varchar(10) not null,
+  mutual_info double comment 'ontology-based mutual information',
+  mutual_info_raw double comment 'raw mutual information',
+  distance int comment 'distance from support',
+  unique index NK_corpus_concept_label_stat(corpus_concept_label_eval_id, concept_id),
+  index FK_corpus_concept_label_eval_id (corpus_concept_label_eval_id),
+  index IX_concept_id (concept_id)
+) engine=myisam comment 'supervised evaluation of a concept';
+
+create table corpus_concept_label_child (
+  corpus_concept_label_child_id int not null auto_increment primary key,
+  corpus_concept_label_eval_id int not null comment 'fk corpus_concept_label_eval',
+  concept_id varchar(10) not null comment '',
+  mutual_info double not null comment '',
+  unique index NK_corpus_concept_label_child (corpus_concept_label_eval_id, concept_id),
+  index FK_corpus_concept_label_eval_id (corpus_concept_label_eval_id),
+  index IX_concept_id (concept_id)
+) engine=myisam comment 'descendants of high-ranking concepts';
