@@ -80,8 +80,8 @@ public class ClassifierEvalUtil {
 		List<String> kernels = Arrays.asList(props.getProperty("kernel.types")
 				.split(","));
 		// cost params
-		List<String> costs = Arrays.asList(addOptionPrefix(props.getProperty(
-				"cv.costs").split(","), "-c "));
+		List<String> costs = Arrays.asList(addOptionPrefix(
+				props.getProperty("cv.costs").split(","), "-c "));
 		// other general params
 		List<String> libsvmEval = Arrays.asList(props.getProperty(
 				"cv." + svmType + ".train.line", "").split(","));
@@ -103,8 +103,9 @@ public class ClassifierEvalUtil {
 				// polynomial kernel - cost & weight & gamma param
 				evalLines.addAll(parameterGrid(libsvmEval, kernelOpts, costs,
 						weightParams, Arrays
-								.asList(addOptionPrefix(props.getProperty(
-										"cv.rbf.gammas").split(","), "-g "))));
+								.asList(addOptionPrefix(
+										props.getProperty("cv.rbf.gammas")
+												.split(","), "-g "))));
 			}
 		}
 		if (evalLines.size() > 0) {
@@ -125,12 +126,14 @@ public class ClassifierEvalUtil {
 			label = label != null && label.length() > 0 ? label : "0";
 			Properties weightProps = null;
 			if (props.getProperty("kernel.classweights") != null) {
-				weightProps = FileUtil.loadProperties(props
-						.getProperty("kernel.classweights"), false);
-				String weights = weightProps.getProperty("class.weight."
-						+ label);
-				if (weights != null && weights.length() > 0) {
-					return Arrays.asList(weights.split(","));
+				weightProps = FileUtil.loadProperties(
+						props.getProperty("kernel.classweights"), false);
+				if (weightProps != null) {
+					String weights = weightProps.getProperty("class.weight."
+							+ label);
+					if (weights != null && weights.length() > 0) {
+						return Arrays.asList(weights.split(","));
+					}
 				}
 			}
 		}
@@ -188,8 +191,7 @@ public class ClassifierEvalUtil {
 			List<String> evalLines, File labelFile) throws IOException {
 		String labelFileName = labelFile.getPath();
 		String evalFileName = labelFileName.substring(0,
-				labelFileName.length() - 3)
-				+ "properties";
+				labelFileName.length() - 3) + "properties";
 		Properties props = new Properties();
 		props.setProperty("kernel.distFiles", listToString(distFiles));
 		props.setProperty("kernel.evalLines", listToString(evalLines));
@@ -272,8 +274,8 @@ public class ClassifierEvalUtil {
 			newLines.addAll(lines);
 		}
 		if (params.length > 1) {
-			return parameterGrid(newLines, Arrays.copyOfRange(params, 1,
-					params.length));
+			return parameterGrid(newLines,
+					Arrays.copyOfRange(params, 1, params.length));
 		} else {
 			return newLines;
 		}
@@ -289,16 +291,14 @@ public class ClassifierEvalUtil {
 		// check fold scope
 		if (fold != null) {
 			String filePrefix = FileUtil.getFoldFilePrefix(null, label, run,
-					fold)
-					+ "_dist_";
+					fold) + "_dist_";
 			distFiles = kernelDataDir.listFiles(new FileUtil.PrefixFileFilter(
 					filePrefix));
 		}
 		// no matches, check label scope
 		if ((distFiles == null || distFiles.length == 0) && label != null) {
 			String filePrefix = FileUtil.getFoldFilePrefix(null, label, null,
-					null)
-					+ "_dist_";
+					null) + "_dist_";
 			distFiles = kernelDataDir.listFiles(new FileUtil.PrefixFileFilter(
 					filePrefix));
 		}
