@@ -15,8 +15,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.ConceptDao;
-import ytex.kernel.dao.CorpusDao;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
 
@@ -24,6 +24,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private static final Log log = LogFactory
 			.getLog(ConceptSimilarityServiceImpl.class);
 	private ConceptGraph cg = null;
+	private ClassifierEvaluationDao classifierEvaluationDao;
 	private ConceptDao conceptDao;
 	/**
 	 * information concept cache
@@ -31,7 +32,6 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private Map<String, Double> conceptFreq = null;
 	private String conceptGraphName;
 	private String conceptSetName;
-	private CorpusDao corpusDao;
 
 	private String corpusName;
 
@@ -54,6 +54,10 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		tuis.add(tui);
 	}
 
+	public ClassifierEvaluationDao getClassifierEvaluationDao() {
+		return classifierEvaluationDao;
+	}
+
 	public ConceptDao getConceptDao() {
 		return conceptDao;
 	}
@@ -71,13 +75,10 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		return conceptSetName;
 	}
 
-	public CorpusDao getCorpusDao() {
-		return corpusDao;
-	}
-
 	public String getCorpusName() {
 		return corpusName;
 	}
+
 
 	@Override
 	public Map<String, Set<String>> getCuiTuiMap() {
@@ -135,7 +136,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		// don't duplicate tui strings to save memory
 		Map<String, String> tuiMap = new HashMap<String, String>();
 		Map<String, Set<String>> tmpTuiCuiMap = new HashMap<String, Set<String>>();
-		List<Object[]> listCuiTui = this.getCorpusDao().getCorpusCuiTuis(
+		List<Object[]> listCuiTui = this.classifierEvaluationDao.getCorpusCuiTuis(
 				this.getCorpusName(), this.getConceptGraphName(),
 				this.getConceptSetName());
 		for (Object[] cuiTui : listCuiTui) {
@@ -150,7 +151,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * initialize information content caches
 	 */
 	public void initInfoContent() {
-		conceptFreq = corpusDao.getInfoContent(corpusName, conceptGraphName,
+		conceptFreq = classifierEvaluationDao.getInfoContent(corpusName, conceptGraphName,
 				this.conceptSetName);
 	}
 
@@ -227,6 +228,11 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		return 0;
 	}
 
+	public void setClassifierEvaluationDao(
+			ClassifierEvaluationDao classifierEvaluationDao) {
+		this.classifierEvaluationDao = classifierEvaluationDao;
+	}
+
 	public void setConceptDao(ConceptDao conceptDao) {
 		this.conceptDao = conceptDao;
 	}
@@ -237,10 +243,6 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 
 	public void setConceptSetName(String conceptSetName) {
 		this.conceptSetName = conceptSetName;
-	}
-
-	public void setCorpusDao(CorpusDao corpusDao) {
-		this.corpusDao = corpusDao;
 	}
 
 	public void setCorpusName(String corpusName) {

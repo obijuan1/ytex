@@ -7,18 +7,30 @@
 				<param name="sequence">feature_eval_sequence</param>
 			</generator>
 		</id>
-		<property name="name" />
+		<property name="corpusName" column="corpus_name" />
+		<property name="featureSetName" column="featureset_name" />
+		<property name="param1" column="param1" />
 		<property name="label" />
 		<property name="crossValidationFoldId" column="cv_fold_id" />
 		<property name="evaluationType" column="type" />
-		<list name="features" table="feature_rank" cascade="all">
+		<list name="features" table="feature_rank" cascade="all,delete-orphan" 
+			inverse="true">
 			<key column="feature_eval_id" />
 			<list-index column="rank" base="1" />
-			<composite-element class="FeatureRank">
-				<property name="featureName" column="feature_name" />
-				<property name="evaluation" column="evaluation" />
-			</composite-element>
+			<one-to-many class="FeatureRank" />
 		</list>
+	</class>
+	<class name="FeatureRank" table="feature_rank">
+		<id name="featureRankId" column="feature_rank_id">
+			<generator class="native">
+				<param name="sequence">feature_rank_sequence</param>
+			</generator>
+		</id>
+		<many-to-one name="featureEval" class="FeatureEvaluation"
+			column="feature_eval_id" />
+		<property name="featureName" column="feature_name" />
+		<property name="evaluation" column="evaluation" />
+		<property name="rank" column="rank" />
 	</class>
 
 	<class name="CrossValidationFold" table="cv_fold">
@@ -27,7 +39,8 @@
 				<param name="sequence">classifier_fold_sequence</param>
 			</generator>
 		</id>
-		<property name="name" />
+		<property name="corpusName" column="corpus_name" />
+		<property name="splitName" column="split_name" />
 		<property name="label" />
 		<property name="run" />
 		<property name="fold" />
@@ -126,21 +139,73 @@
 			<element column="probability" type="double" />
 		</map>
 	</class>
-	<query name="getCrossValidationFoldByName">
+	<query name="getCrossValidationFoldByName"><![CDATA[
+		from CrossValidationFold
+		where corpusName = :corpusName
+		and splitName = :splitName  
+	]]></query>
+	<query name="getCrossValidationFold"><![CDATA[
 		from CrossValidationFold
 		where name = :name
-	</query>
-	<query name="getFeatureEvaluationByNameAndType">
-		from FeatureEvaluation
-		where name = :name
-		and type = :type
-	</query>
-	<query name="getCrossValidationFold">
-		from CrossValidationFold
-		where name = :name
+		and splitName = :splitName
 		and label = :label
-		and run = :run
+		and	run = :run
 		and fold = :fold
-	</query>
-
+	]]></query>
+	<query name="getFeatureEvaluationByNameAndType"><![CDATA[
+		from FeatureEvaluation
+		where corpusName = :corpusName
+		and featureSetName = :featureSetName
+		and param1 = :param1
+		and evaluationType = :evaluationType
+	]]></query>
+	<query name="getFeatureEvaluationByNK"><![CDATA[
+		from FeatureEvaluation
+		where corpusName = :corpusName
+		and featureSetName = :featureSetName
+		and param1 = :param1
+		and crossValidationFoldId = :crossValidationFoldId
+		and evaluationType = :evaluationType
+		and label = :label
+	]]></query>
+	<query name="getThresholdFeatures"><![CDATA[
+		from FeatureRank
+		where featureEval.corpusName = :corpusName
+		and featureEval.featureSetName = :featureSetName
+		and featureEval.param1 = :param1
+		and featureEval.crossValidationFoldId = :crossValidationFoldId
+		and featureEval.evaluationType = :evaluationType
+		and featureEval.label = :label
+		and evaluation >= :evaluation
+	]]></query>
+	<query name="getTopFeatures"><![CDATA[
+		from FeatureRank
+		where featureEval.corpusName = :corpusName
+		and featureEval.featureSetName = :featureSetName
+		and featureEval.param1 = :param1
+		and featureEval.crossValidationFoldId = :crossValidationFoldId
+		and featureEval.evaluationType = :evaluationType
+		and featureEval.label = :label
+		order by evaluation desc
+	]]></query>
+ 	<query name="deleteFeatureRank"><![CDATA[
+		delete from FeatureRank r
+		where featureEval.featureEvaluationId = :featureEvaluationId
+	]]></query>
+	<query name="deleteFeatureEval"><![CDATA[
+		delete from FeatureEvaluation
+		where featureEvaluationId = :featureEvaluationId
+	]]></query>
+	<query name="getCorpusCuiTuis"><![CDATA[
+		select s.cui, s.tui 
+		from FeatureRank r, MRSTY s
+		where r.featureEval.corpusName = :corpusName
+		and r.featureEval.featureSetName = :featureSetName
+		and r.featureEval.param1 = :param1
+		and r.featureEval.crossValidationFoldId = :crossValidationFoldId
+		and r.featureEval.evaluationType = :evaluationType
+		and r.featureEval.label = :label
+		and r.featureName = s.cui
+	]]></query>	
+ 
 </hibernate-mapping>

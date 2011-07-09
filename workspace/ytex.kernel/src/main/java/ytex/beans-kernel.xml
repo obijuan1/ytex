@@ -74,17 +74,14 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="docResultInstanceImporter" ref="documentResultInstanceImporter" />
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
+	<!-- 
 	<bean id="corpusDao" class="ytex.kernel.dao.CorpusDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
+	 -->
 	<bean id="classifierEvaluationDao" class="ytex.kernel.dao.ClassifierEvaluationDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-	<!-- <bean id="conceptSimilarityService" class="ytex.kernel.ConceptSimilarityServiceImpl" 
-		init-method="init"> <property name="transactionManager" ref="transactionManager" 
-		/> <property name="conceptDao" ref="conceptDao" /> <property name="corpusDao" 
-		ref="corpusDao" /> <property name="corpusNames"> <list> <value>cmc-ctakes</value> 
-		</list> </property> </bean> -->
 	<bean id="libSVMGramMatrixExporter" class="ytex.libsvm.LibSVMGramMatrixExporterImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
@@ -115,14 +112,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
-		<property name="corpusDao" ref="corpusDao" />
 	</bean>
 	<bean id="abstractTuiSemanticTypeKernel" abstract="true"
 		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
 		<property name="mode" value="TUI" />
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
-		<property name="corpusDao" ref="corpusDao" />
 	</bean>
 	<bean id="ehcacheConfigURL"
 		class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
@@ -264,14 +259,18 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="corpusEvaluator" class="ytex.kernel.CorpusEvaluatorImpl">
 		<property name="conceptDao" ref="conceptDao" />
-		<property name="corpusDao" ref="corpusDao" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="dataSource" ref="dataSource" />
 	</bean>
 	<bean id="corpusLabelEvaluator" class="ytex.kernel.CorpusLabelEvaluatorImpl">
 		<property name="conceptDao" ref="conceptDao" />
-		<property name="corpusDao" ref="corpusDao" />
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelUtil" ref="kernelUtil" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 	</bean>
-
+	<bean id="cytoscapeHalper" class="ytex.kernel.CytoscapeHelperImpl">
+		<property name="conceptDao" ref="conceptDao" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
+		<property name="umlsDao" ref="umlsDao" />
+	</bean>
 </beans>

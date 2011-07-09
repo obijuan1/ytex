@@ -8,15 +8,37 @@ public class CrossValidationFold implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private String corpusName;
 	private int crossValidationFoldId;
-	private String name;
-	private String label;
-	private Integer run;
-	private Integer fold;
+	private int fold = 0;
 	private Set<CrossValidationFoldInstance> instanceIds;
 
-	// private Set<Integer> instanceIds;
-	// private boolean train;
+	private String label = "";
+
+	private int run = 0;
+	private String splitName = "";
+
+	public CrossValidationFold() {
+		super();
+	}
+
+	public CrossValidationFold(String name, String splitName, String label, Integer run,
+			Integer fold, Set<CrossValidationFoldInstance> instanceIds) {
+		super();
+		this.corpusName = name;
+		this.splitName = splitName;
+		this.run = run;
+		this.fold = fold;
+		this.label = label;
+		// this.train = train;
+		this.instanceIds = instanceIds;
+	}
+
+
+	public String getCorpusName() {
+		return corpusName;
+	}
+
 	//
 	// /**
 	// * is this the training or test fold?
@@ -32,69 +54,52 @@ public class CrossValidationFold implements Serializable {
 		return crossValidationFoldId;
 	}
 
-	public void setCrossValidationFoldId(int crossValidationFoldId) {
-		this.crossValidationFoldId = crossValidationFoldId;
-	}
-
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
+	public int getFold() {
+		return fold;
 	}
 
 	public Set<CrossValidationFoldInstance> getInstanceIds() {
 		return instanceIds;
 	}
 
+	public String getLabel() {
+		return label;
+	}
+
+	public int getRun() {
+		return run;
+	}
+
+	public String getSplitName() {
+		return splitName;
+	}
+
+	public void setCorpusName(String name) {
+		this.corpusName = name;
+	}
+
+	public void setCrossValidationFoldId(int crossValidationFoldId) {
+		this.crossValidationFoldId = crossValidationFoldId;
+	}
+
+	public void setFold(int fold) {
+		this.fold = fold;
+	}
+
 	public void setInstanceIds(Set<CrossValidationFoldInstance> instanceIds) {
 		this.instanceIds = instanceIds;
 	}
 
-	// public Set<Integer> getInstanceIds() {
-	// return instanceIds;
-	// }
-	// public void setInstanceIds(Set<Integer> instanceIds) {
-	// this.instanceIds = instanceIds;
-	// }
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Integer getRun() {
-		return run;
-	}
-
-	public void setRun(Integer run) {
-		this.run = run;
-	}
-
-	public Integer getFold() {
-		return fold;
-	}
-
-	public void setFold(Integer fold) {
-		this.fold = fold;
-	}
-
-	// boolean train, Set<Integer> instanceIds) {
-	public CrossValidationFold(String name, String label, Integer run,
-			Integer fold, Set<CrossValidationFoldInstance> instanceIds) {
-		super();
-		this.name = name;
-		this.run = run;
-		this.fold = fold;
+	public void setLabel(String label) {
 		this.label = label;
-		// this.train = train;
-		this.instanceIds = instanceIds;
 	}
 
-	public CrossValidationFold() {
-		super();
+	public void setRun(int run) {
+		this.run = run;
 	}
+
+	public void setSplitName(String splitName) {
+		this.splitName = splitName;
+	}
+
 }

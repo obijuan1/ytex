@@ -1,14 +1,15 @@
 package ytex.umls.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import ytex.umls.model.UmlsAuiFirstWord;
 
 public interface UMLSDao {
 
-	public abstract List<Object[]> getRelationsForSABs(String sabs[]);
-
-	public abstract List<Object[]> getAllRelations();
+//	public abstract List<Object[]> getRelationsForSABs(String sabs[]);
+//
+//	public abstract List<Object[]> getAllRelations();
 
 	/**
 	 * get all aui, str from mrconso
@@ -18,5 +19,7 @@ public interface UMLSDao {
 	public void deleteAuiFirstWord();
 
 	public void insertAuiFirstWord(List<UmlsAuiFirstWord> listAuiFirstWord);
+
+	public abstract Map<String, String> getNames(List<String> subList);
 
 }

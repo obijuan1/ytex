@@ -11,7 +11,6 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
@@ -81,14 +80,16 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 	 * .String, java.lang.String)
 	 */
 	@Override
-	public void evaluateAttributesFromFile(String name, String corpusName,
-			String file) throws Exception {
+	public void evaluateAttributesFromFile(String corpusName,
+			String featureSetName, String splitName, String file)
+			throws Exception {
 		DataSource ds = new DataSource(file);
 		Instances inst = ds.getDataSet();
 		String label = FileUtil.parseLabelFromFileName(inst.relationName());
 		Integer run = FileUtil.parseRunFromFileName(inst.relationName());
 		Integer fold = FileUtil.parseFoldFromFileName(inst.relationName());
-		evaluateAttributes(name, corpusName, inst, label, run, fold);
+		evaluateAttributes(corpusName, featureSetName, splitName, inst, label,
+				run, fold);
 	}
 
 	/*
@@ -99,14 +100,12 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 	 * .String, java.lang.String)
 	 */
 	@Override
-	public void evaluateAttributesFromProps(String name, String corpusName,
-			String propFile) throws Exception {
-		Properties props = FileUtil.loadProperties(propFile, false);
-		if (props != null) {
-			sparseDataExporter
-					.exportData(props, new WekaAttributeEvaluatorFormatter(
-							name, corpusName), null);
-		}
+	public void evaluateAttributesFromProps(String corpusName,
+			String featureSetName, String splitName, Properties props)
+			throws Exception {
+		sparseDataExporter.exportData(props,
+				new WekaAttributeEvaluatorFormatter(corpusName, featureSetName,
+						splitName), null);
 	}
 
 	/**
@@ -122,20 +121,21 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 	 *            {@link ClassifierEvaluation#getFold()} to map to fold
 	 * @throws Exception
 	 */
-	public void evaluateAttributes(String name, String corpusName,
-			Instances inst, String label, Integer run, Integer fold)
-			throws Exception {
+	public void evaluateAttributes(String corpusName, String featureSetName,
+			String splitName, Instances inst, String label, Integer run,
+			Integer fold) throws Exception {
 		AttributeSelection ae = this.getAttributeSelection();
 		ae.SelectAttributes(inst);
 		double rankedAttributes[][] = ae.rankedAttributes();
-		FeatureEvaluation fe = initializeFeatureEvaluation(name, corpusName,
-				label, run, fold);
+		FeatureEvaluation fe = initializeFeatureEvaluation(corpusName,
+				featureSetName, splitName, label, run, fold);
 		List<FeatureRank> featureRanks = new ArrayList<FeatureRank>(
 				rankedAttributes.length);
 		for (int i = 0; i < rankedAttributes.length; i++) {
 			int index = (int) rankedAttributes[i][0];
 			double eval = rankedAttributes[i][1];
 			FeatureRank r = new FeatureRank();
+			r.setFeatureEval(fe);
 			r.setFeatureName(inst.attribute(index).name());
 			r.setRank(i + 1);
 			r.setEvaluation(eval);
@@ -145,15 +145,18 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 		classifierEvaluationDao.saveFeatureEvaluation(fe);
 	}
 
-	public FeatureEvaluation initializeFeatureEvaluation(String name,
-			String corpusName, String label, Integer run, Integer fold) {
+	public FeatureEvaluation initializeFeatureEvaluation(String corpusName,
+			String featureSetName, String splitName, String label, Integer run,
+			Integer fold) {
 		FeatureEvaluation fe = new FeatureEvaluation();
-		fe.setName(name);
+		fe.setCorpusName(corpusName);
+		fe.setFeatureSetName(featureSetName);
 		fe.setEvaluationType(this.getAsEvaluation().getClass().getSimpleName());
 		fe.setLabel(label);
 		if (run != null && fold != null) {
 			CrossValidationFold cvFold = this.classifierEvaluationDao
-					.getCrossValidationFold(corpusName, label, run, fold);
+					.getCrossValidationFold(corpusName, splitName, label, run,
+							fold);
 			if (cvFold != null)
 				fe.setCrossValidationFoldId(cvFold.getCrossValidationFoldId());
 			else {
@@ -165,13 +168,18 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 	}
 
 	public class WekaAttributeEvaluatorFormatter extends WekaFormatter {
-		String name;
-		String corpusName;
+		String featureSetName;
 
-		public WekaAttributeEvaluatorFormatter(String name, String corpusName) {
-			this.name = name;
+		public WekaAttributeEvaluatorFormatter(String corpusName,
+				String featureSetName, String splitName) {
+			super();
+			this.featureSetName = featureSetName;
 			this.corpusName = corpusName;
+			this.splitName = splitName;
 		}
+
+		String corpusName;
+		String splitName;
 
 		@Override
 		public void exportFold(SparseData sparseData,
@@ -181,7 +189,8 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 				Instances inst = this.initializeInstances(sparseData,
 						instanceClasses, train, label, run, fold);
 				try {
-					evaluateAttributes(name, corpusName, inst, label, run, fold);
+					evaluateAttributes(corpusName, featureSetName, splitName,
+							inst, label, run, fold);
 				} catch (Exception e) {
 					throw new IOException(e);
 				}
@@ -197,45 +206,35 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 	@SuppressWarnings("static-access")
 	public static void main(String[] args) throws Exception {
 		Options options = new Options();
-		OptionGroup og = new OptionGroup();
-		og.addOption(OptionBuilder
+		options.addOption(OptionBuilder
 				.withArgName("property file")
 				.hasArg()
 				.withDescription(
-						"use specified property file to load instances for evaluation.  Same format as for SparseDataExporter")
+						"load parameters from property file.  If queries defiend as for SparseDataExporter, use them to load the instances")
 				.create("prop"));
-		og.addOption(OptionBuilder
+		options.addOption(OptionBuilder
 				.withArgName("train_data.arff")
 				.hasArg()
 				.withDescription(
 						"use specified weka arff file to load instances for evaluation.")
 				.create("arff"));
-		og.setRequired(true);
-		options.addOptionGroup(og);
-		options.addOption(OptionBuilder.withArgName("name").hasArg()
-				.isRequired()
-				.withDescription("feature set name (feature_eval.name)")
-				.create("name"));
-		options.addOption(OptionBuilder
-				.withArgName("corpus name")
-				.hasArg()
-				.withDescription(
-						"corpus name (cv_fold.name), used to determine cv_fold_id. If not specified, default to value of name option")
-				.create("corpusName"));
 		try {
 			CommandLineParser parser = new GnuParser();
 			CommandLine line = parser.parse(options, args);
-			String name = line.getOptionValue("name");
-			String corpusName = line.getOptionValue("corpusName", name);
+			Properties props = FileUtil.loadProperties(
+					line.getOptionValue("prop"), true);
+			String corpusName = props.getProperty("ytex.corpusName");
+			String splitName = props.getProperty("ytex.splitName");
+			String featureSetName = props.getProperty("ytex.featureSetName");
 			WekaAttributeEvaluator wekaEval = KernelContextHolder
 					.getApplicationContext().getBean(
 							WekaAttributeEvaluator.class);
-			if (line.hasOption("prop")) {
-				wekaEval.evaluateAttributesFromProps(name, corpusName,
-						line.getOptionValue("prop"));
+			if (line.hasOption("arff")) {
+				wekaEval.evaluateAttributesFromFile(corpusName, splitName,
+						featureSetName, line.getOptionValue("arff"));
 			} else {
-				wekaEval.evaluateAttributesFromFile(name, corpusName,
-						line.getOptionValue("arff"));
+				wekaEval.evaluateAttributesFromProps(corpusName, splitName,
+						featureSetName, props);
 			}
 		} catch (ParseException pe) {
 			printHelp(options);

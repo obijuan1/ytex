@@ -1,7 +1,9 @@
 package ytex.kernel.dao;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -9,11 +11,13 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 
+import ytex.kernel.CorpusEvaluator;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.ClassifierEvaluationIRStat;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
 import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.FeatureEvaluation;
+import ytex.kernel.model.FeatureRank;
 
 public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	private static final Log log = LogFactory
@@ -30,22 +34,25 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteCrossValidationFoldByName(String name) {
+	public void deleteCrossValidationFoldByName(String corpusName,
+			String splitName) {
 		Query q = this.getSessionFactory().getCurrentSession()
 				.getNamedQuery("getCrossValidationFoldByName");
-		q.setString("name", name);
+		q.setString("corpusName", corpusName);
+		q.setString("splitName", nullToEmptyString(splitName));
 		List<CrossValidationFold> folds = q.list();
 		for (CrossValidationFold fold : folds)
 			this.getSessionFactory().getCurrentSession().delete(fold);
 	}
 
 	@Override
-	public CrossValidationFold getCrossValidationFold(String name,
-			String label, int run, int fold) {
+	public CrossValidationFold getCrossValidationFold(String corpusName,
+			String splitName, String label, int run, int fold) {
 		Query q = this.getSessionFactory().getCurrentSession()
 				.getNamedQuery("getCrossValidationFold");
-		q.setString("name", name);
-		q.setString("label", label);
+		q.setString("corpusName", corpusName);
+		q.setString("splitName", nullToEmptyString(splitName));
+		q.setString("label", nullToEmptyString(label));
 		q.setInteger("run", run);
 		q.setInteger("fold", fold);
 		return (CrossValidationFold) q.uniqueResult();
@@ -161,16 +168,120 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public void saveFeatureEvaluation(FeatureEvaluation featureEvaluation) {
 		this.getSessionFactory().getCurrentSession().save(featureEvaluation);
+		for (FeatureRank r : featureEvaluation.getFeatures())
+			this.getSessionFactory().getCurrentSession().save(r);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteFeatureEvaluationByNameAndType(String name, String type) {
+	public void deleteFeatureEvaluationByNameAndType(String corpusName,
+			String featureSetName, String type) {
 		Query q = this.getSessionFactory().getCurrentSession()
 				.getNamedQuery("getFeatureEvaluationByNameAndType");
-		q.setString("name", name);
+		q.setString("corpusName", corpusName);
+		q.setString("featureSetName", nullToEmptyString(featureSetName));
 		q.setString("type", type);
 		for (FeatureEvaluation fe : (List<FeatureEvaluation>) q.list())
 			this.getSessionFactory().getCurrentSession().delete(fe);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<FeatureRank> getTopFeatures(String corpusName,
+			String featureSetName, String label, String evaluationType,
+			Integer foldId, String param1, Integer parentConceptTopThreshold) {
+		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
+				label, evaluationType, foldId, param1, "getTopFeatures");
+		q.setMaxResults(parentConceptTopThreshold);
+		return q.list();
+	}
+
+	private Query prepareUniqueFeatureEvalQuery(String corpusName,
+			String featureSetName, String label, String evaluationType,
+			int foldId, String param1, String queryName) {
+		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
+				queryName);
+		q.setString("corpusName", corpusName);
+		q.setString("featureSetName", nullToEmptyString(featureSetName));
+		q.setString("label", nullToEmptyString(label));
+		q.setString("evaluationType", evaluationType);
+		q.setString("param1", nullToEmptyString(param1));
+		q.setInteger("crossValidationFoldId", foldId);
+		return q;
+	}
+
+	/**
+	 * todo for oracle need to handle empty strings differently
+	 * 
+	 * @param param1
+	 * @return
+	 */
+	private String nullToEmptyString(String param1) {
+		return param1 == null ? "" : param1;
+	}
+
+	@Override
+	public List<FeatureRank> getThresholdFeatures(String corpusName,
+			String featureSetName, String label, String evaluationType,
+			Integer foldId, String param1, double evaluationThreshold) {
+		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
+				label, evaluationType, foldId, param1, "getThresholdFeatures");
+		q.setDouble("evaluation", evaluationThreshold);
+		return null;
+	}
+
+	@Override
+	public void deleteFeatureEvaluation(String corpusName,
+			String featureSetName, String label, String evaluationType,
+			Integer foldId, String param1) {
+		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
+				label, evaluationType, foldId, param1,
+				"getFeatureEvaluationByNK");
+		FeatureEvaluation fe = (FeatureEvaluation) q.uniqueResult();
+		if (fe != null) {
+			// for some reason this isn't working - execute batch updates
+			// this.sessionFactory.getCurrentSession().delete(fe);
+			q = this.sessionFactory.getCurrentSession().getNamedQuery(
+					"deleteFeatureRank");
+			q.setInteger("featureEvaluationId", fe.getFeatureEvaluationId());
+			q.executeUpdate();
+			q = this.sessionFactory.getCurrentSession().getNamedQuery(
+					"deleteFeatureEval");
+			q.setInteger("featureEvaluationId", fe.getFeatureEvaluationId());
+			q.executeUpdate();
+		}
+	}
+
+	@Override
+	public Map<String, Double> getFeatureRankEvaluations(String corpusName,
+			String featureSetName, String label, String evaluationType,
+			Integer foldId, String param1) {
+		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
+				label, evaluationType, foldId, param1, "getTopFeatures");
+		@SuppressWarnings("unchecked")
+		List<FeatureRank> listFeatureRank = q.list();
+		Map<String, Double> mapFeatureEval = new HashMap<String, Double>(
+				listFeatureRank.size());
+		for (FeatureRank r : listFeatureRank) {
+			mapFeatureEval.put(r.getFeatureName(), r.getEvaluation());
+		}
+		return mapFeatureEval;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<Object[]> getCorpusCuiTuis(String corpusName,
+			String conceptGraphName, String conceptSetName) {
+		Query q = prepareUniqueFeatureEvalQuery(corpusName, conceptSetName,
+				null, CorpusEvaluator.INFOCONTENT, 0, conceptGraphName, "getCorpusCuiTuis");		
+		return q.list();
+	}
+
+	@Override
+	public Map<String, Double> getInfoContent(String corpusName,
+			String conceptGraphName, String conceptSet) {
+		return getFeatureRankEvaluations(corpusName,
+				conceptSet, null, CorpusEvaluator.INFOCONTENT, 0,
+				conceptGraphName);
+	}
 }

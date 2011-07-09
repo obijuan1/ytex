@@ -119,7 +119,7 @@ public class InfoGainEvaluatorImpl implements InfoGainEvaluator {
 	public void storeInfoGain(String name, String labelQuery,
 			String featureQuery, String classFeatureQuery, Double minInfo) {
 		// delete existing feature evaluations with this name
-		this.classifierEvaluationDao.deleteFeatureEvaluationByNameAndType(name,
+		this.classifierEvaluationDao.deleteFeatureEvaluationByNameAndType(name, null,
 				FEATURE_EVAL_TYPE);
 		// load Y - class distributions per fold & label
 		Map<String, Map<Integer, Map<String, Integer>>> labelClassMap = loadY(labelQuery);

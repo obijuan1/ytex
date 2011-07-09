@@ -2,6 +2,8 @@ package ytex.kernel;
 
 public interface CorpusEvaluator {
 
+	public static final String INFOCONTENT = "infocontent";
+
 	/**
 	 * calculate information content for all concepts
 	 */

@@ -1,6 +1,8 @@
 package ytex.umls.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -37,42 +39,45 @@ public class UMLSDaoImpl implements UMLSDao {
 		return t.getDataSource();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ytex.umls.dao.UMLSDao#getRelationsForSABs(java.util.Set)
-	 */
-	public List<Object[]> getRelationsForSABs(String[] sabs) {
-		Query q = sessionFactory.getCurrentSession().getNamedQuery(
-				"getRelationsForSABs");
-		q.setParameterList("sabs", sabs);
-//		q.setParameterList("rel", INCLUDE_REL);
-//		q.setParameterList("relaExclude", EXCLUDE_RELA);
-		return (List<Object[]>) q.list();
-	}
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see ytex.umls.dao.UMLSDao#getRelationsForSABs(java.util.Set)
+//	 */
+//	public List<Object[]> getRelationsForSABs(String[] sabs) {
+//		Query q = sessionFactory.getCurrentSession().getNamedQuery(
+//				"getRelationsForSABs");
+//		q.setParameterList("sabs", sabs);
+//		// q.setParameterList("rel", INCLUDE_REL);
+//		// q.setParameterList("relaExclude", EXCLUDE_RELA);
+//		return (List<Object[]>) q.list();
+//	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ytex.umls.dao.UMLSDao#getAllRelations(java.util.Set)
-	 */
-	public List<Object[]> getAllRelations() {
-		Query q = sessionFactory.getCurrentSession().getNamedQuery(
-				"getAllRelations");
-		// q.setParameterList("rel", INCLUDE_REL);
-		// q.setParameterList("relaExclude", EXCLUDE_RELA);
-		return (List<Object[]>) q.list();
-	}
+//	/*
+//	 * (non-Javadoc)
+//	 * 
+//	 * @see ytex.umls.dao.UMLSDao#getAllRelations(java.util.Set)
+//	 */
+//	public List<Object[]> getAllRelations() {
+//		Query q = sessionFactory.getCurrentSession().getNamedQuery(
+//				"getAllRelations");
+//		// q.setParameterList("rel", INCLUDE_REL);
+//		// q.setParameterList("relaExclude", EXCLUDE_RELA);
+//		return (List<Object[]>) q.list();
+//	}
 
 	/**
 	 * sets up the umls_aui_fword table.
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Object[]> getAllAuiStr(String lastAui) {
 		Query q = null;
-		if(lastAui == null)
-			q = sessionFactory.getCurrentSession().getNamedQuery("getFirstAuiStr");
+		if (lastAui == null)
+			q = sessionFactory.getCurrentSession().getNamedQuery(
+					"getFirstAuiStr");
 		else {
-			q = sessionFactory.getCurrentSession().getNamedQuery("getNextAuiStr");
+			q = sessionFactory.getCurrentSession().getNamedQuery(
+					"getNextAuiStr");
 			q.setString("aui", lastAui);
 		}
 		q.setMaxResults(10000);
@@ -81,13 +86,34 @@ public class UMLSDaoImpl implements UMLSDao {
 
 	public void deleteAuiFirstWord() {
 		// delete all entries
-		sessionFactory.getCurrentSession().createQuery(
-				"delete from UmlsAuiFirstWord").executeUpdate();
+		sessionFactory.getCurrentSession()
+				.createQuery("delete from UmlsAuiFirstWord").executeUpdate();
 	}
 
 	public void insertAuiFirstWord(List<UmlsAuiFirstWord> listAuiFirstWord) {
 		for (UmlsAuiFirstWord w : listAuiFirstWord)
 			sessionFactory.getCurrentSession().save(w);
 
+	}
+
+	@Override
+	public Map<String, String> getNames(List<String> subList) {
+		Map<String, String> names = new HashMap<String, String>(subList.size());
+		// get the shortest string for the specified cuis
+		updateNames("getCuiMinStr", subList, names);
+		// for those cuis with a preferred name, use it
+		updateNames("getCuiPreferredName", subList, names);
+		return names;
+	}
+
+	private void updateNames(String queryName, List<String> subList,
+			Map<String, String> names) {
+		Query q = sessionFactory.getCurrentSession().getNamedQuery(queryName);
+		q.setParameterList("cuis", subList);
+		@SuppressWarnings("unchecked")
+		List<Object[]> listCuiName = q.list();
+		for (Object[] cuiName : listCuiName) {
+			names.put((String) cuiName[0], (String) cuiName[1]);
+		}
 	}
 }

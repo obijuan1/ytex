@@ -20,7 +20,6 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.kernel.ConceptSimilarityService;
-import ytex.kernel.dao.CorpusDao;
 
 /**
  * Before comparing semantic distance, use this kernel to filter by semantic
@@ -64,7 +63,6 @@ public class SemanticTypeKernel implements Kernel {
 	}
 
 	private String mode = "MAINSUI";
-	private CorpusDao corpusDao = null;
 
 	public String getMode() {
 		return mode;
@@ -381,11 +379,4 @@ public class SemanticTypeKernel implements Kernel {
 		return corpusName;
 	}
 
-	public void setCorpusDao(CorpusDao corpusDao) {
-		this.corpusDao = corpusDao;
-	}
-
-	public CorpusDao getCorpusDao() {
-		return corpusDao;
-	}
 }

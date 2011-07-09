@@ -29,7 +29,6 @@ import org.apache.commons.cli.ParseException;
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.CrossValidationFoldInstance;
-import ytex.libsvm.LibSVMUtil;
 
 /**
  * utility generates cv fold splits, stores in db.
@@ -64,15 +63,15 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * java.lang.String, int, int, java.lang.Integer, int)
 	 */
 	@Override
-	public void generateRuns(String name, String query, int nFolds,
+	public void generateRuns(String corpusName, String splitName, String query, int nFolds,
 			int nMinPerClass, Integer nSeed, int nRuns) {
 		Random r = new Random(nSeed != null ? nSeed : System
 				.currentTimeMillis());
 		SortedSet<String> labels = new TreeSet<String>();
 		InstanceData instances = kernelUtil.loadInstances(query);
-		this.getClassifierEvaluationDao().deleteCrossValidationFoldByName(name);
+		this.getClassifierEvaluationDao().deleteCrossValidationFoldByName(corpusName, splitName);
 		for (int run = 1; run <= nRuns; run++) {
-			generateFolds(labels, instances, name, run, query, nFolds,
+			generateFolds(labels, instances, corpusName, splitName, run, query, nFolds,
 					nMinPerClass, r);
 		}
 	}
@@ -83,6 +82,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * @param labels
 	 * @param mapInstanceToClassLabel
 	 * @param name
+	 * @param splitName 
 	 * @param run
 	 * @param query
 	 * @param nFolds
@@ -90,7 +90,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * @param r
 	 */
 	public void generateFolds(Set<String> labels, InstanceData instances,
-			String name, int run, String query, int nFolds, int nMinPerClass,
+			String corpusName, String splitName, int run, String query, int nFolds, int nMinPerClass,
 			Random r) {
 		for (String label : instances.getLabelToInstanceMap().keySet()) {
 			// there should not be any runs/folds/train test split - just unpeel
@@ -121,7 +121,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 			List<Set<Integer>> folds = createFolds(mapClassToInstanceId,
 					nFolds, nMinPerClass, r);
 			// insert the folds
-			insertFolds(folds, name, label, run);
+			insertFolds(folds, corpusName, splitName, label, run);
 		}
 	}
 
@@ -129,10 +129,10 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * insert the folds into the database
 	 * 
 	 * @param folds
-	 * @param name
+	 * @param corpusName
 	 * @param run
 	 */
-	private void insertFolds(List<Set<Integer>> folds, String name,
+	private void insertFolds(List<Set<Integer>> folds, String corpusName, String splitName,
 			String label, int run) {
 		// iterate over fold numbers
 		for (int foldNum = 1; foldNum <= folds.size(); foldNum++) {
@@ -144,7 +144,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 					instanceIds.add(new CrossValidationFoldInstance(instanceId,
 							trainFoldNum != foldNum));
 			}
-			classifierEvaluationDao.saveFold(new CrossValidationFold(name,
+			classifierEvaluationDao.saveFold(new CrossValidationFold(corpusName, splitName,
 					label, run, foldNum, instanceIds));
 			// insert test set
 			// classifierEvaluationDao.saveFold(new CrossValidationFold(name,
@@ -275,7 +275,8 @@ public class FoldGeneratorImpl implements FoldGenerator {
 				int minPerClass = Integer.parseInt(line.getOptionValue(
 						"minPerClass", "1"));
 				int folds = Integer.parseInt(line.getOptionValue("folds", "4"));
-				String name = line.getOptionValue("name");
+				String corpusName = line.getOptionValue("ytex.corpusName");
+				String splitName = line.getOptionValue("ytex.splitName");
 				String query;
 				if (line.hasOption("query")) {
 					query = line.getOptionValue("query");
@@ -295,9 +296,9 @@ public class FoldGeneratorImpl implements FoldGenerator {
 							is.close();
 					}
 				}
-				if (query != null && name != null) {
+				if (query != null && corpusName != null) {
 					KernelContextHolder.getApplicationContext().getBean(
-							FoldGenerator.class).generateRuns(name, query,
+							FoldGenerator.class).generateRuns(corpusName, splitName, query,
 							folds, minPerClass, rand, runs);
 				} else {
 					printHelp(options);

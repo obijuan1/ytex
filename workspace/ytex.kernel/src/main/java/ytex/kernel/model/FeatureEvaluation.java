@@ -10,12 +10,14 @@ public class FeatureEvaluation implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private int featureEvaluationId;
-	private String name;
-	private String label;
-	private Integer crossValidationFoldId;
+	private String corpusName;
+	private int crossValidationFoldId = 0;
 	private String evaluationType;
+	private int featureEvaluationId;
 	private List<FeatureRank> features;
+	private String featureSetName = "";
+	private String label = "";
+	private String param1 = "";
 
 	public FeatureEvaluation() {
 		super();
@@ -25,59 +27,75 @@ public class FeatureEvaluation implements Serializable {
 			Integer crossValidationFoldId, String evaluationType,
 			List<FeatureRank> features) {
 		super();
-		this.name = name;
+		this.corpusName = name;
 		this.label = label;
 		this.crossValidationFoldId = crossValidationFoldId;
 		this.evaluationType = evaluationType;
 		this.features = features;
 	}
 
-	public int getFeatureEvaluationId() {
-		return featureEvaluationId;
+	public String getCorpusName() {
+		return corpusName;
 	}
 
-	public void setFeatureEvaluationId(int featureEvaluationId) {
-		this.featureEvaluationId = featureEvaluationId;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
-	public Integer getCrossValidationFoldId() {
+	public int getCrossValidationFoldId() {
 		return crossValidationFoldId;
-	}
-
-	public void setCrossValidationFoldId(Integer crossValidationFoldId) {
-		this.crossValidationFoldId = crossValidationFoldId;
 	}
 
 	public String getEvaluationType() {
 		return evaluationType;
 	}
 
-	public void setEvaluationType(String evaluationType) {
-		this.evaluationType = evaluationType;
+	public int getFeatureEvaluationId() {
+		return featureEvaluationId;
 	}
 
 	public List<FeatureRank> getFeatures() {
 		return features;
 	}
 
+	public String getFeatureSetName() {
+		return featureSetName;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public String getParam1() {
+		return param1;
+	}
+
+	public void setCorpusName(String name) {
+		this.corpusName = name;
+	}
+
+	public void setCrossValidationFoldId(int crossValidationFoldId) {
+		this.crossValidationFoldId = crossValidationFoldId;
+	}
+
+	public void setEvaluationType(String evaluationType) {
+		this.evaluationType = evaluationType;
+	}
+
+	public void setFeatureEvaluationId(int featureEvaluationId) {
+		this.featureEvaluationId = featureEvaluationId;
+	}
+
 	public void setFeatures(List<FeatureRank> features) {
 		this.features = features;
+	}
+
+	public void setFeatureSetName(String featureSetName) {
+		this.featureSetName = featureSetName;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public void setParam1(String param1) {
+		this.param1 = param1;
 	}
 
 }

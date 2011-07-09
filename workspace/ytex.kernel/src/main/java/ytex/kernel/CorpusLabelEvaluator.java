@@ -1,18 +1,17 @@
 package ytex.kernel;
 
 import java.io.IOException;
-import java.util.Set;
+
+import ytex.kernel.CorpusLabelEvaluatorImpl.Parameters;
 
 public interface CorpusLabelEvaluator {
 
-	/*
-	 */
-	public abstract void evaluateCorpus(String corpusName,
-			String conceptGraphName, String conceptSetName, String labelQuery,
-			String classFeatureQuery, Double minInfo, Set<String> xVals,
-			String xLeftover, String xMerge, Integer parentConceptThreshold,
-			Double parentConceptMutualInfoThreshold);
+	public static final String MUTUALINFO_CHILD = "mutualinfo-child";
+	public static final String MUTUALINFO_PARENT = "mutualinfo-parent";
+	public static final String MUTUALINFO = "mutualinfo";
 
 	public abstract boolean evaluateCorpus(String propFile) throws IOException;
+
+	boolean evaluateCorpus(Parameters params);
 
 }

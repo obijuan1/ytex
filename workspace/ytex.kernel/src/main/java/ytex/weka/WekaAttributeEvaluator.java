@@ -1,5 +1,7 @@
 package ytex.weka;
 
+import java.util.Properties;
+
 public interface WekaAttributeEvaluator {
 
 	/**
@@ -12,8 +14,9 @@ public interface WekaAttributeEvaluator {
 	 * @param arffFile
 	 * @throws Exception
 	 */
-	public abstract void evaluateAttributesFromFile(String name,
-			String corpusName, String arffFile) throws Exception;
+	public abstract void evaluateAttributesFromFile(String corpusName,
+			String featureSetName, String splitName, String arffFile)
+			throws Exception;
 
 	/**
 	 * create instances from properties file, evaluate, save in db
@@ -26,7 +29,8 @@ public interface WekaAttributeEvaluator {
 	 *            for SparseDataExporter
 	 * @throws Exception
 	 */
-	public abstract void evaluateAttributesFromProps(String name,
-			String corpusName, String propFile) throws Exception;
+	public abstract void evaluateAttributesFromProps(String corpusName,
+			String featureSetName, String splitName, Properties props)
+			throws Exception;
 
 }

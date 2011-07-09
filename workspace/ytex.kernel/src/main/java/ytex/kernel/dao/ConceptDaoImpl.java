@@ -21,12 +21,21 @@ import java.util.zip.GZIPOutputStream;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
+import ytex.kernel.FileUtil;
+import ytex.kernel.InfoGainEvaluatorImpl;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
@@ -102,11 +111,11 @@ public class ConceptDaoImpl implements ConceptDao {
 		ConceptGraph conceptGraph = getConceptGraph(name);
 		if (conceptGraph != null) {
 			if (log.isWarnEnabled())
-				log.warn("initializeConceptGraph(): concept graph already exists, returning concept graph");
+				log.warn("createConceptGraph(): concept graph already exists, returning concept graph");
 			return conceptGraph;
 		} else {
 			if (log.isInfoEnabled())
-				log.info("initializeConceptGraph(): file not found, initializing concept graph from database.");
+				log.info("createConceptGraph(): file not found, initializing concept graph from database.");
 			final Map<String, ConcRel> conceptMap = new HashMap<String, ConcRel>();
 			final Set<String> roots = new HashSet<String>();
 			this.jdbcTemplate.query(query, new RowCallbackHandler() {
@@ -285,9 +294,42 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * 
 	 * @param args
 	 */
-	public static void main(String args[]) {
-		KernelContextHolder.getApplicationContext().getBean(ConceptDao.class)
-				.createConceptGraph(args[0], args[1]);
+	@SuppressWarnings("static-access")
+	public static void main(String args[]) throws ParseException, IOException {
+		Options options = new Options();
+		options.addOption(OptionBuilder
+				.withArgName("prop")
+				.hasArg()
+				.isRequired()
+				.withDescription(
+						"property file with queries and other parameters. todo desc")
+				.create("prop"));
+		try {
+			CommandLineParser parser = new GnuParser();
+			CommandLine line = parser.parse(options, args);
+			Properties props = FileUtil.loadProperties(
+					line.getOptionValue("prop"), true);
+			String conceptGraphName = props
+					.getProperty("ytex.conceptGraphName");
+			String conceptGraphQuery = props
+					.getProperty("ytex.conceptGraphQuery");
+			if (conceptGraphName != null && conceptGraphQuery != null) {
+				KernelContextHolder
+						.getApplicationContext()
+						.getBean(ConceptDao.class)
+						.createConceptGraph(conceptGraphName, conceptGraphQuery);
+			} else {
+				printHelp(options);
+			}
+		} catch (ParseException pe) {
+			printHelp(options);
+		}
+	}
+
+	private static void printHelp(Options options) {
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp("java " + InfoGainEvaluatorImpl.class.getName()
+				+ " calculate infogain for each feature", options);
 	}
 
 }
