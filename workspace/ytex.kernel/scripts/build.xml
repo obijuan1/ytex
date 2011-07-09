@@ -83,7 +83,7 @@
 				<propertyset refid="kernel.props" />
 			</syspropertyset>
 		</java>
-	</target>	
+	</target>
 	<target name="kernel.storeResults" depends="init.dir,kernel.storeDB" description="store results in db, cleanup temp dirs">
 		<zip destfile="${kernel.data}/eval.zip" update="no">
 			<fileset dir="${kernel.data}/eval" />
@@ -91,7 +91,7 @@
 		<delete quiet="yes" includeemptydirs="yes" dir="${kernel.data}/eval" />
 	</target>
 	<target name="kernel.storeDB" description="store results in db.  take results from ${kernel.evaldir}, relative to ${kernel.data}" depends="init.dir">
-		<property name="kernel.evaldir" value="eval"/>
+		<property name="kernel.evaldir" value="eval" />
 		<echo>kernel.data ${kernel.data}</echo>
 		<echo>kernel.evaldir ${kernel.evaldir}</echo>
 		<java classname="ytex.kernel.ClassifierEvaluationImporter" classpathref="${kernel.cp}" fork="yes" dir="${kernel.data}" failOnError="yes">
@@ -103,7 +103,7 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	
+
 	<!--
 	svm targets
 	-->
@@ -111,6 +111,32 @@
 	<target name="svm.iter.train" description="iterate over ${kernel.data}/*train_data.txt, evaluate svm.  call svm.processFile" depends="init.dir">
 		<echo>kernel.data ${kernel.data}</echo>
 		<!-- iterate over files -->
+		<antcall target="svm.iter.train.cluster" />
+		<antcall target="svm.iter.train.local" />
+	</target>
+	<target name="svm.iter.train.cluster" if="kernel.cluster" description="iterate over files, send to cluster for processing. will only run if kernel.cluster is set.">
+		<fileset id="train.fileset" dir="${kernel.data}" includes="*train_data.txt" />
+		<!--
+		this doesn't work - can't use newline as a separator.  
+		use a for loop to create a list of files for processing
+		<pathconvert property="train.list" refid="train.fileset" pathsep="&#9252;" />
+		<echo file="${kernel.data}/train.list.txt">${train.list}</echo>
+		-->
+		<delete file="${kernel.data}/train.list.txt" quiet="yes" />
+		<for param="training.file">
+			<fileset refid="train.fileset" />
+			<sequential>
+				<echo file="${kernel.data}/train.list.txt" append="yes">@{training.file}
+</echo>
+			</sequential>
+		</for>
+		<!-- count thie files to process for the qsub array task -->
+		<resourcecount property="train.count" refid="train.fileset" />
+		<exec executable="qsub">
+			<arg line="-sync y -t 1-${train.count} ${ant.pbs} svm.processFile.cluster -Dkernel.data=${kernel.data}" />
+		</exec>
+	</target>
+	<target name="svm.iter.train.local" unless="kernel.cluster" description="iterate over files, process locally. use multiple threads if parallel.folds.  will only run if kernel.cluster is not set.">
 		<for param="training.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
 			<fileset dir="${kernel.data}" includes="*train_data.txt" />
 			<sequential>
@@ -119,6 +145,23 @@
 				</antcall>
 			</sequential>
 		</for>
+	</target>
+	<target name="svm.processFile.cluster" depends="init.dir" description="read the file number property passed via qsub array task.  load this file name from the file list and proces.">
+		<property name="filenum" value="${env.SGE_TASK_ID}" />
+		<echo>filenum ${filenum}</echo>
+		<loadfile srcfile="${kernel.data}/train.list.txt" property="kernel.train.data">
+			<filterchain>
+				<filterreader classname="org.apache.tools.ant.filters.HeadFilter">
+					<param name="lines" value="${filenum}" />
+				</filterreader>
+				<filterreader classname="org.apache.tools.ant.filters.TailFilter">
+					<param name="lines" value="1" />
+				</filterreader>
+				<striplinebreaks/>
+			</filterchain>
+		</loadfile>
+		<echo>kernel.train.data ${kernel.train.data}</echo>
+		<antcall target="svm.processFile" />
 	</target>
 	<target name="svm.processFile" depends="init.dir" description="iterate over parameter grid and run svm on specified file. calls svm.evaluate on ${kernel.train.data} for each command line in ${kernel.evalLines}">
 		<property name="kernel.train.data" value="${kernel.data}/label1_run1_fold1_train_data.txt" />
@@ -203,7 +246,7 @@
 			</propertyset>
 		</echoproperties>
 	</target>
-	
+
 	<!--
 	semil targets:
 	-->
