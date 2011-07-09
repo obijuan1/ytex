@@ -64,7 +64,7 @@
 			<isset property="semil" />
 		</condition>
 		<property name="kernel.eval.tmpdir" value="${java.io.tmpdir}" />
-		<property name="kernel.tmpdir" value="${eval.tmpdir}/${kernel.name}-${kernel.experiment}-${kernel.algo}${kernel.param1}${kernel.param2}" />
+		<property name="kernel.tmpdir" value="${kernel.eval.tmpdir}/${kernel.name}-${kernel.experiment}-${kernel.algo}${kernel.param1}${kernel.param2}" />
 	</target>
 	<target name="process.dir" description="evaluate ${kernel.algo} on all files in directory ${kernel.data}" depends="init.dir">
 		<antcall target="${process.dir.target}" />
