@@ -157,8 +157,10 @@ create table classifier_eval (
 	algorithm varchar(50) null default "",
 	label varchar(50) null default "",
 	options varchar(1000) null default "",
-	model longblob null
-) comment 'evaluation of a classifier on a dataset';
+	model longblob null,
+	param1 double NULL,
+	param2 varchar(50) NULL
+) engine=myisam comment 'evaluation of a classifier on a dataset';
 
 create table classifier_eval_svm (
 	classifier_eval_id int not null comment 'fk classifier_eval' primary key,
@@ -169,7 +171,7 @@ create table classifier_eval_svm (
 	kernel int DEFAULT NULL,
 	supportVectors int default null,
 	vcdim double null
-) comment 'evaluation of a libsvm classifier on a dataset';
+) engine=myisam comment 'evaluation of a libsvm classifier on a dataset';
 
 create table classifier_eval_semil (
 	classifier_eval_id int not null comment 'fk classifier_eval' primary key,
@@ -181,7 +183,7 @@ create table classifier_eval_semil (
 	mu double not null default 0,
 	lambda double not null default 0,
 	pct_labeled double not null default 0
-) comment 'evaluation of a semil classifier on a dataset';
+) engine=myisam comment 'evaluation of a semil classifier on a dataset';
 
 create table classifier_eval_ir (
 	classifier_eval_ir_id int not null auto_increment primary key,
@@ -198,7 +200,7 @@ create table classifier_eval_ir (
 	f1 double not null,
 	unique key NK_classifier_eval_ir (classifier_eval_id, ir_class_id),
 	key IX_classifier_eval_id (classifier_eval_id)
-) comment 'ir statistics of a classifier on a dataset';
+) engine=myisam comment 'ir statistics of a classifier on a dataset';
 
 create table classifier_eval_irzv (
 	classifier_eval_irzv_id int not null auto_increment primary key,
@@ -215,7 +217,7 @@ create table classifier_eval_irzv (
 	f1 double not null,
 	unique key NK_classifier_eval_ir (classifier_eval_id, ir_class_id),
 	key IX_classifier_eval_id (classifier_eval_id)
-) comment 'ir statistics of a classifier on a dataset with zero vectors added';
+) engine=myisam comment 'ir statistics of a classifier on a dataset with zero vectors added';
 
 create table classifier_instance_eval (
 	classifier_instance_eval_id int not null auto_increment primary key,
@@ -224,7 +226,7 @@ create table classifier_instance_eval (
 	pred_class_id int not null,
 	target_class_id int null,
 	unique key nk_result (classifier_eval_id, instance_id)
-) comment 'instance classification result';
+) engine=myisam comment 'instance classification result';
 
 create table classifier_instance_eval_prob (
 	classifier_eval_result_prob_id int not null auto_increment primary key,
@@ -232,18 +234,20 @@ create table classifier_instance_eval_prob (
 	class_id int not null,
 	probability double not null,
 	unique key nk_result_prob (classifier_instance_eval_id, class_id)
-) comment 'probability of belonging to respective class';
+) engine=myisam comment 'probability of belonging to respective class';
 
 drop table cv_fold;
 drop table cv_fold_instance;
+
 create table cv_fold (
   cv_fold_id int auto_increment not null primary key,
-  name varchar(50) not null,
-  label varchar(50) not null,
-  run int null,
-  fold int null,
-  unique index nk_cv_fold (name, label, run, fold)
-);
+  corpus_name varchar(50) not null comment 'corpus name',
+  split_name varchar(50) not null default '' comment 'subset name',
+  label varchar(50) not null default '' ,
+  run int not null default 0,
+  fold int not null default 0,
+  unique index nk_cv_fold (corpus_name, split_name, label, run, fold)
+)engine=myisam ;
 
 create table cv_fold_instance (
   cv_fold_instance_id int auto_increment not null primary key,
@@ -251,30 +255,31 @@ create table cv_fold_instance (
   instance_id int not null,
   train bit not null default 0,
   unique index nk_cv_fold_instance (cv_fold_id, instance_id, train)
-);
+) engine=myisam ;
 
 
-drop table feature_eval;
 create table feature_eval (
   feature_eval_id int auto_increment not null primary key,
-  name varchar(50) not null,
-  label varchar(50) not null,
-  cv_fold_id int null,
-  type varchar(50) not null,
-  unique index nk_feature_eval(name, label, cv_fold_id, type),
-  index ix_feature_eval(name, cv_fold_id, type)
-);
+  corpus_name varchar(50) not null comment 'corpus name',
+  featureset_name varchar(50) null comment 'feature set name',
+  label varchar(50) null comment 'label wrt features evaluated',
+  cv_fold_id int null comment 'fold wrt features evaluated',
+  param1 varchar(50) null comment 'meta-parameter for feature evaluation',
+  type varchar(50) not null comment 'metric used to evaluate features',
+  unique index nk_feature_eval(corpus_name, featureset_name, label, cv_fold_id, param1, type),
+  index ix_feature_eval(corpus_name, cv_fold_id, type)
+) engine=myisam comment 'evaluation of a set of features in a corpus';
 
-drop table feature_rank;
 create table feature_rank (
   feature_rank_id int auto_increment not null primary key,
   feature_eval_id int not null comment 'fk feature_eval',
-  feature_name varchar(50) not null,
-  infogain double not null,
-  rank int not null,
-  unique index nk_feature_rank(feature_eval_id, feature_name),
+  feature_name varchar(50) not null comment 'name of feature',
+  evaluation double not null comment 'measurement of feature worth',
+  rank int not null comment 'rank among all features',
+  unique index nk_feature_name(feature_eval_id, feature_name),
+  unique index ix_feature_rank(feature_eval_id, rank),
   index fk_feature_eval(feature_eval_id)
-);
+) engine=myisam comment 'evaluation of a feature in a corpus';
 
 
 
@@ -284,7 +289,7 @@ create table hotspot (
   anno_base_id int not null comment 'fk anno_base_id',
   feature_rank_id int not null comment 'fk feature_rank',
   unique index NK_hotspot (instance_id, anno_base_id, feature_rank_id)
-);
+) engine=myisam ;
 ALTER TABLE `hotspot` ADD INDEX `ix_instance_id`(`instance_id`),
  ADD INDEX `ix_anno_base_id`(`anno_base_id`),
  ADD INDEX `ix_feature_rank_id`(`feature_rank_id`);
@@ -309,7 +314,7 @@ create table hotspot_feature (
 	rank int,
 	unique index nk_hotspot_feature (label, instance_id, feature_name),
 	index ix_rank (instance_id, rank)
-);
+) engine=myisam ;
 
 
 CREATE TABLE `hotspot_feature_eval` (
@@ -394,7 +399,7 @@ create table corpus_concept_eval (
   unique index (corpus_name, conceptgraph_name, conceptset_name)
 ) engine=myisam, comment 'ontology-based evaluation of concepts for a corpus';
 
-create table corpus_concept_freq (
+create table corpus_concept_ic (
   corpus_concept_ic_id int auto_increment not null primary key,
   corpus_concept_eval_id int not null comment 'fk corpus_concept_eval',
   concept_id varchar(10) not null,

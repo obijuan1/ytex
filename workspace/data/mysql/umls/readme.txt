@@ -74,7 +74,7 @@ coalesce(CVF,'')
 into outfile 'E:/projects/umls-new/mysql/MRCONSO.RRF'
 fields terminated by '|' ESCAPED BY '' lines terminated by '\r\n'
 from umls.MRCONSO mrc
-where SAB in ('SNOMEDCT', 'NCI', 'ICD9CM', 'SRC')
+where SAB in ('SNOMEDCT', 'RXNORM', 'SRC')
 ;
 
 
@@ -91,12 +91,12 @@ inner join
 	(
 	select distinct cui
 	from umls.MRCONSO
-	where SAB in ('SNOMEDCT', 'NCI', 'ICD9CM', 'SRC')
+	where SAB in ('SNOMEDCT', 'RXNORM', 'SRC')
 	) c on sty.cui = c.cui
 ;
 
 select fw.*
 into outfile 'E:/projects/umls-new/mysql/umls_aui_fword.txt'
 from umls_aui_fword fw
-inner join umls.mrconso mrc on fw.aui = mrc.aui and mrc.sab in ('SNOMEDCT', 'NCI', 'ICD9CM', 'SRC')
+inner join umls.mrconso mrc on fw.aui = mrc.aui and mrc.sab in ('SNOMEDCT', 'RXNORM', 'SRC')
 ;
