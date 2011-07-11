@@ -102,8 +102,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			try {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				GZIPOutputStream zipOut = new GZIPOutputStream(out);
-				XmiCasSerializer ser = new XmiCasSerializer(jcas
-						.getTypeSystem());
+				XmiCasSerializer ser = new XmiCasSerializer(
+						jcas.getTypeSystem());
 				XMLSerializer xmlSer = new XMLSerializer(zipOut, false);
 				ser.serialize(jcas.getCas(), xmlSer.getContentHandler());
 				zipOut.close();
@@ -135,6 +135,10 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			saveDocumentAnnotation((Annotation) annoIterator.next(), doc,
 					setTypesToIgnore);
 		}
+		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
+				"insertAnnotationContainmentLinks");
+		q.setInteger("documentID", doc.getDocumentID());
+		q.executeUpdate();
 		return doc.getDocumentID();
 	}
 
@@ -155,8 +159,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 					.getMapperForAnnotation(annotation.getClass().getName());
 			if (mapper != null) {
 				DocumentAnnotation docAnno = (DocumentAnnotation) mapper
-						.mapAnnotation(annotation, document, this
-								.getSessionFactory());
+						.mapAnnotation(annotation, document,
+								this.getSessionFactory());
 				return docAnno;
 			}
 		}
@@ -207,8 +211,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	@SuppressWarnings("unchecked")
 	public void afterPropertiesSet() {
 		documentAnnotationMappers = new HashMap<String, String>();
-		TransactionTemplate txTemplate = new TransactionTemplate(this
-				.getTransactionManager());
+		TransactionTemplate txTemplate = new TransactionTemplate(
+				this.getTransactionManager());
 		txTemplate
 				.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
 		txTemplate.execute(new TransactionCallback<Object>() {

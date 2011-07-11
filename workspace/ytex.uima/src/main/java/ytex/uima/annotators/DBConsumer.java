@@ -23,20 +23,25 @@ import ytex.uima.ApplicationContextHolder;
 import ytex.uima.mapper.DocumentMapperService;
 
 /**
- * Store the document text, cas, and annotations in the database.
- * Delegates to DocumentMapperService.
- * This is an annotator and not a consumer because according to the uima docs the Consumer interface is deprecated.
- * Config parameters:
+ * Store the document text, cas, and annotations in the database. Delegates to
+ * DocumentMapperService. This is an annotator and not a consumer because
+ * according to the uima docs the Consumer interface is deprecated. Config
+ * parameters:
  * <ul>
- * 	<li>xmiOutputDirectory - String - directory where the xmi serialized cas should be stored.  
- * Leave empty if you don't want to store the xmi.  Defaults to empty.
- * 	<li>analysisBatch - String - Document group/analysis batch, stored in document.analysis_batch.  Defaults to current date/time.
- *  <li>storeDocText - boolean - should the document text be stored in the DB? defaults to true
- *  <li>storeCAS - boolean - should the serialized xmi cas be stored in the DB? defaults to true
- *  <li>typesToIngore - multivalued String - uima types not to be saved. 
+ * <li>xmiOutputDirectory - String - directory where the xmi serialized cas
+ * should be stored. Leave empty if you don't want to store the xmi. Defaults to
+ * empty.
+ * <li>analysisBatch - String - Document group/analysis batch, stored in
+ * document.analysis_batch. Defaults to current date/time.
+ * <li>storeDocText - boolean - should the document text be stored in the DB?
+ * defaults to true
+ * <li>storeCAS - boolean - should the serialized xmi cas be stored in the DB?
+ * defaults to true
+ * <li>typesToIngore - multivalued String - uima types not to be saved.
  * </ul>
+ * 
  * @author vijay
- *
+ * 
  */
 public class DBConsumer extends JCasAnnotator_ImplBase {
 	private static final Log log = LogFactory.getLog(DBConsumer.class);
@@ -56,17 +61,26 @@ public class DBConsumer extends JCasAnnotator_ImplBase {
 				.getConfigParameterValue("xmiOutputDirectory");
 		analysisBatch = (String) aContext
 				.getConfigParameterValue("analysisBatch");
-		Boolean boolStoreDocText = (Boolean) aContext.getConfigParameterValue("storeDocText");
-		Boolean boolStoreCAS = (Boolean) aContext.getConfigParameterValue("storeCAS");
-		String typesToIgnore[] = (String[])aContext.getConfigParameterValue("typesToIgnore");
-		if(typesToIgnore != null)
+		Boolean boolStoreDocText = (Boolean) aContext
+				.getConfigParameterValue("storeDocText");
+		Boolean boolStoreCAS = (Boolean) aContext
+				.getConfigParameterValue("storeCAS");
+		String typesToIgnore[] = (String[]) aContext
+				.getConfigParameterValue("typesToIgnore");
+		if (typesToIgnore != null)
 			setTypesToIgnore.addAll(Arrays.asList(typesToIgnore));
-		bStoreDocText = boolStoreDocText == null ? true : boolStoreDocText.booleanValue();
+		bStoreDocText = boolStoreDocText == null ? true : boolStoreDocText
+				.booleanValue();
 		bStoreCAS = boolStoreCAS == null ? true : boolStoreCAS.booleanValue();
 		documentMapperService = (DocumentMapperService) ApplicationContextHolder
 				.getApplicationContext().getBean("documentMapperService");
 	}
 
+	/**
+	 * call the documentMapperService to save the document. if the
+	 * xmiOutputDirectory is defined, write the document to an xmi file. use the
+	 * name corresponding to the documentID.
+	 */
 	@Override
 	public void process(JCas jcas) {
 		Integer documentID = documentMapperService.saveDocument(jcas,
@@ -82,8 +96,8 @@ public class DBConsumer extends JCasAnnotator_ImplBase {
 					writer = new BufferedWriter(new FileWriter(
 							xmiOutputDirectory + File.separatorChar
 									+ documentID.toString() + ".xmi"));
-					XmiCasSerializer ser = new XmiCasSerializer(jcas
-							.getTypeSystem());
+					XmiCasSerializer ser = new XmiCasSerializer(
+							jcas.getTypeSystem());
 					XMLSerializer xmlSer = new XMLSerializer(writer, false);
 					ser.serialize(jcas.getCas(), xmlSer.getContentHandler());
 				} catch (IOException e) {
