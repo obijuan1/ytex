@@ -13,19 +13,24 @@
 		on hzv.instance_id = i.instance_id
 		and hzv.label = a.disease
 		and hzv.cutoff = @export.cutoff@
-		and hzv.name = 'i2b2.2008-onto'
+		and hzv.corpus_name = 'i2b2.2008'
+		and hzv.experiment = 'ontocuis'
 	where hzv.hotspot_zero_vector_id is null
+	and f.corpus_name = 'i2b2.2008'
 ]]></entry>
 	<entry key="numericWordQuery"><![CDATA[
 	select s.*, 1
 	from
 	(
-		select h.instance_id, h.feature_name
-		from hotspot_feature_eval h
-		inner join i2b2_2008_disease d on d.disease = h.label
-		where d.disease_id = :label 
-		and name = 'i2b2.2008-onto'
-		and h.evaluation >= @export.cutoff@
+		select i.instance_id, h.feature_name
+		from hotspot_instance i
+		inner join hotspot_feature_eval h 
+			on i.hotspot_instance_id = h.hotspot_instance_id
+			and h.evaluation >= @export.cutoff@
+		inner join i2b2_2008_disease d on d.disease = i.label
+		where d.disease_id = :label  
+		and i.corpus_name = 'i2b2.2008'
+		and i.experiment = 'ontocuis' 
 	) s 
 ]]></entry>
 </properties>
