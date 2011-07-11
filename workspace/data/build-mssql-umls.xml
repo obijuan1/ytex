@@ -1,14 +1,59 @@
-<project name="umls.mssql">
-	<property environment="env" />
+<project name="umls.mssql" default="all">
+	<description>
+		<![CDATA[
+= Introduction =
+NLM does not provide scripts/utilities for importing tables into SQL Server.
+To import tables into SQL Server, we have adapted the database table creation 
+scripts from other platforms to SQL Server.  We reformat the output
+of MetamorphoSys to enable import using the SQL Server bcp utility.
+
+MetamorphoSys creates RRF files, which are pipe (|) delimited UTF-8 files.
+SQL Server does not support UTF-8, but does support UCS2 (unicode).
+To simplify the import, we convert the RRF files into tab-delimited UCS2 files. 
+
+= Running the Script =
+
+This is how it works:
+  # You must run MetamophoSys to create a subset of the UMLS.
+  See http://www.ncbi.nlm.nih.gov/books/NBK9683/
+  Metamorphosys will create RRF files with the table data.
+  Metamorphosys will create directories of the form 2010AB/META and 2010AB/NET
+  that contain RRF files.
+  # In `ytex.properties`, define `umls.catalog` and `umls.schema`, and 
+  set them to the catalog (database) and schema where the umls should be installed.
+  # Run the ant script `build-mssql-umls.xml`, and specify the directory which contains 
+  the META and NET directories via the rrf.home option.  
+  Open a command prompt, change to the YTEX_HOME/data directory, and execute the following command:
+{{{
+..\setenv.cmd
+ant -Drrf.home=c:\temp\2010AB all
+}}}
+
+This does the following:
+  * create umls database tables
+  * convert RRF files into tab-delimited UCS2 files
+  * import the tab-delimited files using bcp
+  * create indices for newly created tables
+
+Configuration: all settings are taken from ytex.properties.  The following
+properties control the import:
+  * umls.catalog: the catalog (database) to install the umls in.  
+  This defaults to the ytex database (db.name)
+  * umls.schema: the schema to install the umls in. 
+  Defaults to the ytex schema (ytex.schema)
+  * meta.tables: comma-delimited list of UMLS metathesaurus tables to import.  
+  Defaults to: MRCUI,MRDOC,MRSAB,MRSTY,MRCONSO,MRREL
+  * net.tables: comma-delimted list of UMLS semantic network tables to import.
+  Defaults to: SRDEF,SRFIL,SRFLD,SRSTR,SRSTRE1,SRSTRE2	
+		]]>
+	</description>
 	<property name="ytex.home" value=".." />
-	<property name="ytex.properties" value="${ytex.home}/config/desc/ytex.properties" />
-	<property file="${ytex.properties}" />
-	<include file="${ytex.home}/ytex.kernel/scripts/build-classpath.xml" />
-	<property name="rrf.home" value="E:/bio/umlsmysql/2010AB" />
-	<property name="rrf.tmp" value="E:/bio/umlsmysql/2010AB/META/unc" />
+	<include file="${ytex.home}/libs.system/build-classpath.xml" />
+	<property name="rrf.home" value="E:/bio/umlsrrf/2010AB" />
+	<property name="rrf.tmp" value="${rrf.home}/unc" />
 	<property name="umls.catalog" value="${db.name}" />
 	<property name="umls.schema" value="${db.schema}" />
-	<property name="umls.sqlcmd.line" value="-d ${umls.catalog} -E -S ${db.host} -v db_schema=${db.schema}" />
+	<property name="umls.sqlcmd.line" value="-d ${umls.catalog} -E -S ${db.host} -v db_schema=${umls.schema}" />
 	<!-- MRREL, MRSTY, MRXNS_ENG, MRXNW_ENG used by sujeevan -->
 	<!-- MRREL, MRSTY, MRDOC, MRSAB, MRCONSO, SRDEF used by UMLS::Interface -->
 	<property name="meta.tables" value="MRCUI,MRDOC,MRSAB,MRSTY,MRCONSO,MRREL" />
@@ -22,8 +67,8 @@
 				<echo>${rrf.tmp}/${rrf.base}.txt exists, assuming already imported, skipping</echo>
 			</then>
 			<else>
-				<mkdir dir="${rrf.tmp}"/>
-				<echo>${rrf.base}</echo>
+				<mkdir dir="${rrf.tmp}" />
+				<echo>converting ${rrf.base}</echo>
 				<java classname="ytex.kernel.RRFtoWideTab" fork="yes" classpathref="${kernel.cp}">
 					<arg value="${rrf.dir}/${rrf.base}${rrf.suffix}" />
 					<arg value="${rrf.tmp}/${rrf.base}.txt" />
@@ -31,7 +76,7 @@
 				<pathconvert property="rrf.base.txt" targetos="windows">
 					<path location="${rrf.tmp}/${rrf.base}.txt" />
 				</pathconvert>
-				<echo>${rrf.base.txt}</echo>
+				<echo>importing ${rrf.base.txt}</echo>
 				<exec executable="bcp" failonerror="yes">
 					<arg line="${umls.catalog}.${umls.schema}.${rrf.base} in ${rrf.base.txt} -S ${db.host} -w -T" />
 				</exec>
@@ -63,7 +108,7 @@
 	</target>
 	<target name="sqlcmd" description="execute sql script for ms sql server">
 		<echo>executing ${sqlcmd.script}</echo>
-		<exec executable="sqlcmd" failonerror="yes">
+		<exec executable="sqlcmd" failonerror="yes" dir="${basedir}/mssql/umls">
 			<arg line="${umls.sqlcmd.line} -i ${sqlcmd.script}" />
 		</exec>
 	</target>
@@ -71,7 +116,7 @@
 		<antcall target="sqlcmd">
 			<param name="sqlcmd.script" value="mssql_tables.sql" />
 		</antcall>
-		<antcall target="sqlcmd" description="execute mssql_net_tables.sql">
+		<antcall target="sqlcmd">
 			<param name="sqlcmd.script" value="mssql_net_tables.sql" />
 		</antcall>
 	</target>
@@ -80,5 +125,5 @@
 			<param name="sqlcmd.script" value="mssql_indexes.sql" />
 		</antcall>
 	</target>
-	<target name="all" depends="create.tables,import.meta.all,import.net.all,create.indices"/>
+	<target name="all" depends="create.tables,import.meta.all,import.net.all,create.indices" />
 </project>

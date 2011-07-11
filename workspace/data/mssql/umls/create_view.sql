@@ -3,7 +3,7 @@ as
 select c.fword, mrc.cui, mrc.str text
 from $(db_schema).umls_aui_fword c
 inner join $(umls_catalog).$(umls_schema).MRCONSO mrc on c.aui = mrc.aui
-where mrc.SAB in ( 'SNOMEDCT' )
+where mrc.SAB in ( 'SNOMEDCT','RXNORM' )
 and exists
 (
 	select *

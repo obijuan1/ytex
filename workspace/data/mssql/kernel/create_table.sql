@@ -14,7 +14,7 @@ create table $(db_schema).tfidf_docfreq (
   name varchar(255) not null default '',
   term varchar(50) not null,
   numdocs int not null default 0
-)
+);
 create unique index NK_docfreq on $(db_schema).tfidf_docfreq (name, term);
 
 create table $(db_schema).tfidf_termfreq (
@@ -37,12 +37,13 @@ CREATE TABLE  $(db_schema).stopword (
 
 create table $(db_schema).cv_fold (
   cv_fold_id int identity not null primary key,
-  name varchar(50) not null,
-  label varchar(50) not null,
-  run int null,
-  fold int null
+  corpus_name varchar(50) not null,
+  split_name varchar(50) not null default '',
+  label varchar(50) not null default '',
+  run int not null default 0,
+  fold int not null default 0
 );
-create unique index nk_cv_fold on $(db_schema).cv_fold(name, label, run, fold);
+create unique index nk_cv_fold on $(db_schema).cv_fold(corpus_name, split_name, label, run, fold);
 
 create table $(db_schema).cv_fold_instance (
   cv_fold_instance_id int identity not null primary key,
@@ -141,22 +142,25 @@ GO
  */
 create table $(db_schema).feature_eval (
   feature_eval_id int identity not null primary key,
-  name varchar(50) not null,
+  corpus_name varchar(50) not null,
+  featureset_name varchar(50) not null default '',
   label varchar(50) not null,
-  cv_fold_id int null,
+  cv_fold_id int not null default 0,
   type varchar(50) not null,
+  param1 varchar(50) not null default ''
 );
-create unique index nk_feature_eval on $(db_schema).feature_eval(name, label, cv_fold_id, type);
+create unique index nk_feature_eval on $(db_schema).feature_eval(corpus_name, featureset_name, label, cv_fold_id, type, param1);
 create index ix_feature_eval on $(db_schema).feature_eval(name, cv_fold_id, type);
 
 create table $(db_schema).feature_rank (
   feature_rank_id int identity not null primary key,
   feature_eval_id int not null foreign key references $(db_schema).feature_eval(feature_eval_id) on delete cascade,
   feature_name varchar(50) not null,
-  infogain float not null,
+  evaluation float not null,
   rank int not null
 );
 create unique index nk_feature_rank on $(db_schema).feature_rank(feature_eval_id, feature_name);
+create unique index nk2_feature_rank on $(db_schema).feature_rank(feature_eval_id, rank);
 create index fk_feature_eval on $(db_schema).feature_rank(feature_eval_id);
 
 /**

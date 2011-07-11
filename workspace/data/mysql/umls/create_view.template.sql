@@ -16,7 +16,7 @@ insert into v_snomed_fword_lookup
 select c.fword, mrc.cui, mrc.str text
 from umls_aui_fword c
 inner join @UMLS_SCHEMA@.MRCONSO mrc on c.aui = mrc.aui
-where  mrc.SAB in ( 'SNOMEDCT' )
+where  mrc.SAB in ( 'SNOMEDCT', 'RXNORM')
 and exists
 (
 	select *

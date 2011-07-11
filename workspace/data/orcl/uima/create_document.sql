@@ -2,6 +2,7 @@ create sequence document_id_sequence;
 create sequence anno_base_id_sequence;
 create sequence document_class_id_sequence;
 create sequence anno_onto_concept_id_sequence;
+create sequence anno_contain_id_sequence;
 
 CREATE TABLE document(
 	document_id int  NOT NULL,
@@ -210,3 +211,20 @@ create table anno_date (
 	primary key (anno_base_id),
 	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE 
 ) ;
+
+create table anno_contain (
+  anno_contain_id int,
+  parent_anno_base_id int not null,
+  parent_uima_type_id int not null,
+  child_anno_base_id int not null,
+  child_uima_type_id int not null,
+  primary key (anno_contain_id),
+  key ix_child_id (child_anno_base_id),
+  key ix_parent_id (parent_anno_base_id),
+  key IX_parent_id_child_type (parent_anno_base_id, child_uima_type_id),
+  key IX_child_id_parent_type (child_anno_base_id, parent_uima_type_id),
+  unique key nk_anno_contain (parent_anno_base_id, child_anno_base_id),
+  foreign key (parent_anno_base_id)
+		references anno_base(anno_base_id)
+		ON DELETE CASCADE
+);

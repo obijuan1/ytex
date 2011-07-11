@@ -86,6 +86,7 @@ STY,
 ATUI,
 coalesce(CVF,'')
 into outfile 'E:/projects/umls-new/mysql/MRSTY.RRF'
+fields terminated by '|' ESCAPED BY '' lines terminated by '\r\n'
 from umls.MRSTY sty
 inner join
 	(

@@ -242,7 +242,7 @@ drop table cv_fold_instance;
 create table cv_fold (
   cv_fold_id int auto_increment not null primary key,
   corpus_name varchar(50) not null comment 'corpus name',
-  split_name varchar(50) not null default '' comment 'subset name',
+  split_name varchar(50) not null default '' comment 'split/subset name',
   label varchar(50) not null default '' ,
   run int not null default 0,
   fold int not null default 0,
@@ -261,10 +261,10 @@ create table cv_fold_instance (
 create table feature_eval (
   feature_eval_id int auto_increment not null primary key,
   corpus_name varchar(50) not null comment 'corpus name',
-  featureset_name varchar(50) null comment 'feature set name',
-  label varchar(50) null comment 'label wrt features evaluated',
-  cv_fold_id int null comment 'fold wrt features evaluated',
-  param1 varchar(50) null comment 'meta-parameter for feature evaluation',
+  featureset_name varchar(50) not null default '' comment 'feature set name',
+  label varchar(50) not null default ''  comment 'label wrt features evaluated',
+  cv_fold_id int not null default 0 comment 'fold wrt features evaluated',
+  param1 varchar(50) not null default '' comment 'meta-parameter for feature evaluation',
   type varchar(50) not null comment 'metric used to evaluate features',
   unique index nk_feature_eval(corpus_name, featureset_name, label, cv_fold_id, param1, type),
   index ix_feature_eval(corpus_name, cv_fold_id, type)
