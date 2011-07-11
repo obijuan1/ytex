@@ -116,7 +116,7 @@
 		</for>
 	</target>
 	<target name="export.cutoff" description="export libsvm data for specified cutoff">
-		<property name="export.cutoff" value="0.03" />
+		<property name="export.cutoff" value="0.25" />
 		<property name="experiment.base" value="ontocuis" />
 		<property name="export.dir" value="libsvm/${experiment.base}/${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
@@ -124,6 +124,8 @@
 		<mkdir dir="${export.dir}" />
 		<filterset id="export.filterset">
 			<filter token="export.cutoff" value="${export.cutoff}" />
+			<filter token="corpus_name" value="i2b2.2008" />
+			<filter token="experiment" value="${experiment.base}" />
 		</filterset>
 		<!-- generate export property file -->
 		<copy file="libsvm/${experiment.base}/export-bow.template.xml" tofile="${export.dir}/export-bow.xml" overwrite="yes">
@@ -133,7 +135,7 @@
 			<filterset refid="export.filterset" />
 		</copy>
 		<!-- generate and run script to insert zero vectors for the cutoff  -->
-		<copy file="libsvm/${experiment.base}/insert_hotspot_zv.template.sql" tofile="${export.dir}/insert_hotspot_zv.sql" overwrite="yes">
+		<copy file="data/insert_hotspot_zv.template.sql" tofile="${export.dir}/insert_hotspot_zv.sql" overwrite="yes">
 			<filterset refid="export.filterset" />
 		</copy>
 		<antcall target="mysql">
