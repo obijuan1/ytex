@@ -1,3 +1,21 @@
+<!--
+* annotate documents
+* evaluate features
+	** evaluate word features - InfogainEvaluator
+	** evaluate concepts + words outside concepts - InfogainEvaluator
+	** evaluate concepts w/ ontology + words outside concepts - CorpusEvaluator + CorpusLabelEvaluator
+	** bin w/ binary (0/1), and w/ negation detection (-1/0/1)
+* identify hotspots for each feature set
+* evaluate bag-of-words
+	** export bag of words for range of hotspot cutoffs
+		*** identify zero vectors
+		*** export data - binary indicator vs. tfidf
+		*** run libsvm
+		*** construct combined truth table - zv + classifier results
+* evaluate kernel
+	** semantic kernel
+	** context-sensitive semantic kernel
+-->
 <project name="i2b2">
 	<property environment="env" />
 	<property name="ytex.home" value=".." />
@@ -10,7 +28,7 @@
 	<property name="eval.kernel.thread" value="1" />
 	<property name="eval.kernel.parallel" value="no" />
 
-	<property name="export.cutoffs" value="0.03,0.05,0.07,0.09,0.1" />
+	<property name="export.cutoffs" value="0.05,0.07,0.09,0.1,0.15,0.2" />
 	<!-- property name="export.cutoffs" value="0.07" / -->
 
 	<path id="i2b2.cp">
@@ -82,11 +100,25 @@
 			</sequential>
 		</for>
 	</target>
-
+	<target name="ontocuis.export" description="export libsvm data for ontocuis">
+		<antcall target="export.cutoffs">
+			<param name="kernel.experiment" value="ontocuis"/>
+		</antcall>
+	</target>
+	<target name="export.cutoffs" description="export libsvm data for bocuis">
+		<for list="${export.cutoffs}" param="export.cutoff">
+			<sequential>
+				<antcall target="export.cutoff">
+					<param name="export.cutoff" value="@{export.cutoff}" />
+					<param name="experiment.base" value="${kernel.experiment}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
 	<target name="export.cutoff" description="export libsvm data for specified cutoff">
 		<property name="export.cutoff" value="0.03" />
-		<property name="experiment.base" value="bocuis" />
-		<property name="export.dir" value="libsvm/${experiment.base}${export.cutoff}" />
+		<property name="experiment.base" value="ontocuis" />
+		<property name="export.dir" value="libsvm/${experiment.base}/${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
 		<delete dir="${export.dir}" quiet="yes" />
 		<mkdir dir="${export.dir}" />
@@ -95,6 +127,9 @@
 		</filterset>
 		<!-- generate export property file -->
 		<copy file="libsvm/${experiment.base}/export-bow.template.xml" tofile="${export.dir}/export-bow.xml" overwrite="yes">
+			<filterset refid="export.filterset" />
+		</copy>
+		<copy file="libsvm/${experiment.base}/kernel.template.properties" tofile="${export.dir}/kernel.properties" overwrite="yes">
 			<filterset refid="export.filterset" />
 		</copy>
 		<!-- generate and run script to insert zero vectors for the cutoff  -->
