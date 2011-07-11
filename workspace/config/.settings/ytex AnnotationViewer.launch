@@ -9,13 +9,13 @@
 </listAttribute>
 <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="true"/>
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
-<mapEntry key="PATH" value="${env_var:UIMA_HOME}/uimacpp/bin;${env_var:UIMA_HOME}/uimacpp/examples/tutorial/src;${env_var:PATH};${workspace_loc}/libs.system/sqljdbc_3.0/enu/auth/x86"/>
-<mapEntry key="LD_LIBRARY_PATH" value="${env_var:UIMA_HOME}/uimacpp/lib:${env_var:UIMA_HOME}/uimacpp/examples/tutorial/src:${env_var:LD_LIBRARY_PATH}"/>
 <mapEntry key="DYLD_LIBRARY_PATH" value="${env_var:UIMA_HOME}/uimacpp/lib:${env_var:UIMA_HOME}/uimacpp/examples/tutorial/src:${env_var:DYLD_LIBRARY_PATH}"/>
+<mapEntry key="LD_LIBRARY_PATH" value="${env_var:UIMA_HOME}/uimacpp/lib:${env_var:UIMA_HOME}/uimacpp/examples/tutorial/src:${env_var:LD_LIBRARY_PATH}"/>
+<mapEntry key="PATH" value="${env_var:UIMA_HOME}/uimacpp/bin;${env_var:UIMA_HOME}/uimacpp/examples/tutorial/src;${env_var:PATH};${workspace_loc}/libs.system/sqljdbc_3.0/enu/auth/x86"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.debug.ui.target_debug_perspective" value="perspective_default"/>
 <stringAttribute key="org.eclipse.debug.ui.target_run_perspective" value="perspective_default"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.apache.uima.tools.AnnotationViewerMain"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="config"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="build"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g &quot;-Duima.tools.cvd.manpath=${env_var:UIMA_HOME}/docs/html&quot; &quot;-Djava.util.logging.config.file=${env_var:UIMA_HOME}/config/Logger.properties&quot; -DVNS_HOST=localhost"/>
 </launchConfiguration>
