@@ -31,7 +31,7 @@ from
 	left join
 	(
 		select hotspot_instance_id, count(*) fc
-		from hotspot_feature_eval e on hi.hotspot_instance_id = e.hotspot_instance_id
+		from hotspot_feature_eval e
 		where e.evaluation > @export.cutoff@
 		group by hotspot_instance_id
 	) hfe on hfe.hotspot_instance_id = hi.hotspot_instance_id
