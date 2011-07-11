@@ -85,14 +85,13 @@
 
 	<target name="clean.dist">
 		<delete dir="${dist.home}" quiet="yes" />
-		<mkdir dir="${ytex.dist.home}/lib" />
 		<mkdir dir="${ytex.dist.home}/config/desc" />
 		<mkdir dir="${ytex.dist.home}/web" />
 	</target>
 	<target name="build.ytex.uima">
 		<path id="cp.ytex.uima">
 			<path refid="cp.all" />
-			<fileset dir="${ytex.dist.home}/lib" includes="ytex.model.jar" />
+			<fileset dir="${ytex.dist.home}/libs.system" includes="ytex.model.jar" />
 		</path>
 		<antcall target="compile" inheritRefs="true">
 			<param name="project.name" value="ytex.uima" />
@@ -107,7 +106,7 @@
 	<target name="build.ytex.kernel">
 		<path id="cp.ytex.kernel">
 			<path refid="cp.all" />
-			<fileset dir="${ytex.dist.home}/lib" includes="ytex.model.jar" />
+			<fileset dir="${ytex.dist.home}/libs.system" includes="ytex.model.jar" />
 		</path>
 		<antcall target="compile" inheritRefs="true">
 			<param name="project.name" value="ytex.kernel" />
@@ -164,6 +163,7 @@
 	<target name="copy.scripts">
 		<copy todir="${ytex.dist.home}">
 			<fileset dir=".">
+				<include name="*.txt" />
 				<include name="*.cmd" />
 				<include name="*.sh" />
 				<include name="*.profile" />
@@ -171,8 +171,8 @@
 			</fileset>
 			<fileset dir="../" includes="ytex.kernel/scripts/*.*" />
 		</copy>
-		<copy todir="${ytex.dist.home}/lib">
-			<fileset dir="../libs.system" includes="**/*.*" excludes="**/.svn/**/*.*,*.*,.settings/**/*.*" />
+		<copy todir="${ytex.dist.home}/">
+			<fileset dir=".." includes="libs.system/**/*.*" excludes="**/.svn/**/*.*,*.*,.settings/**/*.*" />
 		</copy>
 	</target>
 	<target name="copy.examples">
@@ -216,7 +216,7 @@
 				<exclude name="**/.svn/**/*.*" />
 			</fileset>
 		</copy>
-		<jar destfile="${ytex.dist.home}/lib/${project.name}.jar" basedir="${project.bin.home}" excludes="**/.svn/**/*.*" />
+		<jar destfile="${ytex.dist.home}/libs.system/${project.name}.jar" basedir="${project.bin.home}" excludes="**/.svn/**/*.*" />
 	</target>
 	<target name="build.ytex.web">
 		<property name="ytex.web.dir" value="${ytex.dist.home}/web/webapps/ytex.web" />
@@ -231,7 +231,7 @@
 		<mkdir dir="${ytex.web.classes.dir}" />
 		<javac srcdir="../ytex.web/src/main/java" destdir="${ytex.web.classes.dir}" debug="yes">
 			<classpath>
-				<fileset dir="${ytex.dist.home}/lib">
+				<fileset dir="${ytex.dist.home}/libs.system">
 					<include name="ytex.model.jar" />
 				</fileset>
 				<path refid="cp.ytex" />
@@ -249,7 +249,7 @@
 			</fileset>
 		</copy>
 		<copy todir="${ytex.web.dir}/WEB-INF/lib">
-			<fileset dir="${ytex.dist.home}/lib">
+			<fileset dir="${ytex.dist.home}/libs.system">
 				<include name="ytex.model.jar" />
 			</fileset>
 		</copy>

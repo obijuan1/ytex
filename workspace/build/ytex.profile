@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# put this script in your home directory
-# other ytex scripts call this script
+# this script sets environment variables needed to run ytex
+# other ytex scripts depend on this script being called first
 
 ################################
 # customize these variables to match your environment
@@ -34,24 +34,27 @@ export CATALINA_HOME
 MYSQL_HOME=/usr/bin
 export MYSQL_HOME
 
-#we have a tomcat configuration in this directory
+# we have a tomcat configuration in this directory
 CATALINA_BASE=${YTEX_HOME}/web
 export CATALINA_BASE
 
-#external libraries are in the ytex.web directory
+# ytex libraries and jdbc drivers
+YTEX_LIB_SYS_HOME=${YTEX_LIB_SYS_HOME}/libs.system
+
+# external libraries are in the ytex.web directory
 YTEX_LIB_HOME=${YTEX_HOME}/web/webapps/ytex.web/WEB-INF/lib
 
 YTEX_MAVERIC_HOME=${YTEX_HOME}/maveric
 
 # jdbc driver classpath
-JDBC_CP=${YTEX_HOME}/lib/mysql-connector-java-5.1.9/mysql-connector-java-5.1.9-bin.jar
-JDBC_CP=${JDBC_CP}:${YTEX_HOME}/lib/sqljdbc_3.0/enu/sqljdbc4.jar
-JDBC_CP=${JDBC_CP}:${YTEX_HOME}/lib/oracle11.2.0.1.0/ojdbc6.jar
+JDBC_CP=${YTEX_LIB_SYS_HOME}/mysql-connector-java-5.1.9/mysql-connector-java-5.1.9-bin.jar
+JDBC_CP=${JDBC_CP}:${YTEX_LIB_SYS_HOME}/sqljdbc_3.0/enu/sqljdbc4.jar
+JDBC_CP=${JDBC_CP}:${YTEX_LIB_SYS_HOME}/oracle11.2.0.1.0/ojdbc6.jar
 
 # ytex classpath
 YTEX_CP=
 # add all jars from the lib directory
-for file in ${YTEX_HOME}/lib/*.jar; do YTEX_CP=${YTEX_CP}:${file}; done
+for file in ${YTEX_LIB_SYS_HOME}/*.jar; do YTEX_CP=${YTEX_CP}:${file}; done
 # add all jars from the WEB-INF/lib directory
 for file in ${YTEX_LIB_HOME}/*.jar; do YTEX_CP=${YTEX_CP}:${file}; done
 
@@ -60,7 +63,7 @@ TOMCAT_CP=${JDBC_CP}:${YTEX_HOME}/config/desc
 export TOMCAT_CP
 
 # add configuration dependencies
-ARC_CP=${TOMCAT_CP}:${YTEX_HOME}/lib/ctakes-patches.jar
+ARC_CP=${TOMCAT_CP}
 ARC_CP=${ARC_CP}:${YTEX_MAVERIC_HOME}/dest
 ARC_CP=${ARC_CP}:${YTEX_MAVERIC_HOME}/resources
 ARC_CP=${ARC_CP}:${YTEX_MAVERIC_HOME}/ext/mavericPipeline-1.0.0.jar

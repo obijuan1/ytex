@@ -27,22 +27,24 @@
 @rem you should not have to change anything below this line
 @rem -------------------------------------------
 
+@set YTEX_LIB_SYS_HOME=%YTEX_HOME%\libs.system
+
 @rem where ant is installed
 @rem downloaded from http://ant.apache.org/bindownload.cgi
 @set ANT_HOME=%YTEX_HOME%\..\apache-ant-1.8.0
 
 @rem MS SQL server jdbc driver directory
 @rem downloaded from http://www.microsoft.com/downloads/details.aspx?displaylang=en&FamilyID=a737000d-68d0-4531-b65d-da0f2a735707
-@set SQLJDBC_HOME=%YTEX_HOME%\lib\sqljdbc_3.0
+@set SQLJDBC_HOME=%YTEX_LIB_SYS_HOME%\sqljdbc_3.0
 
 @rem add JDBC dependencies
 @set JDBC_CP=%SQLJDBC_HOME%\enu\sqljdbc4.jar
 
 @rem MySQL JDBC driver 
-@set JDBC_CP=%JDBC_CP%;%YTEX_HOME%\lib\mysql-connector-java-5.1.9\mysql-connector-java-5.1.9-bin.jar
+@set JDBC_CP=%JDBC_CP%;%YTEX_LIB_SYS_HOME%\mysql-connector-java-5.1.9\mysql-connector-java-5.1.9-bin.jar
 
 @rem Oracle JDBC driver 
-@set JDBC_CP=%JDBC_CP%;%YTEX_HOME%\lib\oracle11.2.0.1.0\ojdbc6.jar
+@set JDBC_CP=%JDBC_CP%;%YTEX_LIB_SYS_HOME%\oracle11.2.0.1.0\ojdbc6.jar
 
 @rem tomcat installation directory
 @set CATALINA_HOME=%YTEX_HOME%\..\apache-tomcat-6.0.26
@@ -109,9 +111,9 @@
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\commons-cli-1.2.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\weka.jar
 @set YTEX_CP=%YTEX_CP%;%YTEX_LIB_HOME%\ytex.model.jar
-@set YTEX_CP=%YTEX_CP%;%YTEX_HOME%\lib\ytex.kernel.jar
-@set YTEX_CP=%YTEX_CP%;%YTEX_HOME%\lib\ytex.negex.jar
-@set YTEX_CP=%YTEX_CP%;%YTEX_HOME%\lib\ytex.uima.jar
+@set YTEX_CP=%YTEX_CP%;%YTEX_LIB_SYS_HOME%\ytex.kernel.jar
+@set YTEX_CP=%YTEX_CP%;%YTEX_LIB_SYS_HOME%\ytex.negex.jar
+@set YTEX_CP=%YTEX_CP%;%YTEX_LIB_SYS_HOME%\ytex.uima.jar
 
 @rem tomcat classpath
 @set TOMCAT_CP=%JDBC_CP%;%YTEX_HOME%\config\desc
@@ -121,7 +123,7 @@
 @rem add maveric arc and its dependencies
 @rem add patches before the rest of the maveric/ctakes libraries
 @set ARC_CP=%TOMCAT_CP%
-@set ARC_CP=%ARC_CP%;%YTEX_HOME%\lib\ctakes-patches.jar
+@set ARC_CP=%ARC_CP%;%YTEX_LIB_SYS_HOME%\ctakes-patches.jar
 @set ARC_CP=%ARC_CP%;%YTEX_MAVERIC_HOME%\dest
 @set ARC_CP=%ARC_CP%;%YTEX_MAVERIC_HOME%\resources
 @set ARC_CP=%ARC_CP%;%YTEX_MAVERIC_HOME%\lib\log4j-1.2.14.jar

@@ -1,10 +1,29 @@
 <project name="build-setup" default="help">
-	<taskdef resource="net/sf/antcontrib/antlib.xml" />
+	<description><![CDATA[
+Setup the ytex environment; does the following:
+  * setup lvg
+  * generate configuration files
+  * create database tables
+You must define the ytex.home variable for this script using the -D option:
+ant -Dytex.home=c:\java\clinicalnlp\ytex -file build-setup.xml
+
+Prior to executing this script, download lvg2010lite.tgz.
+To use this in a 'real' environment, you will need an installation of UMLS,
+or you can ask us nicely for a UMLS database dump.
+
+Main target is 'all', which does the following:
+  * setup.lvg unpack the lvg to the appropriate directory
+  * templateToConfig generates configuration files from templates. 
+  * setupDatabase call data/build.xml to setup the database.
+  * setup.ytex.web generate configuration files for ytex web application
+
+For setting up a development environment, you should execute setup.lvg 
+and templateToConfig
+		
+	]]></description>
 	<!-- override these variables using eclipse settings/command line -->
-	<!-- <property name="maveric.home" value="C:/java/MavericArcApp-1.0.0" /> -->
-	<property name="ytex.home" value="../" />
-	<property name="ytex.properties" value="${ytex.home}/config/desc/ytex.properties" />
-	<property file="${ytex.properties}" />
+	<property name="ytex.home" value=".." />
+	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="lvg.download.dir" value="${ytex.home}/.." />
 	<property name="lvg.basename" value="lvg2010lite" />
 	<property name="lvg.filename" value="${lvg.basename}.tgz" />
@@ -115,23 +134,24 @@ Modify to match your configuration.
 		</copy>
 	</target>
 	<target name="setup.lvg" description="unpack lvg data directory to resources folder">
-		<if>
-			<available file="${lvg.tgz}" />
-			<then>
-				<untar src="${lvg.tgz}" compression="gzip" dest="${ytex.home}/maveric/resources/lvg">
-					<patternset>
-						<include name="${lvg.basename}/data/**/*.*" />
-						<exclude name="${lvg.basename}/data/**/lvg.properties" />
-					</patternset>
-				</untar>
-				<move file="${ytex.home}/maveric/resources/lvg/${lvg.basename}/data" todir="${ytex.home}/maveric/resources/lvg" />
-				<delete dir="${ytex.home}/maveric/resources/lvg/${lvg.basename}" />
-			</then>
-			<else>
-				<echo>${lvg.tgz} not available - please execute the setup.lvg.all target to download and setup lvg</echo>
-			</else>
-		</if>
+		<available file="${lvg.tgz}" property="lvg.available"/>
+		<antcall target="setup.lvg.unzip" />
+		<antcall target="setup.lvg.warn" />
 	</target>
+	<target name="setup.lvg.unzip" if="lvg.available">
+		<untar src="${lvg.tgz}" compression="gzip" dest="${ytex.home}/maveric/resources/lvg">
+			<patternset>
+				<include name="${lvg.basename}/data/**/*.*" />
+				<exclude name="${lvg.basename}/data/**/lvg.properties" />
+			</patternset>
+		</untar>
+		<move file="${ytex.home}/maveric/resources/lvg/${lvg.basename}/data" todir="${ytex.home}/maveric/resources/lvg" />
+		<delete dir="${ytex.home}/maveric/resources/lvg/${lvg.basename}" />
+	</target>
+	<target name="setup.lvg.warn" unless="lvg.available">
+		<echo>${lvg.tgz} not available - please execute the setup.lvg.all target to download and setup lvg</echo>
+	</target>
+	
 	<target name="setup.lvg.all" description="download and unpack lvg" depends="download.lvg,setup.lvg">
 		<echo>LVG setup complete.  You can remove ${lvg.tgz}</echo>
 	</target>
