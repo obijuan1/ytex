@@ -1,8 +1,8 @@
-#Fri Apr 30 08:36:55 EDT 2010
+#Fri May 20 11:44:43 EDT 2011
 DELEGATES_PREFERENCE=delegateValidatorList
 USER_BUILD_PREFERENCE=enabledBuildValidatorList
 USER_MANUAL_PREFERENCE=enabledManualValidatorList
-USER_PREFERENCE=overrideGlobalPreferencestruedisableAllValidationfalseversion1.2.104.v200911120201
+USER_PREFERENCE=overrideGlobalPreferencestruedisableAllValidationfalseversion1.2.201.v201101270100
 eclipse.preferences.version=1
 override=true
 suspend=false
@@ -11,6 +11,7 @@ vals/org.eclipse.jst.jsp.core.JSPBatchValidator/global=FF01
 vals/org.eclipse.jst.jsp.core.JSPContentValidator/global=FF01
 vals/org.eclipse.jst.jsp.core.TLDValidator/global=FF01
 vals/org.eclipse.wst.dtd.core.dtdDTDValidator/global=FF01
+vals/org.eclipse.wst.dtd.core.dtdDTDValidator/groups=0107include03111contentType134org.eclipse.wst.dtd.core.dtdsourceT07fileext03dtdF07fileext03entF0107exclude0107fileext03modF
 vals/org.eclipse.wst.html.ui.HTMLValidator/global=FF01
 vals/org.eclipse.wst.wsdl.validation.wsdl/global=FF02158org.eclipse.wst.wsdl.validation.internal.eclipse.Validator
 vals/org.eclipse.wst.xml.core.xml/global=FF03
