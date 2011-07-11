@@ -31,7 +31,7 @@
 	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/weka.jar" sourcepath="C:/java/Weka-3-6/weka-src.jar"/>
 	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/com.springsource.org.apache.commons.pool-1.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/commons-beanutils-1.8.3.jar"/>
-	<classpathentry kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/commons-dbcp-1.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/commons-dbcp-1.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/jchronic-0.2.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/commons-cli-1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
