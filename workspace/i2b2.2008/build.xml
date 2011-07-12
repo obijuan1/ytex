@@ -301,6 +301,8 @@
 		</antcall>
 	</target>
 	-->
+	<target name="kernel.all" depends="kernel.eval.all,kernel.export.all">
+	</target>
 	<target name="kernel.iter.label" description="execute kernel.iter.target for each label in label.properties">
 		<property file="./tree/${tree.name}/label.properties" />
 		<for list="${labels}" param="export.label">
@@ -432,16 +434,6 @@
 			<jvmarg value="-Xms1g" />
 		</java>
 	</target>
-
-	<target name="kernel.cv.all" description="run libsvm ant script. need to define libsvm.experiment via -D option for this to work on linux">
-		<property name="libsvm.experiment" value="${experiment.base}${export.cutoff}" />
-		<ant antfile="build.xml" dir="../ytex.kernel/libsvm" target="cv.all.folds.local">
-			<property name="libsvm.experiment" value="${libsvm.experiment}" />
-		</ant>
-	</target>
-	<!--
-	<target name="kernel.experiment.all" depends="export.tree.cutoff,eval.kernel.cutoff,kernel.export.libsvm.cutoff,kernel.cv.all" description="evaluate kernel, export, run libsvm. must define export.cutoff, export.tree.basedir, experiment.base, libsvm.experiment" />
-	-->
 
 	<!--
 	for some reason this isn't working on linux
