@@ -30,4 +30,17 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 		<property name="cacheManager" ref="cacheManager" />
 	</bean>
+	<bean id="abstractMainSuiSemanticTypeKernel" abstract="true"
+		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
+		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
+	</bean>
+	<bean id="abstractTuiSemanticTypeKernel" abstract="true"
+		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
+		<property name="mode" value="TUI" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
+	</bean>
 </beans>

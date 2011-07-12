@@ -11,6 +11,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.kernel.DBUtil;
 import ytex.kernel.model.KernelEvaluation;
 import ytex.kernel.model.KernelEvaluationInstance;
 
@@ -138,18 +139,21 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	}
 
 	@Override
-	public KernelEvaluation storeKernelEval(final KernelEvaluation kernelEvaluation) {
-		KernelEvaluation kEval = getKernelEval(kernelEvaluation.getName(),
+	public KernelEvaluation storeKernelEval(
+			final KernelEvaluation kernelEvaluation) {
+		KernelEvaluation kEval = getKernelEval(
+				kernelEvaluation.getCorpusName(),
 				kernelEvaluation.getExperiment(), kernelEvaluation.getLabel(),
-				kernelEvaluation.getFoldId());
+				kernelEvaluation.getFoldId(), kernelEvaluation.getParam1(),
+				kernelEvaluation.getParam2());
 		if (kEval == null) {
 			txTemplate.execute(new TransactionCallback<Object>() {
 
 				@Override
 				public Object doInTransaction(TransactionStatus txStatus) {
 					try {
-						getSessionFactory().getCurrentSession()
-								.save(kernelEvaluation);
+						getSessionFactory().getCurrentSession().save(
+								kernelEvaluation);
 					} catch (Exception e) {
 						log.warn(
 								"couldn't save kernel evaluation, maybe somebody else did. try to retrieve kernel eval",
@@ -159,22 +163,24 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 					return null;
 				}
 			});
-			kEval = getKernelEval(kernelEvaluation.getName(),
+			kEval = getKernelEval(kernelEvaluation.getCorpusName(),
 					kernelEvaluation.getExperiment(),
-					kernelEvaluation.getLabel(),
-					kernelEvaluation.getFoldId());
+					kernelEvaluation.getLabel(), kernelEvaluation.getFoldId(),
+					kernelEvaluation.getParam1(), kernelEvaluation.getParam2());
 		}
 		return kEval;
 	}
 
 	public KernelEvaluation getKernelEval(String name, String experiment,
-			String label, int foldId) {
+			String label, int foldId, double param1, String param2) {
 		Query q = this.getSessionFactory().getCurrentSession()
 				.getNamedQuery("getKernelEval");
-		q.setString("name", name);
-		q.setString("experiment", experiment);
-		q.setString("label", label);
+		q.setString("corpusName", name);
+		q.setString("experiment", DBUtil.nullToEmptyString(experiment));
+		q.setString("label", DBUtil.nullToEmptyString(label));
 		q.setInteger("foldId", foldId);
+		q.setDouble("param1", param1);
+		q.setString("param2", DBUtil.nullToEmptyString(param2));
 		return (KernelEvaluation) q.uniqueResult();
 	}
 }

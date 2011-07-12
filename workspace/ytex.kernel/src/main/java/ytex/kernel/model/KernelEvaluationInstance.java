@@ -13,9 +13,11 @@ public class KernelEvaluationInstance implements Serializable {
 	private KernelEvaluation kernelEvaluation;
 
 	private double similarity;
+
 	public KernelEvaluationInstance() {
 		super();
 	}
+
 	public KernelEvaluationInstance(KernelEvaluation kernelEvaluation,
 			int instanceId1, int instanceId2, double similarity) {
 		super();
@@ -38,7 +40,8 @@ public class KernelEvaluationInstance implements Serializable {
 			return false;
 		if (instanceId2 != other.instanceId2)
 			return false;
-		if (!kernelEvaluation.equals(kernelEvaluation.getKernelEvaluationId()))
+		if (kernelEvaluation.getKernelEvaluationId() != other.kernelEvaluation
+				.getKernelEvaluationId())
 			return false;
 		return true;
 	}

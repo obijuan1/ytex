@@ -34,6 +34,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.kernel.DBUtil;
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.kernel.model.KernelEvaluation;
 import ytex.kernel.model.KernelEvaluationInstance;
@@ -166,8 +167,26 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	private String experiment;
 	private String name;
-	private String label = "";
+	private String label = DBUtil.getEmptyString();
+	private double param1 = 0;
+	private String param2 = DBUtil.getEmptyString();
 	private int foldId = 0;
+
+	public double getParam1() {
+		return param1;
+	}
+
+	public void setParam1(double param1) {
+		this.param1 = param1;
+	}
+
+	public String getParam2() {
+		return param2;
+	}
+
+	public void setParam2(String param2) {
+		this.param2 = param2;
+	}
 
 	private SimpleJdbcTemplate simpleJdbcTemplate;
 	private String testInstanceIDQuery;
@@ -184,7 +203,9 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		kernelEvaluation.setExperiment(this.getExperiment());
 		kernelEvaluation.setFoldId(this.getFoldId());
 		kernelEvaluation.setLabel(this.getLabel());
-		kernelEvaluation.setName(this.getName());
+		kernelEvaluation.setCorpusName(this.getName());
+		kernelEvaluation.setParam1(getParam1());
+		kernelEvaluation.setParam2(getParam2());
 		kernelEvaluation = this.kernelEvaluationDao
 				.storeKernelEval(kernelEvaluation);
 		List<Integer> documentIds = txTemplate

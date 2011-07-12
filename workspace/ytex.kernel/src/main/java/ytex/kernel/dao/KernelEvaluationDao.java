@@ -33,6 +33,6 @@ public interface KernelEvaluationDao {
 			KernelEvaluation kernelEvaluation);
 
 	public abstract KernelEvaluation getKernelEval(String name, String experiment,
-			String label, int foldId);
+			String label, int foldId, double param1, String param2);
 
 }

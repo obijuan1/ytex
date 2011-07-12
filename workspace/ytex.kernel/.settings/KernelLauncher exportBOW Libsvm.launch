@@ -7,7 +7,7 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.KernelLauncher"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-exportBagOfWords export-bow.xml -exportType libsvm"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ytex.kernel"/>
-<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:i2b2.2008/libsvm/5}"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-beans filteredlin_1_0.35.xml -evalKernel -loadInstanceMap tree_1_0.35.obj -mod 2 -slice 0"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="build"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:i2b2.2008/tree/vector}"/>
 </launchConfiguration>

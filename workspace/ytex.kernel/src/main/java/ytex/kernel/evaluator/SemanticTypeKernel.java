@@ -43,54 +43,6 @@ public class SemanticTypeKernel implements Kernel {
 	private static final String MAINSUI = "MAINSUI";
 	private static final String TUI = "TUI";
 
-//	private SimpleJdbcTemplate simpleJdbcTemplate;
-	private JdbcTemplate jdbcTemplate;
-	private Map<String, Set<String>> cuiTuiMap = null;
-	private Map<String, Set<Integer>> cuiMainSuiMap = new HashMap<String, Set<Integer>>(
-			cuiTuiMap.size());
-	private PlatformTransactionManager transactionManager;
-	private DataSource dataSource;
-	private String corpusName;
-	private String cuiTuiQuery;
-	private ConceptSimilarityService conceptSimilarityService;
-
-	public String getCuiTuiQuery() {
-		return cuiTuiQuery;
-	}
-
-	public void setCuiTuiQuery(String cuiTuiQuery) {
-		this.cuiTuiQuery = cuiTuiQuery;
-	}
-
-	private String mode = "MAINSUI";
-
-	public String getMode() {
-		return mode;
-	}
-
-	public void setMode(String mode) {
-		this.mode = mode;
-	}
-
-	public DataSource getDataSource() {
-		return dataSource;
-	}
-
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
-//		this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
-		this.jdbcTemplate = new JdbcTemplate(dataSource);
-	}
-
-	public PlatformTransactionManager getTransactionManager() {
-		return transactionManager;
-	}
-
-	public void setTransactionManager(
-			PlatformTransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
-	}
-
 	public static int getMainSem(int sui) {
 		switch (sui) {
 		case 52:
@@ -250,39 +202,18 @@ public class SemanticTypeKernel implements Kernel {
 		return -1;
 	}
 
-	public Set<Integer> tuiToMainSui(Set<String> tuis) {
-		Set<Integer> mainSui = new HashSet<Integer>(tuis.size());
-		for (String tui : tuis) {
-			mainSui.add(getMainSem(Integer.parseInt(tui.substring(1))));
-		}
-		return mainSui;
-	}
+	private ConceptSimilarityService conceptSimilarityService;
+	private String corpusName;
+	private Map<String, Set<Integer>> cuiMainSuiMap = new HashMap<String, Set<Integer>>();
+	private Map<String, Set<String>> cuiTuiMap = null;
+	private String cuiTuiQuery;
+	private DataSource dataSource;
+	// private SimpleJdbcTemplate simpleJdbcTemplate;
+	private JdbcTemplate jdbcTemplate;
 
-	/**
-	 * init cui-tui map from query
-	 */
-	public void initCuiTuiMapFromQuery() {
-		this.jdbcTemplate.query(this.cuiTuiQuery, new RowCallbackHandler() {
-			// don't duplicate tui strings to save memory
-			Map<String, String> tuiMap = new HashMap<String, String>();
+	private String mode = "MAINSUI";
 
-			@Override
-			public void processRow(ResultSet rs) throws SQLException {
-				String cui = rs.getString(1);
-				String tui = rs.getString(2);
-				addCuiTuiToMap(tuiMap, cui, tui);
-			}
-		});
-	}
-
-	/**
-	 * init the cui -> 'main sui' map.
-	 */
-	private void initCuiMainSuiMap() {
-		for (Map.Entry<String, Set<String>> cuiTui : cuiTuiMap.entrySet()) {
-			cuiMainSuiMap.put(cuiTui.getKey(), tuiToMainSui(cuiTui.getValue()));
-		}
-	}
+	private PlatformTransactionManager transactionManager;
 
 	private void addCuiTuiToMap(Map<String, String> tuiMap, String cui,
 			String tui) {
@@ -314,23 +245,71 @@ public class SemanticTypeKernel implements Kernel {
 		}
 	}
 
+	public ConceptSimilarityService getConceptSimilarityService() {
+		return conceptSimilarityService;
+	}
+
+	public String getCorpusName() {
+		return corpusName;
+	}
+
+	public String getCuiTuiQuery() {
+		return cuiTuiQuery;
+	}
+
+	public DataSource getDataSource() {
+		return dataSource;
+	}
+
+	public String getMode() {
+		return mode;
+	}
+
+	public PlatformTransactionManager getTransactionManager() {
+		return transactionManager;
+	}
+
+	public void init() {
+		TransactionTemplate t = new TransactionTemplate(this.transactionManager);
+		t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
+		t.execute(new TransactionCallback<Object>() {
+			@Override
+			public Object doInTransaction(TransactionStatus arg0) {
+				if (cuiTuiQuery != null)
+					initCuiTuiMapFromQuery();
+				else {
+					cuiTuiMap = conceptSimilarityService.getCuiTuiMap();
+				}
+				initCuiMainSuiMap();
+				return null;
+			}
+		});
+	}
+
 	/**
-	 * 
-	 * @param o1
-	 *            cui
-	 * @param o2
-	 *            cui
-	 * @return concepts have overlapping tuis, return 1, else return 0
+	 * init the cui -> 'main sui' map.
 	 */
-	private double tuiCheck(Object o1, Object o2) {
-		Set<String> tuis1 = this.cuiTuiMap.get((String) o1);
-		Set<String> tuis2 = this.cuiTuiMap.get((String) o2);
-		if (tuis1 != null && tuis2 != null
-				&& !Collections.disjoint(tuis1, tuis2)) {
-			return 1;
-		} else {
-			return 0;
+	private void initCuiMainSuiMap() {
+		for (Map.Entry<String, Set<String>> cuiTui : cuiTuiMap.entrySet()) {
+			cuiMainSuiMap.put(cuiTui.getKey(), tuiToMainSui(cuiTui.getValue()));
 		}
+	}
+
+	/**
+	 * init cui-tui map from query
+	 */
+	public void initCuiTuiMapFromQuery() {
+		this.jdbcTemplate.query(this.cuiTuiQuery, new RowCallbackHandler() {
+			// don't duplicate tui strings to save memory
+			Map<String, String> tuiMap = new HashMap<String, String>();
+
+			@Override
+			public void processRow(ResultSet rs) throws SQLException {
+				String cui = rs.getString(1);
+				String tui = rs.getString(2);
+				addCuiTuiToMap(tuiMap, cui, tui);
+			}
+		});
 	}
 
 	/**
@@ -354,29 +333,59 @@ public class SemanticTypeKernel implements Kernel {
 		}
 	}
 
-	public void init() {
-		TransactionTemplate t = new TransactionTemplate(this.transactionManager);
-		t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
-		t.execute(new TransactionCallback<Object>() {
-			@Override
-			public Object doInTransaction(TransactionStatus arg0) {
-				if (cuiTuiQuery != null)
-					initCuiTuiMapFromQuery();
-				else {
-					cuiTuiMap = conceptSimilarityService.getCuiTuiMap();
-				}
-				initCuiMainSuiMap();
-				return null;
-			}
-		});
+	public void setConceptSimilarityService(
+			ConceptSimilarityService conceptSimilarityService) {
+		this.conceptSimilarityService = conceptSimilarityService;
 	}
 
 	public void setCorpusName(String corpusName) {
 		this.corpusName = corpusName;
 	}
 
-	public String getCorpusName() {
-		return corpusName;
+	public void setCuiTuiQuery(String cuiTuiQuery) {
+		this.cuiTuiQuery = cuiTuiQuery;
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+		// this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
+
+	public void setTransactionManager(
+			PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+	}
+
+	/**
+	 * 
+	 * @param o1
+	 *            cui
+	 * @param o2
+	 *            cui
+	 * @return concepts have overlapping tuis, return 1, else return 0
+	 */
+	private double tuiCheck(Object o1, Object o2) {
+		Set<String> tuis1 = this.cuiTuiMap.get((String) o1);
+		Set<String> tuis2 = this.cuiTuiMap.get((String) o2);
+		if (tuis1 != null && tuis2 != null
+				&& !Collections.disjoint(tuis1, tuis2)) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+	public Set<Integer> tuiToMainSui(Set<String> tuis) {
+		Set<Integer> mainSui = new HashSet<Integer>(tuis.size());
+		for (String tui : tuis) {
+			mainSui.add(getMainSem(Integer.parseInt(tui.substring(1))));
+		}
+		return mainSui;
 	}
 
 }
