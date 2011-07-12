@@ -246,15 +246,6 @@
 			<jvmarg value="-Xmx1g" />
 		</java>
 	</target>
-	<target name="iter.label">
-		<for list="${libsvm.classLabels}" param="export.label">
-			<sequential>
-				<antcall target="${iter.label.target}">
-					<param name="export.label" value="@{export.label}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
 	<!--
 	<target name="export.tree.all">
 		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
@@ -296,30 +287,37 @@
 		</antcall>
 	</target>
 	-->
-	<target name="export.tree.all" description="export trees">
-		<property name="tree.name" value="vector" />
+	<target name="kernel.iter.label" description="execute kernel.iter.target for each label in label.properties">
 		<property file="./tree/${tree.name}/label.properties" />
 		<for list="${labels}" param="export.label">
 			<sequential>
-				<antcall target="export.tree.label">
+				<antcall target="${kernel.iter.target}">
 					<param name="export.label" value="@{export.label}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-	<target name="eval.kernel.all" description="export trees">
+	<target name="kernel.tree.all" description="export trees">
+		<property name="tree.name" value="vector" />
+		<antcall target="kernel.iter.label">
+			<param name="kernel.iter.target" value="export.tree.label" />
+		</antcall>
+	</target>
+	<target name="kernel.eval.all" description="eval kernel on tree">
 		<property name="kernel.experiment" value="filteredlin" />
 		<property name="tree.name" value="vector" />
-		<property file="./tree/${tree.name}/label.properties" />
-		<for list="${labels}" param="export.label">
-			<sequential>
-				<antcall target="eval.kernel.label">
-					<param name="export.label" value="@{export.label}" />
-				</antcall>
-			</sequential>
-		</for>
+		<antcall target="kernel.iter.label">
+			<param name="kernel.iter.target" value="kernel.eval.label" />
+		</antcall>
 	</target>
-	<target name="init.kernel.label" description="load the export.cutoff for the specified label">
+	<target name="kernel.export.all" description="export libsvm gram matrices">
+		<property name="kernel.experiment" value="filteredlin" />
+		<property name="tree.name" value="vector" />
+		<antcall target="kernel.iter.label">
+			<param name="kernel.iter.target" value="kernel.export.label" />
+		</antcall>
+	</target>
+	<target name="kernel.init.label" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="vector" />
 		<property name="export.label" value="1" />
 		<property name="kernel.experiment" value="filteredlin" />
@@ -339,8 +337,8 @@
 		<property name="label.tree" value="tree_${export.cutoff}" />
 		<echo>export.cutoff ${export.cutoff}</echo>
 	</target>
-	<target name="export.tree.label" depends="init.kernel.label" description="export the tree for the given label">
-		<mkdir dir="${export.tree.outdir}"/>
+	<target name="kernel.tree.label" depends="kernel.init.label" description="export the tree for the given label">
+		<mkdir dir="${export.tree.outdir}" />
 		<copy file="./tree/${tree.name}/tree.xml" tofile="${export.tree.outdir}/${label.tree}.xml" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
@@ -353,7 +351,7 @@
 			<jvmarg value="-Xms1g" />
 		</java>
 	</target>
-	<target name="eval.kernel.label" depends="init.kernel.label" description="evaluate kernel on instance tree map">
+	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
 		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}.xml" />
 		<copy file="${export.tree.basedir}/${kernel.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
 			<filterset>
@@ -378,21 +376,28 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="kernel.export.libsvm.cutoff" description="export libvm for specified cutoff">
-		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/semkern" />
-		<property name="experiment.base" value="semkern" />
-		<property name="libsvm.experiment" value="${experiment.base}${export.cutoff}" />
-		<property name="export.dir" value="libsvm/${libsvm.experiment}" />
+	<target name="kernel.export.label" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
+		<property name="export.dir" value="libsvm/${kernel.experiment}/${export.cutoff}" />
+		<property name="export.xml" value="export_${export.label}.xml" />
 		<mkdir dir="${export.dir}" />
-		<copy file="${export.tree.basedir}/export.xml" todir="${export.dir}" overwrite="yes">
+		<filterset id="kernel.filter">
+			<filter token="kernel.experiment" value="${kernel.experiment}" />
+			<filter token="export.label" value="${export.label}" />
+			<filter token="export.cutoff" value="${export.cutoff}" />
+		</filterset>
+		<copy file="libsvm/${kernel.experiment}/export.xml" tofile="${export.dir}/${export.xml}" overwrite="yes">
 			<filterset>
-				<filter token="experiment" value="${libsvm.experiment}" />
-				<filter token="export.cutoff" value="${export.cutoff}" />
+				<filterset refid="kernel.filter" />
 			</filterset>
 		</copy>
-		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="i2b2.cp" fork="yes" dir="${export.dir}">
-			<arg value="export.xml" />
+		<copy file="libsvm/${kernel.experiment}/kernel.properties" tofile="${export.dir}/kernel.properties" overwrite="yes">
+			<filterset>
+				<filterset refid="kernel.filter" />
+			</filterset>
+		</copy>
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
+			<arg value="-prop" />
+			<arg value="${export.xml}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 		</java>
