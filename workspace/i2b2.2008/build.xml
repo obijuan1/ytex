@@ -246,20 +246,21 @@
 			<jvmarg value="-Xmx1g" />
 		</java>
 	</target>
-	<target name="export.tree.all">
-		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
-			<sequential>
-				<antcall target="export.tree.cutoff">
-					<param name="export.cutoff" value="@{export.cutoff}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
 	<target name="iter.label">
 		<for list="${libsvm.classLabels}" param="export.label">
 			<sequential>
 				<antcall target="${iter.label.target}">
 					<param name="export.label" value="@{export.label}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<!--
+	<target name="export.tree.all">
+		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
+			<sequential>
+				<antcall target="export.tree.cutoff">
+					<param name="export.cutoff" value="@{export.cutoff}" />
 				</antcall>
 			</sequential>
 		</for>
@@ -294,7 +295,30 @@
 			<param name="iter.label.target" value="eval.kernel.label" />
 		</antcall>
 	</target>
-
+	-->
+	<target name="export.tree.all" description="export trees">
+		<property name="tree.name" value="vector" />
+		<property file="./tree/${tree.name}/label.properties" />
+		<for list="${labels}" param="export.label">
+			<sequential>
+				<antcall target="export.tree.label">
+					<param name="export.label" value="@{export.label}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="eval.kernel.all" description="export trees">
+		<property name="kernel.experiment" value="filteredlin" />
+		<property name="tree.name" value="vector" />
+		<property file="./tree/${tree.name}/label.properties" />
+		<for list="${labels}" param="export.label">
+			<sequential>
+				<antcall target="eval.kernel.label">
+					<param name="export.label" value="@{export.label}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
 	<target name="init.kernel.label" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="vector" />
 		<property name="export.label" value="1" />
@@ -311,26 +335,27 @@
 		</loadproperties>
 		<property name="export.cutoff" value="${param1}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
-		<property name="label.suffix" value="${export.label}_${export.cutoff}" />
-		<property name="label.tree" value="tree_${export.label}_${export.cutoff}" />
-		<property name="label.kernel" value="${kernel.experiment}_${export.label}_${export.cutoff}" />
+		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
+		<property name="label.tree" value="tree_${export.cutoff}" />
 		<echo>export.cutoff ${export.cutoff}</echo>
 	</target>
-	<target name="export.kernel.label" depends="init.kernel.label" description="export the tree for the given label">
-		<copy file="./tree/${tree.name}/tree.xml" tofile="${export.tree.basedir}/${label.tree}.xml" overwrite="yes">
+	<target name="export.tree.label" depends="init.kernel.label" description="export the tree for the given label">
+		<mkdir dir="${export.tree.outdir}"/>
+		<copy file="./tree/${tree.name}/tree.xml" tofile="${export.tree.outdir}/${label.tree}.xml" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
 			</filterset>
 		</copy>
-		<java classname="ytex.KernelLauncher" fork="yes" classpathref="${kernel.cp}" dir="${export.tree.basedir}">
+		<java classname="ytex.KernelLauncher" fork="yes" classpathref="${kernel.cp}" dir="${export.tree.outdir}">
 			<arg line="-beans ${label.tree}.xml -storeInstanceMap ${label.tree}.obj" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 		</java>
 	</target>
 	<target name="eval.kernel.label" depends="init.kernel.label" description="evaluate kernel on instance tree map">
-		<copy file="${export.tree.basedir}/${kernel.experiment}.xml" tofile="${export.tree.basedir}/${label.kernel}.xml" overwrite="yes">
+		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}.xml" />
+		<copy file="${export.tree.basedir}/${kernel.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
@@ -345,8 +370,8 @@
 		-->
 		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
 			<sequential>
-				<java classname="ytex.KernelLauncher" dir="${export.tree.basedir}" fork="yes" classpathref="${kernel.cp}">
-					<arg line="-beans ${label.kernel}.xml -evalKernel -loadInstanceMap ${label.tree}.obj -mod ${kernel.mod} -slice @{kernel.slice}" />
+				<java classname="ytex.KernelLauncher" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
+					<arg line="-beans ${kernel.xml} -evalKernel -loadInstanceMap ${label.tree}.obj -mod ${kernel.mod} -slice @{kernel.slice}" />
 					<jvmarg value="-Xmx1g" />
 					<jvmarg value="-Xms1g" />
 				</java>
@@ -379,8 +404,9 @@
 			<property name="libsvm.experiment" value="${libsvm.experiment}" />
 		</ant>
 	</target>
+	<!--
 	<target name="kernel.experiment.all" depends="export.tree.cutoff,eval.kernel.cutoff,kernel.export.libsvm.cutoff,kernel.cv.all" description="evaluate kernel, export, run libsvm. must define export.cutoff, export.tree.basedir, experiment.base, libsvm.experiment" />
-
+	-->
 
 	<!--
 	for some reason this isn't working on linux
