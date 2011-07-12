@@ -89,7 +89,7 @@ public class ClassifierEvalUtil {
 		for (String kernel : kernels) {
 			List<String> kernelOpts = Arrays.asList(new String[] { "-t "
 					+ kernel });
-			if ("0".equals(kernel)) {
+			if ("0".equals(kernel) || "4".equals(kernel)) {
 				// linear/custom kernel - just cost & weight param
 				evalLines.addAll(parameterGrid(libsvmEval, kernelOpts, costs,
 						weightParams));
