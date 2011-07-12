@@ -335,6 +335,7 @@
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
 		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
 		<property name="label.tree" value="tree_${export.cutoff}" />
+		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}.xml" />
 		<echo>export.cutoff ${export.cutoff}</echo>
 	</target>
 	<target name="kernel.tree.label" depends="kernel.init.label" description="export the tree for the given label">
@@ -352,29 +353,41 @@
 		</java>
 	</target>
 	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
-		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}.xml" />
 		<copy file="${export.tree.basedir}/${kernel.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
 			</filterset>
 		</copy>
-		<!-- too much concurrency for ehcache to handle - need to fork separate processes instead of using threads 
-		<java classname="ytex.KernelLauncher" dir="${export.tree.dir}" fork="yes" classpathref="i2b2.cp">
-			<arg line="-beans ${experiment.base}.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod}" />
+	</target>
+	<target name="kernel.eval.label.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
+			<sequential>
+				<antcall target="kernel.eval.slice">
+					<param name="kernel.slice" value="@{kernel.slice}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="kernel.eval.label.cluster" if="kernel.cluster" description="send slices to slaves for processing">
+		<!-- write current properties to file so slave can load them -->
+		<echoproperties destfile="${export.tree.outdir}/kernel.properties" />
+		<exec executable="qsub">
+			<arg line="-sync y -t 1-${kernel.mod} ${i2b2ant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir}" />
+		</exec>
+	</target>
+	<target name="kernel.eval.slice.cluster" if="kernel.cluster" description="eval slice on cluster slave">
+		<property name="kernel.slice" value="${env.SGE_TASK_ID}" />
+		<property file="${export.tree.outdir}/kernel.properties" />
+		<echo>kernel.slice ${kernel.slice}</echo>
+		<antcall target="kernel.eval.slice" />
+	</target>
+	<target name="kernel.eval.slice" description="eval slice">
+		<java classname="ytex.KernelLauncher" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
+			<arg line="-beans ${kernel.xml} -evalKernel -loadInstanceMap ${label.tree}.obj -mod ${kernel.mod} -slice ${kernel.slice}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 		</java>
-		-->
-		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
-			<sequential>
-				<java classname="ytex.KernelLauncher" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
-					<arg line="-beans ${kernel.xml} -evalKernel -loadInstanceMap ${label.tree}.obj -mod ${kernel.mod} -slice @{kernel.slice}" />
-					<jvmarg value="-Xmx1g" />
-					<jvmarg value="-Xms1g" />
-				</java>
-			</sequential>
-		</for>
 	</target>
 	<target name="kernel.export.label" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
 		<property name="export.dir" value="libsvm/${kernel.experiment}/${export.cutoff}" />
