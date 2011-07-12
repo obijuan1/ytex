@@ -7,6 +7,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,6 +26,8 @@ import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.ConceptDao;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
+import ytex.kernel.model.FeatureEvaluation;
+import ytex.kernel.model.FeatureRank;
 
 public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private static final Log log = LogFactory
@@ -26,12 +35,19 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private ConceptGraph cg = null;
 	private ClassifierEvaluationDao classifierEvaluationDao;
 	private ConceptDao conceptDao;
+	private CacheManager cacheManager;
+	private Cache lcsCache;
+
 	/**
 	 * information concept cache
 	 */
 	private Map<String, Double> conceptFreq = null;
 	private String conceptGraphName;
 	private String conceptSetName;
+	/*
+	 * valid lcs cache
+	 */
+	private Map<String, Map<String, FeatureRank>> validLCSCache;
 
 	private String corpusName;
 
@@ -78,7 +94,6 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	public String getCorpusName() {
 		return corpusName;
 	}
-
 
 	@Override
 	public Map<String, Set<String>> getCuiTuiMap() {
@@ -129,6 +144,21 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		});
 	}
 
+	public void initValidLCSCache() {
+		List<FeatureEvaluation> feList = this.classifierEvaluationDao
+				.getFeatureEvaluations(this.corpusName, this.conceptSetName,
+						CorpusLabelEvaluator.MUTUALINFO_CHILD,
+						this.conceptGraphName);
+		this.validLCSCache = new HashMap<String, Map<String, FeatureRank>>();
+		for (FeatureEvaluation r : feList) {
+			Map<String, FeatureRank> featureMap = new HashMap<String, FeatureRank>();
+			this.validLCSCache.put(r.getLabel(), featureMap);
+			for (FeatureRank rank : r.getFeatures()) {
+				featureMap.put(rank.getFeatureName(), rank);
+			}
+		}
+	}
+
 	/**
 	 * load cui-tui for the specified corpus from the MRSTY table
 	 */
@@ -136,9 +166,9 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		// don't duplicate tui strings to save memory
 		Map<String, String> tuiMap = new HashMap<String, String>();
 		Map<String, Set<String>> tmpTuiCuiMap = new HashMap<String, Set<String>>();
-		List<Object[]> listCuiTui = this.classifierEvaluationDao.getCorpusCuiTuis(
-				this.getCorpusName(), this.getConceptGraphName(),
-				this.getConceptSetName());
+		List<Object[]> listCuiTui = this.classifierEvaluationDao
+				.getCorpusCuiTuis(this.getCorpusName(),
+						this.getConceptGraphName(), this.getConceptSetName());
 		for (Object[] cuiTui : listCuiTui) {
 			String cui = (String) cuiTui[0];
 			String tui = (String) cuiTui[1];
@@ -151,8 +181,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * initialize information content caches
 	 */
 	public void initInfoContent() {
-		conceptFreq = classifierEvaluationDao.getInfoContent(corpusName, conceptGraphName,
-				this.conceptSetName);
+		conceptFreq = classifierEvaluationDao.getInfoContent(corpusName,
+				conceptGraphName, this.conceptSetName);
 	}
 
 	/*
@@ -167,9 +197,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		ConcRel cr2 = cg.getConceptMap().get(concept2);
 		if (cr1 != null && cr2 != null) {
 			Set<ConcRel> lcses = new HashSet<ConcRel>();
-			// ObjPair<ConcRel, Integer> op = ConcRel.getLeastCommonConcept(cr1,
-			// cr2);
-			int lcsDist = ConcRel.getLeastCommonConcept(cr1, cr2, lcses, null);
+			int lcsDist = getLCSFromCache(cr1, cr2, lcses);
 			// leacock is defined as -log([path length]/(2*[depth])
 			double lch = -Math.log(((double) lcsDist + 1.0) / dm);
 			// scale to depth
@@ -211,21 +239,120 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	public double lin(String concept1, String concept2) {
-		// if(log.isDebugEnabled())
-		// log.debug("lin("+corpusName+", " + concept1 +"," +concept2+")");
+		return filteredLin(concept1, concept2, null, 0);
+	}
+
+	/**
+	 * return lin measure. optionally filter lin measure so that only concepts
+	 * that have an lcs that is relevant to the classification task have a
+	 * non-zero lin measure.
+	 * 
+	 * relevant concepts are those whose evaluation wrt the label exceeds a
+	 * threshold.
+	 * 
+	 * @param concept1
+	 * @param concept2
+	 * @param label
+	 *            if not null, then filter lcses.
+	 * @param lcsMinEvaluation
+	 *            if gt; 0, then filter lcses. this is the threshold.
+	 * @return 0 - no lcs, or no lcs that meets the threshold.
+	 */
+	@Override
+	public double filteredLin(String concept1, String concept2, String label,
+			double lcsMinEvaluation) {
 		double denom = getIC(concept1) + getIC(concept2);
 		if (denom != 0) {
 			ConcRel cr1 = cg.getConceptMap().get(concept1);
 			ConcRel cr2 = cg.getConceptMap().get(concept2);
 			if (cr1 != null && cr2 != null) {
 				Set<ConcRel> lcses = new HashSet<ConcRel>();
-				int dist = ConcRel.getLeastCommonConcept(cr1, cr2, lcses, null);
+				int dist = getLCSFromCache(cr1, cr2, lcses);
 				if (dist > 0) {
-					return 2 * getIC(lcses) / denom;
+					double ic = lcsMinEvaluation > 0 && label != null ? getBestIC(
+							lcses, label, lcsMinEvaluation) : getIC(lcses);
+					return 2 * ic / denom;
 				}
 			}
 		}
 		return 0;
+	}
+
+	/**
+	 * get the information content for the concept with the highest evaluation
+	 * greater than a specified threshold.
+	 * 
+	 * @param lcses
+	 *            the least common subsumers of a pair of concepts
+	 * @param label
+	 *            label against which feature was evaluated
+	 * @param lcsMinEvaluation
+	 *            threshold that the feature has to exceed
+	 * @return 0 if no lcs that makes the cut. else find the lcs(es) with the
+	 *         maximal evaluation, and return getIC on these lcses.
+	 * 
+	 * @see #getIC(Iterable)
+	 */
+	private double getBestIC(Set<ConcRel> lcses, String label,
+			double lcsMinEvaluation) {
+		Map<String, FeatureRank> featureRankMap = this.validLCSCache.get(label);
+		if (featureRankMap != null) {
+			double currentBest = -1;
+			Set<ConcRel> bestLcses = new HashSet<ConcRel>();
+			for (ConcRel lcs : lcses) {
+				FeatureRank r = featureRankMap.get(lcs.getConceptID());
+				if (r != null && r.getEvaluation() >= lcsMinEvaluation) {
+					if (currentBest == -1 || r.getEvaluation() > currentBest) {
+						lcses.clear();
+						lcses.add(lcs);
+						currentBest = r.getEvaluation();
+					} else if (currentBest == r.getEvaluation()) {
+						lcses.add(lcs);
+					}
+				}
+			}
+			if (bestLcses.size() > 0) {
+				return this.getIC(bestLcses);
+			}
+		} else {
+			log.warn("no features for label: " + label);
+		}
+		return 0;
+	}
+
+	@SuppressWarnings("unchecked")
+	private int getLCSFromCache(ConcRel cr1, ConcRel cr2, Set<ConcRel> lcses) {
+		String cacheKey = this
+				.createKey(cr1.getConceptID(), cr2.getConceptID());
+		Element e = this.lcsCache.get(cacheKey);
+		if (e != null) {
+			// hit the cache - unpack the lcs
+			if (e.getObjectValue() != null) {
+				Object[] val = (Object[]) e.getObjectValue();
+				for (String lcs : (Set<String>) val[1]) {
+					lcses.add(this.cg.getConceptMap().get(lcs));
+				}
+				return (Integer) val[0];
+			} else {
+				return -1;
+			}
+		} else {
+			// missed the cache - save the lcs
+			Object[] val = null;
+			int dist = ConcRel.getLeastCommonConcept(cr1, cr2, lcses, null);
+			if (dist >= 0) {
+				val = new Object[2];
+				val[1] = dist;
+				Set<String> lcsStrSet = new HashSet<String>(lcses.size());
+				for (ConcRel cr : lcses) {
+					lcsStrSet.add(cr.getConceptID());
+				}
+				val[2] = lcsStrSet;
+			}
+			e = new Element(cacheKey, val);
+			this.lcsCache.put(e);
+			return dist;
+		}
 	}
 
 	public void setClassifierEvaluationDao(
@@ -252,5 +379,13 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	public void setTransactionManager(
 			PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
+	}
+
+	private String createKey(String c1, String c2) {
+		if (c1.compareTo(c2) < 0) {
+			return new StringBuilder(c1).append("-").append(c2).toString();
+		} else {
+			return new StringBuilder(c2).append("-").append(c1).toString();
+		}
 	}
 }

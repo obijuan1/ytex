@@ -273,15 +273,28 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	public List<Object[]> getCorpusCuiTuis(String corpusName,
 			String conceptGraphName, String conceptSetName) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, conceptSetName,
-				null, CorpusEvaluator.INFOCONTENT, 0, conceptGraphName, "getCorpusCuiTuis");		
+				null, CorpusEvaluator.INFOCONTENT, 0, conceptGraphName,
+				"getCorpusCuiTuis");
 		return q.list();
 	}
 
 	@Override
 	public Map<String, Double> getInfoContent(String corpusName,
 			String conceptGraphName, String conceptSet) {
-		return getFeatureRankEvaluations(corpusName,
-				conceptSet, null, CorpusEvaluator.INFOCONTENT, 0,
-				conceptGraphName);
+		return getFeatureRankEvaluations(corpusName, conceptSet, null,
+				CorpusEvaluator.INFOCONTENT, 0, conceptGraphName);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<FeatureEvaluation> getFeatureEvaluations(String corpusName,
+			String conceptSetName, String evaluationType, String param1) {
+		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
+				"getFeatureEvaluations");
+		q.setString("corpusName", corpusName);
+		q.setString("featureSetName", nullToEmptyString(conceptSetName));
+		q.setString("evaluationType", evaluationType);
+		q.setString("param1", nullToEmptyString(param1));
+		return q.list();
 	}
 }

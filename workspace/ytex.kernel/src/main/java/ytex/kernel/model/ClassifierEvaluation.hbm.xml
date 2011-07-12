@@ -207,5 +207,13 @@
 		and r.featureEval.label = :label
 		and r.featureName = s.cui
 	]]></query>	
- 
+	<query name="getFeatureEvaluations"><![CDATA[
+		from FeatureEvaluation 
+		inner join fetch features
+		where corpusName = :corpusName
+		and featureSetName = :featureSetName
+		and param1 = :param1
+		and crossValidationFoldId = 0
+		and evaluationType = :evaluationType
+	]]></query>	
 </hibernate-mapping>

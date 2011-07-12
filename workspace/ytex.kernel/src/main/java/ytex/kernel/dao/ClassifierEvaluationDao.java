@@ -60,9 +60,14 @@ public interface ClassifierEvaluationDao {
 			String corpusName, String featureSetName, String label,
 			String evaluationType, Integer foldId, String param1);
 
-	public abstract List<Object[]> getCorpusCuiTuis(String corpusName, String conceptGraphName,
-			String conceptSetName);
+	public abstract List<Object[]> getCorpusCuiTuis(String corpusName,
+			String conceptGraphName, String conceptSetName);
 
-	public abstract Map<String, Double> getInfoContent(String corpusName, String conceptGraphName, String conceptSet);
+	public abstract Map<String, Double> getInfoContent(String corpusName,
+			String conceptGraphName, String conceptSet);
+
+	public abstract List<FeatureEvaluation> getFeatureEvaluations(
+			String corpusName, String featureSetName, String evaluationType,
+			String param1);
 
 }

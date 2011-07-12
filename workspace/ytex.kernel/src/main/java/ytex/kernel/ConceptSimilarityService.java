@@ -18,4 +18,7 @@ public interface ConceptSimilarityService {
 
 	public abstract Map<String, Set<String>> getCuiTuiMap();
 
+	public abstract double filteredLin(String concept1, String concept2, String label,
+			double lcsMinEvaluation);
+
 }

@@ -111,7 +111,7 @@ public class ConcRel implements java.io.Serializable {
 	 * @param paths
 	 *            paths between concepts via lcses, optional. Key - lcs. Value -
 	 *            2 element list corresponding to paths to lcs from c1 and c2
-	 * @return path length
+	 * @return path length, -1 if no lcs
 	 */
 	public static int getLeastCommonConcept(ConcRel c1, ConcRel c2,
 			Set<ConcRel> lcses, Map<ConcRel, List<List<ConcRel>>> paths) {
