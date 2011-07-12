@@ -102,11 +102,25 @@
 			<param name="kernel.experiment" value="ontocuis" />
 		</antcall>
 	</target>
+	<target name="insert_hotspot_zero_vector_tt" description="setup truth table for ontocuis">
+		<property name="kernel.experiment" value="ontocuis" />
+		<copy file="data/hotspot_zero_vector_tt.template.sql" tofile="libsvm/${kernel.experiment}/hotspot_zero_vector_tt.sql" overwrite="yes">
+			<filterset>
+				<filter token="kernel.experiment" value="${kernel.experiment}" />
+			</filterset>
+		</copy>
+		<antcall target="mysql">
+			<param name="mysql.dir" value="libsvm/${kernel.experiment}" />
+			<param name="mysql.script" value="insert_classifier_eval_irzv.sql" />
+		</antcall>
+	</target>	
 	<target name="insert_classifier_eval_irzv" description="setup truth table for ontocuis">
 		<property name="kernel.experiment" value="ontocuis" />
+		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />		
 		<copy file="data/insert_classifier_eval_irzv.template.sql" tofile="libsvm/${kernel.experiment}/insert_classifier_eval_irzv.sql" overwrite="yes">
 			<filterset>
-				<filter token="experiment" value="${kernel.experiment}" />
+				<filter token="kernel.experiment" value="${kernel.experiment}" />
+				<filter token="kernel.hzv.experiment" value="${kernel.hzv.experiment}" />
 			</filterset>
 		</copy>
 		<antcall target="mysql">
@@ -332,11 +346,12 @@
 			</filterchain>
 		</loadproperties>
 		<property name="export.cutoff" value="${param1}" />
+		<echo>export.cutoff ${export.cutoff}</echo>
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
 		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
 		<property name="label.tree" value="tree_${export.cutoff}" />
 		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}.xml" />
-		<echo>export.cutoff ${export.cutoff}</echo>
+		<property name="export.libsvm.outdir" value="libsvm/kernel/${kernel.experiment}" />
 	</target>
 	<target name="kernel.tree.label" depends="kernel.init.label" description="export the tree for the given label">
 		<mkdir dir="${export.tree.outdir}" />
@@ -392,7 +407,7 @@
 		</java>
 	</target>
 	<target name="kernel.export.label" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
-		<property name="export.dir" value="libsvm/${kernel.experiment}/${export.cutoff}" />
+		<property name="export.dir" value="${export.libsvm.outdir}/${export.cutoff}" />
 		<property name="export.xml" value="export_${export.label}.xml" />
 		<mkdir dir="${export.dir}" />
 		<filterset id="kernel.filter">
@@ -400,12 +415,12 @@
 			<filter token="export.label" value="${export.label}" />
 			<filter token="export.cutoff" value="${export.cutoff}" />
 		</filterset>
-		<copy file="libsvm/${kernel.experiment}/export.xml" tofile="${export.dir}/${export.xml}" overwrite="yes">
+		<copy file="libsvm/kernel/export.xml" tofile="${export.dir}/${export.xml}" overwrite="yes">
 			<filterset>
 				<filterset refid="kernel.filter" />
 			</filterset>
 		</copy>
-		<copy file="libsvm/${kernel.experiment}/kernel.properties" tofile="${export.dir}/kernel.properties" overwrite="yes">
+		<copy file="libsvm/kernel/kernel.properties" tofile="${export.dir}/kernel.properties" overwrite="yes">
 			<filterset>
 				<filterset refid="kernel.filter" />
 			</filterset>
