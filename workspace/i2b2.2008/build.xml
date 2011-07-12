@@ -19,10 +19,7 @@
 <project name="i2b2">
 	<property environment="env" />
 	<property name="ytex.home" value=".." />
-	<property name="config.local" value="${ytex.home}/config/desc" />
-	<property name="ytex.properties" value="${config.local}/ytex.properties" />
-	<property name="log4j.param" value="-Dlog4j.configuration=file://${ytex.home}/config/desc/log4j.properties" />
-	<property file="${ytex.properties}" />
+	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<property name="eval.kernel.thread" value="1" />
@@ -297,13 +294,43 @@
 			<param name="iter.label.target" value="eval.kernel.label" />
 		</antcall>
 	</target>
-	<target name="eval.kernel.label" description="evaluate kernel on instance tree map">
-		<property name="export.label" value="14" />
-		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/nekern" />
-		<property name="experiment.base" value="nekern" />
-		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
-		<copy file="${export.tree.basedir}/${experiment.base}.xml" tofile="${export.tree.dir}/${experiment.base}.xml" overwrite="yes">
+
+	<target name="init.kernel.label" description="load the export.cutoff for the specified label">
+		<property name="tree.name" value="vector" />
+		<property name="export.label" value="1" />
+		<property name="kernel.experiment" value="filteredlin" />
+		<loadproperties srcfile="./tree/${tree.name}/label.properties">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern="label.${export.label}.param1=" />
+				</linecontainsregexp>
+				<tokenfilter>
+					<replacestring from="label.${export.label}." to="" />
+				</tokenfilter>
+			</filterchain>
+		</loadproperties>
+		<property name="export.cutoff" value="${param1}" />
+		<property name="export.tree.basedir" value="./tree/${tree.name}" />
+		<property name="label.suffix" value="${export.label}_${export.cutoff}" />
+		<property name="label.tree" value="tree_${export.label}_${export.cutoff}" />
+		<property name="label.kernel" value="${kernel.experiment}_${export.label}_${export.cutoff}" />
+		<echo>export.cutoff ${export.cutoff}</echo>
+	</target>
+	<target name="export.kernel.label" depends="init.kernel.label" description="export the tree for the given label">
+		<copy file="./tree/${tree.name}/tree.xml" tofile="${export.tree.basedir}/${label.tree}.xml" overwrite="yes">
+			<filterset>
+				<filter token="export.label" value="${export.label}" />
+				<filter token="export.cutoff" value="${export.cutoff}" />
+			</filterset>
+		</copy>
+		<java classname="ytex.KernelLauncher" fork="yes" classpathref="${kernel.cp}" dir="${export.tree.basedir}">
+			<arg line="-beans ${label.tree}.xml -storeInstanceMap ${label.tree}.obj" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+		</java>
+	</target>
+	<target name="eval.kernel.label" depends="init.kernel.label" description="evaluate kernel on instance tree map">
+		<copy file="${export.tree.basedir}/${kernel.experiment}.xml" tofile="${export.tree.basedir}/${label.kernel}.xml" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
@@ -318,8 +345,8 @@
 		-->
 		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
 			<sequential>
-				<java classname="ytex.KernelLauncher" dir="${export.tree.dir}" fork="yes" classpathref="i2b2.cp">
-					<arg line="-beans ${experiment.base}.xml -evalKernel -loadInstanceMap instanceMap.obj -mod ${kernel.mod} -slice @{kernel.slice}" />
+				<java classname="ytex.KernelLauncher" dir="${export.tree.basedir}" fork="yes" classpathref="${kernel.cp}">
+					<arg line="-beans ${label.kernel}.xml -evalKernel -loadInstanceMap ${label.tree}.obj -mod ${kernel.mod} -slice @{kernel.slice}" />
 					<jvmarg value="-Xmx1g" />
 					<jvmarg value="-Xms1g" />
 				</java>
