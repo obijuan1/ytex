@@ -208,12 +208,12 @@
 		and r.featureName = s.cui
 	]]></query>	
 	<query name="getFeatureEvaluations"><![CDATA[
-		from FeatureEvaluation 
-		inner join fetch features
-		where corpusName = :corpusName
-		and featureSetName = :featureSetName
-		and param1 = :param1
-		and crossValidationFoldId = 0
-		and evaluationType = :evaluationType
+		from FeatureEvaluation fe 
+		inner join fetch fe.features
+		where fe.corpusName = :corpusName
+		and fe.featureSetName = :featureSetName
+		and fe.param1 = :param1
+		and fe.crossValidationFoldId = 0
+		and fe.evaluationType = :evaluationType
 	]]></query>	
 </hibernate-mapping>

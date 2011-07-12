@@ -10,7 +10,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		init-method="init">
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="conceptDao" ref="conceptDao" />
-		<property name="corpusDao" ref="corpusDao" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
+		<property name="cacheManager" ref="cacheManager"/>
 		<property name="corpusName" value="i2b2.2008"/>
 		<property name="conceptGraphName" value="rbpar"/>
 	</bean>

@@ -7,9 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -32,28 +29,30 @@ import ytex.kernel.model.FeatureRank;
 public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private static final Log log = LogFactory
 			.getLog(ConceptSimilarityServiceImpl.class);
+	private CacheManager cacheManager;
 	private ConceptGraph cg = null;
 	private ClassifierEvaluationDao classifierEvaluationDao;
 	private ConceptDao conceptDao;
-	private CacheManager cacheManager;
-	private Cache lcsCache;
-
 	/**
 	 * information concept cache
 	 */
 	private Map<String, Double> conceptFreq = null;
 	private String conceptGraphName;
+
 	private String conceptSetName;
+
+	private String corpusName;
+	private Map<String, Set<String>> cuiTuiMap;
+	/**
+	 * cache to hold lcs's
+	 */
+	private Cache lcsCache;
+	private PlatformTransactionManager transactionManager;
+
 	/*
 	 * valid lcs cache
 	 */
 	private Map<String, Map<String, FeatureRank>> validLCSCache;
-
-	private String corpusName;
-
-	private Map<String, Set<String>> cuiTuiMap;
-
-	private PlatformTransactionManager transactionManager;
 
 	private void addCuiTuiToMap(Map<String, Set<String>> cuiTuiMap,
 			Map<String, String> tuiMap, String cui, String tui) {
@@ -68,6 +67,101 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 			cuiTuiMap.put(cui, tuis);
 		}
 		tuis.add(tui);
+	}
+
+	private String createKey(String c1, String c2) {
+		if (c1.compareTo(c2) < 0) {
+			return new StringBuilder(c1).append("-").append(c2).toString();
+		} else {
+			return new StringBuilder(c2).append("-").append(c1).toString();
+		}
+	}
+
+	/**
+	 * return lin measure. optionally filter lin measure so that only concepts
+	 * that have an lcs that is relevant to the classification task have a
+	 * non-zero lin measure.
+	 * 
+	 * relevant concepts are those whose evaluation wrt the label exceeds a
+	 * threshold.
+	 * 
+	 * @param concept1
+	 * @param concept2
+	 * @param label
+	 *            if not null, then filter lcses.
+	 * @param lcsMinEvaluation
+	 *            if gt; 0, then filter lcses. this is the threshold.
+	 * @return 0 - no lcs, or no lcs that meets the threshold.
+	 */
+	@Override
+	public double filteredLin(String concept1, String concept2, String label,
+			double lcsMinEvaluation) {
+		double ic1 = getIC(concept1);
+		double ic2 = getIC(concept2);
+		// lin not defined if one of the concepts doesn't exist in the corpus
+		if (ic1 == 0 || ic2 == 0)
+			return 0;
+		double denom = getIC(concept1) + getIC(concept2);
+		if (denom != 0) {
+			ConcRel cr1 = cg.getConceptMap().get(concept1);
+			ConcRel cr2 = cg.getConceptMap().get(concept2);
+			if (cr1 != null && cr2 != null) {
+				Set<ConcRel> lcses = new HashSet<ConcRel>();
+				int dist = getLCSFromCache(cr1, cr2, lcses);
+				if (dist > 0) {
+					double ic = lcsMinEvaluation > 0 && label != null ? getBestIC(
+							lcses, label, lcsMinEvaluation) : getIC(lcses);
+					return 2 * ic / denom;
+				}
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * get the information content for the concept with the highest evaluation
+	 * greater than a specified threshold.
+	 * 
+	 * @param lcses
+	 *            the least common subsumers of a pair of concepts
+	 * @param label
+	 *            label against which feature was evaluated
+	 * @param lcsMinEvaluation
+	 *            threshold that the feature has to exceed
+	 * @return 0 if no lcs that makes the cut. else find the lcs(es) with the
+	 *         maximal evaluation, and return getIC on these lcses.
+	 * 
+	 * @see #getIC(Iterable)
+	 */
+	private double getBestIC(Set<ConcRel> lcses, String label,
+			double lcsMinEvaluation) {
+		Map<String, FeatureRank> featureRankMap = this.validLCSCache.get(label);
+		if (featureRankMap != null) {
+			double currentBest = -1;
+			Set<ConcRel> bestLcses = new HashSet<ConcRel>();
+			for (ConcRel lcs : lcses) {
+				FeatureRank r = featureRankMap.get(lcs.getConceptID());
+				if (r != null && r.getEvaluation() >= lcsMinEvaluation) {
+					if (currentBest == -1 || r.getEvaluation() > currentBest) {
+						bestLcses.clear();
+						bestLcses.add(lcs);
+						currentBest = r.getEvaluation();
+					} else if (currentBest == r.getEvaluation()) {
+						bestLcses.add(lcs);
+					}
+				}
+			}
+			if (bestLcses.size() > 0) {
+				return this.getIC(bestLcses);
+			}
+		} else {
+			log.warn("no features for label: " + label);
+		}
+		return 0;
+	}
+
+	public CacheManager getCacheManager() {
+		return cacheManager;
 	}
 
 	public ClassifierEvaluationDao getClassifierEvaluationDao() {
@@ -126,6 +220,41 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 			return 0;
 	}
 
+	@SuppressWarnings("unchecked")
+	private int getLCSFromCache(ConcRel cr1, ConcRel cr2, Set<ConcRel> lcses) {
+		String cacheKey = this
+				.createKey(cr1.getConceptID(), cr2.getConceptID());
+		Element e = this.lcsCache.get(cacheKey);
+		if (e != null) {
+			// hit the cache - unpack the lcs
+			if (e.getObjectValue() != null) {
+				Object[] val = (Object[]) e.getObjectValue();
+				for (String lcs : (Set<String>) val[1]) {
+					lcses.add(this.cg.getConceptMap().get(lcs));
+				}
+				return (Integer) val[0];
+			} else {
+				return -1;
+			}
+		} else {
+			// missed the cache - save the lcs
+			Object[] val = null;
+			int dist = ConcRel.getLeastCommonConcept(cr1, cr2, lcses, null);
+			if (dist >= 0) {
+				val = new Object[2];
+				val[0] = dist;
+				Set<String> lcsStrSet = new HashSet<String>(lcses.size());
+				for (ConcRel cr : lcses) {
+					lcsStrSet.add(cr.getConceptID());
+				}
+				val[1] = lcsStrSet;
+			}
+			e = new Element(cacheKey, val);
+			this.lcsCache.put(e);
+			return dist;
+		}
+	}
+
 	public PlatformTransactionManager getTransactionManager() {
 		return transactionManager;
 	}
@@ -139,24 +268,11 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				cg = conceptDao.getConceptGraph(conceptGraphName);
 				initInfoContent();
 				initCuiTuiMapFromCorpus();
+				initValidLCSCache();
 				return null;
 			}
 		});
-	}
-
-	public void initValidLCSCache() {
-		List<FeatureEvaluation> feList = this.classifierEvaluationDao
-				.getFeatureEvaluations(this.corpusName, this.conceptSetName,
-						CorpusLabelEvaluator.MUTUALINFO_CHILD,
-						this.conceptGraphName);
-		this.validLCSCache = new HashMap<String, Map<String, FeatureRank>>();
-		for (FeatureEvaluation r : feList) {
-			Map<String, FeatureRank> featureMap = new HashMap<String, FeatureRank>();
-			this.validLCSCache.put(r.getLabel(), featureMap);
-			for (FeatureRank rank : r.getFeatures()) {
-				featureMap.put(rank.getFeatureName(), rank);
-			}
-		}
+		this.lcsCache = getCacheManager().getCache("lcsCache");
 	}
 
 	/**
@@ -183,6 +299,21 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	public void initInfoContent() {
 		conceptFreq = classifierEvaluationDao.getInfoContent(corpusName,
 				conceptGraphName, this.conceptSetName);
+	}
+
+	public void initValidLCSCache() {
+		List<FeatureEvaluation> feList = this.classifierEvaluationDao
+				.getFeatureEvaluations(this.corpusName, this.conceptSetName,
+						CorpusLabelEvaluator.MUTUALINFO_CHILD,
+						this.conceptGraphName);
+		this.validLCSCache = new HashMap<String, Map<String, FeatureRank>>();
+		for (FeatureEvaluation r : feList) {
+			Map<String, FeatureRank> featureMap = new HashMap<String, FeatureRank>();
+			this.validLCSCache.put(r.getLabel(), featureMap);
+			for (FeatureRank rank : r.getFeatures()) {
+				featureMap.put(rank.getFeatureName(), rank);
+			}
+		}
 	}
 
 	/*
@@ -242,117 +373,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		return filteredLin(concept1, concept2, null, 0);
 	}
 
-	/**
-	 * return lin measure. optionally filter lin measure so that only concepts
-	 * that have an lcs that is relevant to the classification task have a
-	 * non-zero lin measure.
-	 * 
-	 * relevant concepts are those whose evaluation wrt the label exceeds a
-	 * threshold.
-	 * 
-	 * @param concept1
-	 * @param concept2
-	 * @param label
-	 *            if not null, then filter lcses.
-	 * @param lcsMinEvaluation
-	 *            if gt; 0, then filter lcses. this is the threshold.
-	 * @return 0 - no lcs, or no lcs that meets the threshold.
-	 */
-	@Override
-	public double filteredLin(String concept1, String concept2, String label,
-			double lcsMinEvaluation) {
-		double denom = getIC(concept1) + getIC(concept2);
-		if (denom != 0) {
-			ConcRel cr1 = cg.getConceptMap().get(concept1);
-			ConcRel cr2 = cg.getConceptMap().get(concept2);
-			if (cr1 != null && cr2 != null) {
-				Set<ConcRel> lcses = new HashSet<ConcRel>();
-				int dist = getLCSFromCache(cr1, cr2, lcses);
-				if (dist > 0) {
-					double ic = lcsMinEvaluation > 0 && label != null ? getBestIC(
-							lcses, label, lcsMinEvaluation) : getIC(lcses);
-					return 2 * ic / denom;
-				}
-			}
-		}
-		return 0;
-	}
-
-	/**
-	 * get the information content for the concept with the highest evaluation
-	 * greater than a specified threshold.
-	 * 
-	 * @param lcses
-	 *            the least common subsumers of a pair of concepts
-	 * @param label
-	 *            label against which feature was evaluated
-	 * @param lcsMinEvaluation
-	 *            threshold that the feature has to exceed
-	 * @return 0 if no lcs that makes the cut. else find the lcs(es) with the
-	 *         maximal evaluation, and return getIC on these lcses.
-	 * 
-	 * @see #getIC(Iterable)
-	 */
-	private double getBestIC(Set<ConcRel> lcses, String label,
-			double lcsMinEvaluation) {
-		Map<String, FeatureRank> featureRankMap = this.validLCSCache.get(label);
-		if (featureRankMap != null) {
-			double currentBest = -1;
-			Set<ConcRel> bestLcses = new HashSet<ConcRel>();
-			for (ConcRel lcs : lcses) {
-				FeatureRank r = featureRankMap.get(lcs.getConceptID());
-				if (r != null && r.getEvaluation() >= lcsMinEvaluation) {
-					if (currentBest == -1 || r.getEvaluation() > currentBest) {
-						lcses.clear();
-						lcses.add(lcs);
-						currentBest = r.getEvaluation();
-					} else if (currentBest == r.getEvaluation()) {
-						lcses.add(lcs);
-					}
-				}
-			}
-			if (bestLcses.size() > 0) {
-				return this.getIC(bestLcses);
-			}
-		} else {
-			log.warn("no features for label: " + label);
-		}
-		return 0;
-	}
-
-	@SuppressWarnings("unchecked")
-	private int getLCSFromCache(ConcRel cr1, ConcRel cr2, Set<ConcRel> lcses) {
-		String cacheKey = this
-				.createKey(cr1.getConceptID(), cr2.getConceptID());
-		Element e = this.lcsCache.get(cacheKey);
-		if (e != null) {
-			// hit the cache - unpack the lcs
-			if (e.getObjectValue() != null) {
-				Object[] val = (Object[]) e.getObjectValue();
-				for (String lcs : (Set<String>) val[1]) {
-					lcses.add(this.cg.getConceptMap().get(lcs));
-				}
-				return (Integer) val[0];
-			} else {
-				return -1;
-			}
-		} else {
-			// missed the cache - save the lcs
-			Object[] val = null;
-			int dist = ConcRel.getLeastCommonConcept(cr1, cr2, lcses, null);
-			if (dist >= 0) {
-				val = new Object[2];
-				val[1] = dist;
-				Set<String> lcsStrSet = new HashSet<String>(lcses.size());
-				for (ConcRel cr : lcses) {
-					lcsStrSet.add(cr.getConceptID());
-				}
-				val[2] = lcsStrSet;
-			}
-			e = new Element(cacheKey, val);
-			this.lcsCache.put(e);
-			return dist;
-		}
+	public void setCacheManager(CacheManager cacheManager) {
+		this.cacheManager = cacheManager;
 	}
 
 	public void setClassifierEvaluationDao(
@@ -379,13 +401,5 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	public void setTransactionManager(
 			PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
-	}
-
-	private String createKey(String c1, String c2) {
-		if (c1.compareTo(c2) < 0) {
-			return new StringBuilder(c1).append("-").append(c2).toString();
-		} else {
-			return new StringBuilder(c2).append("-").append(c1).toString();
-		}
 	}
 }

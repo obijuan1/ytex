@@ -9,28 +9,28 @@ import ytex.kernel.model.ConceptGraph;
 
 public class ConceptSimilarityServiceTest extends TestCase {
 	private static final String conceptsToTest[][] = new String[][] {
-			new String[] { "C0678181", "C0709711", "zocor", "zocor 5mg" },
-			new String[] { "C0678181", "C0593906", "zocor", "lipitor" },
-
-			new String[] { "C0699142", "C0678181", "tylenol", "zocor" },
-			new String[] { "C0017245", "C0678181", "Gemfibrozil", "zocor" },
-			new String[] { "C0017245", "C0723893", "Gemfibrozil", "Tricor" },
-			new String[] { "C0008320", "C0041004", "Cholecystectomy",
-					"Triglyceride" },
-			new String[] { "C0008320", "C0740087", "Cholecystectomy",
-					"Nasal oxygen catheter" },
 			new String[] { "C0008320", "C0020699", "Cholecystectomy",
-					"Hysterectomy" },
+					"Hysterectomy", "Gallstones", "0.3" },
 			new String[] { "C0008320", "C0003611", "Cholecystectomy",
-					"Appendectomy" },
+					"Appendectomy", "Gallstones", "0.3" },
 			new String[] { "C0008320", "C0162575", "Cholecystectomy",
-					"Embolectomy" },
+					"Embolectomy", "Gallstones", "0.3" },
 			new String[] { "C0008320", "C0027695", "Cholecystectomy",
-					"Nephrectomy" },
-			new String[] { "C0579044", "C0579042", "Bruise of tongue",
-					"Bruise of palate" },
-			new String[] { "C0579044", "C0542526", "Bruise of tongue",
-					"Bruise of oral cavity" } };
+					"Nephrectomy", "Gallstones", "0.3" },
+			new String[] { "C0678181", "C0593906", "zocor", "lipitor",
+					"Hypertriglyceridemia", "0.1" },
+			new String[] { "C0678181", "C0593906", "zocor", "lipitor",
+					"Hypercholesterolemia", "0.07" },
+			new String[] { "C0699142", "C0678181", "tylenol", "zocor",
+					"Hypertriglyceridemia", "0.1" },
+			new String[] { "C0017245", "C0678181", "Gemfibrozil", "zocor",
+					"Hypercholesterolemia", "0.07" },
+			new String[] { "C0017245", "C0678181", "Gemfibrozil", "zocor",
+					"Hypertriglyceridemia", "0.1" },
+			new String[] { "C0017245", "C0723893", "Gemfibrozil", "Tricor",
+					"Hypertriglyceridemia", "0.1" },
+			new String[] { "C0008320", "C0041004", "Cholecystectomy",
+					"Triglyceride", "Gallstones", "0.3" } };
 
 	private ConceptSimilarityService conceptSimilarityService;
 
@@ -63,6 +63,8 @@ public class ConceptSimilarityServiceTest extends TestCase {
 			Map<String, List<List<String>>> lcsPath = new HashMap<String, List<List<String>>>();
 			String cui1 = line[0];
 			String cui2 = line[1];
+			String label = line[4];
+			double cutoff = Double.parseDouble(line[5]);
 			System.out.print(cui1);
 			System.out.print("\t");
 			System.out.print(cui2);
@@ -80,7 +82,10 @@ public class ConceptSimilarityServiceTest extends TestCase {
 			System.out.print("\t");
 			System.out.println(conceptSimilarityService.lch(cui1, cui2));
 			System.out.print("\t");
-			System.out.println(conceptSimilarityService.lch(cui1, cui2));
+			System.out.print(label);
+			System.out.print("\t");
+			System.out.println(conceptSimilarityService.filteredLin(cui1, cui2,
+					label, cutoff));
 		}
 	}
 }
