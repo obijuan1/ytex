@@ -112,10 +112,10 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	 * )
 	 */
 	public void exportGramMatrix(Properties props) throws IOException {
-		String name = props.getProperty("name");
-		String experiment = props.getProperty("experiment");
-		String param2 = props.getProperty("param2");
-		double param1 = Double.parseDouble(props.getProperty("param1", "0"));
+		String name = props.getProperty("ytex.corpusName");
+		String experiment = props.getProperty("ytex.experiment");
+		String param2 = props.getProperty("ytex.param2");
+		double param1 = Double.parseDouble(props.getProperty("ytex.param1", "0"));
 		InstanceData instanceData = this.getKernelUtil().loadInstances(
 				props.getProperty("instanceClassQuery"));
 		// String testInstanceQuery = props.getProperty("test.instance.query");
