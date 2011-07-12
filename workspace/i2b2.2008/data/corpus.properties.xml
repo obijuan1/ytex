@@ -11,15 +11,24 @@
 ]]></entry>
 	<entry key="ytex.corpusName">i2b2.2008</entry>
 	<entry key="ytex.conceptGraphName">rbpar</entry>
-	<entry key="ytex.conceptSetName">test</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+	select cui1, cui2 
+	from umls.mrrel 
+	where sab in ('RXNORM', 'SNOMEDCT', 'SRC')
+	and rel in ('PAR', 'RB')
+	]]></entry>
 	<entry key="instanceClassQuery"><![CDATA[
 	select d.docId, a.judgement, 1, a.disease
 	from i2b2_2008_doc d
 	inner join i2b2_2008_anno a on a.docId = d.docId and a.source = 'intuitive'
 	where d.documentSet = 'train'
-	and a.disease in ('Hypercholesterolemia')	
 	]]></entry>
 	<!-- 
+	select d.docId, a.judgement, 1, a.disease
+	from i2b2_2008_doc d
+	inner join i2b2_2008_anno a on a.docId = d.docId and a.source = 'intuitive'
+	where d.documentSet = 'train'
+	and a.disease in ('Hypercholesterolemia')	
 	testing:
 drop table if exists testconcept;
 create  table testconcept (cui char(8) primary key);
