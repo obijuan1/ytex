@@ -24,7 +24,7 @@ export PATH
 # you should not have to change anything below this line
 ################################
 
-ANT_HOME=${YTEX_HOME}/../apache-ant-1.8.2
+ANT_HOME=${YTEX_HOME}/../apache-ant-1.8.0
 export ANT_HOME
 
 CATALINA_HOME=${HOME}/../apache-tomcat-6.0.20
