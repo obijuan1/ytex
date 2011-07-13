@@ -57,56 +57,56 @@ create unique index nk_cv_fold_instance on $(db_schema).cv_fold_instance(cv_fold
  * classifier_eval tables
  */
 
-CREATE TABLE $(db_schema).[classifier_eval](
-	[classifier_eval_id] [int] IDENTITY(1,1) NOT NULL primary key,
-	[name] [varchar](50) NOT NULL,
-	[experiment] [varchar](50) NULL,
-	[fold] [int] NULL,
-	[run] [int] NULL,
-	[algorithm] [varchar](50) NULL,
-	[label] [varchar](50) NULL,
-	[options] [varchar](1000) NULL,
-	[model] [varbinary](max) NULL,
-	[param1] [float] NULL,
-	[param2] [varchar](50) NULL
+CREATE TABLE $(db_schema).classifier_eval(
+	classifier_eval_id int IDENTITY(1,1) NOT NULL primary key,
+	name varchar(50) NOT NULL,
+	experiment varchar(50) NULL,
+	fold int NULL,
+	run int NULL,
+	algorithm varchar(50) NULL,
+	label varchar(50) NULL,
+	options varchar(1000) NULL,
+	model varbinary(max) NULL,
+	param1 float NULL,
+	param2 varchar(50) NULL
 )
 ;
 go
 
 
-CREATE TABLE $(db_schema).[classifier_eval_ir](
-	[classifier_eval_ir_id] [int] IDENTITY(1,1) NOT NULL primary key,
-	[classifier_eval_id] [int] NOT NULL foreign key references $(db_schema).classifier_eval ([classifier_eval_id]) on delete cascade,
-	[ir_class_id] [int] NOT NULL,
-	[tp] [int] NOT NULL default 0,
-	[tn] [int] NOT NULL default 0,
-	[fp] [int] NOT NULL default 0,
-	[fn] [int] NOT NULL default 0,
-	[ppv] [float] NOT NULL default 0,
-	[npv] [float] NOT NULL default 0,
-	[sens] [float] NOT NULL default 0,
-	[spec] [float] NOT NULL default 0,
-	[f1] [float] NOT NULL default 0
+CREATE TABLE $(db_schema).classifier_eval_ir(
+	classifier_eval_ir_id int IDENTITY(1,1) NOT NULL primary key,
+	classifier_eval_id int NOT NULL foreign key references $(db_schema).classifier_eval (classifier_eval_id) on delete cascade,
+	ir_class_id int NOT NULL,
+	tp int NOT NULL default 0,
+	tn int NOT NULL default 0,
+	fp int NOT NULL default 0,
+	fn int NOT NULL default 0,
+	ppv float NOT NULL default 0,
+	npv float NOT NULL default 0,
+	sens float NOT NULL default 0,
+	spec float NOT NULL default 0,
+	f1 float NOT NULL default 0
 )
 ;
 GO
 
-CREATE TABLE $(db_schema).[classifier_eval_svm](
-	[classifier_eval_id] [int] NOT NULL primary key foreign key references $(db_schema).classifier_eval ([classifier_eval_id]) on delete cascade,
-	[cost] [float] NULL,
-	[weight] [int] NULL,
-	[degree] [int] NULL,
-	[gamma] [float] NULL,
-	[kernel] [int] NULL,
-	[supportVectors] [int] NULL,
+CREATE TABLE $(db_schema).classifier_eval_libsvm(
+	classifier_eval_id int NOT NULL primary key foreign key references $(db_schema).classifier_eval (classifier_eval_id) on delete cascade,
+	cost float NULL,
+	weight int NULL,
+	degree int NULL,
+	gamma float NULL,
+	kernel int NULL,
+	supportVectors int NULL,
 	vcdim float null,
 )
 ;
 GO
 
-CREATE TABLE $(db_schema).classifier_eval_semil (
-  classifier_eval_id int NOT NULL primary key foreign key references $(db_schema).classifier_eval ([classifier_eval_id]) on delete cascade,
-  distance varchar(50) DEFAULT NULL,
+CREATE TABLE $(db_schema).classifier_eval_semil(
+  classifier_eval_id int NOT NULL primary key foreign key references $(db_schema).classifier_eval (classifier_eval_id) on delete cascade,
+  distance varchar(50) not null DEFAULT '',
   degree int NOT NULL DEFAULT 0,
   gamma float NOT NULL DEFAULT 0,
   soft_label bit NOT NULL DEFAULT 0,
@@ -118,21 +118,21 @@ CREATE TABLE $(db_schema).classifier_eval_semil (
 ;
 GO
 
-CREATE TABLE $(db_schema).[classifier_instance_eval](
-	[classifier_instance_eval_id] [int] IDENTITY(1,1) NOT NULL primary key ,
-	[classifier_eval_id] [int] NOT NULL foreign key references $(db_schema).classifier_eval ([classifier_eval_id]) on delete cascade,
-	[instance_id] [int] NOT NULL,
-	[pred_class_id] [int] NOT NULL,
-	[target_class_id] [int] NULL
+CREATE TABLE $(db_schema).classifier_instance_eval(
+	classifier_instance_eval_id int IDENTITY(1,1) NOT NULL primary key ,
+	classifier_eval_id int NOT NULL foreign key references $(db_schema).classifier_eval (classifier_eval_id) on delete cascade,
+	instance_id int NOT NULL,
+	pred_class_id int NOT NULL,
+	target_class_id int NULL
 ) 
 ;
 GO
 
-CREATE TABLE $(db_schema).[classifier_instance_eval_prob](
-	[classifier_eval_result_prob_id] [int] IDENTITY(1,1) NOT NULL primary key,
-	[classifier_instance_eval_id] [int] NOT NULL foreign key references $(db_schema).classifier_instance_eval ([classifier_instance_eval_id]) on delete cascade,
-	[class_id] [int] NOT NULL,
-	[probability] [float] NOT NULL,
+CREATE TABLE $(db_schema).classifier_instance_eval_prob(
+	classifier_eval_result_prob_id int IDENTITY(1,1) NOT NULL primary key,
+	classifier_instance_eval_id int NOT NULL foreign key references $(db_schema).classifier_instance_eval (classifier_instance_eval_id) on delete cascade,
+	class_id int NOT NULL,
+	probability float NOT NULL,
 )
 ;
 GO

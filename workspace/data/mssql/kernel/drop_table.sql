@@ -54,6 +54,10 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema)
 DROP TABLE $(db_schema).[classifier_eval_semil]
 GO
 
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[$(db_schema)].[classifier_eval_semil]') AND type in (N'U'))
+DROP TABLE $(db_schema).[classifier_eval_semil]
+GO
+
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[classifier_instance_eval_prob]') AND type in (N'U'))
 DROP TABLE $(db_schema).[classifier_instance_eval_prob]
 GO
