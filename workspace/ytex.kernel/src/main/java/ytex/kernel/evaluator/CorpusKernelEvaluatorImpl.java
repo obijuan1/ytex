@@ -232,8 +232,15 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		}
 		int nStart = 0;
 		int nEnd = documentIds.size();
+		int total = 0; documentIds.size();
 		if (nMod > 0) {
-			int total = documentIds.size();
+			nMod = Math.min(total, nMod);
+		}
+		if(nSlice > nMod) {
+			log.info("more slices than documents, skipping slice: " + nSlice);
+			return;
+		}
+		if (nMod > 0) {
 			int sliceSize = total / nMod;
 			nStart = sliceSize * (nSlice - 1);
 			if (nSlice != nMod)
