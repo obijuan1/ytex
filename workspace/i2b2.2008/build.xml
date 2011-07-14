@@ -28,29 +28,7 @@
 	<property name="export.cutoffs" value="0.05,0.07,0.09,0.1,0.15,0.2" />
 	<!-- property name="export.cutoffs" value="0.07" / -->
 
-	<path id="i2b2.cp">
-		<pathelement location="desc" />
-		<pathelement location="bin" />
-		<pathelement location="${config.local}" />
-		<pathelement location="${ytex.home}/config/desc" />
-		<pathelement location="${ytex.home}/ctakes-patches/bin" />
-		<pathelement location="${ytex.home}/ytex.kernel/bin" />
-		<pathelement location="${ytex.home}/ytex.model/bin" />
-		<pathelement location="${ytex.home}/ytex.uima/bin" />
-		<pathelement location="${ytex.home}/ytex.negex/bin" />
-		<fileset dir="${ytex.home}/libs.system" includes="**/*.jar" />
-		<fileset dir="${ytex.home}/ytex.web/WebContent/WEB-INF/lib" includes="**/*.jar" />
-		<fileset dir="${ytex.home}/maveric/lib" includes="**/*.jar" />
-		<fileset dir="${ytex.home}/maveric/ext" includes="**/*.jar" />
-		<pathelement location="${ytex.home}/maveric/dest" />
-		<pathelement location="${ytex.home}/maveric/resources" />
-	</path>
-	<!-- 
-	for some reason on linux just copying the jars to the ant/lib directory doesn't work.
-	explicitly define the task.
-	-->
-	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" onerror="ignore" classpathref="i2b2.cp" />
-	<taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" onerror="ignore" classpathref="i2b2.cp" />
+
 
 	<target name="runCPE" description="annotate i2b2 corpus">
 		<java classname="ytex.tools.RunCPE" fork="yes" classpathref="i2b2.cp">
@@ -104,14 +82,15 @@
 	</target>
 	<target name="insert_hotspot_zero_vector_tt" description="setup truth table for ontocuis">
 		<property name="kernel.experiment" value="ontocuis" />
-		<copy file="data/hotspot_zero_vector_tt.template.sql" tofile="libsvm/${kernel.experiment}/hotspot_zero_vector_tt.sql" overwrite="yes">
+		<property name="mysql.script" value="insert_hotspot_zero_vector_tt.sql" />
+		<copy file="data/${mysql.script}" todir="${java.io.tmpdir}" overwrite="yes">
 			<filterset>
 				<filter token="kernel.experiment" value="${kernel.experiment}" />
 			</filterset>
 		</copy>
 		<antcall target="mysql">
-			<param name="mysql.dir" value="libsvm/${kernel.experiment}" />
-			<param name="mysql.script" value="insert_classifier_eval_irzv.sql" />
+			<param name="mysql.dir" value="${java.io.tmpdir}" />
+			<param name="mysql.script" value="${mysql.script}" />
 		</antcall>
 	</target>	
 	<target name="insert_classifier_eval_irzv" description="setup truth table for ontocuis">
@@ -140,32 +119,28 @@
 	</target>
 	<target name="export.cutoff" description="export libsvm data for specified cutoff">
 		<property name="export.cutoff" value="0.25" />
-		<property name="experiment.base" value="ontocuis" />
-		<property name="export.dir" value="libsvm/${experiment.base}/${export.cutoff}" />
+		<property name="kernel.experiment" value="bag-cui" />
+		<property name="export.dir" value="libsvm/${kernel.experiment}/${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
 		<delete dir="${export.dir}" quiet="yes" />
 		<mkdir dir="${export.dir}" />
 		<filterset id="export.filterset">
 			<filter token="export.cutoff" value="${export.cutoff}" />
-			<filter token="corpus_name" value="i2b2.2008" />
-			<filter token="experiment" value="${experiment.base}" />
+			<filter token="kernel.name" value="${kernel.name}" />
+			<filter token="kernel.experiment" value="${kernel.experiment}" />
 		</filterset>
 		<!-- generate export property file -->
-		<copy file="libsvm/${experiment.base}/export-bow.template.xml" tofile="${export.dir}/export-bow.xml" overwrite="yes">
+		<copy todir="${export.dir}" overwrite="yes">
+			<fileset dir="exp/${kernel.experiment}" includes="*.template" />
+			<globmapper from="*.template" to="*"/>
 			<filterset refid="export.filterset" />
 		</copy>
-		<copy file="libsvm/${experiment.base}/kernel.template.properties" tofile="${export.dir}/kernel.properties" overwrite="yes">
-			<filterset refid="export.filterset" />
-		</copy>
-		<!-- generate and run script to insert zero vectors for the cutoff  -->
-		<copy file="data/insert_hotspot_zv.template.sql" tofile="${export.dir}/insert_hotspot_zv.sql" overwrite="yes">
-			<filterset refid="export.filterset" />
-		</copy>
+		<!-- run script to insert zero vectors for the cutoff -->
 		<antcall target="mysql">
 			<param name="mysql.dir" value="${export.dir}" />
 			<param name="mysql.script" value="insert_hotspot_zv.sql" />
 		</antcall>
-		<!-- export the data -->
+		<!-- export the data --> 
 		<antcall target="SparseDataExporter">
 			<param name="export.type" value="libsvm" />
 			<param name="export.dir" value="${export.dir}" />
@@ -452,7 +427,7 @@
 	</target>
 	<target name="SparseDataExporter" description="run the SparseDataExporter from export.dir, property file export.prop, type export.type">
 		<property name="export.prop" value="export-bow.xml" />
-		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="i2b2.cp" dir="${export.dir}">
+		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="${export.dir}">
 			<arg value="-prop" />
 			<arg value="${export.prop}" />
 			<arg value="-type" />
@@ -461,7 +436,7 @@
 		</java>
 	</target>
 	<target name="mysql" description="run specified script">
-		<exec executable="${mysql.home}/mysql" dir="${mysql.dir}">
+		<exec executable="${mysql.home}/mysql" dir="${mysql.dir}" failonerror="yes">
 			<arg line="${mysql.line}" />
 			<arg value="-e" />
 			<arg value="source ${mysql.script}" />
