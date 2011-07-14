@@ -83,7 +83,6 @@
 		</antcall>
 	</target>
 	<target name="insert_hotspot_zero_vector_tt" description="setup truth table for ontocuis">
-		<property name="kernel.experiment" value="ontocuis" />
 		<property name="mysql.script" value="insert_hotspot_zero_vector_tt.sql" />
 		<copy file="data/${mysql.script}" todir="${java.io.tmpdir}" overwrite="yes">
 			<filterset>
@@ -96,7 +95,6 @@
 		</antcall>
 	</target>
 	<target name="insert_classifier_eval_irzv" description="setup truth table for ontocuis">
-		<property name="kernel.experiment" value="ontocuis" />
 		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
 		<copy file="data/insert_classifier_eval_irzv.template.sql" tofile="libsvm/${kernel.experiment}/insert_classifier_eval_irzv.sql" overwrite="yes">
 			<filterset>
