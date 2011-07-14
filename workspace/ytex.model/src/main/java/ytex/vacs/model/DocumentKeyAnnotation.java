@@ -20,7 +20,7 @@ public class DocumentKeyAnnotation extends DocumentAnnotation {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	Integer uid;
+	Long uid;
 	Integer studyID;
 	Integer documentTypeID;
 	String siteID;
@@ -33,11 +33,11 @@ public class DocumentKeyAnnotation extends DocumentAnnotation {
 		this.siteID = siteID;
 	}
 
-	public Integer getUid() {
+	public Long getUid() {
 		return uid;
 	}
 
-	public void setUid(Integer uid) {
+	public void setUid(Long uid) {
 		this.uid = uid;
 	}
 

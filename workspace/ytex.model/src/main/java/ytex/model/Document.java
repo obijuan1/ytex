@@ -18,49 +18,74 @@ public class Document implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * the document id
-	 */
-	Integer documentID;
-
-	/**
-	 * document plain text
-	 */
-	String docText;
+	String analysisBatch;
 
 	/**
 	 * the document CAS - serialised in XMI format and compressed.
 	 */
 	byte[] cas;
 
+	/**
+	 * document plain text
+	 */
+	String docText;
+
 	List<DocumentAnnotation> documentAnnotations = new ArrayList<DocumentAnnotation>();
 
 	List<DocumentClass> documentClasses = new ArrayList<DocumentClass>();
 
-	String analysisBatch;
+	/**
+	 * the document id
+	 */
+	Integer documentID;
+	
+	/**
+	 * external document id
+	 */
+	long uid;
 
 	public Document() {
 		super();
+	}
+
+	public String getAnalysisBatch() {
+		return analysisBatch;
 	}
 
 	public byte[] getCas() {
 		return cas;
 	}
 
-	public void setCas(byte[] cas) {
-		this.cas = cas;
+	public String getDocText() {
+		return docText;
+	}
+
+	public List<DocumentAnnotation> getDocumentAnnotations() {
+		return documentAnnotations;
+	}
+
+	public List<DocumentClass> getDocumentClasses() {
+		return documentClasses;
 	}
 
 	public Integer getDocumentID() {
 		return documentID;
 	}
 
-	public void setDocumentID(Integer documentID) {
-		this.documentID = documentID;
+	public long getUid() {
+		return uid;
 	}
 
-	public List<DocumentAnnotation> getDocumentAnnotations() {
-		return documentAnnotations;
+	public void setAnalysisBatch(String analysisBatch) {
+		this.analysisBatch = analysisBatch;
+	}
+
+	public void setCas(byte[] cas) {
+		this.cas = cas;
+	}
+
+	public void setDocText(String docText) {
+		this.docText = docText;
 	}
 
 	public void setDocumentAnnotations(
@@ -68,28 +93,16 @@ public class Document implements Serializable {
 		this.documentAnnotations = documentAnnotations;
 	}
 
-	public String getAnalysisBatch() {
-		return analysisBatch;
-	}
-
-	public void setAnalysisBatch(String analysisBatch) {
-		this.analysisBatch = analysisBatch;
-	}
-
-	public String getDocText() {
-		return docText;
-	}
-
-	public void setDocText(String docText) {
-		this.docText = docText;
-	}
-
-	public List<DocumentClass> getDocumentClasses() {
-		return documentClasses;
-	}
-
 	public void setDocumentClasses(List<DocumentClass> documentClasses) {
 		this.documentClasses = documentClasses;
+	}
+
+	public void setDocumentID(Integer documentID) {
+		this.documentID = documentID;
+	}
+
+	public void setUid(long uid) {
+		this.uid = uid;
 	}
 
 	@Override
