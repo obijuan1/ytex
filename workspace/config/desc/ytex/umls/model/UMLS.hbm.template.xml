@@ -1,14 +1,13 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping package="ytex.umls.model" schema="@umls.schema@" @filter.umls.catalog@>
-	<!--  mrrel doesn't really have a primary key / unique index -->
+	<!-- mrrel doesn't really have a primary key / unique index -->
 	<class name="MRREL" table="MRREL">
-		<composite-id>
-			<key-property name="cui1"></key-property>
-			<key-property name="cui2"></key-property>
-			<key-property name="rel"></key-property>
-			<key-property name="sab"></key-property>
-		</composite-id>
+		<id name="rui" column="rui" />
+		<property name="cui1"></property>
+		<property name="cui2"></property>
+		<property name="rel"></property>
+		<property name="sab"></property>
 		<property name="rela" />
 	</class>
 	<class name="MRCONSO" table="MRCONSO">
@@ -42,17 +41,6 @@
 		<property name="atui" />
 		<property name="cvf" />
 	</class>
-	<query name="getRelationsForSABs"><![CDATA[
-		select cui1, cui2
-		from MRREL
-		where sab in (:sabs)
-		and rel in ('PAR') and rela in ('inverse_isa')
-	]]></query>
-	<query name="getAllRelationsOld"><![CDATA[
-		select cui1, cui2
-		from MRREL
-		where rel in ('PAR') and rela in ('inverse_isa')
-	]]></query>
 	<query name="getFirstAuiStr"><![CDATA[
 		select aui,str
 		from MRCONSO
@@ -64,12 +52,23 @@
 		where aui > :aui
 		order by aui
 	]]></query>
-	<query name="getAllRelations"><![CDATA[
-		select cui1, cui2
-		from MRREL
-		where 
-		(rel in ('RB') and rela is null)
-		or
-		(rel in ('PAR') and rela in ('inverse_isa'))
+	<!-- <query name="getRelationsForSABs"><![CDATA[ select cui1, cui2 from 
+		MRREL where sab in (:sabs) and rel in ('PAR') and rela in ('inverse_isa') 
+		]]></query> <query name="getAllRelationsOld"><![CDATA[ select cui1, cui2 
+		from MRREL where rel in ('PAR') and rela in ('inverse_isa') ]]></query> <query 
+		name="getAllRelations"><![CDATA[ select cui1, cui2 from MRREL where (rel 
+		in ('RB') and rela is null) or (rel in ('PAR') and rela in ('inverse_isa')) 
+		]]></query> -->
+	<query name="getCuiMinStr"><![CDATA[
+		select cui, min(str)
+		from MRCONSO
+		where cui in (:cuis)
+		group by cui
+	]]></query>
+	<query name="getCuiPreferredName"><![CDATA[
+		select cui, str
+		from MRCONSO
+		where cui in (:cuis)
+		and tty = 'PN'
 	]]></query>
 </hibernate-mapping>
