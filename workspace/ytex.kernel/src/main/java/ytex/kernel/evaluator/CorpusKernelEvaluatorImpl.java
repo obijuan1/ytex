@@ -232,8 +232,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		}
 		int nStart = 0;
 		int nEnd = documentIds.size();
-		int total = 0;
-		documentIds.size();
+		int total = documentIds.size();
 		if (nMod > 0) {
 			nMod = Math.min(total, nMod);
 		}
@@ -287,6 +286,9 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 	private void evalInstance(Map<Integer, Node> instanceIDMap,
 			KernelEvaluation kernelEvaluation, int instanceId1,
 			SortedSet<Integer> rightDocumentIDs) {
+		if (log.isDebugEnabled()) {
+			log.debug("left: " + instanceId1 + ", right: " + rightDocumentIDs);
+		}
 		for (Integer instanceId2 : rightDocumentIDs) {
 			// if (instanceId1 != instanceId2) {
 			final int i1 = instanceId1;

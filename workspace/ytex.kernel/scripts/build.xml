@@ -20,9 +20,6 @@
 		<fail unless="kernel.data" />
 		<property file="${kernel.data}/kernel.properties" />
 		<property file="${basedir}/kernel-default.properties" />
-		<makeurl property="log4j.url" file="${ytex.home}/config/desc/log4j.properties" />
-		<property name="log4j.arg" value="-Dlog4j.configuration=${log4j}" />
-		<property name="java.log.arg" value="-Djava.util.logging.config.file=${ytex.home}/config/desc/Logger.properties" />
 		<!-- set flags to control which evaluation to perform -->
 		<condition property="svmlight">
 			<equals arg1="${kernel.algo}" arg2="svmlight" />
@@ -137,7 +134,7 @@
 				<filterreader classname="org.apache.tools.ant.filters.TailFilter">
 					<param name="lines" value="1" />
 				</filterreader>
-				<striplinebreaks/>
+				<striplinebreaks />
 			</filterchain>
 		</loadfile>
 		<echo>kernel.train.data ${kernel.train.data}</echo>
@@ -329,4 +326,5 @@
 			<arg line="${kernel.line} ${kernel.dist.file} ${kernel.label.filename}" />
 		</exec>
 	</target>
+
 </project>

@@ -98,97 +98,45 @@ import ytex.kernel.model.FeatureRank;
 public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 
 	/**
-	 * We are passing around quite a few parameters. It gets to be a pain, so
-	 * put everything in an object.
+	 * fill in map of Concept Id - bin - instance ids
 	 * 
 	 * @author vijay
 	 * 
 	 */
-	public static class Parameters {
-		String corpusName;
-		String conceptGraphName;
-		String conceptSetName;
-		String splitName;
-		String labelQuery;
-		String classFeatureQuery;
-		double minInfo;
-		Set<String> xVals;
-		String xLeftover;
-		String xMerge;
-		Double parentConceptMutualInfoThreshold;
-		Integer parentConceptTopThreshold;
+	public class ConceptInstanceMapExtractor implements RowCallbackHandler {
+		ConceptGraph cg;
+		Map<String, Map<String, Set<Integer>>> conceptInstanceMap;
 
-		public String getCorpusName() {
-			return corpusName;
+		ConceptInstanceMapExtractor(
+				Map<String, Map<String, Set<Integer>>> conceptInstanceMap,
+				ConceptGraph cg) {
+			this.cg = cg;
+			this.conceptInstanceMap = conceptInstanceMap;
 		}
 
-		public String getConceptGraphName() {
-			return conceptGraphName;
+		public void processRow(ResultSet rs) throws SQLException {
+			String conceptId = rs.getString(1);
+			int instanceId = rs.getInt(2);
+			String x = rs.getString(3);
+			// limit to concepts from our graph
+			ConcRel cr = cg.getConceptMap().get(conceptId);
+			if (cr != null) {
+				Map<String, Set<Integer>> binInstanceMap = conceptInstanceMap
+						.get(cr.getConceptID());
+				if (binInstanceMap == null) {
+					// use the conceptId from the concept to save memory
+					binInstanceMap = new HashMap<String, Set<Integer>>(2);
+					conceptInstanceMap.put(cr.getConceptID(), binInstanceMap);
+				}
+				Set<Integer> instanceIds = binInstanceMap.get(x);
+				if (instanceIds == null) {
+					instanceIds = new HashSet<Integer>();
+					binInstanceMap.put(x, instanceIds);
+				}
+				instanceIds.add(instanceId);
+			}
 		}
 
-		public String getConceptSetName() {
-			return conceptSetName;
-		}
-
-		public String getSplitName() {
-			return splitName;
-		}
-
-		public String getLabelQuery() {
-			return labelQuery;
-		}
-
-		public String getClassFeatureQuery() {
-			return classFeatureQuery;
-		}
-
-		public double getMinInfo() {
-			return minInfo;
-		}
-
-		public Set<String> getxVals() {
-			return xVals;
-		}
-
-		public String getxLeftover() {
-			return xLeftover;
-		}
-
-		public String getxMerge() {
-			return xMerge;
-		}
-
-		public Double getParentConceptMutualInfoThreshold() {
-			return parentConceptMutualInfoThreshold;
-		}
-
-		public Integer getParentConceptTopThreshold() {
-			return parentConceptTopThreshold;
-		}
-
-		public Parameters() {
-
-		}
-
-		public Parameters(Properties props) {
-			corpusName = props.getProperty("ytex.corpusName");
-			conceptGraphName = props.getProperty("ytex.conceptGraphName");
-			conceptSetName = props.getProperty("ytex.conceptSetName");
-			splitName = props.getProperty("ytex.splitName");
-			labelQuery = props.getProperty("instanceClassQuery");
-			classFeatureQuery = props.getProperty("ytex.conceptInstanceQuery");
-			minInfo = Double.parseDouble(props.getProperty("min.info", "1e-4"));
-			String xValStr = props.getProperty("ytex.xVals", "0,1");
-			xVals = new HashSet<String>();
-			xVals.addAll(Arrays.asList(xValStr.split(",")));
-			xLeftover = props.getProperty("ytex.xLeftover", "0");
-			xMerge = props.getProperty("ytex.xMerge", "1");
-			parentConceptMutualInfoThreshold = FileUtil.getDoubleProperty(
-					props, "ytex.parentConceptMutualInfoThreshold", null);
-			parentConceptTopThreshold = parentConceptMutualInfoThreshold == null ? FileUtil
-					.getIntegerProperty(props,
-							"ytex.parentConceptTopThreshold", 25) : null;
-		}
 	}
 
 	/**
@@ -484,45 +432,97 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	}
 
 	/**
-	 * fill in map of Concept Id - bin - instance ids
+	 * We are passing around quite a few parameters. It gets to be a pain, so
+	 * put everything in an object.
 	 * 
 	 * @author vijay
 	 * 
 	 */
-	public class ConceptInstanceMapExtractor implements RowCallbackHandler {
-		Map<String, Map<String, Set<Integer>>> conceptInstanceMap;
-		ConceptGraph cg;
+	public static class Parameters {
+		String classFeatureQuery;
+		String conceptGraphName;
+		String conceptSetName;
+		String corpusName;
+		String labelQuery;
+		double minInfo;
+		Double parentConceptMutualInfoThreshold;
+		Integer parentConceptTopThreshold;
+		String splitName;
+		String xLeftover;
+		String xMerge;
+		Set<String> xVals;
 
-		ConceptInstanceMapExtractor(
-				Map<String, Map<String, Set<Integer>>> conceptInstanceMap,
-				ConceptGraph cg) {
-			this.cg = cg;
-			this.conceptInstanceMap = conceptInstanceMap;
+		public Parameters() {
+
 		}
 
-		public void processRow(ResultSet rs) throws SQLException {
-			String conceptId = rs.getString(1);
-			int instanceId = rs.getInt(2);
-			String x = rs.getString(3);
-			// limit to concepts from our graph
-			ConcRel cr = cg.getConceptMap().get(conceptId);
-			if (cr != null) {
-				Map<String, Set<Integer>> binInstanceMap = conceptInstanceMap
-						.get(cr.getConceptID());
-				if (binInstanceMap == null) {
-					// use the conceptId from the concept to save memory
-					binInstanceMap = new HashMap<String, Set<Integer>>(2);
-					conceptInstanceMap.put(cr.getConceptID(), binInstanceMap);
-				}
-				Set<Integer> instanceIds = binInstanceMap.get(x);
-				if (instanceIds == null) {
-					instanceIds = new HashSet<Integer>();
-					binInstanceMap.put(x, instanceIds);
-				}
-				instanceIds.add(instanceId);
-			}
+		public Parameters(Properties props) {
+			corpusName = props.getProperty("ytex.corpusName");
+			conceptGraphName = props.getProperty("ytex.conceptGraphName");
+			conceptSetName = props.getProperty("ytex.conceptSetName");
+			splitName = props.getProperty("ytex.splitName");
+			labelQuery = props.getProperty("instanceClassQuery");
+			classFeatureQuery = props.getProperty("ytex.conceptInstanceQuery");
+			minInfo = Double.parseDouble(props.getProperty("min.info", "1e-4"));
+			String xValStr = props.getProperty("ytex.xVals", "0,1");
+			xVals = new HashSet<String>();
+			xVals.addAll(Arrays.asList(xValStr.split(",")));
+			xLeftover = props.getProperty("ytex.xLeftover", "0");
+			xMerge = props.getProperty("ytex.xMerge", "1");
+			parentConceptMutualInfoThreshold = FileUtil.getDoubleProperty(
+					props, "ytex.parentConceptMutualInfoThreshold", null);
+			parentConceptTopThreshold = parentConceptMutualInfoThreshold == null ? FileUtil
+					.getIntegerProperty(props,
+							"ytex.parentConceptTopThreshold", 25) : null;
 		}
 
+		public String getClassFeatureQuery() {
+			return classFeatureQuery;
+		}
+
+		public String getConceptGraphName() {
+			return conceptGraphName;
+		}
+
+		public String getConceptSetName() {
+			return conceptSetName;
+		}
+
+		public String getCorpusName() {
+			return corpusName;
+		}
+
+		public String getLabelQuery() {
+			return labelQuery;
+		}
+
+		public double getMinInfo() {
+			return minInfo;
+		}
+
+		public Double getParentConceptMutualInfoThreshold() {
+			return parentConceptMutualInfoThreshold;
+		}
+
+		public Integer getParentConceptTopThreshold() {
+			return parentConceptTopThreshold;
+		}
+
+		public String getSplitName() {
+			return splitName;
+		}
+
+		public String getxLeftover() {
+			return xLeftover;
+		}
+
+		public String getxMerge() {
+			return xMerge;
+		}
+
+		public Set<String> getxVals() {
+			return xVals;
+		}
 	}
 
 	// /**
@@ -631,13 +631,26 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 
 	protected JdbcTemplate jdbcTemplate;
 
-	protected NamedParameterJdbcTemplate namedParamJdbcTemplate;
-
 	protected KernelUtil kernelUtil;
+
+	protected NamedParameterJdbcTemplate namedParamJdbcTemplate;
 
 	protected PlatformTransactionManager transactionManager;
 
 	protected TransactionTemplate txNew;
+
+	/**
+	 * recursively add children of cr to childConcepts
+	 * 
+	 * @param childConcepts
+	 * @param cr
+	 */
+	private void addSubtree(Set<String> childConcepts, ConcRel cr) {
+		childConcepts.add(cr.getConceptID());
+		for (ConcRel crc : cr.getChildren()) {
+			addSubtree(childConcepts, crc);
+		}
+	}
 
 	private JointDistribution calcMergedJointDistribution(
 			Map<String, JointDistribution> conceptJointDistroMap,
@@ -749,6 +762,45 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		return foldJointDistroMap;
 	}
 
+	/**
+	 * delete the feature evaluations before we insert them
+	 * 
+	 * @param params
+	 * @param label
+	 * @param foldId
+	 */
+	private void deleteFeatureEval(Parameters params, String label, int foldId) {
+		for (String type : new String[] { MUTUALINFO, MUTUALINFO_PARENT,
+				MUTUALINFO_CHILD })
+			this.classifierEvaluationDao.deleteFeatureEvaluation(
+					params.getCorpusName(), params.getConceptSetName(), label,
+					type, foldId, params.getConceptGraphName());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ytex.kernel.CorpusLabelEvaluator#evaluateCorpus(java.lang.String,
+	 * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+	 * java.lang.Double, java.util.Set, java.lang.String, java.lang.String)
+	 */
+	@Override
+	public boolean evaluateCorpus(Parameters params) {
+		if (!(params.getCorpusName() != null
+				&& params.getConceptGraphName() != null
+				&& params.getLabelQuery() != null && params
+				.getClassFeatureQuery() != null))
+			return false;
+		ConceptGraph cg = conceptDao.getConceptGraph(params
+				.getConceptGraphName());
+		InstanceData instanceData = this.kernelUtil.loadInstances(params
+				.getLabelQuery());
+		for (String label : instanceData.getLabelToInstanceMap().keySet()) {
+			evaluateCorpusLabel(params, cg, instanceData, label);
+		}
+		return true;
+	}
+
 	@Override
 	public boolean evaluateCorpus(String propFile) throws IOException {
 		Properties props = FileUtil.loadProperties(propFile, true);
@@ -775,28 +827,37 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		return this.evaluateCorpus(new Parameters(props));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ytex.kernel.CorpusLabelEvaluator#evaluateCorpus(java.lang.String,
-	 * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
-	 * java.lang.Double, java.util.Set, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean evaluateCorpus(Parameters params) {
-		if (!(params.getCorpusName() != null
-				&& params.getConceptGraphName() != null
-				&& params.getLabelQuery() != null && params
-				.getClassFeatureQuery() != null))
-			return false;
-		ConceptGraph cg = conceptDao.getConceptGraph(params
-				.getConceptGraphName());
-		InstanceData instanceData = this.kernelUtil.loadInstances(params
-				.getLabelQuery());
-		for (String label : instanceData.getLabelToInstanceMap().keySet()) {
-			evaluateCorpusLabel(params, cg, instanceData, label);
-		}
-		return true;
+	private void evaluateCorpusFold(Parameters params,
+			Map<String, Set<Integer>> yMargin, ConceptGraph cg,
+			InstanceData instanceData, String label,
+			Map<String, Map<String, Set<Integer>>> conceptInstanceMap,
+			int foldId) {
+		if (log.isInfoEnabled())
+			log.info("evaluateCorpusFold() label = " + label + ", fold = "
+					+ foldId);
+		deleteFeatureEval(params, label, foldId);
+
+		// get the entropy of Y for this fold
+		double yEntropy = this.calculateFoldEntropy(yMargin);
+		// get the joint distribution of concepts and instances
+		Map<String, JointDistribution> rawJointDistro = this
+				.completeJointDistroForFold(conceptInstanceMap, yMargin, params
+						.getxVals(),
+						instanceData.getLabelToClassMap().get(label), params
+								.getxLeftover());
+		saveFeatureEvaluation(rawJointDistro, params, label, foldId, yEntropy,
+				MUTUALINFO);
+		// initialize the object we'll be saving all this in
+		// CorpusLabelEvaluation labelEval = this.initCorpusLabelEval(eval,
+		// label,
+		// run, fold);
+		// propagate across graph and save
+		// propagateJointDistribution(rawJointDistro, labelEval, cg, yMargin,
+		propagateJointDistribution(rawJointDistro, params, label, foldId, cg,
+				yMargin);
+		// store children of top concepts
+		// storeChildConcepts(labelEval, parentConceptTopThreshold,
+		storeChildConcepts(params, label, foldId, cg);
 	}
 
 	/**
@@ -834,60 +895,130 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		}
 	}
 
-	private void evaluateCorpusFold(Parameters params,
-			Map<String, Set<Integer>> yMargin, ConceptGraph cg,
-			InstanceData instanceData, String label,
-			Map<String, Map<String, Set<Integer>>> conceptInstanceMap,
-			int foldId) {
-		if (log.isInfoEnabled())
-			log.info("evaluateCorpusFold() label = " + label + ", fold = "
-					+ foldId);
-		deleteFeatureEval(params, label, foldId);
+	public ClassifierEvaluationDao getClassifierEvaluationDao() {
+		return classifierEvaluationDao;
+	}
 
-		// get the entropy of Y for this fold
-		double yEntropy = this.calculateFoldEntropy(yMargin);
-		// get the joint distribution of concepts and instances
-		Map<String, JointDistribution> rawJointDistro = this
-				.completeJointDistroForFold(conceptInstanceMap, yMargin, params
-						.getxVals(),
-						instanceData.getLabelToClassMap().get(label), params
-								.getxLeftover());
-		saveFeatureEvaluation(rawJointDistro, params, label, foldId, yEntropy,
-				MUTUALINFO);
-		// initialize the object we'll be saving all this in
-		// CorpusLabelEvaluation labelEval = this.initCorpusLabelEval(eval,
-		// label,
-		// run, fold);
-		// propagate across graph and save
-		// propagateJointDistribution(rawJointDistro, labelEval, cg, yMargin,
-		propagateJointDistribution(rawJointDistro, params, label, foldId, cg,
-				yMargin);
-		// store children of top concepts
-		// storeChildConcepts(labelEval, parentConceptTopThreshold,
-		storeChildConcepts(params, label, foldId, cg);
+	public ConceptDao getConceptDao() {
+		return conceptDao;
+	}
+
+	public DataSource getDataSource(DataSource ds) {
+		return this.jdbcTemplate.getDataSource();
+	}
+
+	private int getFoldId(Parameters params, String label, int run, int fold) {
+		// figure out fold id
+		int foldId = 0;
+		if (run > 0 && fold > 0) {
+			CrossValidationFold cvFold = this.classifierEvaluationDao
+					.getCrossValidationFold(params.getCorpusName(),
+							params.getSplitName(), label, run, fold);
+			if (cvFold != null) {
+				foldId = cvFold.getCrossValidationFoldId();
+			} else {
+				log.warn("could not find cv fold, name="
+						+ params.getCorpusName() + ", run=" + run + ", fold="
+						+ fold);
+			}
+		}
+		return foldId;
+	}
+
+	private Map<String, Set<Integer>> getFoldYMargin(InstanceData instanceData,
+			String label, int run, int fold) {
+		Map<Integer, String> instanceClassMap = instanceData
+				.getLabelToInstanceMap().get(label).get(run).get(fold)
+				.get(true);
+		Map<String, Set<Integer>> yMargin = new HashMap<String, Set<Integer>>();
+		for (Map.Entry<Integer, String> instanceClass : instanceClassMap
+				.entrySet()) {
+			Set<Integer> instanceIds = yMargin.get(instanceClass.getValue());
+			if (instanceIds == null) {
+				instanceIds = new HashSet<Integer>();
+				yMargin.put(instanceClass.getValue(), instanceIds);
+			}
+			instanceIds.add(instanceClass.getKey());
+		}
+		return yMargin;
+	}
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	public PlatformTransactionManager getTransactionManager() {
+		return transactionManager;
+	}
+
+	private FeatureEvaluation initFeatureEval(Parameters params, String label,
+			int foldId, String type) {
+		FeatureEvaluation feval = new FeatureEvaluation();
+		feval.setCorpusName(params.getCorpusName());
+		feval.setLabel(label);
+		feval.setCrossValidationFoldId(foldId);
+		feval.setParam1(params.getConceptGraphName());
+		feval.setEvaluationType(type);
+		return feval;
 	}
 
 	/**
-	 * delete the feature evaluations before we insert them
+	 * load the map of concept - instances
 	 * 
-	 * @param params
+	 * @param classFeatureQuery
+	 * @param cg
 	 * @param label
-	 * @param foldId
+	 * @return
 	 */
-	private void deleteFeatureEval(Parameters params, String label, int foldId) {
-		for (String type : new String[] { MUTUALINFO, MUTUALINFO_PARENT,
-				MUTUALINFO_CHILD })
-			this.classifierEvaluationDao.deleteFeatureEvaluation(
-					params.getCorpusName(), params.getConceptSetName(), label,
-					type, foldId, params.getConceptGraphName());
+	private Map<String, Map<String, Set<Integer>>> loadConceptInstanceMap(
+			String classFeatureQuery, ConceptGraph cg, String label) {
+		Map<String, Map<String, Set<Integer>>> conceptInstanceMap = new HashMap<String, Map<String, Set<Integer>>>();
+		Map<String, Object> args = new HashMap<String, Object>(1);
+		if (label != null && label.length() > 0) {
+			args.put("label", label);
+		}
+		ConceptInstanceMapExtractor ex = new ConceptInstanceMapExtractor(
+				conceptInstanceMap, cg);
+		this.namedParamJdbcTemplate.query(classFeatureQuery, args, ex);
+		return conceptInstanceMap;
 	}
 
-	private void saveFeatureEvaluation(
-			Map<String, JointDistribution> rawJointDistro, Parameters params,
-			String label, int foldId, double yEntropy, String type) {
-		FeatureEvaluation fe = initFeatureEval(params, label, foldId, type);
-		fe.setFeatures(rank(fe, rawJointDistro, yEntropy));
-		this.classifierEvaluationDao.saveFeatureEvaluation(fe);
+	/**
+	 * 'complete' the joint distribution tables wrt a fold (yMargin). propagate
+	 * the joint distribution of all concepts recursively.
+	 * 
+	 * @param rawJointDistroMap
+	 * @param labelEval
+	 * @param cg
+	 * @param yMargin
+	 * @param xMerge
+	 * @param minInfo
+	 */
+	// private void propagateJointDistribution(
+	// Map<String, JointDistribution> rawJointDistroMap,
+	// CorpusLabelEvaluation labelEval, ConceptGraph cg,
+	// Map<String, Set<Integer>> yMargin, String xMerge, double minInfo) {
+	private void propagateJointDistribution(
+			Map<String, JointDistribution> rawJointDistroMap,
+			Parameters params, String label, int foldId, ConceptGraph cg,
+			Map<String, Set<Integer>> yMargin) {
+		// get the entropy of Y for this fold
+		double yEntropy = this.calculateFoldEntropy(yMargin);
+		// allocate a map to hold the results of the propagation across the
+		// concept graph
+		Map<String, JointDistribution> conceptJointDistroMap = new HashMap<String, JointDistribution>(
+				cg.getConceptMap().size());
+		Map<String, Integer> conceptDistMap = new HashMap<String, Integer>();
+		for (String cName : cg.getRoots()) {
+			ConcRel cr = cg.getConceptMap().get(cName);
+			// recurse
+			calcMergedJointDistribution(conceptJointDistroMap, conceptDistMap,
+					cr, rawJointDistroMap, yMargin, params.getxMerge(),
+					params.getMinInfo(),
+					Arrays.asList(new String[] { cr.getConceptID() }));
+		}
+		this.saveFeatureEvaluation(conceptJointDistroMap, params, label,
+				foldId, yEntropy, MUTUALINFO_PARENT);
 	}
 
 	private List<FeatureRank> rank(FeatureEvaluation fe,
@@ -909,15 +1040,97 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 				new FeatureRank.FeatureRankDesc());
 	}
 
-	private FeatureEvaluation initFeatureEval(Parameters params, String label,
-			int foldId, String type) {
-		FeatureEvaluation feval = new FeatureEvaluation();
-		feval.setCorpusName(params.getCorpusName());
-		feval.setLabel(label);
-		feval.setCrossValidationFoldId(foldId);
-		feval.setParam1(params.getConceptGraphName());
-		feval.setEvaluationType(type);
-		return feval;
+	private void saveFeatureEvaluation(
+			Map<String, JointDistribution> rawJointDistro, Parameters params,
+			String label, int foldId, double yEntropy, String type) {
+		FeatureEvaluation fe = initFeatureEval(params, label, foldId, type);
+		fe.setFeatures(rank(fe, rawJointDistro, yEntropy));
+		this.classifierEvaluationDao.saveFeatureEvaluation(fe);
+	}
+
+	// private CorpusLabelEvaluation initCorpusLabelEval(CorpusEvaluation eval,
+	// String label, String splitName, int run, int fold) {
+	// Integer foldId = getFoldId(eval, label, splitName, run, fold);
+	// // see if the labelEval is already there
+	// CorpusLabelEvaluation labelEval = corpusDao.getCorpusLabelEvaluation(
+	// eval.getCorpusName(), eval.getConceptGraphName(),
+	// eval.getConceptSetName(), label, foldId);
+	// if (labelEval == null) {
+	// // not there - add it
+	// labelEval = new CorpusLabelEvaluation();
+	// labelEval.setCorpus(eval);
+	// labelEval.setFoldId(foldId);
+	// labelEval.setLabel(label);
+	// corpusDao.addCorpusLabelEval(labelEval);
+	// }
+	// return labelEval;
+	// }
+
+	public void setClassifierEvaluationDao(
+			ClassifierEvaluationDao classifierEvaluationDao) {
+		this.classifierEvaluationDao = classifierEvaluationDao;
+	}
+
+	// /**
+	// * create the corpusEvaluation if it doesn't exist
+	// *
+	// * @param corpusName
+	// * @param conceptGraphName
+	// * @param conceptSetName
+	// * @return
+	// */
+	// private CorpusEvaluation initEval(String corpusName,
+	// String conceptGraphName, String conceptSetName) {
+	// CorpusEvaluation eval = this.corpusDao.getCorpus(corpusName,
+	// conceptGraphName, conceptSetName);
+	// if (eval == null) {
+	// eval = new CorpusEvaluation();
+	// eval.setConceptGraphName(conceptGraphName);
+	// eval.setConceptSetName(conceptSetName);
+	// eval.setCorpusName(corpusName);
+	// this.corpusDao.addCorpus(eval);
+	// }
+	// return eval;
+	// }
+
+	public void setConceptDao(ConceptDao conceptDao) {
+		this.conceptDao = conceptDao;
+	}
+
+	//
+	// private void saveLabelStatistic(String conceptID,
+	// JointDistribution distroMerged, JointDistribution distroRaw,
+	// CorpusLabelEvaluation labelEval, double yEntropy, double minInfo,
+	// int distance) {
+	// double miMerged = distroMerged.getMutualInformation(yEntropy);
+	// double miRaw = distroRaw != null ? distroRaw
+	// .getMutualInformation(yEntropy) : 0;
+	// if (miMerged > minInfo || miRaw > minInfo) {
+	// ConceptLabelStatistic stat = new ConceptLabelStatistic();
+	// stat.setCorpusLabel(labelEval);
+	// stat.setMutualInfo(miMerged);
+	// if (distroRaw != null)
+	// stat.setMutualInfoRaw(miRaw);
+	// stat.setConceptId(conceptID);
+	// stat.setDistance(distance);
+	// this.corpusDao.addLabelStatistic(stat);
+	// }
+	// }
+
+	public void setDataSource(DataSource ds) {
+		this.jdbcTemplate = new JdbcTemplate(ds);
+		this.namedParamJdbcTemplate = new NamedParameterJdbcTemplate(ds);
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
+	}
+
+	public void setTransactionManager(
+			PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+		txNew = new TransactionTemplate(transactionManager);
+		txNew.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 	}
 
 	/**
@@ -1001,219 +1214,6 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 				}
 			}
 		}
-	}
-
-	/**
-	 * recursively add children of cr to childConcepts
-	 * 
-	 * @param childConcepts
-	 * @param cr
-	 */
-	private void addSubtree(Set<String> childConcepts, ConcRel cr) {
-		childConcepts.add(cr.getConceptID());
-		for (ConcRel crc : cr.getChildren()) {
-			addSubtree(childConcepts, crc);
-		}
-	}
-
-	/**
-	 * load the map of concept - instances
-	 * 
-	 * @param classFeatureQuery
-	 * @param cg
-	 * @param label
-	 * @return
-	 */
-	private Map<String, Map<String, Set<Integer>>> loadConceptInstanceMap(
-			String classFeatureQuery, ConceptGraph cg, String label) {
-		Map<String, Map<String, Set<Integer>>> conceptInstanceMap = new HashMap<String, Map<String, Set<Integer>>>();
-		Map<String, Object> args = new HashMap<String, Object>(1);
-		if (label != null && label.length() > 0) {
-			args.put("label", label);
-		}
-		ConceptInstanceMapExtractor ex = new ConceptInstanceMapExtractor(
-				conceptInstanceMap, cg);
-		this.namedParamJdbcTemplate.query(classFeatureQuery, args, ex);
-		return conceptInstanceMap;
-	}
-
-	public ClassifierEvaluationDao getClassifierEvaluationDao() {
-		return classifierEvaluationDao;
-	}
-
-	public ConceptDao getConceptDao() {
-		return conceptDao;
-	}
-
-	public DataSource getDataSource(DataSource ds) {
-		return this.jdbcTemplate.getDataSource();
-	}
-
-	private Map<String, Set<Integer>> getFoldYMargin(InstanceData instanceData,
-			String label, int run, int fold) {
-		Map<Integer, String> instanceClassMap = instanceData
-				.getLabelToInstanceMap().get(label).get(run).get(fold)
-				.get(true);
-		Map<String, Set<Integer>> yMargin = new HashMap<String, Set<Integer>>();
-		for (Map.Entry<Integer, String> instanceClass : instanceClassMap
-				.entrySet()) {
-			Set<Integer> instanceIds = yMargin.get(instanceClass.getValue());
-			if (instanceIds == null) {
-				instanceIds = new HashSet<Integer>();
-				yMargin.put(instanceClass.getValue(), instanceIds);
-			}
-			instanceIds.add(instanceClass.getKey());
-		}
-		return yMargin;
-	}
-
-	public KernelUtil getKernelUtil() {
-		return kernelUtil;
-	}
-
-	public PlatformTransactionManager getTransactionManager() {
-		return transactionManager;
-	}
-
-	// private CorpusLabelEvaluation initCorpusLabelEval(CorpusEvaluation eval,
-	// String label, String splitName, int run, int fold) {
-	// Integer foldId = getFoldId(eval, label, splitName, run, fold);
-	// // see if the labelEval is already there
-	// CorpusLabelEvaluation labelEval = corpusDao.getCorpusLabelEvaluation(
-	// eval.getCorpusName(), eval.getConceptGraphName(),
-	// eval.getConceptSetName(), label, foldId);
-	// if (labelEval == null) {
-	// // not there - add it
-	// labelEval = new CorpusLabelEvaluation();
-	// labelEval.setCorpus(eval);
-	// labelEval.setFoldId(foldId);
-	// labelEval.setLabel(label);
-	// corpusDao.addCorpusLabelEval(labelEval);
-	// }
-	// return labelEval;
-	// }
-
-	private int getFoldId(Parameters params, String label, int run, int fold) {
-		// figure out fold id
-		int foldId = 0;
-		if (run > 0 && fold > 0) {
-			CrossValidationFold cvFold = this.classifierEvaluationDao
-					.getCrossValidationFold(params.getCorpusName(),
-							params.getSplitName(), label, run, fold);
-			if (cvFold != null) {
-				foldId = cvFold.getCrossValidationFoldId();
-			} else {
-				log.warn("could not find cv fold, name="
-						+ params.getCorpusName() + ", run=" + run + ", fold="
-						+ fold);
-			}
-		}
-		return foldId;
-	}
-
-	// /**
-	// * create the corpusEvaluation if it doesn't exist
-	// *
-	// * @param corpusName
-	// * @param conceptGraphName
-	// * @param conceptSetName
-	// * @return
-	// */
-	// private CorpusEvaluation initEval(String corpusName,
-	// String conceptGraphName, String conceptSetName) {
-	// CorpusEvaluation eval = this.corpusDao.getCorpus(corpusName,
-	// conceptGraphName, conceptSetName);
-	// if (eval == null) {
-	// eval = new CorpusEvaluation();
-	// eval.setConceptGraphName(conceptGraphName);
-	// eval.setConceptSetName(conceptSetName);
-	// eval.setCorpusName(corpusName);
-	// this.corpusDao.addCorpus(eval);
-	// }
-	// return eval;
-	// }
-
-	/**
-	 * 'complete' the joint distribution tables wrt a fold (yMargin). propagate
-	 * the joint distribution of all concepts recursively.
-	 * 
-	 * @param rawJointDistroMap
-	 * @param labelEval
-	 * @param cg
-	 * @param yMargin
-	 * @param xMerge
-	 * @param minInfo
-	 */
-	// private void propagateJointDistribution(
-	// Map<String, JointDistribution> rawJointDistroMap,
-	// CorpusLabelEvaluation labelEval, ConceptGraph cg,
-	// Map<String, Set<Integer>> yMargin, String xMerge, double minInfo) {
-	private void propagateJointDistribution(
-			Map<String, JointDistribution> rawJointDistroMap,
-			Parameters params, String label, int foldId, ConceptGraph cg,
-			Map<String, Set<Integer>> yMargin) {
-		// get the entropy of Y for this fold
-		double yEntropy = this.calculateFoldEntropy(yMargin);
-		// allocate a map to hold the results of the propagation across the
-		// concept graph
-		Map<String, JointDistribution> conceptJointDistroMap = new HashMap<String, JointDistribution>(
-				cg.getConceptMap().size());
-		Map<String, Integer> conceptDistMap = new HashMap<String, Integer>();
-		for (String cName : cg.getRoots()) {
-			ConcRel cr = cg.getConceptMap().get(cName);
-			// recurse
-			calcMergedJointDistribution(conceptJointDistroMap, conceptDistMap,
-					cr, rawJointDistroMap, yMargin, params.getxMerge(),
-					params.getMinInfo(),
-					Arrays.asList(new String[] { cr.getConceptID() }));
-		}
-		this.saveFeatureEvaluation(conceptJointDistroMap, params, label,
-				foldId, yEntropy, MUTUALINFO_PARENT);
-	}
-
-	//
-	// private void saveLabelStatistic(String conceptID,
-	// JointDistribution distroMerged, JointDistribution distroRaw,
-	// CorpusLabelEvaluation labelEval, double yEntropy, double minInfo,
-	// int distance) {
-	// double miMerged = distroMerged.getMutualInformation(yEntropy);
-	// double miRaw = distroRaw != null ? distroRaw
-	// .getMutualInformation(yEntropy) : 0;
-	// if (miMerged > minInfo || miRaw > minInfo) {
-	// ConceptLabelStatistic stat = new ConceptLabelStatistic();
-	// stat.setCorpusLabel(labelEval);
-	// stat.setMutualInfo(miMerged);
-	// if (distroRaw != null)
-	// stat.setMutualInfoRaw(miRaw);
-	// stat.setConceptId(conceptID);
-	// stat.setDistance(distance);
-	// this.corpusDao.addLabelStatistic(stat);
-	// }
-	// }
-
-	public void setClassifierEvaluationDao(
-			ClassifierEvaluationDao classifierEvaluationDao) {
-		this.classifierEvaluationDao = classifierEvaluationDao;
-	}
-
-	public void setConceptDao(ConceptDao conceptDao) {
-		this.conceptDao = conceptDao;
-	}
-
-	public void setDataSource(DataSource ds) {
-		this.jdbcTemplate = new JdbcTemplate(ds);
-		this.namedParamJdbcTemplate = new NamedParameterJdbcTemplate(ds);
-	}
-
-	public void setKernelUtil(KernelUtil kernelUtil) {
-		this.kernelUtil = kernelUtil;
-	}
-
-	public void setTransactionManager(
-			PlatformTransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
-		txNew = new TransactionTemplate(transactionManager);
-		txNew.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 	}
 
 }
