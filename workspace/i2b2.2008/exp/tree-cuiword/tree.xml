@@ -114,6 +114,7 @@ left join stopword sw on sw.stopword = w.canonical_form
 where hi.corpus_name = 'i2b2.2008'
 and hi.experiment = 'bag-cuiword'
 and sw.stopword is null
+and acw.parent_anno_base_id is null
 order by hi.instance_id
 					]]></value>
 					</property>

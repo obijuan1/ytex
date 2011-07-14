@@ -314,7 +314,7 @@
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
 		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
-		<property name="export.libsvm.outdir" value="libsvm/kernel/${kernel.experiment}" />
+		<property name="export.libsvm.outdir" value="libsvm/${kernel.experiment}" />
 		<loadproperties srcfile="${export.tree.srcdir}/label.properties">
 			<filterchain>
 				<linecontainsregexp>
@@ -392,12 +392,12 @@
 			<filter token="export.label" value="${export.label}" />
 			<filter token="export.cutoff" value="${export.cutoff}" />
 		</filterset>
-		<copy file="libsvm/kernel/export.xml" tofile="${export.dir}/${export.xml}" overwrite="yes">
+		<copy file="${export.tree.srcdir}/export.xml" tofile="${export.dir}/${export.xml}" overwrite="yes">
 			<filterset>
 				<filterset refid="kernel.filter" />
 			</filterset>
 		</copy>
-		<copy file="libsvm/kernel/kernel.properties" tofile="${export.dir}/kernel.properties" overwrite="yes">
+		<copy file="exp/${kernel.experiment}/kernel.properties.template" tofile="${export.dir}/kernel.properties" overwrite="yes">
 			<filterset>
 				<filterset refid="kernel.filter" />
 			</filterset>
