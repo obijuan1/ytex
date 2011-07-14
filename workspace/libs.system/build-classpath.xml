@@ -53,7 +53,7 @@
 	<property name="kernel.cp" value="kernel.cp.prod" />
 	<property name="java.log.arg" value="-Djava.util.logging.config.file=${ytex.home}/config/desc/Logger.properties" />
 	<makeurl property="log4j.url" file="${ytex.home}/config/desc/log4j.properties" />
-	<property name="log4j.arg" value="-Dlog4j.configuration=${log4j}" />
+	<property name="log4j.arg" value="-Dlog4j.configuration=${log4j.url}" />
 	<!-- 
 	for some reason on linux just copying the jars to the ant/lib directory doesn't work.
 	explicitly define the task.
