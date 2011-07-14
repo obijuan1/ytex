@@ -236,7 +236,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		if (nMod > 0) {
 			nMod = Math.min(total, nMod);
 		}
-		if(nSlice > nMod) {
+		if(nMod > 0 && nSlice > nMod) {
 			log.info("more slices than documents, skipping slice: " + nSlice);
 			return;
 		}
