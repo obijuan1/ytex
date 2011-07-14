@@ -1,63 +1,59 @@
 package ytex.R;
 
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 import ytex.kernel.FileUtil;
+import ytex.kernel.InfoGainEvaluatorImpl;
 import ytex.kernel.InstanceData;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.KernelUtil;
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.kernel.model.KernelEvaluation;
+import ytex.sparsematrix.InstanceDataExporter;
 
 public class RGramMatrixExporterImpl implements RGramMatrixExporter {
-	private KernelUtil kernelUtil;
+	@SuppressWarnings("static-access")
+	public static void main(String args[]) throws IOException {
+		Options options = new Options();
+		options.addOption(OptionBuilder
+				.withArgName("prop")
+				.hasArg()
+				.isRequired()
+				.withDescription(
+						"property file with queries and other kernel parameters")
+				.create("prop"));
+		try {
+			CommandLineParser parser = new GnuParser();
+			CommandLine line = parser.parse(options, args);
+			RGramMatrixExporter exporter = (RGramMatrixExporter) KernelContextHolder
+					.getApplicationContext().getBean(RGramMatrixExporter.class);
+			exporter.exportGramMatrix(FileUtil.loadProperties(
+					line.getOptionValue("prop"), true));
+		} catch (ParseException pe) {
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp("java " + InfoGainEvaluatorImpl.class.getName()
+					+ " calculate infogain for each feature", options);
+		}
+	}
+
+	private InstanceDataExporter instanceDataExporter;
 	private KernelEvaluationDao kernelEvaluationDao;
 
-	public KernelEvaluationDao getKernelEvaluationDao() {
-		return kernelEvaluationDao;
-	}
-
-	public void setKernelEvaluationDao(KernelEvaluationDao kernelEvaluationDao) {
-		this.kernelEvaluationDao = kernelEvaluationDao;
-	}
-
-	public KernelUtil getKernelUtil() {
-		return kernelUtil;
-	}
-
-	public void setKernelUtil(KernelUtil kernelUtil) {
-		this.kernelUtil = kernelUtil;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ytex.R.RGramMatrixExporter#exportGramMatrix(java.util.Properties)
-	 */
-	@Override
-	public void exportGramMatrix(Properties props) throws IOException {
-		String name = props.getProperty("name");
-		String experiment = props.getProperty("experiment");
-		String param2 = props.getProperty("param2");
-		double param1 = Double.parseDouble(props.getProperty("param1", "0"));
-		InstanceData instanceData = this.getKernelUtil().loadInstances(
-				props.getProperty("instanceClassQuery"));
-		String outdir = props.getProperty("outdir");
-		if (outdir == null || outdir.length() == 0)
-			outdir = ".";
-		exportGramMatrices(name, experiment, param1,
-				param2, outdir, instanceData);
-	}
+	private KernelUtil kernelUtil;
 
 	private void exportGramMatrices(String name, String experiment,
 			double param1, String param2, String outdir,
@@ -71,6 +67,26 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ytex.R.RGramMatrixExporter#exportGramMatrix(java.util.Properties)
+	 */
+	@Override
+	public void exportGramMatrix(Properties props) throws IOException {
+		String name = props.getProperty("ytex.corpusName");
+		String experiment = props.getProperty("ytex.experiment");
+		String param2 = props.getProperty("ytex.param2");
+		double param1 = Double.parseDouble(props.getProperty("ytex.param1", "0"));
+		InstanceData instanceData = this.getKernelUtil().loadInstances(
+				props.getProperty("instanceClassQuery"));
+		String outdir = props.getProperty("outdir");
+		if (outdir == null || outdir.length() == 0)
+			outdir = ".";
+		exportGramMatrices(name, experiment, param1, param2, outdir,
+				instanceData);
+	}
+
 	private void exportLabel(String name, String experiment, String outdir,
 			InstanceData instanceData, String label, int run, double param1,
 			String param2) throws IOException {
@@ -82,83 +98,45 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 				name, experiment, label, 0, param1, param2);
 		kernelUtil.fillGramMatrix(kernelEval, instanceIds, gramMatrix, null,
 				null);
-		outputInstanceData(instanceData, outdir);
+		outputInstanceData(instanceData, label, outdir);
 		outputGramMatrix(kernelEval, gramMatrix, instanceIds,
 				FileUtil.getDataFilePrefix(outdir, label, 0, 0, null));
 
 	}
 
-	private void outputInstanceData(InstanceData instanceData, String outdir)
-			throws IOException {
-		BufferedWriter bw = null;
-		try {
-			StringWriter w = new StringWriter();
-			boolean includeLabel = false;
-			boolean includeRun = false;
-			boolean includeFold = false;
-			boolean includeTrain = false;
-			for (String label : instanceData.getLabelToInstanceMap().keySet()) {
-				for (int run : instanceData.getLabelToInstanceMap().get(label)
-						.keySet()) {
-					for (int fold : instanceData.getLabelToInstanceMap()
-							.get(label).get(run).keySet()) {
-						for (boolean train : instanceData
-								.getLabelToInstanceMap().get(label).get(run)
-								.get(fold).keySet()) {
-							for (Map.Entry<Integer, String> instanceClass : instanceData
-									.getLabelToInstanceMap().get(label)
-									.get(run).get(fold).get(train).entrySet()) {
-								if (label.length() > 0) {
-									includeLabel = true;
-									w.write("\"");
-									w.write(label);
-									w.write("\" ");
-								}
-								if (run > 0) {
-									includeRun = true;
-									w.write(Integer.toString(run));
-									w.write(" ");
-								}
-								if (fold > 0) {
-									includeFold = true;
-									w.write(Integer.toString(fold));
-									w.write(" ");
-								}
-								if (instanceData.getLabelToInstanceMap()
-										.get(label).get(run).size() > 1) {
-									includeTrain = true;
-									w.write(train ? "1" : "0");
-									w.write(" ");
-								}
-								w.write(Integer.toString(instanceClass.getKey()));
-								w.write(" ");
-								w.write("\"");
-								w.write(instanceClass.getValue());
-								w.write("\"\n");
-							}
-						}
-					}
+	/**
+	 * get all instance ids for the specified label
+	 * 
+	 * @param instanceData
+	 * @param label
+	 * @return
+	 */
+	private SortedSet<Integer> getAllInstanceIdsForLabel(
+			InstanceData instanceData, String label) {
+		SortedSet<Integer> instanceIds = new TreeSet<Integer>();
+		for (int run : instanceData.getLabelToInstanceMap().get(label).keySet()) {
+			for (int fold : instanceData.getLabelToInstanceMap().get(label)
+					.get(run).keySet()) {
+				for (SortedMap<Integer, String> instanceLabelMap : instanceData
+						.getLabelToInstanceMap().get(label).get(run).get(fold)
+						.values()) {
+					instanceIds.addAll(instanceLabelMap.keySet());
 				}
 			}
-			bw = new BufferedWriter(new FileWriter(outdir + "/instance.txt"));
-			// write colnames
-			if (includeLabel)
-				bw.write("\"label\" ");
-			if (includeRun)
-				bw.write("\"run\" ");
-			if (includeFold)
-				bw.write("\"fold\" ");
-			if (includeTrain)
-				bw.write("\"train\" ");
-			bw.write("\"instance_id\" \"class\"\n");
-			// write the rest of the data
-			bw.write(w.toString());
-		} finally {
-			if (bw != null) {
-				bw.close();
-			}
 		}
+		return instanceIds;
+	}
 
+	public InstanceDataExporter getInstanceDataExporter() {
+		return instanceDataExporter;
+	}
+
+	public KernelEvaluationDao getKernelEvaluationDao() {
+		return kernelEvaluationDao;
+	}
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
 	}
 
 	private void outputGramMatrix(KernelEvaluation kernelEval,
@@ -203,43 +181,95 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 		}
 	}
 
-	/**
-	 * get all instance ids for the specified label
-	 * 
-	 * @param instanceData
-	 * @param label
-	 * @return
-	 */
-	private SortedSet<Integer> getAllInstanceIdsForLabel(
-			InstanceData instanceData, String label) {
-		SortedSet<Integer> instanceIds = new TreeSet<Integer>();
-		for (int run : instanceData.getLabelToInstanceMap().get(label).keySet()) {
-			for (int fold : instanceData.getLabelToInstanceMap().get(label)
-					.get(run).keySet()) {
-				for (SortedMap<Integer, String> instanceLabelMap : instanceData
-						.getLabelToInstanceMap().get(label).get(run).get(fold)
-						.values()) {
-					instanceIds.addAll(instanceLabelMap.keySet());
-				}
-			}
-		}
-		return instanceIds;
+	private void outputInstanceData(InstanceData instanceData, String label, String outdir)
+			throws IOException {
+		this.instanceDataExporter.outputInstanceData(instanceData,
+				FileUtil.getFoldFilePrefix(outdir, label, 0, 0)
+						+ "instance.txt");
 	}
 
-	public static void main(String args[]) throws IOException {
-		Properties props = new Properties();
-		InputStream propIS = null;
-		try {
-			propIS = new FileInputStream(args[0]);
-			props.loadFromXML(propIS);
-			RGramMatrixExporter exporter = KernelContextHolder
-					.getApplicationContext().getBean(RGramMatrixExporter.class);
-			exporter.exportGramMatrix(props);
-		} finally {
-			if (propIS != null) {
-				propIS.close();
-			}
-		}
+	// BufferedWriter bw = null;
+	// try {
+	// StringWriter w = new StringWriter();
+	// boolean includeLabel = false;
+	// boolean includeRun = false;
+	// boolean includeFold = false;
+	// boolean includeTrain = false;
+	// for (String label : instanceData.getLabelToInstanceMap().keySet()) {
+	// for (int run : instanceData.getLabelToInstanceMap().get(label)
+	// .keySet()) {
+	// for (int fold : instanceData.getLabelToInstanceMap()
+	// .get(label).get(run).keySet()) {
+	// for (boolean train : instanceData
+	// .getLabelToInstanceMap().get(label).get(run)
+	// .get(fold).keySet()) {
+	// for (Map.Entry<Integer, String> instanceClass : instanceData
+	// .getLabelToInstanceMap().get(label)
+	// .get(run).get(fold).get(train).entrySet()) {
+	// if (label.length() > 0) {
+	// includeLabel = true;
+	// w.write("\"");
+	// w.write(label);
+	// w.write("\" ");
+	// }
+	// if (run > 0) {
+	// includeRun = true;
+	// w.write(Integer.toString(run));
+	// w.write(" ");
+	// }
+	// if (fold > 0) {
+	// includeFold = true;
+	// w.write(Integer.toString(fold));
+	// w.write(" ");
+	// }
+	// if (instanceData.getLabelToInstanceMap()
+	// .get(label).get(run).size() > 1) {
+	// includeTrain = true;
+	// w.write(train ? "1" : "0");
+	// w.write(" ");
+	// }
+	// w.write(Integer.toString(instanceClass.getKey()));
+	// w.write(" ");
+	// w.write("\"");
+	// w.write(instanceClass.getValue());
+	// w.write("\"\n");
+	// }
+	// }
+	// }
+	// }
+	// }
+	// bw = new BufferedWriter(new FileWriter(outdir + "/instance.txt"));
+	// // write colnames
+	// if (includeLabel)
+	// bw.write("\"label\" ");
+	// if (includeRun)
+	// bw.write("\"run\" ");
+	// if (includeFold)
+	// bw.write("\"fold\" ");
+	// if (includeTrain)
+	// bw.write("\"train\" ");
+	// bw.write("\"instance_id\" \"class\"\n");
+	// // write the rest of the data
+	// bw.write(w.toString());
+	// } finally {
+	// if (bw != null) {
+	// bw.close();
+	// }
+	// }
+
+	// }
+
+	public void setInstanceDataExporter(
+			InstanceDataExporter instanceDataExporter) {
+		this.instanceDataExporter = instanceDataExporter;
+	}
+
+	public void setKernelEvaluationDao(KernelEvaluationDao kernelEvaluationDao) {
+		this.kernelEvaluationDao = kernelEvaluationDao;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
 	}
 
 	// private void exportGramMatrices(String name, String experiment,

@@ -197,18 +197,18 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	private TransactionTemplate txTemplate;
 
-	public void evaluateKernelOnCorpus(Map<Integer, Node> instanceIDMap,
+	public void evaluateKernelOnCorpus(final Map<Integer, Node> instanceIDMap,
 			int nMod, int nSlice) {
-		KernelEvaluation kernelEvaluation = new KernelEvaluation();
-		kernelEvaluation.setExperiment(this.getExperiment());
-		kernelEvaluation.setFoldId(this.getFoldId());
-		kernelEvaluation.setLabel(this.getLabel());
-		kernelEvaluation.setCorpusName(this.getName());
-		kernelEvaluation.setParam1(getParam1());
-		kernelEvaluation.setParam2(getParam2());
-		kernelEvaluation = this.kernelEvaluationDao
-				.storeKernelEval(kernelEvaluation);
-		List<Integer> documentIds = txTemplate
+		KernelEvaluation kernelEvaluationTmp = new KernelEvaluation();
+		kernelEvaluationTmp.setExperiment(this.getExperiment());
+		kernelEvaluationTmp.setFoldId(this.getFoldId());
+		kernelEvaluationTmp.setLabel(this.getLabel());
+		kernelEvaluationTmp.setCorpusName(this.getName());
+		kernelEvaluationTmp.setParam1(getParam1());
+		kernelEvaluationTmp.setParam2(getParam2());
+		final KernelEvaluation kernelEvaluation = this.kernelEvaluationDao
+				.storeKernelEval(kernelEvaluationTmp);
+		final List<Integer> documentIds = txTemplate
 				.execute(new TransactionCallback<List<Integer>>() {
 					@Override
 					public List<Integer> doInTransaction(TransactionStatus arg0) {
@@ -217,9 +217,9 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 					}
 				});
 
-		List<Integer> testDocumentIds = new ArrayList<Integer>();
+		final List<Integer> testDocumentIds = new ArrayList<Integer>();
 		if (testInstanceIDQuery != null) {
-			testDocumentIds = txTemplate
+			testDocumentIds.addAll(txTemplate
 					.execute(new TransactionCallback<List<Integer>>() {
 						@Override
 						public List<Integer> doInTransaction(
@@ -228,15 +228,16 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 									testInstanceIDQuery,
 									new InstanceIDRowMapper());
 						}
-					});
+					}));
 		}
 		int nStart = 0;
 		int nEnd = documentIds.size();
-		int total = 0; documentIds.size();
+		int total = 0;
+		documentIds.size();
 		if (nMod > 0) {
 			nMod = Math.min(total, nMod);
 		}
-		if(nMod > 0 && nSlice > nMod) {
+		if (nMod > 0 && nSlice > nMod) {
 			log.info("more slices than documents, skipping slice: " + nSlice);
 			return;
 		}
@@ -248,11 +249,11 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		}
 		for (int i = nStart; i < nEnd; i++) {
 			// left hand side of kernel evaluation
-			int instanceId1 = documentIds.get(i);
+			final int instanceId1 = documentIds.get(i);
 			if (log.isInfoEnabled())
 				log.info("evaluating kernel for instance_id1 = " + instanceId1);
 			// list of instance ids right hand side of kernel evaluation
-			SortedSet<Integer> rightDocumentIDs = new TreeSet<Integer>(
+			final SortedSet<Integer> rightDocumentIDs = new TreeSet<Integer>(
 					testDocumentIds);
 			if (i < documentIds.size()) {
 				// rightDocumentIDs.addAll(documentIds.subList(i + 1,
@@ -268,27 +269,44 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 						.remove(instanceId1 == kEval.getInstanceId1() ? kEval
 								.getInstanceId2() : kEval.getInstanceId1());
 			}
-			for (Integer instanceId2 : rightDocumentIDs) {
-				// if (instanceId1 != instanceId2) {
-				final int i1 = instanceId1;
-				final int i2 = instanceId2;
-				final Node root1 = instanceIDMap.get(i1);
-				final Node root2 = instanceIDMap.get(i2);
-				if (root1 != null && root2 != null) {
-					// store in separate tx so that there are less objects
-					// in session for hibernate to deal with
-					// txTemplate.execute(new TransactionCallback() {
-					// @Override
-					// public Object doInTransaction(TransactionStatus arg0)
-					// {
-					kernelEvaluationDao.storeKernel(kernelEvaluation, i1, i2,
-							instanceKernel.evaluate(root1, root2));
+			// kernel evaluations for this instance are done in a single tx
+			// hibernate can batch insert these
+			txTemplate.execute(new TransactionCallback<Object>() {
+
+				@Override
+				public Object doInTransaction(TransactionStatus arg0) {
+					evalInstance(instanceIDMap, kernelEvaluation, instanceId1,
+							rightDocumentIDs);
+					return null;
 				}
-				// return null;
-				// }
-				// });
-				// }
+			});
+
+		}
+	}
+
+	private void evalInstance(Map<Integer, Node> instanceIDMap,
+			KernelEvaluation kernelEvaluation, int instanceId1,
+			SortedSet<Integer> rightDocumentIDs) {
+		for (Integer instanceId2 : rightDocumentIDs) {
+			// if (instanceId1 != instanceId2) {
+			final int i1 = instanceId1;
+			final int i2 = instanceId2;
+			final Node root1 = instanceIDMap.get(i1);
+			final Node root2 = instanceIDMap.get(i2);
+			if (root1 != null && root2 != null) {
+				// store in separate tx so that there are less objects
+				// in session for hibernate to deal with
+				// txTemplate.execute(new TransactionCallback() {
+				// @Override
+				// public Object doInTransaction(TransactionStatus arg0)
+				// {
+				kernelEvaluationDao.storeKernel(kernelEvaluation, i1, i2,
+						instanceKernel.evaluate(root1, root2));
 			}
+			// return null;
+			// }
+			// });
+			// }
 		}
 	}
 

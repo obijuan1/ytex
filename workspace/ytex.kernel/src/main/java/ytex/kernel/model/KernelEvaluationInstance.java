@@ -2,6 +2,11 @@ package ytex.kernel.model;
 
 import java.io.Serializable;
 
+/**
+ * Although there is a many-to-one relationship the KernelEvaluation, we don't
+ * model that here - we just use the id so we can batch insert the
+ * kernelEvaluations.
+ */
 public class KernelEvaluationInstance implements Serializable {
 	/**
 	 * 
@@ -10,7 +15,7 @@ public class KernelEvaluationInstance implements Serializable {
 	private int instanceId1;
 	private int instanceId2;
 
-	private KernelEvaluation kernelEvaluation;
+	private int kernelEvaluationId;
 
 	private double similarity;
 
@@ -18,10 +23,10 @@ public class KernelEvaluationInstance implements Serializable {
 		super();
 	}
 
-	public KernelEvaluationInstance(KernelEvaluation kernelEvaluation,
-			int instanceId1, int instanceId2, double similarity) {
+	public KernelEvaluationInstance(int kernelEvaluationId, int instanceId1,
+			int instanceId2, double similarity) {
 		super();
-		this.kernelEvaluation = kernelEvaluation;
+		this.kernelEvaluationId = kernelEvaluationId;
 		this.instanceId1 = instanceId1;
 		this.instanceId2 = instanceId2;
 		this.similarity = similarity;
@@ -40,8 +45,7 @@ public class KernelEvaluationInstance implements Serializable {
 			return false;
 		if (instanceId2 != other.instanceId2)
 			return false;
-		if (kernelEvaluation.getKernelEvaluationId() != other.kernelEvaluation
-				.getKernelEvaluationId())
+		if (kernelEvaluationId != other.kernelEvaluationId)
 			return false;
 		return true;
 	}
@@ -54,8 +58,8 @@ public class KernelEvaluationInstance implements Serializable {
 		return instanceId2;
 	}
 
-	public KernelEvaluation getKernelEvaluation() {
-		return kernelEvaluation;
+	public int getKernelEvaluationId() {
+		return kernelEvaluationId;
 	}
 
 	public double getSimilarity() {
@@ -68,9 +72,7 @@ public class KernelEvaluationInstance implements Serializable {
 		int result = 1;
 		result = prime * result + instanceId1;
 		result = prime * result + instanceId2;
-		result = prime
-				* result
-				+ ((kernelEvaluation == null) ? 0 : kernelEvaluation.hashCode());
+		result = prime * result + kernelEvaluationId;
 		return result;
 	}
 
@@ -82,8 +84,8 @@ public class KernelEvaluationInstance implements Serializable {
 		this.instanceId2 = instanceId2;
 	}
 
-	public void setKernelEvaluation(KernelEvaluation kernelEvaluation) {
-		this.kernelEvaluation = kernelEvaluation;
+	public void setKernelEvaluationId(int kernelEvaluationId) {
+		this.kernelEvaluationId = kernelEvaluationId;
 	}
 
 	public void setSimilarity(double similarity) {

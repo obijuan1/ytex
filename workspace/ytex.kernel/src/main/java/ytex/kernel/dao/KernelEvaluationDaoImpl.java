@@ -74,21 +74,22 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 				: instanceId2;
 		int instanceId2s = instanceId1 <= instanceId2 ? instanceId2
 				: instanceId1;
+		// don't bother with the delete so we can batch insert the kernel eval
 		// delete existing norm
 		// if (getKernel(name, instanceId1, instanceId2) != null) {
-		Query q = this.getSessionFactory().getCurrentSession()
-				.getNamedQuery("deleteKernelEvaluation");
-		q.setInteger("kernelEvaluationId",
-				kernelEvaluation.getKernelEvaluationId());
-		q.setInteger("instanceId1", instanceId1s);
-		q.setInteger("instanceId2", instanceId2s);
-		q.executeUpdate();
+//		Query q = this.getSessionFactory().getCurrentSession()
+//				.getNamedQuery("deleteKernelEvaluation");
+//		q.setInteger("kernelEvaluationId",
+//				kernelEvaluation.getKernelEvaluationId());
+//		q.setInteger("instanceId1", instanceId1s);
+//		q.setInteger("instanceId2", instanceId2s);
+//		q.executeUpdate();
 		// if (log.isWarnEnabled())
 		// log.warn("replacing kernel, instanceId1: " + instanceId1s
 		// + ", instanceId2: " + instanceId2s + ", name: " + name);
 		// }
 		KernelEvaluationInstance g = new KernelEvaluationInstance(
-				kernelEvaluation, instanceId1s, instanceId2s, kernel);
+				kernelEvaluation.getKernelEvaluationId(), instanceId1s, instanceId2s, kernel);
 		this.getSessionFactory().getCurrentSession().save(g);
 	}
 

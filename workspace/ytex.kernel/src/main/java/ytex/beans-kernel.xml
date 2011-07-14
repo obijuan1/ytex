@@ -92,6 +92,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="rGramMatrixExporter" class="ytex.R.RGramMatrixExporterImpl">
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
 		<property name="kernelUtil" ref="kernelUtil" />
+		<property name="instanceDataExporter" ref="instanceDataExporter" />
 	</bean>
 	<bean id="libsvmUtil" class="ytex.libsvm.LibSVMUtilImpl">
 		<property name="dataSource" ref="dataSource" />

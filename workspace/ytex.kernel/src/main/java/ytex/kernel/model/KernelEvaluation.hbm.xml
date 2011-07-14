@@ -17,10 +17,10 @@
 	<class name="KernelEvaluationInstance" table="kernel_eval_instance">
 		<!-- don't use the auto_increment key so hibernate can batch insert this -->
 		<composite-id>
-			<key-many-to-one name="kernelEvaluation" class="KernelEvaluation" column="kernel_eval_id"/>
 			<!-- 
-			<key-property name="kernelEvaluationId" column="kernel_eval_id" />
+			<key-many-to-one name="kernelEvaluation" class="KernelEvaluation" column="kernel_eval_id"/>
 			 -->
+			<key-property name="kernelEvaluationId" column="kernel_eval_id" />
 			<key-property name="instanceId1" column="instance_id1" />
 			<key-property name="instanceId2" column="instance_id2" />
 		</composite-id>
@@ -28,31 +28,31 @@
 	</class>
 	<query name="getKernelEvaluation"><![CDATA[
 		from KernelEvaluationInstance
-		where kernelEvaluation.kernelEvaluationId = :kernelEvaluationId
+		where kernelEvaluationId = :kernelEvaluationId
 		and instanceId1 = :instanceId1
 		and  instanceId2 =  :instanceId2
 	]]></query>
 	<query name="deleteKernelEvaluation"><![CDATA[
 		delete from KernelEvaluationInstance
-		where kernelEvaluation.kernelEvaluationId = :kernelEvaluationId
+		where kernelEvaluationId = :kernelEvaluationId
 		and instanceId1 = :instanceId1
 		and  instanceId2 =  :instanceId2
 	]]></query>
 	<query name="getAllKernelEvaluations"><![CDATA[
 		from KernelEvaluationInstance
-		where kernelEvaluation.kernelEvaluationId = :kernelEvaluationId
+		where kernelEvaluationId = :kernelEvaluationId
 	]]></query>
 	<!-- 2 separate indices for instanceId1 & instanceId2 use union so that 
 		mysql can use both indices arggh! hibernate doesn't support union - run 2 
 		queries -->
 	<query name="getAllKernelEvaluationsForInstance1"><![CDATA[
 		from KernelEvaluationInstance
-		where kernelEvaluation.kernelEvaluationId = :kernelEvaluationId
+		where kernelEvaluationId = :kernelEvaluationId
 		and instanceId1 = :instanceId 
 	]]></query>
 	<query name="getAllKernelEvaluationsForInstance2"><![CDATA[
 		from KernelEvaluationInstance
-		where kernelEvaluation.kernelEvaluationId = :kernelEvaluationId
+		where kernelEvaluationId = :kernelEvaluationId
 		and instanceId2 = :instanceId 
 	]]></query>
 	<query name="getKernelEval"><![CDATA[

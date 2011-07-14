@@ -150,10 +150,10 @@ public class FileUtil {
 			Integer run, Integer fold, Boolean train) {
 		StringBuilder builder = new StringBuilder(getFoldFilePrefix(outdir,
 				label, run, fold));
+		if ((label != null && label.length() > 0)
+				|| (run != null && run > 0) || (fold != null && fold > 0))
+			builder.append("_");
 		if (train != null) {
-			if ((label != null && label.length() > 0)
-					|| (run != null && run > 0) || (fold != null && fold > 0))
-				builder.append("_");
 			if (train.booleanValue())
 				builder.append("train");
 			else
