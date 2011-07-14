@@ -36,6 +36,8 @@
 		<java classname="ytex.tools.RunCPE" fork="yes" classpathref="i2b2.cp">
 			<arg value="./desc/ytex/uima/i2b2/cpe.xml" />
 			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 	<target name="bocuis.InfoGain" description="rank features for bocuis representation">
@@ -43,6 +45,8 @@
 			<arg value="-prop" />
 			<arg value="./libsvm/bocuis/infogain-cui-train.xml" />
 			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
 		<!--
 		<java classname="ytex.kernel.InfoGainEvaluatorImpl" fork="yes" classpathref="i2b2.cp">
@@ -219,6 +223,8 @@
 			<arg value="-updateIC" />
 			<arg value="i2b2.2008" />
 			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 	<target name="setup.ic.rb" description="setup information content">
@@ -232,6 +238,8 @@
 			<arg value="-updateIC" />
 			<arg value="i2b2.2008-rb" />
 			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 	<!--
@@ -309,7 +317,7 @@
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="tree-cuiword" />
-		<property name="export.label" value="1" />
+		<property name="export.label" value="2" />
 		<property name="kernel.experiment" value="kern-cuiword-dot" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
@@ -342,6 +350,8 @@
 			<arg line="-beans ${label.tree}.xml -storeInstanceMap ${label.tree}.obj" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
@@ -364,10 +374,9 @@
 		</for>
 	</target>
 	<target name="kernel.eval.label.cluster" if="kernel.cluster" description="send slices to slaves for processing">
-		<!-- write current properties to file so slave can load them -->
-		<echoproperties destfile="${export.tree.outdir}/kernel.properties" />
+		<!-- pass the properties to the slave that aren't in ytex.properties -->
 		<exec executable="qsub">
-			<arg line="-sync y -t 1-${kernel.mod} ${i2b2ant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir}" />
+			<arg line="-sync n -t 1-${kernel.mod} ${i2b2ant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml}" />
 		</exec>
 	</target>
 	<target name="kernel.eval.slice.cluster" if="kernel.cluster" description="eval slice on cluster slave">
@@ -377,10 +386,14 @@
 		<antcall target="kernel.eval.slice" />
 	</target>
 	<target name="kernel.eval.slice" description="eval slice">
+		<echo>kernel.xml ${kernel.xml}</echo>
+		<echo>kernel.slice ${kernel.slice}</echo>
 		<java classname="ytex.KernelLauncher" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
 			<arg line="-beans ${kernel.xml} -evalKernel -loadInstanceMap ${label.tree}.obj -mod ${kernel.mod} -slice ${kernel.slice}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 	<target name="kernel.export.label" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
@@ -407,6 +420,8 @@
 			<arg value="${export.xml}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 
@@ -433,6 +448,8 @@
 			<arg value="-type" />
 			<arg value="${export.type}" />
 			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 	<target name="mysql" description="run specified script">
@@ -459,6 +476,8 @@
 			<arg value="export.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 	<target name="eval.R">

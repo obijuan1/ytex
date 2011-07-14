@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<import resource="tree_@export.cutoff@.xml" />
+	<!-- document kernel - norm of convolution on words/concepts. Only compare 
+		documents of same type -->
+	<bean id="instanceKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.SumKernel">
+				<property name="delegateKernels">
+					<list>
+						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+							<property name="nodeType" value="named_entity" />
+							<property name="delegateKernel" ref="namedEntityKernel" />
+						</bean>
+						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+							<property name="nodeType" value="word" />
+							<property name="delegateKernel" ref="wordKernel" />
+						</bean>
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<!-- namedEntityKernel - norm of convolution of concepts -->
+	<bean id="namedEntityKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+				<property name="delegateKernel" ref="compositeConceptKernel" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="tuiSemanticTypeKernel" parent="abstractTuiSemanticTypeKernel">
+	</bean>
+	<bean id="linKernel" parent="abstractLinKernel">
+		<property name="label" value="@export.label@" />
+		<property name="cutoff" value="@export.cutoff@" />
+	</bean>
+	<!-- Check overlapping main semantic type. Concept kernel is tuifilter * lin -->
+	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
+		<property name="attributeName" value="code" />
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="delegateKernels">
+					<list>
+						<ref bean="tuiSemanticTypeKernel" />
+						<ref bean="linKernel" />
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<!-- wordKernel - simply compare words -->
+	<bean id="wordKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
+		<property name="attributeName" value="canonical_form" />
+		<property name="delegateKernel" ref="equalityKernel" />
+	</bean>
+	<bean id="corpusKernelEvaluator" parent="abstractCorpusKernelEvaluator">
+		<property name="instanceKernel" ref="instanceKernel" />
+		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
+		<property name="treeMappingInfo" ref="treeMappingInfo" />
+		<property name="name" value="i2b2.2008" />
+		<property name="experiment" value="kern-cuiword-filteredlin" />
+		<property name="label" value="@export.label@" />
+		<property name="param1" value="@export.cutoff@" />
+		<property name="trainInstanceIDQuery">
+			<value><![CDATA[
+select hi.instance_id
+from hotspot_instance hi
+/* training docs */
+inner join i2b2_2008_doc d 
+	on hi.instance_id = d.docId 
+	and d.documentSet = 'train'
+/* limit to label */
+inner join i2b2_2008_disease ds 
+    on hi.label = ds.disease
+    and ds.disease_id = @export.label@
+/* exclude zero vectors */
+left join hotspot_zero_vector hzv 
+	on hi.hotspot_instance_id = hzv.hotspot_instance_id
+	and hzv.cutoff = @export.cutoff@
+where hi.corpus_name = 'i2b2.2008'
+and hi.experiment = 'bag-cuiword'
+and hzv.hotspot_zero_vector_id is null
+			]]></value>
+		</property>
+		<!-- <property name="testInstanceIDQuery"> <value><![CDATA[ select d.docId 
+			from i2b2_2008_doc d inner join i2b2_2008_anno a on a.docId = d.docId and 
+			a.source = 'intuitive' inner join i2b2_2008_disease ds on ds.disease = a.disease 
+			where d.documentSet = 'test' and ds.disease_id = 9 ]]></value> </property> -->
+	</bean>
+</beans>
