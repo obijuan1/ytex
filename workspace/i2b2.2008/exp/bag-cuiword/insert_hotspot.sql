@@ -51,3 +51,34 @@ and h.instance_id = 2
 and h.label = 'Asthma'
 */
 group by h.hotspot_instance_id, ac.parent_anno_base_id;
+
+select * from ref_uima_type;
+
+		select distinct hi.instance_id, canonical_form
+		from hotspot_instance hi
+		inner join i2b2_2008_doc d 
+			on hi.instance_id = d.docId 
+			and d.documentSet = 'train'
+		inner join i2b2_2008_disease ds 
+		    on hi.label = ds.disease
+		    and ds.disease_id = 1
+		inner join hotspot_sentence hs
+		    on hi.hotspot_instance_id = hs.hotspot_instance_id
+		    and hs.evaluation >=  0.25
+		/* get words in sentence */
+		inner join anno_contain ac 
+		    on ac.parent_anno_base_id = hs.anno_base_id
+		inner join anno_word_token w
+		    on w.anno_base_id = ac.child_anno_base_id
+		    and canonical_form is not null
+		/* exclude stopwords */
+		left join stopword sw on sw.stopword = canonical_form
+		/* exclude words contained in concepts */
+		left join anno_contain acn
+			on acn.child_anno_base_id = w.anno_base_id
+			and acn.parent_uima_type_id = 8
+		where hi.corpus_name = 'i2b2.2008'
+		and hi.experiment = 'bag-cuiword'
+		and sw.stopword is null
+    and acn.parent_anno_base_id is null
+;

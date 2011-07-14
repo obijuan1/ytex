@@ -1,0 +1,3 @@
+kernel.experiment=kern-cuiword-dot
+kernel.param1=@export.cutoff@
+kernel.types=4

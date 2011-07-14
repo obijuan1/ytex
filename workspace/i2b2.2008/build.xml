@@ -84,7 +84,7 @@
 	</target>
 	<target name="insert_hotspot_zero_vector_tt" description="setup truth table for ontocuis">
 		<property name="mysql.script" value="insert_hotspot_zero_vector_tt.sql" />
-		<copy file="data/${mysql.script}" todir="${java.io.tmpdir}" overwrite="yes">
+		<copy file="data/${mysql.script}" todir="libsvm/${kernel.experiment}" overwrite="yes">
 			<filterset>
 				<filter token="kernel.experiment" value="${kernel.experiment}" />
 			</filterset>
@@ -287,31 +287,35 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="kernel.tree.all" description="export trees">
+	<target name="kernel.tree.all" depends="init.exp" description="export trees">
 		<property name="tree.name" value="vector" />
 		<antcall target="kernel.iter.label">
 			<param name="kernel.iter.target" value="export.tree.label" />
 		</antcall>
 	</target>
-	<target name="kernel.eval.all" description="eval kernel on tree">
+	<target name="kernel.eval.all" depends="init.exp" description="eval kernel on tree">
 		<property name="kernel.experiment" value="filteredlin" />
 		<property name="tree.name" value="vector" />
 		<antcall target="kernel.iter.label">
 			<param name="kernel.iter.target" value="kernel.eval.label" />
 		</antcall>
 	</target>
-	<target name="kernel.export.all" description="export libsvm gram matrices">
+	<target name="kernel.export.all" depends="init.exp" description="export libsvm gram matrices">
 		<property name="kernel.experiment" value="filteredlin" />
 		<property name="tree.name" value="vector" />
 		<antcall target="kernel.iter.label">
 			<param name="kernel.iter.target" value="kernel.export.label" />
 		</antcall>
 	</target>
-	<target name="kernel.init.label" description="load the export.cutoff for the specified label">
-		<property name="tree.name" value="vector" />
+	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
+		<property name="tree.name" value="tree-cuiword" />
 		<property name="export.label" value="1" />
-		<property name="kernel.experiment" value="filteredlin" />
-		<loadproperties srcfile="./tree/${tree.name}/label.properties">
+		<property name="kernel.experiment" value="kern-cuiword-dot" />
+		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
+		<property name="export.tree.basedir" value="./tree/${tree.name}" />
+		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
+		<property name="export.libsvm.outdir" value="libsvm/kernel/${kernel.experiment}" />
+		<loadproperties srcfile="${export.tree.srcdir}/label.properties">
 			<filterchain>
 				<linecontainsregexp>
 					<regexp pattern="label.${export.label}.param1=" />
@@ -323,15 +327,12 @@
 		</loadproperties>
 		<property name="export.cutoff" value="${param1}" />
 		<echo>export.cutoff ${export.cutoff}</echo>
-		<property name="export.tree.basedir" value="./tree/${tree.name}" />
-		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
 		<property name="label.tree" value="tree_${export.cutoff}" />
 		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}.xml" />
-		<property name="export.libsvm.outdir" value="libsvm/kernel/${kernel.experiment}" />
 	</target>
 	<target name="kernel.tree.label" depends="kernel.init.label" description="export the tree for the given label">
 		<mkdir dir="${export.tree.outdir}" />
-		<copy file="./tree/${tree.name}/tree.xml" tofile="${export.tree.outdir}/${label.tree}.xml" overwrite="yes">
+		<copy file="${export.tree.srcdir}/tree.xml" tofile="${export.tree.outdir}/${label.tree}.xml" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
@@ -344,7 +345,7 @@
 		</java>
 	</target>
 	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
-		<copy file="${export.tree.basedir}/${kernel.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
+		<copy file="exp/${kernel.experiment}/${kernel.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
 			<filterset>
 				<filter token="export.label" value="${export.label}" />
 				<filter token="export.cutoff" value="${export.cutoff}" />
