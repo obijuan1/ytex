@@ -10,7 +10,7 @@ create table $(db_schema).anno_docdate (
 create table $(db_schema).anno_dockey (
 	anno_base_id int not null,
 	study_id numeric(20,0) NULL,
-	uid int not NULL,
+	uid bigint not NULL,
 	site_id varchar(4) null,
 	document_type_id int NULL,
 	primary key (anno_base_id),

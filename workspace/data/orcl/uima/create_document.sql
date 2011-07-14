@@ -6,7 +6,8 @@ create sequence anno_contain_id_sequence;
 
 CREATE TABLE document(
 	document_id int  NOT NULL,
-	analysis_batch varchar2(50) NOT NULL,
+	uid NUMBER(19) not null default 0,
+	analysis_batch varchar2(50) NOT NULL default ' ',
 	cas blob NULL,
 	doc_text clob NULL,
 	CONSTRAINT PK_document PRIMARY KEY
@@ -18,10 +19,16 @@ CREATE TABLE document(
 
 CREATE INDEX IX_document_analysis_batch ON document 
 (
-	analysis_batch
+	analysis_batch,
+	document_id
 )
 ;
 
+CREATE INDEX IX_uid ON document 
+(
+	uid
+)
+;
 CREATE TABLE document_class(
 	document_class_id int  NOT NULL,
 	document_id int NOT NULL,

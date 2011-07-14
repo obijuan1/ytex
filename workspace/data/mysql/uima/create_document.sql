@@ -1,5 +1,6 @@
 CREATE TABLE document(
 	document_id int AUTO_INCREMENT NOT NULL,
+	uid bigint not null default 0,
 	analysis_batch varchar(50) NOT NULL,
 	cas longblob NULL,
 	doc_text text NULL,
@@ -12,7 +13,14 @@ CREATE TABLE document(
 
 CREATE INDEX IX_document_analysis_batch ON document 
 (
-	analysis_batch
+	analysis_batch,
+	document_id
+)
+;
+
+CREATE INDEX IX_uid ON document 
+(
+	uid
 )
 ;
 

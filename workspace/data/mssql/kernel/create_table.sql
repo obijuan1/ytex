@@ -197,10 +197,11 @@ CREATE TABLE  $(db_schema).hotspot_sentence (
   instance_id int NOT NULL,
   anno_base_id int NOT NULL foreign key references $(db_schema).anno_sentence(anno_base_id),
   evaluation float DEFAULT NULL,
-  section varchar(50) NOT NULL DEFAULT 'OTHER'
+  section varchar(50) NOT NULL DEFAULT ''
 ) ;
 create UNIQUE index NK_hotspot_sentence on $(db_schema).hotspot_sentence (name,label,anno_base_id);
 create index IX_instance on $(db_schema).hotspot_sentence (name,label,instance_id);
+create INDEX IX_evaluation $(db_schema).hotspot_sentence (hotspot_instance_id, evaluation);
 
 CREATE TABLE  $(db_schema).hotspot_zero_vector (
   hotspot_zero_vector_id int NOT NULL identity primary key,

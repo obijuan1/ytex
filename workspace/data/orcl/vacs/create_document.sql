@@ -7,10 +7,10 @@ create table anno_docdate (
 
 create table anno_dockey (
 	anno_base_id int not null,
-	study_id numeric(20,0) not NULL,
-	"uid" int not NULL,
-	site_id varchar2(4) NULL,
-	document_type_id int NULL,
+	study_id numeric(20,0) not NULL default 0,
+	"uid" NUMBER(19) not NULL default 0,
+	site_id varchar2(4) NULL default ' ',
+	document_type_id int not NULL default 0,
 	primary key (anno_base_id),
 	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE
 ) ;

@@ -2,6 +2,7 @@
 
 CREATE TABLE $(db_schema).[document](
 	[document_id] [int] IDENTITY(1,1) NOT NULL primary key,
+	uid bigint not null default 0,
 	[analysis_batch] [varchar](50) NOT NULL,
 	[cas] [varbinary](max) NULL,
 	[doc_text] [nvarchar](max) NULL
@@ -13,6 +14,12 @@ CREATE NONCLUSTERED INDEX [IX_document_analysis_batch] ON $(db_schema).[document
 (
 	[document_id],
 	[analysis_batch]
+)
+;
+
+CREATE NONCLUSTERED INDEX [IX_uid] ON $(db_schema).[document] 
+(
+	[uid]
 )
 ;
 

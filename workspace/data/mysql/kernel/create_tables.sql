@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS kernel_eval;
-DROP TABLE IF EXISTS kernel_eval_instance;
 
 CREATE TABLE  kernel_eval (
 	kernel_eval_id int(11) NOT NULL AUTO_INCREMENT,
@@ -7,8 +5,10 @@ CREATE TABLE  kernel_eval (
 	experiment varchar(50) not null comment 'experiment - type of kernel',
 	label varchar(50) not NULL default '' comment 'class label',
 	cv_fold_id int not null default 0 comment 'fk cv_fold',
+	param1 double not null default 0,
+	param2 varchar(50) not null default '',
 	PRIMARY KEY (kernel_eval_id),
-	UNIQUE KEY NK_kernel_eval (name, experiment, label, cv_fold_id)
+	UNIQUE KEY NK_kernel_eval (name, experiment, label, cv_fold_id, param1, param2)
 ) ENGINE=MyISAM comment 'set of all kernel evaluations';
 
 create table kernel_eval_instance (
@@ -22,7 +22,7 @@ create table kernel_eval_instance (
 	UNIQUE KEY NK_kernel_eval (kernel_eval_id, instance_id1, instance_id2)
 ) ENGINE=MyISAM comment 'kernel instance evaluation';
 
-drop table if exists tfidf_doclength; 
+
 create table tfidf_doclength (
   tfidf_doclength_id int auto_increment not null primary key,
   name varchar(255) not null default '',
@@ -31,7 +31,6 @@ create table tfidf_doclength (
   unique key nk_instance_id (name, instance_id)
 ) ENGINE=MyISAM comment 'doc length for calculating tf-idf';
 
-drop table if exists tfidf_docfreq; 
 create table tfidf_docfreq (
   tfidf_docfreq_id int auto_increment not null primary key,
   name varchar(255) not null default '',
@@ -40,7 +39,6 @@ create table tfidf_docfreq (
   unique key nk_docfreq (name, term)
 ) ENGINE=MyISAM comment 'num docs term occurs for calculating tf-idf';
 
-drop table tfidf_termfreq;
 create table tfidf_termfreq (
   tfidf_termfreq_id int auto_increment primary key,
   name varchar(50) not null,
@@ -51,6 +49,7 @@ create table tfidf_termfreq (
   index IX_instance(name, instance_id)
 ) ENGINE=MyISAM comment 'per-doc term count';
 
+/*
 DROP TABLE IF EXISTS `weka_results`;
 CREATE TABLE  `weka_results` (
   `weka_result_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -132,21 +131,12 @@ CREATE TABLE  `weka_results` (
   KEY `explabel` (`experiment`,`label`),
   KEY `kernel` (`experiment`,`label`,`kernel`,`cost`,`degree`,`gamma`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+*/
 
-
-DROP TABLE IF EXISTS `stopword`;
 CREATE TABLE  `stopword` (
   `stopword` varchar(50) NOT NULL,
   PRIMARY KEY (`stopword`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf-8;
-
-
-drop table classifier_instance_eval_prob;
-drop table classifier_instance_eval;
-drop table classifier_eval_libsvm;
-drop table classifier_eval_semil;
-drop table classifier_eval_ir;
-drop table classifier_eval;
 
 create table classifier_eval (
 	classifier_eval_id int AUTO_INCREMENT not null primary key,
@@ -236,8 +226,6 @@ create table classifier_instance_eval_prob (
 	unique key nk_result_prob (classifier_instance_eval_id, class_id)
 ) engine=myisam comment 'probability of belonging to respective class';
 
-drop table cv_fold;
-drop table cv_fold_instance;
 
 create table cv_fold (
   cv_fold_id int auto_increment not null primary key,
@@ -281,8 +269,6 @@ create table feature_rank (
   index fk_feature_eval(feature_eval_id)
 ) engine=myisam comment 'evaluation of a feature in a corpus';
 
-
-
 create table hotspot (
   hotspot_id int auto_increment not null primary key,
   instance_id int not null comment 'fk cv_fold_instance',
@@ -294,40 +280,49 @@ ALTER TABLE `hotspot` ADD INDEX `ix_instance_id`(`instance_id`),
  ADD INDEX `ix_anno_base_id`(`anno_base_id`),
  ADD INDEX `ix_feature_rank_id`(`feature_rank_id`);
 
-drop table if exists hotspot_zero_vector;
 create table hotspot_zero_vector (
-  hotspot_zero_vector_id int not null auto_increment primary key,
-  name varchar(50) not null comment 'corpus/feature set name',
-  label varchar(50) not null comment 'class label',
+  hotspot_zero_vector_id int auto_increment not null primary key,
+  corpus_name varchar(50) not null comment 'corpus/feature set name',
+  experiment varchar(50) not null default '',
+  label varchar(50) not null default '' comment 'class label',
   instance_id int not null comment 'instance id',
   cutoff double not null comment 'hotspot infogain cutoff',
-  unique index nk_zero_vector (name, label, instance_id, cutoff),
-  index ix_instance_id (name, label, instance_id)
-) engine=myisam;
+  unique index nk_zero_vector (corpus_name, experiment, label, instance_id, cutoff),
+  index ix_instance_id (corpus_name, experiment, label, instance_id)
+) engine = myisam comment 'zero vectors for given cutoff';
 
+create table hotspot_instance (
+    hotspot_instance_id int auto_increment primary key,
+    corpus_name varchar(50) not null,
+    experiment varchar(50) not null default '',
+    label varchar(50) not null default '',
+    instance_id int not null,
+    unique index NK_hotspot_instance (corpus_name, experiment, label, instance_id)
+) engine=myisam comment 'hotspot features for an instance';
 
-create table hotspot_feature (
-	hotspot_feature_id int not null auto_increment primary key,
-	label varchar(50) not null,
-	instance_id int not null,
-	feature_name varchar(50),
-	rank int,
-	unique index nk_hotspot_feature (label, instance_id, feature_name),
-	index ix_rank (instance_id, rank)
-) engine=myisam ;
+create table hotspot_sentence (
+    hotspot_sentence_id int auto_increment not null primary key,
+    hotspot_instance_id int not null comment 'fk hotspot_instance',
+    anno_base_id int not null comment 'fk anno_sentence',
+    evaluation double not null comment 'max eval from hotspot',
+    section varchar(50) not null default '' comment 'section containing this sentence',
+    unique index NK_hotspot_sentence (hotspot_instance_id, anno_base_id),
+    index FK_hotspot_instance_id (hotspot_instance_id),
+    index FK_anno_base_id (anno_base_id),
+    INDEX IX_evaluation (hotspot_instance_id, evaluation)
+) engine = myisam comment 'sentences that contain hotspots at specified threshold';
 
+create table hotspot_feature_eval (
+    hotspot_feature_eval_id int auto_increment primary key,
+    hotspot_instance_id int not null comment 'fk hotspot_instance',
+    feature_type varchar(10) not null default '' comment 'type of feature, e.g. word/cui',
+    feature_name varchar(50) not null,
+    evaluation double not null comment 'max eval that caused this feature to be included',
+    unique index NK_hotspot_feature_eval (hotspot_instance_id, feature_type, feature_name),
+    index IX_evaluation (hotspot_instance_id, evaluation),
+    index fk_hotspot_instance (hotspot_instance_id)
+) engine=myisam comment 'hotspot features for an instance';
 
-CREATE TABLE `hotspot_feature_eval` (
-  `hotspot_feature_eval_id` int(11) NOT NULL AUTO_INCREMENT,
-  name varchar(50) not null,
-  `label` varchar(50) NOT NULL,
-  `instance_id` int(11) NOT NULL,
-  `feature_name` varchar(50) NOT NULL,
-  `evaluation` double NOT NULL,
-  PRIMARY KEY (`hotspot_feature_eval_id`),
-  UNIQUE KEY `nk_hotspot_feature` (name, `label`,`instance_id`,`feature_name`),
-  KEY `ix_rank` (name, `instance_id`,`evaluation`)
-) ENGINE=MyISAM;
 
 create table hotspot_zero_vector_tt
 (
@@ -343,10 +338,11 @@ create table hotspot_zero_vector_tt
   tn int not null,
   fp int not null,
   fn int not null,
-  unique key NK_hotspot_zero_vector_tt (name, experiment, label, run, fold, ir_class_id)
+  unique key NK_hotspot_zero_vector_tt (name, experiment, label, run, fold, ir_class_id, cutoff)
 ) engine=myisam comment 'truth table for hotspot zero vectors'
 ;
 
+/*
 create view v_classifier_eval_ir_classes
 as
 select distinct ce.classifier_eval_id, target_class_id ir_class_id
@@ -391,51 +387,4 @@ from v_classifier_eval_ir_tt
 ;
 
 
-create table corpus_concept_eval (
-  corpus_concept_eval_id int auto_increment not null primary key,
-  corpus_name varchar(50) not null,
-  conceptgraph_name varchar(50) not null,
-  conceptset_name varchar(50),
-  unique index (corpus_name, conceptgraph_name, conceptset_name)
-) engine=myisam, comment 'ontology-based evaluation of concepts for a corpus';
-
-create table corpus_concept_ic (
-  corpus_concept_ic_id int auto_increment not null primary key,
-  corpus_concept_eval_id int not null comment 'fk corpus_concept_eval',
-  concept_id varchar(10) not null,
-  frequency double,
-  ic double,
-  unique index NK_corpus_concept_stat(corpus_concept_eval_id, concept_id),
-  index FK_corpus_concept_eval(corpus_concept_eval_id)
-) engine=myisam, comment 'information content of concept';
-
-create table corpus_concept_label_eval (
-  corpus_concept_label_eval_id int auto_increment primary key,
-  corpus_concept_eval_id int not null comment 'fk corpus_concept_eval',
-  label varchar(50) null comment 'eval wrt label',
-  cv_fold_id int null comment 'eval wrt fold, fk cv_fold',
-  unique index NK_corpus_concept_label_eval(corpus_concept_eval_id, label),
-  index FK_corpus_concept_eval(corpus_concept_eval_id)
-) engine=myisam comment 'ontology-based supervised evaluation of corpus concepts';
-
-create table corpus_concept_label_stat (
-  corpus_concept_label_stat_id int auto_increment not null primary key,
-  corpus_concept_label_eval_id int not null comment 'fk corpus_concept_label_eval',
-  concept_id varchar(10) not null,
-  mutual_info double comment 'ontology-based mutual information',
-  mutual_info_raw double comment 'raw mutual information',
-  distance int comment 'distance from support',
-  unique index NK_corpus_concept_label_stat(corpus_concept_label_eval_id, concept_id),
-  index FK_corpus_concept_label_eval_id (corpus_concept_label_eval_id),
-  index IX_concept_id (concept_id)
-) engine=myisam comment 'supervised evaluation of a concept';
-
-create table corpus_concept_label_child (
-  corpus_concept_label_child_id int not null auto_increment primary key,
-  corpus_concept_label_eval_id int not null comment 'fk corpus_concept_label_eval',
-  concept_id varchar(10) not null comment '',
-  mutual_info double not null comment '',
-  unique index NK_corpus_concept_label_child (corpus_concept_label_eval_id, concept_id),
-  index FK_corpus_concept_label_eval_id (corpus_concept_label_eval_id),
-  index IX_concept_id (concept_id)
-) engine=myisam comment 'descendants of high-ranking concepts';
+*/
