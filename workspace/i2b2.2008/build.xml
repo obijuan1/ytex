@@ -290,7 +290,7 @@
 	<target name="kernel.tree.all" depends="init.exp" description="export trees">
 		<property name="tree.name" value="vector" />
 		<antcall target="kernel.iter.label">
-			<param name="kernel.iter.target" value="export.tree.label" />
+			<param name="kernel.iter.target" value="kernel.tree.label" />
 		</antcall>
 	</target>
 	<target name="kernel.eval.all" depends="init.exp" description="eval kernel on tree">
