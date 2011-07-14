@@ -25,10 +25,12 @@
 	<property name="eval.kernel.thread" value="1" />
 	<property name="eval.kernel.parallel" value="no" />
 
-	<property name="export.cutoffs" value="0.05,0.07,0.09,0.1,0.15,0.2" />
 	<!-- property name="export.cutoffs" value="0.07" / -->
 
 
+	<target name="init.exp">
+		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
+	</target>
 
 	<target name="runCPE" description="annotate i2b2 corpus">
 		<java classname="ytex.tools.RunCPE" fork="yes" classpathref="i2b2.cp">
@@ -92,10 +94,10 @@
 			<param name="mysql.dir" value="${java.io.tmpdir}" />
 			<param name="mysql.script" value="${mysql.script}" />
 		</antcall>
-	</target>	
+	</target>
 	<target name="insert_classifier_eval_irzv" description="setup truth table for ontocuis">
 		<property name="kernel.experiment" value="ontocuis" />
-		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />		
+		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
 		<copy file="data/insert_classifier_eval_irzv.template.sql" tofile="libsvm/${kernel.experiment}/insert_classifier_eval_irzv.sql" overwrite="yes">
 			<filterset>
 				<filter token="kernel.experiment" value="${kernel.experiment}" />
@@ -107,7 +109,7 @@
 			<param name="mysql.script" value="insert_classifier_eval_irzv.sql" />
 		</antcall>
 	</target>
-	<target name="export.cutoffs" description="export libsvm data for bocuis">
+	<target name="export.cutoffs" depends="init.exp" description="export libsvm data for bocuis">
 		<for list="${export.cutoffs}" param="export.cutoff">
 			<sequential>
 				<antcall target="export.cutoff">
@@ -117,9 +119,8 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="export.cutoff" description="export libsvm data for specified cutoff">
+	<target name="export.cutoff" depends="init.exp" description="export libsvm data for specified cutoff">
 		<property name="export.cutoff" value="0.25" />
-		<property name="kernel.experiment" value="bag-cui" />
 		<property name="export.dir" value="libsvm/${kernel.experiment}/${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
 		<delete dir="${export.dir}" quiet="yes" />
@@ -132,7 +133,7 @@
 		<!-- generate export property file -->
 		<copy todir="${export.dir}" overwrite="yes">
 			<fileset dir="exp/${kernel.experiment}" includes="*.template" />
-			<globmapper from="*.template" to="*"/>
+			<globmapper from="*.template" to="*" />
 			<filterset refid="export.filterset" />
 		</copy>
 		<!-- run script to insert zero vectors for the cutoff -->
@@ -140,7 +141,7 @@
 			<param name="mysql.dir" value="${export.dir}" />
 			<param name="mysql.script" value="insert_hotspot_zv.sql" />
 		</antcall>
-		<!-- export the data --> 
+		<!-- export the data -->
 		<antcall target="SparseDataExporter">
 			<param name="export.type" value="libsvm" />
 			<param name="export.dir" value="${export.dir}" />
@@ -351,8 +352,8 @@
 				<filter token="export.cutoff" value="${export.cutoff}" />
 			</filterset>
 		</copy>
-		<antcall target="kernel.eval.label.local"/>
-		<antcall target="kernel.eval.label.cluster"/>
+		<antcall target="kernel.eval.label.local" />
+		<antcall target="kernel.eval.label.cluster" />
 	</target>
 	<target name="kernel.eval.label.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
 		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
