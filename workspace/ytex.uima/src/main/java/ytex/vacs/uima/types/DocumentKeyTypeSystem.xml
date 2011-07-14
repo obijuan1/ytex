@@ -18,7 +18,7 @@
         <featureDescription>
           <name>uid</name>
           <description/>
-          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+          <rangeTypeName>uima.cas.Long</rangeTypeName>
         </featureDescription>
         <featureDescription>
           <name>documentType</name>

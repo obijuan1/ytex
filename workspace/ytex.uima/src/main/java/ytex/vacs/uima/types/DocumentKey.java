@@ -1,6 +1,6 @@
 
 
-/* First created by JCasGen Wed Apr 28 21:48:10 EDT 2010 */
+/* First created by JCasGen Wed Jul 13 22:12:00 EDT 2011 */
 package ytex.vacs.uima.types;
 
 import org.apache.uima.jcas.JCas; 
@@ -11,8 +11,8 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Wed Apr 28 21:48:10 EDT 2010
- * XML source: E:/projects/VA/ytex/src/ytex/vacs/uima/types/DocumentKeyTypeSystem.xml
+ * Updated by JCasGen Wed Jul 13 22:12:58 EDT 2011
+ * XML source: E:/projects/ytex/ytex.uima/src/main/java/ytex/vacs/uima/types/DocumentKeyTypeSystem.xml
  * @generated */
 public class DocumentKey extends Annotation {
   /** @generated
@@ -82,17 +82,17 @@ public class DocumentKey extends Annotation {
 
   /** getter for uid - gets 
    * @generated */
-  public int getUid() {
+  public long getUid() {
     if (DocumentKey_Type.featOkTst && ((DocumentKey_Type)jcasType).casFeat_uid == null)
       jcasType.jcas.throwFeatMissing("uid", "ytex.vacs.uima.types.DocumentKey");
-    return jcasType.ll_cas.ll_getIntValue(addr, ((DocumentKey_Type)jcasType).casFeatCode_uid);}
+    return jcasType.ll_cas.ll_getLongValue(addr, ((DocumentKey_Type)jcasType).casFeatCode_uid);}
     
   /** setter for uid - sets  
    * @generated */
-  public void setUid(int v) {
+  public void setUid(long v) {
     if (DocumentKey_Type.featOkTst && ((DocumentKey_Type)jcasType).casFeat_uid == null)
       jcasType.jcas.throwFeatMissing("uid", "ytex.vacs.uima.types.DocumentKey");
-    jcasType.ll_cas.ll_setIntValue(addr, ((DocumentKey_Type)jcasType).casFeatCode_uid, v);}    
+    jcasType.ll_cas.ll_setLongValue(addr, ((DocumentKey_Type)jcasType).casFeatCode_uid, v);}    
    
     
   //*--------------*

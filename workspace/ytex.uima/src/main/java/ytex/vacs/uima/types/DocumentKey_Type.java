@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Wed Apr 28 21:48:10 EDT 2010 */
+/* First created by JCasGen Wed Jul 13 22:12:00 EDT 2011 */
 package ytex.vacs.uima.types;
 
 import org.apache.uima.jcas.JCas;
@@ -14,7 +14,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Wed Apr 28 21:48:10 EDT 2010
+ * Updated by JCasGen Wed Jul 13 22:12:58 EDT 2011
  * @generated */
 public class DocumentKey_Type extends Annotation_Type {
   /** @generated */
@@ -64,16 +64,16 @@ public class DocumentKey_Type extends Annotation_Type {
   /** @generated */
   final int     casFeatCode_uid;
   /** @generated */ 
-  public int getUid(int addr) {
+  public long getUid(int addr) {
         if (featOkTst && casFeat_uid == null)
       jcas.throwFeatMissing("uid", "ytex.vacs.uima.types.DocumentKey");
-    return ll_cas.ll_getIntValue(addr, casFeatCode_uid);
+    return ll_cas.ll_getLongValue(addr, casFeatCode_uid);
   }
   /** @generated */    
-  public void setUid(int addr, int v) {
+  public void setUid(int addr, long v) {
         if (featOkTst && casFeat_uid == null)
       jcas.throwFeatMissing("uid", "ytex.vacs.uima.types.DocumentKey");
-    ll_cas.ll_setIntValue(addr, casFeatCode_uid, v);}
+    ll_cas.ll_setLongValue(addr, casFeatCode_uid, v);}
     
   
  
@@ -126,7 +126,7 @@ public class DocumentKey_Type extends Annotation_Type {
     casFeatCode_studyID  = (null == casFeat_studyID) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_studyID).getCode();
 
  
-    casFeat_uid = jcas.getRequiredFeatureDE(casType, "uid", "uima.cas.Integer", featOkTst);
+    casFeat_uid = jcas.getRequiredFeatureDE(casType, "uid", "uima.cas.Long", featOkTst);
     casFeatCode_uid  = (null == casFeat_uid) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_uid).getCode();
 
  
