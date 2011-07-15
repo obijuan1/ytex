@@ -141,10 +141,10 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 		// run query
 		List<Map<String, Object>> rowData = simpleJdbcTemplate.queryForList(
 				qInfo.getQuery(), qInfo.getQueryArgs());
-		// allocate array for holding node path corresponding to row
-		Node[] currentPath = new Node[qInfo.getNodeTypes().size()];
 		// iterate through rows, adding nodes as children of existing nodes
 		for (Map<String, Object> row : rowData) {
+			// allocate array for holding node path corresponding to row
+			Node[] currentPath = new Node[qInfo.getNodeTypes().size()];
 			// get the root of this subtree - temporary node contains values
 			Node parentTmp = nodeFromRow(qInfo.getNodeTypes().get(0), row);
 			if (parentTmp != null) {

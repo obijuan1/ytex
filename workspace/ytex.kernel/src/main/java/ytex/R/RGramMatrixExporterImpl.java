@@ -15,6 +15,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import ytex.kernel.FileUtil;
 import ytex.kernel.InfoGainEvaluatorImpl;
@@ -26,6 +28,8 @@ import ytex.kernel.model.KernelEvaluation;
 import ytex.sparsematrix.InstanceDataExporter;
 
 public class RGramMatrixExporterImpl implements RGramMatrixExporter {
+	private static final Log log = LogFactory.getLog(RGramMatrixExporter.class);
+
 	@SuppressWarnings("static-access")
 	public static void main(String args[]) throws IOException {
 		Options options = new Options();
@@ -77,7 +81,8 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 		String name = props.getProperty("ytex.corpusName");
 		String experiment = props.getProperty("ytex.experiment");
 		String param2 = props.getProperty("ytex.param2");
-		double param1 = Double.parseDouble(props.getProperty("ytex.param1", "0"));
+		double param1 = Double.parseDouble(props
+				.getProperty("ytex.param1", "0"));
 		InstanceData instanceData = this.getKernelUtil().loadInstances(
 				props.getProperty("instanceClassQuery"));
 		String outdir = props.getProperty("outdir");
@@ -96,11 +101,15 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 				.size()];
 		KernelEvaluation kernelEval = this.kernelEvaluationDao.getKernelEval(
 				name, experiment, label, 0, param1, param2);
-		kernelUtil.fillGramMatrix(kernelEval, instanceIds, gramMatrix, null,
-				null);
-		outputInstanceData(instanceData, label, outdir);
-		outputGramMatrix(kernelEval, gramMatrix, instanceIds,
-				FileUtil.getDataFilePrefix(outdir, label, 0, 0, null));
+		if (kernelEval != null) {
+			kernelUtil.fillGramMatrix(kernelEval, instanceIds, gramMatrix,
+					null, null);
+			outputInstanceData(instanceData, label, outdir);
+			outputGramMatrix(kernelEval, gramMatrix, instanceIds,
+					FileUtil.getDataFilePrefix(outdir, label, 0, 0, null));
+		} else {
+			log.info("no kernel eval for label=" + label);
+		}
 
 	}
 
@@ -181,10 +190,10 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 		}
 	}
 
-	private void outputInstanceData(InstanceData instanceData, String label, String outdir)
-			throws IOException {
+	private void outputInstanceData(InstanceData instanceData, String label,
+			String outdir) throws IOException {
 		this.instanceDataExporter.outputInstanceData(instanceData,
-				FileUtil.getFoldFilePrefix(outdir, label, 0, 0)
+				FileUtil.getDataFilePrefix(outdir, label, 0, 0, null)
 						+ "instance.txt");
 	}
 
