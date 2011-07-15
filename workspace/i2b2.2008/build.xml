@@ -399,6 +399,7 @@
 	<target name="kernel.export.label" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
 		<property name="export.dir" value="${export.libsvm.outdir}/${export.cutoff}" />
 		<property name="export.xml" value="export_${export.label}.xml" />
+		<echo>export.dir/export.xml ${export.dir}/${export.xml}.xml</echo> 
 		<mkdir dir="${export.dir}" />
 		<filterset id="kernel.filter">
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
