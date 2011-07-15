@@ -1,24 +1,27 @@
 /**
  * script to insert zero vectors for a given kernel.experiment and cutoff
  */
-delete from hotspot_zero_vector 
-where corpus_name = '@kernel.name@'
-and experiment = '@kernel.experiment@'
-and cutoff = @export.cutoff@
+delete z 
+from hotspot_zero_vector z
+inner join hotspot_instance i 
+	on z.hotspot_instance_id = i.hotspot_instance_id
+	and i.experiment = '@kernel.experiment@'
+	and z.cutoff = @export.cutoff@
+where i.corpus_name = '@kernel.name@'
 ;
 
 /**
  * insert zero vectors based on the specified cutoff
  * export.cutoff will be replaced with a number
  */
-insert into hotspot_zero_vector (corpus_name, experiment, label, instance_id, cutoff)
-select '@kernel.name@', '@kernel.experiment@', label, instance_id, @export.cutoff@
+insert into hotspot_zero_vector (hotspot_instance_id, cutoff)
+select hotspot_instance_id, @export.cutoff@
 from
 (
-	select label, instance_id
+	select hotspot_instance_id
 	from
 	(
-		select hi.label, hi.instance_id, sum(hs.hotspot_sentence_id is not null) sc
+		select hi.hotspot_instance_id, sum(hs.hotspot_sentence_id is not null) sc
 		/* we have a hotspot_instance for every doc/label combo */
 		from hotspot_instance hi
 		/* get the sentences */

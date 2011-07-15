@@ -86,7 +86,7 @@
 			<param name="kernel.experiment" value="ontocuis" />
 		</antcall>
 	</target>
-	<target name="insert_hotspot_zero_vector_tt" description="setup truth table for ontocuis">
+	<target name="insert_hotspot_zero_vector_tt" depends="init.exp" description="setup truth table for ontocuis">
 		<property name="mysql.script" value="insert_hotspot_zero_vector_tt.sql" />
 		<copy file="data/${mysql.script}" todir="libsvm/${kernel.experiment}" overwrite="yes">
 			<filterset>
@@ -98,7 +98,7 @@
 			<param name="mysql.script" value="${mysql.script}" />
 		</antcall>
 	</target>
-	<target name="insert_classifier_eval_irzv" description="setup truth table for ontocuis">
+	<target name="insert_classifier_eval_irzv" depends="init.exp" description="setup truth table for ontocuis">
 		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
 		<copy file="data/insert_classifier_eval_irzv.template.sql" tofile="libsvm/${kernel.experiment}/insert_classifier_eval_irzv.sql" overwrite="yes">
 			<filterset>
@@ -317,7 +317,7 @@
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="tree-cuiword" />
-		<property name="export.label" value="2" />
+		<property name="export.label" value="14" />
 		<property name="kernel.experiment" value="kern-cuiword-dot" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
