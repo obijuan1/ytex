@@ -60,5 +60,6 @@
 	-->
 	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" onerror="ignore" classpathref="${kernel.cp}" />
 	<taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" onerror="ignore" classpathref="${kernel.cp}" />
+	<taskdef name="propertycopy" classname="net.sf.antcontrib.property.PropertyCopy" onerror="ignore" classpathref="${kernel.cp}" />
 	
 </project>
