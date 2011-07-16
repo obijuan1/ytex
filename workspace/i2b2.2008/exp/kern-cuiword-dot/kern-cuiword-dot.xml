@@ -46,10 +46,6 @@ from hotspot_instance hi
 inner join i2b2_2008_doc d 
 	on hi.instance_id = d.docId 
 	and d.documentSet = 'train'
-/* limit to label */
-inner join i2b2_2008_disease ds 
-    on hi.label = ds.disease
-    and ds.disease_id = @export.label@
 /* exclude zero vectors */
 left join hotspot_zero_vector hzv 
 	on hi.hotspot_instance_id = hzv.hotspot_instance_id
@@ -57,6 +53,7 @@ left join hotspot_zero_vector hzv
 where hi.corpus_name = 'i2b2.2008'
 and hi.experiment = 'bag-cuiword'
 and hzv.hotspot_zero_vector_id is null
+and hi.label = '@export.label.name@'
 			]]></value>
 		</property>
 	</bean>

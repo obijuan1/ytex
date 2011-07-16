@@ -78,6 +78,6 @@ inner join
     where experiment = '@kernel.experiment@'
     and name = 'i2b2.2008'
     group by label, cost, weight, param1
-) e on s.label = e.label and (round(s.f1, 2)-0.1) <= round(e.f1,2)
+) e on s.label = e.label and (round(s.f1, 3)-0.001) <= round(e.f1,3)
 group by e.label, s.f1
 order by cast(label as decimal(2,0));

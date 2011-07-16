@@ -8,12 +8,12 @@
 	inner join document d on d.document_id = b.document_id
 	where d.analysis_batch in ('i2b2.2008')
 	group by code
-]]></entry>
+	]]></entry>
 	<entry key="ytex.corpusName">i2b2.2008</entry>
 	<entry key="ytex.conceptGraphName">rbpar</entry>
 	<entry key="ytex.conceptGraphQuery"><![CDATA[
 	select cui1, cui2 
-	from umls.mrrel 
+	from umls.MRREL 
 	where sab in ('RXNORM', 'SNOMEDCT', 'SRC')
 	and rel in ('PAR', 'RB')
 	]]></entry>
@@ -23,31 +23,6 @@
 	inner join i2b2_2008_anno a on a.docId = d.docId and a.source = 'intuitive'
 	where d.documentSet = 'train'
 	]]></entry>
-	<!-- 
-	select d.docId, a.judgement, 1, a.disease
-	from i2b2_2008_doc d
-	inner join i2b2_2008_anno a on a.docId = d.docId and a.source = 'intuitive'
-	where d.documentSet = 'train'
-	and a.disease in ('Hypercholesterolemia')	
-	testing:
-drop table if exists testconcept;
-create  table testconcept (cui char(8) primary key);
-119 concepts children of antihyperlipemics
-insert into testconcept
-select distinct cui2
-from umls.mrrel
-where CUI1 = 'C0003367' and rel in ('RN', 'CHD');
-
-
-25 concepts children of statins
-insert into testconcept
-select distinct cui2
-from umls.mrrel
-where CUI1 = 'C0360714' and rel in ('RN', 'CHD')
-and cui1 not in (select cui from testconcept);	
-
-		inner join testconcept tc on tc.cui = c.code
-	 -->
 	<entry key="ytex.conceptInstanceQuery"><![CDATA[
 	select *, 1
 	from

@@ -2,7 +2,7 @@ delete from tfidf_doclength where name = 'i2b2.2008-ncuiword';
 delete from tfidf_docfreq where name = 'i2b2.2008-ncuiword';
 delete from tfidf_termfreq where name = 'i2b2.2008-ncuiword';
 
-drop table namedentity_to_word;
+drop table if exists namedentity_to_word;
 
 create table namedentity_to_word (
   named_entity_id int,

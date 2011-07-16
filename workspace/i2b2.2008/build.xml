@@ -322,33 +322,32 @@
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="tree-cuiword" />
-		<property name="export.label" value="6" />
+		<property name="export.label" value="9" />
 		<property name="kernel.experiment" value="kern-cuiword-dot" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
 		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
 		<property name="export.libsvm.outdir" value="libsvm/${kernel.experiment}" />
-		<loadproperties srcfile="${export.tree.srcdir}/label.properties">
-			<filterchain>
-				<linecontainsregexp>
-					<regexp pattern="label.${export.label}.param1=" />
-				</linecontainsregexp>
-				<tokenfilter>
-					<replacestring from="label.${export.label}." to="" />
-				</tokenfilter>
-			</filterchain>
-		</loadproperties>
-		<property name="export.cutoff" value="${param1}" />
+		<property file="${export.tree.srcdir}/label.properties" />
+		<property file="${basedir}/exp/labelNames.properties" />
+		<propertycopy property="export.label.name" from="label.${export.label}.name" />
+		<propertycopy property="export.cutoff" from="label.${export.label}.param1" />
 		<echo>export.cutoff ${export.cutoff}</echo>
+		<echo>export.label.name ${export.label.name}</echo>
 		<property name="label.tree" value="tree_${export.cutoff}" />
 		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}.xml" />
+		<filterset id="export.filterset">
+			<filter token="kernel.experiment" value="${kernel.experiment}" />
+			<filter token="export.label" value="${export.label}" />
+			<filter token="export.cutoff" value="${export.cutoff}" />
+			<filter token="export.label.name" value="${export.label.name}" />
+		</filterset>
 	</target>
 	<target name="kernel.tree.label" depends="kernel.init.label" description="export the tree for the given label">
 		<mkdir dir="${export.tree.outdir}" />
 		<copy file="${export.tree.srcdir}/tree.xml" tofile="${export.tree.outdir}/${label.tree}.xml" overwrite="yes">
 			<filterset>
-				<filter token="export.label" value="${export.label}" />
-				<filter token="export.cutoff" value="${export.cutoff}" />
+				<filterset refid="export.filterset" />
 			</filterset>
 		</copy>
 		<java classname="ytex.KernelLauncher" fork="yes" classpathref="${kernel.cp}" dir="${export.tree.outdir}">
@@ -362,8 +361,7 @@
 	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
 		<copy file="exp/${kernel.experiment}/${kernel.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
 			<filterset>
-				<filter token="export.label" value="${export.label}" />
-				<filter token="export.cutoff" value="${export.cutoff}" />
+				<filterset refid="export.filterset" />
 			</filterset>
 		</copy>
 		<antcall target="kernel.eval.label.local" />
@@ -404,21 +402,16 @@
 	<target name="kernel.export.label" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
 		<property name="export.dir" value="${export.libsvm.outdir}/${export.cutoff}" />
 		<property name="export.xml" value="export_${export.label}.xml" />
-		<echo>export.dir/export.xml ${export.dir}/${export.xml}.xml</echo>
+		<echo>export.dir/export.xml ${export.dir}/${export.xml}</echo>
 		<mkdir dir="${export.dir}" />
-		<filterset id="kernel.filter">
-			<filter token="kernel.experiment" value="${kernel.experiment}" />
-			<filter token="export.label" value="${export.label}" />
-			<filter token="export.cutoff" value="${export.cutoff}" />
-		</filterset>
 		<copy file="${export.tree.srcdir}/export.xml" tofile="${export.dir}/${export.xml}" overwrite="yes">
 			<filterset>
-				<filterset refid="kernel.filter" />
+				<filterset refid="export.filterset" />
 			</filterset>
 		</copy>
 		<copy file="exp/${kernel.experiment}/kernel.properties.template" tofile="${export.dir}/kernel.properties" overwrite="yes">
 			<filterset>
-				<filterset refid="kernel.filter" />
+				<filterset refid="export.filterset" />
 			</filterset>
 		</copy>
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">

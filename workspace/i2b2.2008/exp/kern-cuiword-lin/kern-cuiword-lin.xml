@@ -15,8 +15,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<property name="delegateKernels">
 					<list>
 						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
-							<property name="nodeType" value="named_entity" />
-							<property name="delegateKernel" ref="namedEntityKernel" />
+							<property name="nodeType" value="ontology_concept" />
+							<property name="delegateKernel" ref="compositeConceptKernel" />
 						</bean>
 						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
 							<property name="nodeType" value="word" />
@@ -27,15 +27,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</bean>
 		</property>
 	</bean>
-	<!-- namedEntityKernel - norm of convolution of concepts -->
-	<bean id="namedEntityKernel" parent="abstractNormKernel">
-		<property name="delegateKernel">
-			<bean class="ytex.kernel.evaluator.ConvolutionKernel">
-				<property name="delegateKernel" ref="compositeConceptKernel" />
-			</bean>
-		</property>
-	</bean>
-
 	<bean id="tuiSemanticTypeKernel" parent="abstractTuiSemanticTypeKernel">
 	</bean>
 	<bean id="linKernel" parent="abstractLinKernel">
@@ -75,10 +66,6 @@ from hotspot_instance hi
 inner join i2b2_2008_doc d 
 	on hi.instance_id = d.docId 
 	and d.documentSet = 'train'
-/* limit to label */
-inner join i2b2_2008_disease ds 
-    on hi.label = ds.disease
-    and ds.disease_id = @export.label@
 /* exclude zero vectors */
 left join hotspot_zero_vector hzv 
 	on hi.hotspot_instance_id = hzv.hotspot_instance_id
@@ -86,6 +73,7 @@ left join hotspot_zero_vector hzv
 where hi.corpus_name = 'i2b2.2008'
 and hi.experiment = 'bag-cuiword'
 and hzv.hotspot_zero_vector_id is null
+and hi.label = '@export.label.name@'
 			]]></value>
 		</property>
 		<!-- <property name="testInstanceIDQuery"> <value><![CDATA[ select d.docId 
