@@ -110,7 +110,7 @@
 		</exec>
 		<!-- array task is done - launch the task to store the results -->
 		<exec executable="qsub">
-			<arg line="-sync y ${ant.pbs} kernel.storeResults -Dkernel.data=${kernel.data}" />
+			<arg line="-sync ${kernel.storeResults.sync} ${ant.pbs} kernel.storeResults -Dkernel.data=${kernel.data}" />
 		</exec>
 	</target>
 	<target name="svm.iter.train.local" unless="kernel.cluster" description="iterate over files, process locally. use multiple threads if parallel.folds.  will only run if kernel.cluster is not set.">
