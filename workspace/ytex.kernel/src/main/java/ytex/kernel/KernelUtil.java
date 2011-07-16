@@ -37,7 +37,16 @@ public interface KernelUtil {
 	 */
 	public abstract InstanceData loadInstances(String strQuery);
 
-	public abstract void fillGramMatrix(final KernelEvaluation kernelEvaluation, final SortedSet<Integer> trainInstanceLabelMap,
-			final double[][] trainGramMatrix, final SortedSet<Integer> testInstanceLabelMap, final double[][] testGramMatrix);
+	public abstract void fillGramMatrix(
+			final KernelEvaluation kernelEvaluation,
+			final SortedSet<Integer> trainInstanceLabelMap,
+			final double[][] trainGramMatrix,
+			final SortedSet<Integer> testInstanceLabelMap,
+			final double[][] testGramMatrix);
+
+	public abstract double[][] loadGramMatrix(SortedSet<Integer> instanceIds, String name,
+			String splitName, String experiment, String label, int run, int fold,
+			double param1, String param2);
+
 
 }

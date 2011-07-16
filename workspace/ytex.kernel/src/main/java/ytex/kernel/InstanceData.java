@@ -3,6 +3,7 @@ package ytex.kernel;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * data structure to store instance ids, their classes, folds, runs, and labels.
@@ -39,4 +40,40 @@ public class InstanceData {
 		this.labelToClassMap = labelToClassMap;
 	}
 
+	/**
+	 * get all the instance ids for the specified scope
+	 * 
+	 * @param label
+	 *            if null, then all instance ids, else if run & fold = 0, then
+	 *            all instance ids for this label.
+	 * @param run
+	 * @param fold
+	 *            if run & fold != 0, then all instance ids for the specified
+	 *            fold
+	 * @return
+	 */
+	public SortedSet<Integer> getAllInstanceIds(String label, int run, int fold) {
+		SortedSet<Integer> instanceIds = new TreeSet<Integer>();
+		if (label == null) {
+			for (String labelKey : this.getLabelToInstanceMap().keySet()) {
+				instanceIds.addAll(getAllInstanceIds(labelKey, 0, 0));
+			}
+		} else if (label != null && fold == 0 && run == 0) {
+			for (int runKey : this.getLabelToInstanceMap().get(label).keySet()) {
+				for (int foldKey : this.getLabelToInstanceMap().get(label)
+						.get(runKey).keySet()) {
+					instanceIds
+							.addAll(getAllInstanceIds(label, runKey, foldKey));
+				}
+			}
+		}
+		if (fold != 0 && run != 0) {
+			for (SortedMap<Integer, String> foldInst : this
+					.getLabelToInstanceMap().get(label).get(run).get(fold)
+					.values()) {
+				instanceIds.addAll(foldInst.keySet());
+			}
+		}
+		return instanceIds;
+	}
 }

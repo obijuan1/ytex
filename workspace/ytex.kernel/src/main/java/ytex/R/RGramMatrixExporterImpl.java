@@ -4,9 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -23,8 +21,8 @@ import ytex.kernel.InfoGainEvaluatorImpl;
 import ytex.kernel.InstanceData;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.KernelUtil;
+import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.KernelEvaluationDao;
-import ytex.kernel.model.KernelEvaluation;
 import ytex.sparsematrix.InstanceDataExporter;
 
 public class RGramMatrixExporterImpl implements RGramMatrixExporter {
@@ -60,16 +58,64 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 	private KernelUtil kernelUtil;
 
 	private void exportGramMatrices(String name, String experiment,
-			double param1, String param2, String outdir,
-			InstanceData instanceData) throws IOException {
-		for (String label : instanceData.getLabelToInstanceMap().keySet()) {
-			for (int run : instanceData.getLabelToInstanceMap().get(label)
-					.keySet()) {
-				exportLabel(name, experiment, outdir, instanceData, label, run,
-						param1, param2);
+			double param1, String param2, String splitName, String scope,
+			String outdir, InstanceData instanceData) throws IOException {
+		if (scope == null || scope.length() == 0) {
+			exportGramMatrix(name, experiment, param1, param2, splitName,
+					outdir, instanceData, null, 0, 0);
+		} else {
+			for (String label : instanceData.getLabelToInstanceMap().keySet()) {
+				if ("label".equals(scope)) {
+					exportGramMatrix(name, experiment, param1, param2,
+							splitName, outdir, instanceData, label, 0, 0);
+				} else if ("fold".equals(scope)) {
+					for (int run : instanceData.getLabelToInstanceMap()
+							.get(label).keySet()) {
+						for (int fold : instanceData.getLabelToInstanceMap()
+								.get(label).get(run).keySet()) {
+							exportGramMatrix(name, experiment, param1, param2,
+									splitName, outdir, instanceData, label,
+									run, fold);
+						}
+					}
+				}
 			}
 		}
 	}
+
+	private void exportGramMatrix(String name, String experiment,
+			double param1, String param2, String splitName, String outdir,
+			InstanceData instanceData, String label, int run, int fold)
+			throws IOException {
+		SortedSet<Integer> instanceIds = instanceData.getAllInstanceIds(label,
+				run, fold);
+		String filePrefix = FileUtil.getDataFilePrefix(outdir, label, run,
+				fold, null);
+		double[][] gramMatrix = kernelUtil.loadGramMatrix(instanceIds, name,
+				splitName, experiment, label, run, fold, param1, param2);
+		if (gramMatrix != null)
+			outputGramMatrix(gramMatrix, instanceIds, filePrefix);
+	}
+
+//	private KernelEvaluation getKernelEval(String name, String splitName,
+//			String experiment, String label, int run, int fold, double param1,
+//			String param2) {
+//		int foldId = 0;
+//		if (run != 0 && fold != 0) {
+//			CrossValidationFold f = this.classifierEvaluationDao
+//					.getCrossValidationFold(name, splitName, label, run, fold);
+//			if (f != null)
+//				foldId = f.getCrossValidationFoldId();
+//		}
+//		KernelEvaluation kEval = this.kernelEvaluationDao.getKernelEval(name,
+//				experiment, label, foldId, param1, param2);
+//		if (kEval == null) {
+//			log.warn("could not find kernelEvaluation.  name=" + name
+//					+ ", experiment=" + experiment + ", label=" + label
+//					+ ", fold=" + fold + ", run=" + run);
+//		}
+//		return kEval;
+//	}
 
 	/*
 	 * (non-Javadoc)
@@ -79,62 +125,65 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 	@Override
 	public void exportGramMatrix(Properties props) throws IOException {
 		String name = props.getProperty("ytex.corpusName");
+		String splitName = props.getProperty("ytex.splitName");
 		String experiment = props.getProperty("ytex.experiment");
 		String param2 = props.getProperty("ytex.param2");
 		double param1 = Double.parseDouble(props
 				.getProperty("ytex.param1", "0"));
+		String scope = props.getProperty("scope");
+		String outdir = props.getProperty("outdir");
 		InstanceData instanceData = this.getKernelUtil().loadInstances(
 				props.getProperty("instanceClassQuery"));
-		String outdir = props.getProperty("outdir");
-		if (outdir == null || outdir.length() == 0)
-			outdir = ".";
-		exportGramMatrices(name, experiment, param1, param2, outdir,
-				instanceData);
+		exportGramMatrices(name, experiment, param1, param2, splitName, scope,
+				outdir, instanceData);
 	}
 
-	private void exportLabel(String name, String experiment, String outdir,
-			InstanceData instanceData, String label, int run, double param1,
-			String param2) throws IOException {
-		SortedSet<Integer> instanceIds = getAllInstanceIdsForLabel(
-				instanceData, label);
-		double[][] gramMatrix = new double[instanceIds.size()][instanceIds
-				.size()];
-		KernelEvaluation kernelEval = this.kernelEvaluationDao.getKernelEval(
-				name, experiment, label, 0, param1, param2);
-		if (kernelEval != null) {
-			kernelUtil.fillGramMatrix(kernelEval, instanceIds, gramMatrix,
-					null, null);
-			outputInstanceData(instanceData, label, outdir);
-			outputGramMatrix(kernelEval, gramMatrix, instanceIds,
-					FileUtil.getDataFilePrefix(outdir, label, 0, 0, null));
-		} else {
-			log.info("no kernel eval for label=" + label);
-		}
+	//
+	// private void exportGramMatrix(String name, String experiment,
+	// double param1, String param2, String outdir,
+	// InstanceData instanceData, String label, int foldId)
+	// throws IOException {
+	// SortedSet<Integer> instanceIds = getAllInstanceIdsForLabel(
+	// instanceData, label);
+	// double[][] gramMatrix = new double[instanceIds.size()][instanceIds
+	// .size()];
+	// KernelEvaluation kernelEval = this.kernelEvaluationDao.getKernelEval(
+	// name, experiment, label, 0, param1, param2);
+	// if (kernelEval != null) {
+	// kernelUtil.fillGramMatrix(kernelEval, instanceIds, gramMatrix,
+	// null, null);
+	// outputInstanceData(instanceData, label, outdir);
+	// outputGramMatrix(kernelEval, gramMatrix, instanceIds,
+	// FileUtil.getDataFilePrefix(outdir, label, 0, 0, null));
+	// } else {
+	// log.info("no kernel eval for label=" + label);
+	// }
+	//
+	// }
 
-	}
-
-	/**
-	 * get all instance ids for the specified label
-	 * 
-	 * @param instanceData
-	 * @param label
-	 * @return
-	 */
-	private SortedSet<Integer> getAllInstanceIdsForLabel(
-			InstanceData instanceData, String label) {
-		SortedSet<Integer> instanceIds = new TreeSet<Integer>();
-		for (int run : instanceData.getLabelToInstanceMap().get(label).keySet()) {
-			for (int fold : instanceData.getLabelToInstanceMap().get(label)
-					.get(run).keySet()) {
-				for (SortedMap<Integer, String> instanceLabelMap : instanceData
-						.getLabelToInstanceMap().get(label).get(run).get(fold)
-						.values()) {
-					instanceIds.addAll(instanceLabelMap.keySet());
-				}
-			}
-		}
-		return instanceIds;
-	}
+	// /**
+	// * get all instance ids for the specified label
+	// *
+	// * @param instanceData
+	// * @param label
+	// * @return
+	// */
+	// private SortedSet<Integer> getAllInstanceIdsForLabel(
+	// InstanceData instanceData, String label) {
+	// SortedSet<Integer> instanceIds = new TreeSet<Integer>();
+	// for (int run : instanceData.getLabelToInstanceMap().get(label).keySet())
+	// {
+	// for (int fold : instanceData.getLabelToInstanceMap().get(label)
+	// .get(run).keySet()) {
+	// for (SortedMap<Integer, String> instanceLabelMap : instanceData
+	// .getLabelToInstanceMap().get(label).get(run).get(fold)
+	// .values()) {
+	// instanceIds.addAll(instanceLabelMap.keySet());
+	// }
+	// }
+	// }
+	// return instanceIds;
+	// }
 
 	public InstanceDataExporter getInstanceDataExporter() {
 		return instanceDataExporter;
@@ -148,9 +197,9 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 		return kernelUtil;
 	}
 
-	private void outputGramMatrix(KernelEvaluation kernelEval,
-			double[][] gramMatrix, SortedSet<Integer> instanceIds,
-			String dataFilePrefix) throws IOException {
+	private void outputGramMatrix(double[][] gramMatrix,
+			SortedSet<Integer> instanceIds, String dataFilePrefix)
+			throws IOException {
 		BufferedWriter w = null;
 		BufferedWriter wId = null;
 		try {

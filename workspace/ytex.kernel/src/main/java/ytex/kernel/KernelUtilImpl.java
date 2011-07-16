@@ -18,6 +18,8 @@ import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -25,138 +27,31 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.KernelEvaluationDao;
+import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.KernelEvaluation;
 import ytex.kernel.model.KernelEvaluationInstance;
 
 public class KernelUtilImpl implements KernelUtil {
+	private static final Log log = LogFactory.getLog(KernelUtilImpl.class);
+	private ClassifierEvaluationDao classifierEvaluationDao;
+
 	private JdbcTemplate jdbcTemplate = null;
-	private PlatformTransactionManager transactionManager;
+
 	private KernelEvaluationDao kernelEvaluationDao = null;
-
-	public PlatformTransactionManager getTransactionManager() {
-		return transactionManager;
-	}
-
-	public void setTransactionManager(PlatformTransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
-	}
-
-	public KernelEvaluationDao getKernelEvaluationDao() {
-		return kernelEvaluationDao;
-	}
-
-	public void setKernelEvaluationDao(KernelEvaluationDao kernelEvaluationDao) {
-		this.kernelEvaluationDao = kernelEvaluationDao;
-	}
-
-	public DataSource getDataSource() {
-		return jdbcTemplate.getDataSource();
-	}
-
-	public void setDataSource(DataSource dataSource) {
-		this.jdbcTemplate = new JdbcTemplate(dataSource);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ytex.kernel.DataExporter#loadProperties(java.lang.String,
-	 * java.util.Properties)
-	 */
-	@Override
-	public void loadProperties(String propertyFile, Properties props)
-			throws FileNotFoundException, IOException,
-			InvalidPropertiesFormatException {
-		InputStream in = null;
-		try {
-			in = new FileInputStream(propertyFile);
-			if (propertyFile.endsWith(".xml"))
-				props.loadFromXML(in);
-			else
-				props.load(in);
-		} finally {
-			if (in != null) {
-				in.close();
-			}
+	private PlatformTransactionManager transactionManager;
+	private Map<Integer, Integer> createInstanceIdToIndexMap(
+			SortedSet<Integer> instanceIDs) {
+		Map<Integer, Integer> instanceIdToIndexMap = new HashMap<Integer, Integer>(
+				instanceIDs.size());
+		int i = 0;
+		for (Integer instanceId : instanceIDs) {
+			instanceIdToIndexMap.put(instanceId, i);
+			i++;
 		}
+		return instanceIdToIndexMap;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ytex.kernel.DataExporter#loadInstances(java.lang.String,
-	 * java.util.SortedMap)
-	 */
-	@Override
-	public InstanceData loadInstances(String strQuery) {
-		final InstanceData instanceLabel = new InstanceData();
-		jdbcTemplate.query(strQuery, new RowCallbackHandler() {
-
-			@Override
-			public void processRow(ResultSet rs) throws SQLException {
-				String label = "";
-				int run = 0;
-				int fold = 0;
-				boolean train = true;
-				int instanceId = rs.getInt(1);
-				String className = rs.getString(2);
-				if (rs.getMetaData().getColumnCount() >= 3)
-					train = rs.getBoolean(3);
-				if (rs.getMetaData().getColumnCount() >= 4) {
-					label = rs.getString(4);
-					if(label == null)
-						label = "";
-				}
-				if (rs.getMetaData().getColumnCount() >= 5)
-					fold = rs.getInt(5);
-				if (rs.getMetaData().getColumnCount() >= 6)
-					run = rs.getInt(6);
-				// get runs for label
-				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> runToInstanceMap = instanceLabel
-						.getLabelToInstanceMap().get(label);
-				if (runToInstanceMap == null) {
-					runToInstanceMap = new TreeMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>>();
-					instanceLabel.getLabelToInstanceMap().put(label,
-							runToInstanceMap);
-				}
-				// get folds for run
-				SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>> foldToInstanceMap = runToInstanceMap
-						.get(run);
-				if (foldToInstanceMap == null) {
-					foldToInstanceMap = new TreeMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>();
-					runToInstanceMap.put(run, foldToInstanceMap);
-				}
-				// get train/test set for fold
-				SortedMap<Boolean, SortedMap<Integer, String>> ttToClassMap = foldToInstanceMap
-						.get(fold);
-				if (ttToClassMap == null) {
-					ttToClassMap = new TreeMap<Boolean, SortedMap<Integer, String>>();
-					foldToInstanceMap.put(fold, ttToClassMap);
-				}
-				// get instances for train/test set
-				SortedMap<Integer, String> instanceToClassMap = ttToClassMap
-						.get(train);
-				if (instanceToClassMap == null) {
-					instanceToClassMap = new TreeMap<Integer, String>();
-					ttToClassMap.put(train, instanceToClassMap);
-				}
-				// set the instance class
-				instanceToClassMap.put(instanceId, className);
-				// add the class to the labelToClassMap
-				SortedSet<String> labelClasses = instanceLabel
-						.getLabelToClassMap().get(label);
-				if (labelClasses == null) {
-					labelClasses = new TreeSet<String>();
-					instanceLabel.getLabelToClassMap().put(label, labelClasses);
-				}
-				if (!labelClasses.contains(className))
-					labelClasses.add(className);
-			}
-		});
-		return instanceLabel;
-	}
-
 	@Override
 	public void fillGramMatrix(
 			final KernelEvaluation kernelEvaluation,
@@ -232,16 +127,161 @@ public class KernelUtilImpl implements KernelUtil {
 		}
 	}
 
-	private Map<Integer, Integer> createInstanceIdToIndexMap(
-			SortedSet<Integer> instanceIDs) {
-		Map<Integer, Integer> instanceIdToIndexMap = new HashMap<Integer, Integer>(
-				instanceIDs.size());
-		int i = 0;
-		for (Integer instanceId : instanceIDs) {
-			instanceIdToIndexMap.put(instanceId, i);
-			i++;
-		}
-		return instanceIdToIndexMap;
+	public ClassifierEvaluationDao getClassifierEvaluationDao() {
+		return classifierEvaluationDao;
 	}
 
+	public DataSource getDataSource() {
+		return jdbcTemplate.getDataSource();
+	}
+
+	public KernelEvaluationDao getKernelEvaluationDao() {
+		return kernelEvaluationDao;
+	}
+
+	public PlatformTransactionManager getTransactionManager() {
+		return transactionManager;
+	}
+
+	@Override
+	public double[][] loadGramMatrix(SortedSet<Integer> instanceIds,
+			String name, String splitName, String experiment, String label,
+			int run, int fold, double param1, String param2) {
+		int foldId = 0;
+		double[][] gramMatrix = null;
+		if (run != 0 && fold != 0) {
+			CrossValidationFold f = this.classifierEvaluationDao
+					.getCrossValidationFold(name, splitName, label, run, fold);
+			if (f != null)
+				foldId = f.getCrossValidationFoldId();
+		}
+		KernelEvaluation kernelEval = this.kernelEvaluationDao.getKernelEval(
+				name, experiment, label, foldId, param1, param2);
+		if (kernelEval == null) {
+			log.warn("could not find kernelEvaluation.  name=" + name
+					+ ", experiment=" + experiment + ", label=" + label
+					+ ", fold=" + fold + ", run=" + run);
+		} else {
+			gramMatrix = new double[instanceIds.size()][instanceIds.size()];
+			fillGramMatrix(kernelEval, instanceIds, gramMatrix, null, null);
+		}
+		return gramMatrix;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ytex.kernel.DataExporter#loadInstances(java.lang.String,
+	 * java.util.SortedMap)
+	 */
+	@Override
+	public InstanceData loadInstances(String strQuery) {
+		final InstanceData instanceLabel = new InstanceData();
+		jdbcTemplate.query(strQuery, new RowCallbackHandler() {
+
+			@Override
+			public void processRow(ResultSet rs) throws SQLException {
+				String label = "";
+				int run = 0;
+				int fold = 0;
+				boolean train = true;
+				int instanceId = rs.getInt(1);
+				String className = rs.getString(2);
+				if (rs.getMetaData().getColumnCount() >= 3)
+					train = rs.getBoolean(3);
+				if (rs.getMetaData().getColumnCount() >= 4) {
+					label = rs.getString(4);
+					if (label == null)
+						label = "";
+				}
+				if (rs.getMetaData().getColumnCount() >= 5)
+					fold = rs.getInt(5);
+				if (rs.getMetaData().getColumnCount() >= 6)
+					run = rs.getInt(6);
+				// get runs for label
+				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> runToInstanceMap = instanceLabel
+						.getLabelToInstanceMap().get(label);
+				if (runToInstanceMap == null) {
+					runToInstanceMap = new TreeMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>>();
+					instanceLabel.getLabelToInstanceMap().put(label,
+							runToInstanceMap);
+				}
+				// get folds for run
+				SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>> foldToInstanceMap = runToInstanceMap
+						.get(run);
+				if (foldToInstanceMap == null) {
+					foldToInstanceMap = new TreeMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>();
+					runToInstanceMap.put(run, foldToInstanceMap);
+				}
+				// get train/test set for fold
+				SortedMap<Boolean, SortedMap<Integer, String>> ttToClassMap = foldToInstanceMap
+						.get(fold);
+				if (ttToClassMap == null) {
+					ttToClassMap = new TreeMap<Boolean, SortedMap<Integer, String>>();
+					foldToInstanceMap.put(fold, ttToClassMap);
+				}
+				// get instances for train/test set
+				SortedMap<Integer, String> instanceToClassMap = ttToClassMap
+						.get(train);
+				if (instanceToClassMap == null) {
+					instanceToClassMap = new TreeMap<Integer, String>();
+					ttToClassMap.put(train, instanceToClassMap);
+				}
+				// set the instance class
+				instanceToClassMap.put(instanceId, className);
+				// add the class to the labelToClassMap
+				SortedSet<String> labelClasses = instanceLabel
+						.getLabelToClassMap().get(label);
+				if (labelClasses == null) {
+					labelClasses = new TreeSet<String>();
+					instanceLabel.getLabelToClassMap().put(label, labelClasses);
+				}
+				if (!labelClasses.contains(className))
+					labelClasses.add(className);
+			}
+		});
+		return instanceLabel;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ytex.kernel.DataExporter#loadProperties(java.lang.String,
+	 * java.util.Properties)
+	 */
+	@Override
+	public void loadProperties(String propertyFile, Properties props)
+			throws FileNotFoundException, IOException,
+			InvalidPropertiesFormatException {
+		InputStream in = null;
+		try {
+			in = new FileInputStream(propertyFile);
+			if (propertyFile.endsWith(".xml"))
+				props.loadFromXML(in);
+			else
+				props.load(in);
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+		}
+	}
+
+	public void setClassifierEvaluationDao(
+			ClassifierEvaluationDao classifierEvaluationDao) {
+		this.classifierEvaluationDao = classifierEvaluationDao;
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	}
+
+	public void setKernelEvaluationDao(KernelEvaluationDao kernelEvaluationDao) {
+		this.kernelEvaluationDao = kernelEvaluationDao;
+	}
+
+	public void setTransactionManager(
+			PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+	}
 }

@@ -143,6 +143,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 	</bean>
 
 	<bean id="baseClassifierEvaluationParser" abstract="true">
