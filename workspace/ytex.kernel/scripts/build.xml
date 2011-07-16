@@ -5,6 +5,7 @@
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 
 	<target name="iter.dirs" description="iterate over ${kernel.dirs} in ${kernel.exp.base}, call process.dir">
+		<property name="kernel.dirs" value="*"/>
 		<echo>kernel.exp.base ${kernel.exp.base}</echo>
 		<echo>kernel.dirs ${kernel.dirs}</echo>
 		<for param="kernel.data">
