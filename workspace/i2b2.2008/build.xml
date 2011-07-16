@@ -285,7 +285,7 @@
 	-->
 	<target name="kernel.all" depends="kernel.eval.all,kernel.export.all,kernel.libsvm,insert_classifier_eval_irzv" description="evaluate kernel on corpus, run libsvm, update ir metrics w/ zero vectors" />
 	<target name="kernel.libsvm" depends="init.exp" description="launch libsvm">
-		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/libsvm" target="iter.dirs" inheritall="true">
+		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="iter.dirs" inheritall="true">
 			<property name="ytex.home" value="${ytex.home}" />
 			<property name="kernel.exp.base" value="${ytex.home}/i2b2.2008/libsvm/${kernel.experiment}" />
 		</ant>
