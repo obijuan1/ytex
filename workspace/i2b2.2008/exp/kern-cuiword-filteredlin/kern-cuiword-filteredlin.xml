@@ -31,7 +31,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="linKernel" parent="abstractLinKernel">
 		<property name="label" value="@export.label.name@" />
-		<property name="cutoff" value="@export.cutoff@" />
+		<property name="cutoff" value="@export.param2@" />
 	</bean>
 	<!-- Check overlapping main semantic type. Concept kernel is tuifilter * lin -->
 	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
@@ -60,6 +60,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="experiment" value="kern-cuiword-filteredlin" />
 		<property name="label" value="@export.label@" />
 		<property name="param1" value="@export.cutoff@" />
+		<property name="param2" value="@export.param2@" />
 		<property name="trainInstanceIDQuery">
 			<value><![CDATA[
 select hi.instance_id

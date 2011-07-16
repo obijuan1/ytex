@@ -4,6 +4,7 @@
 	<entry key="ytex.corpusName">i2b2.2008</entry>
 	<entry key="ytex.experiment">@kernel.experiment@</entry>
 	<entry key="ytex.param1">@export.cutoff@</entry>
+	<entry key="ytex.param2">@export.param2@</entry>
 	<entry key="scope">label</entry>
 	<entry key="instanceClassQuery"><![CDATA[
 	select i.instance_id, j.judgement_id, i.train, d.disease_id, f.fold, f.run
