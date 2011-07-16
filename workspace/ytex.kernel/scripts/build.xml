@@ -107,9 +107,9 @@
 		<exec executable="qsub" failonerror="yes">
 			<arg line="-sync y -t 1-${train.count} ${ant.pbs} svm.processFile.cluster -Dkernel.data=${kernel.data}" />
 		</exec>
-		<!-- array task is done - launch the task to store the results but don't wait on it -->
+		<!-- array task is done - launch the task to store the results -->
 		<exec executable="qsub">
-			<arg line="-sync n ${ant.pbs} kernel.storeResults -Dkernel.data=${kernel.data}" />
+			<arg line="-sync y ${ant.pbs} kernel.storeResults -Dkernel.data=${kernel.data}" />
 		</exec>
 	</target>
 	<target name="svm.iter.train.local" unless="kernel.cluster" description="iterate over files, process locally. use multiple threads if parallel.folds.  will only run if kernel.cluster is not set.">
