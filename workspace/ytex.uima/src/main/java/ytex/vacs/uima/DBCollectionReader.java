@@ -120,12 +120,12 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 						// backwards compatibility
 						DocumentKey docKey = (DocumentKey)key;
 						if (id.get("studyid") != null)
-							docKey.setStudyID((Integer) id.get("studyid"));
+							docKey.setStudyID(((Number) id.get("studyid")).intValue());
 						if (id.get("uid") != null)
-							docKey.setUid((Integer) id.get("uid"));
+							docKey.setUid(((Number) id.get("uid")).longValue());
 						if (id.get("document_type_id") != null)
-							docKey.setDocumentType((Integer) id
-									.get("document_type_id"));
+							docKey.setDocumentType(((Number) id
+									.get("document_type_id")).intValue());
 						if (id.get("site_id") != null)
 							docKey.setSiteID((String) id.get("site_id"));
 					}
