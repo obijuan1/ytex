@@ -45,39 +45,22 @@ from
 ;
 
 /*
- * show the best f1 and cutoff for the experiment
+ * show the best f1 per label for the experiment
  */
-select cast(s.label as decimal(2,0)) label, round(s.f1, 3) f1, max(param1) min_cutoff, max(param1) max_cutoff
+select label, truncate(max(f1),3) f1
 from
 (
-	select label, max(f1) f1
-	from
-	(
-		/*
-		 * best f1 score by experiment (hotspot cutoff) and svm parameters
-		 */
-		select label, kernel, cost, gamma, weight, param1, avg(f1) f1
-		from classifier_eval_irzv t
-		inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
-		inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
-    	where experiment = '@kernel.experiment@'
-    	and name = 'i2b2.2008'
-		group by label, kernel, cost, gamma, weight, param1
-	) s
-	group by label
-) s 
-inner join
-(
-    /*
-     * f1 score by label, experiment, hotspot cutoff, and svm parameters
-     */
-    select label, cost, weight, param1, avg(f1) f1
-    from classifier_eval_irzv t
-    inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
-    inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
-    where experiment = '@kernel.experiment@'
-    and name = 'i2b2.2008'
-    group by label, cost, weight, param1
-) e on s.label = e.label and (round(s.f1, 3)-0.001) <= round(e.f1,3)
-group by e.label, s.f1
-order by cast(label as decimal(2,0));
+	/*
+	 * best f1 score by experiment (hotspot cutoff) and svm parameters
+	 */
+	select label, kernel, cost, gamma, weight, param1, param2, avg(f1) f1
+	from classifier_eval_irzv t
+	inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
+	inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
+	where experiment = '@kernel.experiment@'
+	and name = 'i2b2.2008'
+	group by label, kernel, cost, gamma, weight, param1, param2
+) s
+group by label
+order by cast(label as decimal(2,0))
+;
