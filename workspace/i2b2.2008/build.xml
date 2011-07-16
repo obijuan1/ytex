@@ -283,7 +283,12 @@
 		</antcall>
 	</target>
 	-->
-	<target name="kernel.all" depends="kernel.eval.all,kernel.export.all">
+	<target name="kernel.all" depends="kernel.eval.all,kernel.export.all,kernel.libsvm,insert_classifier_eval_irzv" description="evaluate kernel on corpus, run libsvm, update ir metrics w/ zero vectors" />
+	<target name="kernel.libsvm" depends="init.exp" description="launch libsvm">
+		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/libsvm" target="iter.dirs" inheritall="true">
+			<property name="ytex.home" value="${ytex.home}" />
+			<property name="kernel.exp.base" value="${ytex.home}/i2b2.2008/libsvm/${kernel.experiment}" />
+		</ant>
 	</target>
 	<target name="kernel.iter.label" description="execute kernel.iter.target for each label in label.properties">
 		<property file="./tree/${tree.name}/label.properties" />
@@ -317,7 +322,7 @@
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="tree-cuiword" />
-		<property name="export.label" value="14" />
+		<property name="export.label" value="6" />
 		<property name="kernel.experiment" value="kern-cuiword-dot" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
@@ -376,7 +381,7 @@
 	<target name="kernel.eval.label.cluster" if="kernel.cluster" description="send slices to slaves for processing">
 		<!-- pass the properties to the slave that aren't in ytex.properties -->
 		<exec executable="qsub">
-			<arg line="-sync n -t 1-${kernel.mod} ${i2b2ant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml}" />
+			<arg line="-sync y -t 1-${kernel.mod} ${i2b2ant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml}" />
 		</exec>
 	</target>
 	<target name="kernel.eval.slice.cluster" if="kernel.cluster" description="eval slice on cluster slave">
@@ -399,7 +404,7 @@
 	<target name="kernel.export.label" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
 		<property name="export.dir" value="${export.libsvm.outdir}/${export.cutoff}" />
 		<property name="export.xml" value="export_${export.label}.xml" />
-		<echo>export.dir/export.xml ${export.dir}/${export.xml}.xml</echo> 
+		<echo>export.dir/export.xml ${export.dir}/${export.xml}.xml</echo>
 		<mkdir dir="${export.dir}" />
 		<filterset id="kernel.filter">
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
@@ -492,5 +497,10 @@
 			<arg value="--no-readline" />
 			<arg value="${experiment}" />
 		</exec>
+	</target>
+	<target name="test">
+		<xmlproperty file="test2.xml" />
+		<echoproperties prefix="job_info" />
+		<echo>${job_info.queue_info.job_list.JB_job_number}</echo>
 	</target>
 </project>
