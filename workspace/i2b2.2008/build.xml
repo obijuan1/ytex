@@ -228,7 +228,7 @@
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="tree-cuiword" />
-		<property name="export.label" value="7" />
+		<property name="export.label" value="9" />
 		<property name="kernel.experiment" value="kern-cuiword-dot" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
@@ -305,8 +305,10 @@
 				<filter token="export.param2" value="${export.param2}" />
 			</filterset>
 		</copy>
+		<!--
 		<antcall target="kernel.eval.label.local" />
 		<antcall target="kernel.eval.label.cluster" />
+		-->
 	</target>
 	<target name="kernel.eval.label.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
 		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
