@@ -73,15 +73,47 @@ order by hi.instance_id
 		</property>
 		<property name="nodeQueryMappingInfos">
 			<list>
-				<!-- map concepts -->
+				<!-- map named entities -->
+				<bean class="ytex.kernel.tree.QueryMappingInfo">
+					<property name="query"><value><![CDATA[
+select hi.instance_id, ne.anno_base_id, ne.certainty confidence
+from hotspot_instance hi
+inner join i2b2_2008_disease ds 
+    on hi.label = ds.disease
+    and ds.disease_id = @export.label@
+inner join hotspot_sentence hs
+    on hi.hotspot_instance_id = hs.hotspot_instance_id
+    and hs.evaluation >= @export.cutoff@
+inner join anno_contain ac 
+    on ac.parent_anno_base_id = hs.anno_base_id
+inner join anno_named_entity ne
+	on ne.anno_base_id = ac.child_anno_base_id
+/* limit to concepts that are not contained in other concepts */
+left join anno_contain cne 
+    on cne.child_anno_base_id = ne.anno_base_id
+    and cne.parent_uima_type_id = 8
+where hi.corpus_name = 'i2b2.2008'
+and hi.experiment = 'bag-cuiword'
+and cne.parent_anno_base_id is null
+order by hi.instance_id, ne.anno_base_id				
+					]]></value>
+					</property>
+					<property name="nodeTypes">
+						<list>
+							<ref bean="nodeInstanceInfo" />
+							<ref bean="nodeNEInfo" />
+						</list>
+					</property>
+				</bean>
+				<!-- map concepts to named entities -->
 				<bean class="ytex.kernel.tree.QueryMappingInfo">
 					<property name="query">
 					<!-- bug in ytex - flipped certainty and confidence -->
 						<value><![CDATA[
-select distinct instance_id, anno_base_id, confidence, code
+select distinct anno_base_id, confidence, code
 from
 (
-	select hi.instance_id, ne.anno_base_id, ne.certainty confidence, c.code
+	select ne.anno_base_id, ne.certainty confidence, c.code
 	from hotspot_instance hi
 	inner join i2b2_2008_disease ds 
 	    on hi.label = ds.disease
@@ -105,7 +137,7 @@ from
 	
 	union
 	
-	select hi.instance_id, ne.anno_base_id, ne.certainty confidence, c.code
+	select ne.anno_base_id, ne.certainty confidence, c.code
 	from hotspot_instance hi
 	inner join i2b2_2008_disease ds 
 	    on hi.label = ds.disease
@@ -113,26 +145,29 @@ from
 	inner join hotspot_sentence hs
 	    on hi.hotspot_instance_id = hs.hotspot_instance_id
 	    and hs.evaluation >= @export.cutoff@
-	/* get concepts in this sentence */
+	/* get named entities in this sentence */
 	inner join anno_contain ac 
 	    on ac.parent_anno_base_id = hs.anno_base_id
+  	inner join anno_named_entity ne  
+    	on ne.anno_base_id = ac.child_anno_base_id
+	/* limit to named entities that are not contained in other named entities */
+	left join anno_contain parne 
+	    on parne.child_anno_base_id = ne.anno_base_id 
+	    and parne.parent_uima_type_id = 8
+	/* get contained named entities' cuis */
+	inner join anno_contain chdne
+	    on chdne.parent_anno_base_id = ne.anno_base_id 
 	inner join anno_ontology_concept c
-	    on c.anno_base_id = ac.child_anno_base_id
-	/* limit to concepts that are contained in other concepts */
-	inner join anno_contain cne 
-	    on cne.child_anno_base_id = c.anno_base_id 
-	    and cne.parent_uima_type_id = 8
-	/* get the containing concept's id and negation status */
-	inner join anno_named_entity ne
-	    on ne.anno_base_id = cne.parent_anno_base_id
+	    on c.anno_base_id = chdne.child_anno_base_id
 	where hi.corpus_name = 'i2b2.2008'
 	and hi.experiment = 'bag-cuiword'
-) s order by instance_id, anno_base_id
+	and parne.parent_anno_base_id is null
+) s order by anno_base_id
 					]]></value>
 					</property>
 					<property name="nodeTypes">
 						<list>
-							<ref bean="nodeInstanceInfo" />
+							<ref bean="nodeNEInfo" />
 							<ref bean="nodeConceptInfo" />
 						</list>
 					</property>
