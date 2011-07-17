@@ -1,12 +1,15 @@
 package ytex.kernel;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -42,7 +45,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private String conceptSetName;
 
 	private String corpusName;
-	private Map<String, Set<String>> cuiTuiMap;
+	private List<String> tuiList;
+	private Map<String, BitSet> cuiTuiMap;
 	/**
 	 * cache to hold lcs's
 	 */
@@ -69,13 +73,13 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		tuis.add(tui);
 	}
 
-	private String createKey(String c1, String c2) {
-		if (c1.compareTo(c2) < 0) {
-			return new StringBuilder(c1).append("-").append(c2).toString();
-		} else {
-			return new StringBuilder(c2).append("-").append(c1).toString();
-		}
-	}
+//	private String createKey(String c1, String c2) {
+//		if (c1.compareTo(c2) < 0) {
+//			return new StringBuilder(c1).append("-").append(c2).toString();
+//		} else {
+//			return new StringBuilder(c2).append("-").append(c1).toString();
+//		}
+//	}
 
 	/**
 	 * return lin measure. optionally filter lin measure so that only concepts
@@ -190,8 +194,13 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	@Override
-	public Map<String, Set<String>> getCuiTuiMap() {
+	public Map<String, BitSet> getCuiTuiMap() {
 		return cuiTuiMap;
+	}
+
+	@Override
+	public List<String> getTuiList() {
+		return this.tuiList;
 	}
 
 	/**
@@ -222,8 +231,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 
 	@SuppressWarnings("unchecked")
 	private int getLCSFromCache(ConcRel cr1, ConcRel cr2, Set<ConcRel> lcses) {
-		String cacheKey = this
-				.createKey(cr1.getConceptID(), cr2.getConceptID());
+		OrderedPair<String> cacheKey = new OrderedPair<String>(
+				cr1.getConceptID(), cr2.getConceptID());
 		Element e = this.lcsCache.get(cacheKey);
 		if (e != null) {
 			// hit the cache - unpack the lcs
@@ -280,7 +289,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 */
 	public void initCuiTuiMapFromCorpus() {
 		// don't duplicate tui strings to save memory
-		Map<String, String> tuiMap = new HashMap<String, String>();
+		SortedMap<String, String> tuiMap = new TreeMap<String, String>();
 		Map<String, Set<String>> tmpTuiCuiMap = new HashMap<String, Set<String>>();
 		List<Object[]> listCuiTui = this.classifierEvaluationDao
 				.getCorpusCuiTuis(this.getCorpusName(),
@@ -290,7 +299,40 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 			String tui = (String) cuiTui[1];
 			addCuiTuiToMap(tmpTuiCuiMap, tuiMap, cui, tui);
 		}
-		cuiTuiMap = Collections.unmodifiableMap(tmpTuiCuiMap);
+		// map of tui - bitset index
+		SortedMap<String, Integer> mapTuiIndex = new TreeMap<String, Integer>();
+		// list of tuis corresponding to bitset indices
+		List<String> tmpTuiList = new ArrayList<String>(tuiMap.size());
+		int index = 0;
+		for (String tui : tuiMap.keySet()) {
+			mapTuiIndex.put(tui, index++);
+			tmpTuiList.add(tui);
+		}
+		this.tuiList = Collections.unmodifiableList(tmpTuiList);
+		// convert list of cuis into bitsets
+		Map<String, BitSet> tmpCuiTuiBitsetMap = new HashMap<String, BitSet>();
+		for (Map.Entry<String, Set<String>> cuiTuiMapEntry : tmpTuiCuiMap
+				.entrySet()) {
+			tmpCuiTuiBitsetMap.put(cuiTuiMapEntry.getKey(),
+					tuiListToBitset(cuiTuiMapEntry.getValue(), mapTuiIndex));
+		}
+		this.cuiTuiMap = Collections.unmodifiableMap(tmpCuiTuiBitsetMap);
+	}
+
+	/**
+	 * convert the list of tuis into a bitset
+	 * 
+	 * @param tuis
+	 * @param mapTuiIndex
+	 * @return
+	 */
+	private BitSet tuiListToBitset(Set<String> tuis,
+			SortedMap<String, Integer> mapTuiIndex) {
+		BitSet bs = new BitSet(mapTuiIndex.size());
+		for (String tui : tuis) {
+			bs.set(mapTuiIndex.get(tui));
+		}
+		return bs;
 	}
 
 	/**

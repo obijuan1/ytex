@@ -74,11 +74,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="docResultInstanceImporter" ref="documentResultInstanceImporter" />
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-	<!-- 
-	<bean id="corpusDao" class="ytex.kernel.dao.CorpusDaoImpl">
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
-	 -->
+	<!-- <bean id="corpusDao" class="ytex.kernel.dao.CorpusDaoImpl"> <property 
+		name="sessionFactory" ref="sessionFactory" /> </bean> -->
 	<bean id="classifierEvaluationDao" class="ytex.kernel.dao.ClassifierEvaluationDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
@@ -264,4 +261,23 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="umlsDao" ref="umlsDao" />
 	</bean>
+	<bean id="abstractKernelCacheAdvice" class="ytex.kernel.evaluator.MethodCachingInterceptor"
+		abstract="true">
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="cacheKeyGenerator">
+			<bean class="ytex.kernel.evaluator.SymmetricPairCacheKeyGenerator" />
+		</property>
+		<property name="methodName" value="evaluate"/>
+	</bean>
+<!-- 
+	<bean id="abstractKernelCacheAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
+		<property name="pointcut">
+			<bean class="org.springframework.aop.support.JdkRegexpMethodPointcut">
+				<property name="pattern">
+					<value>.*evaluate.*</value>
+				</property>
+			</bean>
+		</property>
+	</bean>
+ -->	
 </beans>

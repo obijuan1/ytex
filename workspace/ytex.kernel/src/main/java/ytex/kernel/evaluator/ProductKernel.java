@@ -8,7 +8,7 @@ import java.util.List;
  * @author vijay
  * 
  */
-public class ProductKernel implements Kernel {
+public class ProductKernel extends CacheKernel {
 	List<Kernel> delegateKernels;
 
 	public List<Kernel> getDelegateKernels() {
@@ -20,7 +20,7 @@ public class ProductKernel implements Kernel {
 	}
 
 	@Override
-	public double evaluate(Object o1, Object o2) {
+	public double innerEvaluate(Object o1, Object o2) {
 		double d = 1;
 		for (Kernel k : delegateKernels) {
 			d *= k.evaluate(o1, o2);

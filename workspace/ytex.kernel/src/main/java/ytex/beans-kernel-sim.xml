@@ -11,36 +11,31 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="conceptDao" ref="conceptDao" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
-		<property name="cacheManager" ref="cacheManager"/>
-		<property name="corpusName" value="i2b2.2008"/>
-		<property name="conceptGraphName" value="rbpar"/>
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="corpusName" value="i2b2.2008" />
+		<property name="conceptGraphName" value="rbpar" />
 	</bean>
-	<bean id="abstractConceptKernel" class="ytex.kernel.evaluator.ConceptKernel" abstract="true"
-		init-method="init">
+	<bean id="abstractConceptKernel" class="ytex.kernel.evaluator.ConceptKernel"
+		abstract="true" init-method="init">
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 		<property name="cacheManager" ref="cacheManager" />
 	</bean>
-	<bean id="lchKernel" class="ytex.kernel.evaluator.LCHKernel"
-		init-method="init">
+	<bean id="lchKernel" class="ytex.kernel.evaluator.LCHKernel">
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 		<property name="cacheManager" ref="cacheManager" />
 	</bean>
-	<bean id="abstractLinKernel" class="ytex.kernel.evaluator.LinKernel" abstract="true"
-		init-method="init">
+	<bean id="abstractLinKernel" class="ytex.kernel.evaluator.LinKernel"
+		abstract="true">
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 		<property name="cacheManager" ref="cacheManager" />
 	</bean>
-	<bean id="abstractMainSuiSemanticTypeKernel" abstract="true"
-		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
-		<property name="dataSource" ref="dataSource" />
-		<property name="transactionManager" ref="transactionManager" />
+	<bean id="mainSuiSemanticTypeKernel" class="ytex.kernel.evaluator.SemanticTypeKernel"
+		init-method="init">
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 	</bean>
-	<bean id="abstractTuiSemanticTypeKernel" abstract="true"
-		class="ytex.kernel.evaluator.SemanticTypeKernel" init-method="init">
+	<bean id="tuiSemanticTypeKernel" class="ytex.kernel.evaluator.SemanticTypeKernel"
+		init-method="init">
 		<property name="mode" value="TUI" />
-		<property name="dataSource" ref="dataSource" />
-		<property name="transactionManager" ref="transactionManager" />
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 	</bean>
 </beans>
