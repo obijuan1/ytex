@@ -83,8 +83,8 @@ public class NormKernel implements Kernel {
 			if (norm1 != 0 && norm2 != 0)
 				d = delegateKernel.evaluate(o1, o2) / (norm1 * norm2);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("K<" + o1 + "," + o2 + "> = " + d);
+		if (log.isTraceEnabled()) {
+			log.trace("K<" + o1 + "," + o2 + "> = " + d);
 		}
 		return d;
 	}

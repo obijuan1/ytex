@@ -47,26 +47,17 @@ public abstract class CacheKernel implements Kernel, InitializingBean {
 	public abstract double innerEvaluate(Object o1, Object o2);
 
 	final public double evaluate(Object o1, Object o2) {
-		double dEval = 0d;
-		if (o1 == null || o2 == null) {
-			dEval = 0;
-		} else if (o1.equals(o2)) {
-			dEval = 1;
+		double dEval;
+		if (cache == null) {
+			dEval = innerEvaluate(o1, o2);
 		} else {
-			Element e = null;
-			Object cacheKey = null;
-			if (cache != null) {
-				cacheKey = cacheKeyGenerator.getCacheKey(o1, o2);
-				e = this.cache.get(cacheKey);
-				if (e != null) {
-					dEval = (Double) e.getValue();
-				}
-			}
-			if (cache == null || e == null) {
+			Object cacheKey = cacheKeyGenerator.getCacheKey(o1, o2);
+			Element e = this.cache.get(cacheKey);
+			if (e != null) {
+				dEval = (Double) e.getValue();
+			} else {
 				dEval = innerEvaluate(o1, o2);
-				if (cache != null) {
-					cache.put(new Element(cacheKey, dEval));
-				}
+				cache.put(new Element(cacheKey, dEval));
 			}
 		}
 		return dEval;

@@ -2,6 +2,9 @@ package ytex.kernel.evaluator;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * compute the product of delegate kernels
  * 
@@ -9,6 +12,7 @@ import java.util.List;
  * 
  */
 public class ProductKernel extends CacheKernel {
+	private static final Log log = LogFactory.getLog(ProductKernel.class);
 	List<Kernel> delegateKernels;
 
 	public List<Kernel> getDelegateKernels() {
@@ -27,7 +31,10 @@ public class ProductKernel extends CacheKernel {
 			if (d == 0)
 				break;
 		}
+		if (log.isTraceEnabled()) {
+			log.trace(new StringBuilder("K<").append(o1)
+					.append(",").append(o2).append("> = ").append(d));
+		}
 		return d;
 	}
-
 }
