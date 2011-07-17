@@ -22,12 +22,6 @@
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
-	<property name="eval.kernel.thread" value="1" />
-	<property name="eval.kernel.parallel" value="no" />
-
-	<!-- property name="export.cutoffs" value="0.07" / -->
-
-
 	<target name="init.exp">
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
 	</target>
@@ -39,22 +33,6 @@
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
-	</target>
-	<target name="bocuis.InfoGain" description="rank features for bocuis representation">
-		<java classname="ytex.kernel.InfoGainEvaluatorImpl" fork="yes" classpathref="i2b2.cp">
-			<arg value="-prop" />
-			<arg value="./libsvm/bocuis/infogain-cui-train.xml" />
-			<jvmarg value="-Xmx1g" />
-			<jvmarg value="${log4j.arg}" />
-			<jvmarg value="${java.log.arg}" />
-		</java>
-		<!--
-		<java classname="ytex.kernel.InfoGainEvaluatorImpl" fork="yes" classpathref="i2b2.cp">
-			<arg value="-prop" />
-			<arg value="./libsvm/bocuis/infogain-ncuiword-train.xml" />
-			<jvmarg value="-Xmx1g" />
-		</java>
-		-->
 	</target>
 	<target name="bocuis.hotspot" description="execute scripts to identify hotspot sentences">
 		<antcall target="mysql">
@@ -211,78 +189,6 @@
 		</for>
 	</target>
 
-
-	<target name="setup.ic" description="setup information content">
-		<!-- update term frequencies -->
-		<antcall target="mysql">
-			<param name="mysql.dir" value="./data" />
-			<param name="mysql.script" value="updateCorpus.sql" />
-		</antcall>
-		<!-- update information content -->
-		<java classname="ytex.kernel.ConceptSimilarityServiceImpl" classpathref="i2b2.cp" fork="yes">
-			<arg value="-updateIC" />
-			<arg value="i2b2.2008" />
-			<jvmarg value="-Xmx1g" />
-			<jvmarg value="${log4j.arg}" />
-			<jvmarg value="${java.log.arg}" />
-		</java>
-	</target>
-	<target name="setup.ic.rb" description="setup information content">
-		<!-- update term frequencies -->
-		<antcall target="mysql">
-			<param name="mysql.dir" value="./data" />
-			<param name="mysql.script" value="updateCorpusRB.sql" />
-		</antcall>
-		<!-- update information content -->
-		<java classname="ytex.kernel.ConceptSimilarityServiceImpl" classpathref="i2b2.cp" fork="yes">
-			<arg value="-updateIC" />
-			<arg value="i2b2.2008-rb" />
-			<jvmarg value="-Xmx1g" />
-			<jvmarg value="${log4j.arg}" />
-			<jvmarg value="${java.log.arg}" />
-		</java>
-	</target>
-	<!--
-	<target name="export.tree.all">
-		<for list="${bocuis.export.cutoffs}" param="export.cutoff">
-			<sequential>
-				<antcall target="export.tree.cutoff">
-					<param name="export.cutoff" value="@{export.cutoff}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="export.tree.cutoff">
-		<property name="export.cutoff" value="0.07" />
-		<antcall target="iter.label">
-			<param name="iter.label.target" value="export.tree.label" />
-		</antcall>
-	</target>
-	<target name="export.tree.label">
-		<property name="export.label" value="14" />
-		<property name="export.cutoff" value="0.07" />
-		<property name="export.tree.basedir" value="libsvm/nekern" />
-		<property name="export.tree.dir" value="${export.tree.basedir}/${export.cutoff}/${export.label}" />
-		<mkdir dir="${export.tree.dir}" />
-		<copy file="${export.tree.basedir}/tree.xml" tofile="${export.tree.dir}/tree.xml" overwrite="yes">
-			<filterset>
-				<filter token="export.label" value="${export.label}" />
-				<filter token="export.cutoff" value="${export.cutoff}" />
-			</filterset>
-		</copy>
-		<java classname="ytex.KernelLauncher" fork="yes" classpathref="i2b2.cp">
-			<arg line="-beans ${export.tree.dir}/tree.xml -storeInstanceMap ${export.tree.dir}/instanceMap.obj" />
-			<jvmarg value="-Xmx1g" />
-			<jvmarg value="-Xms1g" />
-		</java>
-	</target>
-	<target name="eval.kernel.cutoff">
-		<property name="export.cutoff" value="0.07" />
-		<antcall target="iter.label">
-			<param name="iter.label.target" value="eval.kernel.label" />
-		</antcall>
-	</target>
-	-->
 	<target name="kernel.all" depends="kernel.eval.all,kernel.export.all,kernel.libsvm,insert_classifier_eval_irzv" description="evaluate kernel on corpus, run libsvm, update ir metrics w/ zero vectors" />
 	<target name="kernel.libsvm" depends="init.exp" description="launch libsvm">
 		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="iter.dirs" inheritall="true">
@@ -310,16 +216,14 @@
 		<property name="kernel.experiment" value="filteredlin" />
 		<property name="tree.name" value="vector" />
 		<antcall target="kernel.iter.label">
-			<param name="kernel.iter.target" value="kernel.iter.param2" />
-			<param name="kernel.param2.target" value="kernel.eval.label" />
+			<param name="kernel.iter.target" value="kernel.iter.eval.label" />
 		</antcall>
 	</target>
 	<target name="kernel.export.all" depends="init.exp" description="export libsvm gram matrices">
 		<property name="kernel.experiment" value="filteredlin" />
 		<property name="tree.name" value="vector" />
 		<antcall target="kernel.iter.label">
-			<param name="kernel.iter.target" value="kernel.iter.param2" />
-			<param name="kernel.param2.target" value="kernel.export.label" />
+			<param name="kernel.iter.target" value="kernel.iter.export.label" />
 		</antcall>
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
@@ -361,8 +265,17 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	<target name="kernel.iter.param2" depends="kernel.init.label">
-		<property name="kernel.param2.target" value="kernel.export.label" />
+	<target name="kernel.iter.eval.label" depends="kernel.init.label" description="call kernel.iter.param2 with kernel.eval.label as target">
+		<antcall target="kernel.iter.param2">
+			<param name="kernel.param2.target" value="kernel.eval.label"/>
+		</antcall>
+	</target>
+	<target name="kernel.iter.export.label" depends="kernel.init.label" description="call kernel.iter.param2 with kernel.export.label as target">
+		<antcall target="kernel.iter.param2">
+			<param name="kernel.param2.target" value="kernel.export.label"/>
+		</antcall>
+	</target>	
+	<target name="kernel.iter.param2" depends="kernel.init.label" description="iterate over export.param2.list, call kernel.param2.target">
 		<if>
 			<isset property="export.param2.list" />
 			<then>

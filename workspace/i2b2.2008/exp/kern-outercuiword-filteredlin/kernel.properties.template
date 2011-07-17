@@ -1,0 +1,4 @@
+kernel.experiment=kern-outercuiword-filteredlin
+kernel.param1=@export.cutoff@
+kernel.param2=@export.param2@
+kernel.types=4
