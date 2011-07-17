@@ -28,7 +28,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		</property>
 	</bean>
 	<bean id="namedEntityKernel" parent="abstractNormKernel">
-		<property name="cacheNorm" value="true" />
+		<property name="cacheNorm" value="false" />
 		<property name="delegateKernel">
 			<bean class="ytex.kernel.evaluator.ConvolutionKernel">
 				<property name="delegateKernel" ref="compositeConceptKernel" />
