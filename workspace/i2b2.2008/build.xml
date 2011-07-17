@@ -305,10 +305,8 @@
 				<filter token="export.param2" value="${export.param2}" />
 			</filterset>
 		</copy>
-		<!--
 		<antcall target="kernel.eval.label.local" />
 		<antcall target="kernel.eval.label.cluster" />
-		-->
 	</target>
 	<target name="kernel.eval.label.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
 		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
