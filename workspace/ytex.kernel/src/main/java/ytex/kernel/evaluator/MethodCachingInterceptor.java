@@ -8,23 +8,22 @@ import net.sf.ehcache.Element;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * simple caching interceptor. we require a cacheName and cacheKeyGenerator.
- * we don't use AOP style configuration because we reuse the same classes (kernels)
- * in very different contexts.  sometimes we want to cache, sometimes we don't.
+ * simple caching interceptor. we require a cacheName and cacheKeyGenerator. we
+ * don't use AOP style configuration because we reuse the same classes (kernels)
+ * in very different contexts. sometimes we want to cache, sometimes we don't.
  * therefore, use old-school ProxyFactoryBean with this interceptor.
+ * 
+ * This turns out to be very slow - a lot of time is spent in AOP-type stuff.
+ * This is due to the very high throughput when evaluating kernels.
  * 
  * @author vijay
  * 
  */
 public class MethodCachingInterceptor implements MethodInterceptor,
 		InitializingBean {
-	private static final Log log = LogFactory
-			.getLog(MethodCachingInterceptor.class);
 
 	private CacheManager cacheManager;
 	private String cacheName;

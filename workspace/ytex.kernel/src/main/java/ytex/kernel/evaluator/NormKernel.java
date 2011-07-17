@@ -7,11 +7,14 @@ import net.sf.ehcache.Element;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import ytex.kernel.tree.Node;
+
 /**
- * Return norm of delegate kernel: <code>k(x,y)/sqrt(k(x,x)*k(y,y)</code>. Cache
- * the result if cacheNorm = true (default). If the delegate kernel is fast
- * (e.g. it's using caching itself / trivial operation) caching the norm will
- * slow things down.
+ * Return norm of delegate kernel: <code>k(x,y)/sqrt(k(x,x)*k(y,y)</code>. If
+ * the object is a ytex.kernel.Node, then save the norm in the node for future
+ * reference. else if cacheNorm = true, save the norm in the cache for future
+ * reference. If the delegate kernel is fast (e.g. it's using caching itself /
+ * trivial operation) caching the norm will slow things down.
  * 
  * @author vijay
  * 
@@ -56,18 +59,34 @@ public class NormKernel implements Kernel {
 		this.delegateKernel = delegateKernel;
 	}
 
+	/**
+	 * compute the norm.
+	 * 
+	 * @param o1
+	 * @return
+	 */
 	public double getNorm(Object o1) {
-		double norm = 0;
+		Double norm = null;
 		if (o1 != null) {
-			Element cachedNorm = null;
-			if (this.isCacheNorm())
+			if (o1 instanceof Node) {
+				// look in node if this is a node
+				norm = ((Node) o1).getNorm();
+			} else if (this.isCacheNorm()) {
+				// look in cache otherwise
+				Element cachedNorm = null;
 				cachedNorm = normCache.get(o1);
-			if (cachedNorm == null) {
+				if (cachedNorm != null) {
+					norm = (Double) cachedNorm.getValue();
+				}
+			}
+			if (norm == null) {
+				// couldn't get cached norm - compute it
 				norm = Math.sqrt(delegateKernel.evaluate(o1, o1));
-				if (this.isCacheNorm())
-					normCache.put(new Element(o1, norm));
-			} else {
-				norm = (Double) cachedNorm.getObjectValue();
+			}
+			if (o1 instanceof Node) {
+				((Node) o1).setNorm(norm);
+			} else if (this.isCacheNorm()) {
+				normCache.put(new Element(o1, norm));
 			}
 		}
 		return norm;
