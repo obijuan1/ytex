@@ -2,6 +2,7 @@ package ytex.kernel.evaluator;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
 import ytex.kernel.ConceptSimilarityService;
 
 public class LinKernel implements Kernel {
@@ -54,17 +55,17 @@ public class LinKernel implements Kernel {
 				d = 1;
 			} else {
 				// look in cache
-//				String key = createKey(c1, c2);
-//				Element e = conceptSimCache.get(key);
-//				if (e != null) {
-//					// it's there
-//					d = (Double) e.getObjectValue();
-//				} else {
+				String key = createKey(c1, c2);
+				Element e = conceptSimCache.get(key);
+				if (e != null) {
+					// it's there
+					d = (Double) e.getObjectValue();
+				} else {
 					// it's not there - put it there
 					d = conceptSimilarityService.filteredLin(c1, c2, label,
 							cutoff);
-//					conceptSimCache.put(new Element(key, d));
-//				}
+					conceptSimCache.put(new Element(key, d));
+				}
 			}
 		}
 		return d;

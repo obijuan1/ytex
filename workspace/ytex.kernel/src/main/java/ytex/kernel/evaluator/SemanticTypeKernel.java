@@ -234,7 +234,11 @@ public class SemanticTypeKernel implements Kernel {
 	 * concepts have overlapping semantic types? yes return 1, else return 0
 	 */
 	public double evaluate(Object o1, Object o2) {
-		if (this.getMode() == null || this.getMode().length() == 0
+		if (o1 == null || o2 == null)
+			return 0;
+		else if (o1.equals(o2))
+			return 1.0;
+		else if (this.getMode() == null || this.getMode().length() == 0
 				|| MAINSUI.equals(this.getMode()))
 			return mainSuiCheck(o1, o2);
 		else if (TUI.equals(this.getMode()))

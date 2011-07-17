@@ -10,27 +10,27 @@ import ytex.kernel.model.ConceptGraph;
 public class ConceptSimilarityServiceTest extends TestCase {
 	private static final String conceptsToTest[][] = new String[][] {
 			new String[] { "C0008320", "C0020699", "Cholecystectomy",
-					"Hysterectomy", "Gallstones", "0.3" },
+					"Hysterectomy", "Gallstones", "0.09" },
 			new String[] { "C0008320", "C0003611", "Cholecystectomy",
-					"Appendectomy", "Gallstones", "0.3" },
+					"Appendectomy", "Gallstones", "0.09" },
 			new String[] { "C0008320", "C0162575", "Cholecystectomy",
-					"Embolectomy", "Gallstones", "0.3" },
+					"Embolectomy", "Gallstones", "0.09" },
 			new String[] { "C0008320", "C0027695", "Cholecystectomy",
-					"Nephrectomy", "Gallstones", "0.3" },
+					"Nephrectomy", "Gallstones", "0.09" },
 			new String[] { "C0678181", "C0593906", "zocor", "lipitor",
 					"Hypertriglyceridemia", "0.1" },
 			new String[] { "C0678181", "C0593906", "zocor", "lipitor",
-					"Hypercholesterolemia", "0.07" },
+					"Hypercholesterolemia", "0.05" },
 			new String[] { "C0699142", "C0678181", "tylenol", "zocor",
 					"Hypertriglyceridemia", "0.1" },
 			new String[] { "C0017245", "C0678181", "Gemfibrozil", "zocor",
-					"Hypercholesterolemia", "0.07" },
+					"Hypercholesterolemia", "0.05" },
 			new String[] { "C0017245", "C0678181", "Gemfibrozil", "zocor",
 					"Hypertriglyceridemia", "0.1" },
 			new String[] { "C0017245", "C0723893", "Gemfibrozil", "Tricor",
 					"Hypertriglyceridemia", "0.1" },
 			new String[] { "C0008320", "C0041004", "Cholecystectomy",
-					"Triglyceride", "Gallstones", "0.3" } };
+					"Triglyceride", "Gallstones", "0.09" } };
 
 	private ConceptSimilarityService conceptSimilarityService;
 

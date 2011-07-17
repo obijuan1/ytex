@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,6 +163,9 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 								.get(i), row);
 						if (newNode != null) {
 							if (!newNode.equals(currentPath[i])) {
+								// null out everything after this index in the path
+								Arrays.fill(currentPath, i,
+										currentPath.length - 1, null);
 								// add the node to the parent
 								currentPath[i - 1].getChildren().add(newNode);
 								// put the new node in the path

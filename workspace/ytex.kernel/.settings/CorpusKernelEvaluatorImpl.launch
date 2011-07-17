@@ -7,8 +7,8 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.KernelLauncher"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-beans kern-cuiword-lin_0.05.xml -evalKernel -loadInstanceMap tree_0.05.obj"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-beans kern-cuiword-filteredlin.xml -evalKernel -loadInstanceMap tree_0.05.obj"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="i2b2.2008"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g&#13;&#10;-Dlog4j.configuration=file:///E:/projects/ytex/config/desc/log4j.properties &#13;&#10;-Djava.util.logging.config.file=E:\projects\ytex\config\desc\Logger.properties"/>
-<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:i2b2.2008/tree/tree-cuiword/2}"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:i2b2.2008/tree/tree-neword/7}"/>
 </launchConfiguration>
