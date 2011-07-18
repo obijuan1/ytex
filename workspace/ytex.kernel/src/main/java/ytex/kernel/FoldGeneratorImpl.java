@@ -95,30 +95,30 @@ public class FoldGeneratorImpl implements FoldGenerator {
 		for (String label : instances.getLabelToInstanceMap().keySet()) {
 			// there should not be any runs/folds/train test split - just unpeel
 			// until we get to the instance - class map
-			SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> runMap = instances
+			SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> runMap = instances
 					.getLabelToInstanceMap().get(label);
-			SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>> foldMap = runMap
+			SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>> foldMap = runMap
 					.values().iterator().next();
-			SortedMap<Boolean, SortedMap<Integer, String>> trainMap = foldMap
+			SortedMap<Boolean, SortedMap<Long, String>> trainMap = foldMap
 					.values().iterator().next();
-			SortedMap<Integer, String> mapInstanceIdToClass = trainMap.values()
+			SortedMap<Long, String> mapInstanceIdToClass = trainMap.values()
 					.iterator().next();
 			// invert the mapInstanceIdToClass
-			Map<String, List<Integer>> mapClassToInstanceId = new TreeMap<String, List<Integer>>();
-			for (Map.Entry<Integer, String> instance : mapInstanceIdToClass
+			Map<String, List<Long>> mapClassToInstanceId = new TreeMap<String, List<Long>>();
+			for (Map.Entry<Long, String> instance : mapInstanceIdToClass
 					.entrySet()) {
 				String className = instance.getValue();
-				int instanceId = instance.getKey();
-				List<Integer> classInstanceIds = mapClassToInstanceId
+				long instanceId = instance.getKey();
+				List<Long> classInstanceIds = mapClassToInstanceId
 						.get(className);
 				if (classInstanceIds == null) {
-					classInstanceIds = new ArrayList<Integer>();
+					classInstanceIds = new ArrayList<Long>();
 					mapClassToInstanceId.put(className, classInstanceIds);
 				}
 				classInstanceIds.add(instanceId);
 			}
 			// stratified split into folds
-			List<Set<Integer>> folds = createFolds(mapClassToInstanceId,
+			List<Set<Long>> folds = createFolds(mapClassToInstanceId,
 					nFolds, nMinPerClass, r);
 			// insert the folds
 			insertFolds(folds, corpusName, splitName, label, run);
@@ -132,7 +132,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * @param corpusName
 	 * @param run
 	 */
-	private void insertFolds(List<Set<Integer>> folds, String corpusName, String splitName,
+	private void insertFolds(List<Set<Long>> folds, String corpusName, String splitName,
 			String label, int run) {
 		// iterate over fold numbers
 		for (int foldNum = 1; foldNum <= folds.size(); foldNum++) {
@@ -140,7 +140,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 			// iterate over instances in each fold
 			for (int trainFoldNum = 1; trainFoldNum <= folds.size(); trainFoldNum++) {
 				// add the instance, set the train flag
-				for (int instanceId : folds.get(trainFoldNum - 1))
+				for (long instanceId : folds.get(trainFoldNum - 1))
 					instanceIds.add(new CrossValidationFoldInstance(instanceId,
 							trainFoldNum != foldNum));
 			}
@@ -170,19 +170,19 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * @param nSeed
 	 * @return list with nFolds sets of line numbers corresponding to the folds
 	 */
-	private static List<Set<Integer>> createFolds(
-			Map<String, List<Integer>> mapClassToInstanceId, int nFolds,
+	private static List<Set<Long>> createFolds(
+			Map<String, List<Long>> mapClassToInstanceId, int nFolds,
 			int nMinPerClass, Random r) {
-		List<Set<Integer>> folds = new ArrayList<Set<Integer>>(nFolds);
-		Map<String, List<Set<Integer>>> mapLabelFolds = new HashMap<String, List<Set<Integer>>>();
-		for (Map.Entry<String, List<Integer>> classToInstanceId : mapClassToInstanceId
+		List<Set<Long>> folds = new ArrayList<Set<Long>>(nFolds);
+		Map<String, List<Set<Long>>> mapLabelFolds = new HashMap<String, List<Set<Long>>>();
+		for (Map.Entry<String, List<Long>> classToInstanceId : mapClassToInstanceId
 				.entrySet()) {
-			List<Integer> instanceIds = classToInstanceId.getValue();
+			List<Long> instanceIds = classToInstanceId.getValue();
 			Collections.shuffle(instanceIds, r);
-			List<Set<Integer>> classFolds = new ArrayList<Set<Integer>>(nFolds);
+			List<Set<Long>> classFolds = new ArrayList<Set<Long>>(nFolds);
 			int blockSize = instanceIds.size() / nFolds;
 			for (int i = 0; i < nFolds; i++) {
-				Set<Integer> foldInstanceIds = new HashSet<Integer>(blockSize);
+				Set<Long> foldInstanceIds = new HashSet<Long>(blockSize);
 				if (instanceIds.size() <= nMinPerClass) {
 					// we don't have minPerClass for the given class
 					// just add all of them to each fold
@@ -202,8 +202,8 @@ public class FoldGeneratorImpl implements FoldGenerator {
 						}
 						// randomly select this line
 						if (r.nextDouble() <= fraction) {
-							int nLineNum = instanceIds.get(instanceIdIndex);
-							foldInstanceIds.add(nLineNum);
+							long instanceId = instanceIds.get(instanceIdIndex);
+							foldInstanceIds.add(instanceId);
 						}
 						// go to next line
 						instanceIdIndex++;
@@ -221,11 +221,11 @@ public class FoldGeneratorImpl implements FoldGenerator {
 			mapLabelFolds.put(classToInstanceId.getKey(), classFolds);
 		}
 		for (int i = 0; i < nFolds; i++) {
-			Set<Integer> foldLineNums = new HashSet<Integer>();
-			for (List<Set<Integer>> labelFold : mapLabelFolds.values()) {
-				foldLineNums.addAll(labelFold.get(i));
+			Set<Long> foldInstanceIds = new HashSet<Long>();
+			for (List<Set<Long>> labelFold : mapLabelFolds.values()) {
+				foldInstanceIds.addAll(labelFold.get(i));
 			}
-			folds.add(foldLineNums);
+			folds.add(foldInstanceIds);
 		}
 		return folds;
 	}

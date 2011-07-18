@@ -189,7 +189,7 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 		boolean storeProbabilities = YES.equalsIgnoreCase(props.getProperty(
 				ParseOption.STORE_PROBABILITIES.getOptionKey(),
 				ParseOption.STORE_PROBABILITIES.getDefaultValue()));
-		List<Integer> instanceIds = null;
+		List<Long> instanceIds = null;
 		if (instanceIdFile != null)
 			instanceIds = parseInstanceIds(instanceIdFile);
 		BufferedReader instanceReader = null;
@@ -208,7 +208,7 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 			while (((instanceLine = instanceReader.readLine()) != null)
 					&& ((predictionLine = predictionReader.readLine()) != null)) {
 				// get instance id corresponding to this line
-				int instanceId = instanceIds.size() > nLine ? instanceIds
+				long instanceId = instanceIds.size() > nLine ? instanceIds
 						.get(nLine) : nLine;
 				nLine++;
 				// allocate instanceEval

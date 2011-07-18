@@ -41,12 +41,12 @@ public class KernelUtilImpl implements KernelUtil {
 
 	private KernelEvaluationDao kernelEvaluationDao = null;
 	private PlatformTransactionManager transactionManager;
-	private Map<Integer, Integer> createInstanceIdToIndexMap(
-			SortedSet<Integer> instanceIDs) {
-		Map<Integer, Integer> instanceIdToIndexMap = new HashMap<Integer, Integer>(
+	private Map<Long, Integer> createInstanceIdToIndexMap(
+			SortedSet<Long> instanceIDs) {
+		Map<Long, Integer> instanceIdToIndexMap = new HashMap<Long, Integer>(
 				instanceIDs.size());
 		int i = 0;
-		for (Integer instanceId : instanceIDs) {
+		for (Long instanceId : instanceIDs) {
 			instanceIdToIndexMap.put(instanceId, i);
 			i++;
 		}
@@ -55,27 +55,20 @@ public class KernelUtilImpl implements KernelUtil {
 	@Override
 	public void fillGramMatrix(
 			final KernelEvaluation kernelEvaluation,
-			final SortedSet<Integer> trainInstanceLabelMap,
-			// final SortedMap<Integer, Map<String, Integer>>
-			// trainInstanceLabelMap,
-			final double[][] trainGramMatrix,
-			// final SortedMap<Integer, Map<String, Integer>>
-			// testInstanceLabelMap,
-			final SortedSet<Integer> testInstanceLabelMap,
-			final double[][] testGramMatrix) {
+			final SortedSet<Long> trainInstanceLabelMap,
+			final double[][] trainGramMatrix) {
 		// final Set<String> kernelEvaluationNames = new HashSet<String>(1);
 		// kernelEvaluationNames.add(name);
 		// prepare map of instance id to gram matrix index
-		final Map<Integer, Integer> trainInstanceToIndexMap = createInstanceIdToIndexMap(trainInstanceLabelMap);
-		final Map<Integer, Integer> testInstanceToIndexMap = testInstanceLabelMap != null ? createInstanceIdToIndexMap(testInstanceLabelMap)
-				: null;
+		final Map<Long, Integer> trainInstanceToIndexMap = createInstanceIdToIndexMap(trainInstanceLabelMap);
+
 		// iterate through the training instances
-		for (Map.Entry<Integer, Integer> instanceIdIndex : trainInstanceToIndexMap
+		for (Map.Entry<Long, Integer> instanceIdIndex : trainInstanceToIndexMap
 				.entrySet()) {
 			// index of this instance
 			final int indexThis = instanceIdIndex.getValue();
 			// id of this instance
-			final int instanceId = instanceIdIndex.getKey();
+			final long instanceId = instanceIdIndex.getKey();
 			// get all kernel evaluations for this instance in a new transaction
 			// don't want too many objects in hibernate session
 			TransactionTemplate t = new TransactionTemplate(
@@ -92,29 +85,16 @@ public class KernelUtilImpl implements KernelUtil {
 						// the index could be in the training or test matrix
 						Integer indexOtherTrain = null;
 						Integer indexOtherTest = null;
-						int instanceIdOther = instanceId != keval
+						long instanceIdOther = instanceId != keval
 								.getInstanceId1() ? keval.getInstanceId1()
 								: keval.getInstanceId2();
 						// look in training set for the instance id
 						indexOtherTrain = trainInstanceToIndexMap
 								.get(instanceIdOther);
-						// wasn't there - look in test set
-						if (indexOtherTrain == null
-								&& testInstanceToIndexMap != null)
-							indexOtherTest = testInstanceToIndexMap
-									.get(instanceIdOther);
-						if (indexOtherTrain != null) {
-							trainGramMatrix[indexThis][indexOtherTrain] = keval
-									.getSimilarity();
-							trainGramMatrix[indexOtherTrain][indexThis] = keval
-									.getSimilarity();
-						} else if (indexOtherTest != null) {
-							// test matrix is not symmetric
-							// row corresponds to test instance id
-							// column is kernel evaluation wrt to this instance
-							testGramMatrix[indexOtherTest][indexThis] = keval
-									.getSimilarity();
-						}
+						trainGramMatrix[indexThis][indexOtherTrain] = keval
+								.getSimilarity();
+						trainGramMatrix[indexOtherTrain][indexThis] = keval
+								.getSimilarity();
 					}
 					return null;
 				}
@@ -144,7 +124,7 @@ public class KernelUtilImpl implements KernelUtil {
 	}
 
 	@Override
-	public double[][] loadGramMatrix(SortedSet<Integer> instanceIds,
+	public double[][] loadGramMatrix(SortedSet<Long> instanceIds,
 			String name, String splitName, String experiment, String label,
 			int run, int fold, double param1, String param2) {
 		int foldId = 0;
@@ -163,7 +143,7 @@ public class KernelUtilImpl implements KernelUtil {
 					+ ", fold=" + fold + ", run=" + run);
 		} else {
 			gramMatrix = new double[instanceIds.size()][instanceIds.size()];
-			fillGramMatrix(kernelEval, instanceIds, gramMatrix, null, null);
+			fillGramMatrix(kernelEval, instanceIds, gramMatrix);
 		}
 		return gramMatrix;
 	}
@@ -185,7 +165,7 @@ public class KernelUtilImpl implements KernelUtil {
 				int run = 0;
 				int fold = 0;
 				boolean train = true;
-				int instanceId = rs.getInt(1);
+				long instanceId = rs.getLong(1);
 				String className = rs.getString(2);
 				if (rs.getMetaData().getColumnCount() >= 3)
 					train = rs.getBoolean(3);
@@ -199,32 +179,32 @@ public class KernelUtilImpl implements KernelUtil {
 				if (rs.getMetaData().getColumnCount() >= 6)
 					run = rs.getInt(6);
 				// get runs for label
-				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> runToInstanceMap = instanceLabel
+				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> runToInstanceMap = instanceLabel
 						.getLabelToInstanceMap().get(label);
 				if (runToInstanceMap == null) {
-					runToInstanceMap = new TreeMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>>();
+					runToInstanceMap = new TreeMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>();
 					instanceLabel.getLabelToInstanceMap().put(label,
 							runToInstanceMap);
 				}
 				// get folds for run
-				SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>> foldToInstanceMap = runToInstanceMap
+				SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>> foldToInstanceMap = runToInstanceMap
 						.get(run);
 				if (foldToInstanceMap == null) {
-					foldToInstanceMap = new TreeMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>();
+					foldToInstanceMap = new TreeMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>();
 					runToInstanceMap.put(run, foldToInstanceMap);
 				}
 				// get train/test set for fold
-				SortedMap<Boolean, SortedMap<Integer, String>> ttToClassMap = foldToInstanceMap
+				SortedMap<Boolean, SortedMap<Long, String>> ttToClassMap = foldToInstanceMap
 						.get(fold);
 				if (ttToClassMap == null) {
-					ttToClassMap = new TreeMap<Boolean, SortedMap<Integer, String>>();
+					ttToClassMap = new TreeMap<Boolean, SortedMap<Long, String>>();
 					foldToInstanceMap.put(fold, ttToClassMap);
 				}
 				// get instances for train/test set
-				SortedMap<Integer, String> instanceToClassMap = ttToClassMap
+				SortedMap<Long, String> instanceToClassMap = ttToClassMap
 						.get(train);
 				if (instanceToClassMap == null) {
-					instanceToClassMap = new TreeMap<Integer, String>();
+					instanceToClassMap = new TreeMap<Long, String>();
 					ttToClassMap.put(train, instanceToClassMap);
 				}
 				// set the instance class

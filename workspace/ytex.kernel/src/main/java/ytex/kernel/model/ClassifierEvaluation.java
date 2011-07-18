@@ -13,8 +13,8 @@ public class ClassifierEvaluation implements Serializable {
 	int classifierEvaluationId;
 	String name;
 	String experiment;
-	Integer fold;
-	Integer run;
+	int fold;
+	int run;
 	String algorithm;
 	String label;
 	String options;
@@ -34,7 +34,7 @@ public class ClassifierEvaluation implements Serializable {
 	public void setParam2(String param2) {
 		this.param2 = param2;
 	}
-	Map<Integer, ClassifierInstanceEvaluation> classifierInstanceEvaluations = new HashMap<Integer, ClassifierInstanceEvaluation>();
+	Map<Long, ClassifierInstanceEvaluation> classifierInstanceEvaluations = new HashMap<Long, ClassifierInstanceEvaluation>();
 	Map<Integer, ClassifierEvaluationIRStat> classifierIRStats = new HashMap<Integer, ClassifierEvaluationIRStat>();
 	
 	public Map<Integer, ClassifierEvaluationIRStat> getClassifierIRStats() {
@@ -68,16 +68,16 @@ public class ClassifierEvaluation implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Integer getFold() {
+	public int getFold() {
 		return fold;
 	}
-	public void setFold(Integer fold) {
+	public void setFold(int fold) {
 		this.fold = fold;
 	}
-	public Integer getRun() {
+	public int getRun() {
 		return run;
 	}
-	public void setRun(Integer run) {
+	public void setRun(int run) {
 		this.run = run;
 	}
 	public String getAlgorithm() {
@@ -98,11 +98,11 @@ public class ClassifierEvaluation implements Serializable {
 	public void setOptions(String options) {
 		this.options = options;
 	}
-	public Map<Integer, ClassifierInstanceEvaluation> getClassifierInstanceEvaluations() {
+	public Map<Long, ClassifierInstanceEvaluation> getClassifierInstanceEvaluations() {
 		return classifierInstanceEvaluations;
 	}
 	public void setClassifierInstanceEvaluations(
-			Map<Integer, ClassifierInstanceEvaluation> classifierInstanceEvaluations) {
+			Map<Long, ClassifierInstanceEvaluation> classifierInstanceEvaluations) {
 		this.classifierInstanceEvaluations = classifierInstanceEvaluations;
 	}
 	

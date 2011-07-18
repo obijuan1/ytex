@@ -48,7 +48,7 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	 * 
 	 * @see dao.KernelEvaluationDao#storeNorm(java.lang.String, int, double)
 	 */
-	public void storeNorm(KernelEvaluation kernelEvaluation, int instanceId,
+	public void storeNorm(KernelEvaluation kernelEvaluation, long instanceId,
 			double norm) {
 		storeKernel(kernelEvaluation, instanceId, instanceId, norm);
 	}
@@ -58,7 +58,7 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	 * 
 	 * @see dao.KernelEvaluationDao#getNorm(java.lang.String, int)
 	 */
-	public Double getNorm(KernelEvaluation kernelEvaluation, int instanceId) {
+	public Double getNorm(KernelEvaluation kernelEvaluation, long instanceId) {
 		return getKernel(kernelEvaluation, instanceId, instanceId);
 	}
 
@@ -68,11 +68,11 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	 * @see dao.KernelEvaluationDao#storeKernel(java.lang.String, int, int,
 	 * double)
 	 */
-	public void storeKernel(KernelEvaluation kernelEvaluation, int instanceId1,
-			int instanceId2, double kernel) {
-		int instanceId1s = instanceId1 <= instanceId2 ? instanceId1
+	public void storeKernel(KernelEvaluation kernelEvaluation, long instanceId1,
+			long instanceId2, double kernel) {
+		long instanceId1s = instanceId1 <= instanceId2 ? instanceId1
 				: instanceId2;
-		int instanceId2s = instanceId1 <= instanceId2 ? instanceId2
+		long instanceId2s = instanceId1 <= instanceId2 ? instanceId2
 				: instanceId1;
 		// don't bother with the delete so we can batch insert the kernel eval
 		// delete existing norm
@@ -98,19 +98,19 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	 * 
 	 * @see dao.KernelEvaluationDao#getKernel(java.lang.String, int, int)
 	 */
-	public Double getKernel(KernelEvaluation kernelEvaluation, int instanceId1,
-			int instanceId2) {
-		int instanceId1s = instanceId1 <= instanceId2 ? instanceId1
+	public Double getKernel(KernelEvaluation kernelEvaluation, long instanceId1,
+			long instanceId2) {
+		long instanceId1s = instanceId1 <= instanceId2 ? instanceId1
 				: instanceId2;
-		int instanceId2s = instanceId1 <= instanceId2 ? instanceId2
+		long instanceId2s = instanceId1 <= instanceId2 ? instanceId2
 				: instanceId1;
 		Query q = this.getSessionFactory().getCurrentSession()
 				.getNamedQuery("getKernelEvaluation");
 		q.setCacheable(true);
 		q.setInteger("kernelEvaluationId",
 				kernelEvaluation.getKernelEvaluationId());
-		q.setInteger("instanceId1", instanceId1s);
-		q.setInteger("instanceId2", instanceId2s);
+		q.setLong("instanceId1", instanceId1s);
+		q.setLong("instanceId2", instanceId2s);
 		KernelEvaluationInstance g = (KernelEvaluationInstance) q
 				.uniqueResult();
 		if (g != null) {
@@ -123,18 +123,18 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<KernelEvaluationInstance> getAllKernelEvaluationsForInstance(
-			KernelEvaluation kernelEvaluation, int instanceId) {
+			KernelEvaluation kernelEvaluation, long instanceId) {
 		Query q = this.getSessionFactory().getCurrentSession()
 				.getNamedQuery("getAllKernelEvaluationsForInstance1");
 		q.setInteger("kernelEvaluationId",
 				kernelEvaluation.getKernelEvaluationId());
-		q.setInteger("instanceId", instanceId);
+		q.setLong("instanceId", instanceId);
 		List<KernelEvaluationInstance> kevals = q.list();
 		Query q2 = this.getSessionFactory().getCurrentSession()
 				.getNamedQuery("getAllKernelEvaluationsForInstance2");
 		q2.setInteger("kernelEvaluationId",
 				kernelEvaluation.getKernelEvaluationId());
-		q2.setInteger("instanceId", instanceId);
+		q2.setLong("instanceId", instanceId);
 		kevals.addAll(q2.list());
 		return kevals;
 	}

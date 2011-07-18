@@ -105,10 +105,10 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	 */
 	public class ConceptInstanceMapExtractor implements RowCallbackHandler {
 		ConceptGraph cg;
-		Map<String, Map<String, Set<Integer>>> conceptInstanceMap;
+		Map<String, Map<String, Set<Long>>> conceptInstanceMap;
 
 		ConceptInstanceMapExtractor(
-				Map<String, Map<String, Set<Integer>>> conceptInstanceMap,
+				Map<String, Map<String, Set<Long>>> conceptInstanceMap,
 				ConceptGraph cg) {
 			this.cg = cg;
 			this.conceptInstanceMap = conceptInstanceMap;
@@ -116,21 +116,21 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 
 		public void processRow(ResultSet rs) throws SQLException {
 			String conceptId = rs.getString(1);
-			int instanceId = rs.getInt(2);
+			long instanceId = rs.getLong(2);
 			String x = rs.getString(3);
 			// limit to concepts from our graph
 			ConcRel cr = cg.getConceptMap().get(conceptId);
 			if (cr != null) {
-				Map<String, Set<Integer>> binInstanceMap = conceptInstanceMap
+				Map<String, Set<Long>> binInstanceMap = conceptInstanceMap
 						.get(cr.getConceptID());
 				if (binInstanceMap == null) {
 					// use the conceptId from the concept to save memory
-					binInstanceMap = new HashMap<String, Set<Integer>>(2);
+					binInstanceMap = new HashMap<String, Set<Long>>(2);
 					conceptInstanceMap.put(cr.getConceptID(), binInstanceMap);
 				}
-				Set<Integer> instanceIds = binInstanceMap.get(x);
+				Set<Long> instanceIds = binInstanceMap.get(x);
 				if (instanceIds == null) {
-					instanceIds = new HashSet<Integer>();
+					instanceIds = new HashSet<Long>();
 					binInstanceMap.put(x, instanceIds);
 				}
 				instanceIds.add(instanceId);
@@ -166,20 +166,20 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		 */
 		public static JointDistribution merge(
 				List<JointDistribution> jointDistros,
-				Map<String, Set<Integer>> yMargin, String xMerge) {
+				Map<String, Set<Long>> yMargin, String xMerge) {
 			Set<String> xVals = jointDistros.get(0).xVals;
 			Set<String> yVals = jointDistros.get(0).yVals;
 			JointDistribution mergedDistro = new JointDistribution(xVals, yVals);
 			for (String y : yVals) {
 				// intersect all bins besides the merge bin
-				Set<Integer> xMergedInst = mergedDistro.getInstances(xMerge, y);
+				Set<Long> xMergedInst = mergedDistro.getInstances(xMerge, y);
 				// everything comes into the merge bin
 				// we take out things that land in other bins
 				xMergedInst.addAll(yMargin.get(y));
 				// iterate over other bins
 				for (String x : xVals) {
 					if (!x.equals(xMerge)) {
-						Set<Integer> intersectIds = mergedDistro.getInstances(
+						Set<Long> intersectIds = mergedDistro.getInstances(
 								x, y);
 						boolean bFirstIter = true;
 						// iterate over all joint distribution tables
@@ -214,7 +214,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		 * A y*x table where the cells hold the instance ids. We use the
 		 * instance ids instead of counts so we can merge the tables.
 		 */
-		protected SortedMap<String, SortedMap<String, Set<Integer>>> jointDistroTable;
+		protected SortedMap<String, SortedMap<String, Set<Long>>> jointDistroTable;
 		/**
 		 * the possible values of X (e.g. concept)
 		 */
@@ -235,38 +235,38 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		public JointDistribution(Set<String> xVals, Set<String> yVals) {
 			this.xVals = xVals;
 			this.yVals = yVals;
-			jointDistroTable = new TreeMap<String, SortedMap<String, Set<Integer>>>();
+			jointDistroTable = new TreeMap<String, SortedMap<String, Set<Long>>>();
 			for (String yVal : yVals) {
-				SortedMap<String, Set<Integer>> yMap = new TreeMap<String, Set<Integer>>();
+				SortedMap<String, Set<Long>> yMap = new TreeMap<String, Set<Long>>();
 				jointDistroTable.put(yVal, yMap);
 				for (String xVal : xVals) {
-					yMap.put(xVal, new HashSet<Integer>());
+					yMap.put(xVal, new HashSet<Long>());
 				}
 			}
 		}
 
 		public JointDistribution(Set<String> xVals, Set<String> yVals,
-				Map<String, Set<Integer>> xMargin,
-				Map<String, Set<Integer>> yMargin, String xLeftover) {
+				Map<String, Set<Long>> xMargin,
+				Map<String, Set<Long>> yMargin, String xLeftover) {
 			this.xVals = xVals;
 			this.yVals = yVals;
-			jointDistroTable = new TreeMap<String, SortedMap<String, Set<Integer>>>();
+			jointDistroTable = new TreeMap<String, SortedMap<String, Set<Long>>>();
 			for (String yVal : yVals) {
-				SortedMap<String, Set<Integer>> yMap = new TreeMap<String, Set<Integer>>();
+				SortedMap<String, Set<Long>> yMap = new TreeMap<String, Set<Long>>();
 				jointDistroTable.put(yVal, yMap);
 				for (String xVal : xVals) {
-					yMap.put(xVal, new HashSet<Integer>());
+					yMap.put(xVal, new HashSet<Long>());
 				}
 			}
-			for (Map.Entry<String, Set<Integer>> yEntry : yMargin.entrySet()) {
+			for (Map.Entry<String, Set<Long>> yEntry : yMargin.entrySet()) {
 				// iterate over 'rows' i.e. the class names
 				String yName = yEntry.getKey();
-				Set<Integer> yInst = new HashSet<Integer>(yEntry.getValue());
+				Set<Long> yInst = new HashSet<Long>(yEntry.getValue());
 				// iterate over 'columns' i.e. the values of x
-				for (Map.Entry<String, Set<Integer>> xEntry : xMargin
+				for (Map.Entry<String, Set<Long>> xEntry : xMargin
 						.entrySet()) {
 					// copy the instances
-					Set<Integer> foldXInst = jointDistroTable.get(yName).get(
+					Set<Long> foldXInst = jointDistroTable.get(yName).get(
 							xEntry.getKey());
 					foldXInst.addAll(xEntry.getValue());
 					// keep only the ones that are in this fold
@@ -357,10 +357,10 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			Arrays.fill(probs, 0d);
 			if (entropyX == null) {
 				double nTotal = 0;
-				for (Map<String, Set<Integer>> xInstance : this.jointDistroTable
+				for (Map<String, Set<Long>> xInstance : this.jointDistroTable
 						.values()) {
 					int i = 0;
-					for (Set<Integer> instances : xInstance.values()) {
+					for (Set<Long> instances : xInstance.values()) {
 						double nCell = (double) instances.size();
 						nTotal += nCell;
 						probs[i] += nCell;
@@ -380,9 +380,9 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			if (entropyXY == null) {
 				double nTotal = 0;
 				int i = 0;
-				for (Map<String, Set<Integer>> xInstance : this.jointDistroTable
+				for (Map<String, Set<Long>> xInstance : this.jointDistroTable
 						.values()) {
-					for (Set<Integer> instances : xInstance.values()) {
+					for (Set<Long> instances : xInstance.values()) {
 						probs[i] = (double) instances.size();
 						nTotal += probs[i];
 						i++;
@@ -395,7 +395,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			return entropyXY;
 		}
 
-		public Set<Integer> getInstances(String x, String y) {
+		public Set<Long> getInstances(String x, String y) {
 			return jointDistroTable.get(y).get(x);
 		}
 
@@ -410,15 +410,15 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			StringBuilder b = new StringBuilder();
 			b.append(this.getClass().getCanonicalName());
 			b.append(" [jointDistro=(");
-			Iterator<Entry<String, SortedMap<String, Set<Integer>>>> yIter = this.jointDistroTable
+			Iterator<Entry<String, SortedMap<String, Set<Long>>>> yIter = this.jointDistroTable
 					.entrySet().iterator();
 			while (yIter.hasNext()) {
-				Entry<String, SortedMap<String, Set<Integer>>> yEntry = yIter
+				Entry<String, SortedMap<String, Set<Long>>> yEntry = yIter
 						.next();
-				Iterator<Entry<String, Set<Integer>>> xIter = yEntry.getValue()
+				Iterator<Entry<String, Set<Long>>> xIter = yEntry.getValue()
 						.entrySet().iterator();
 				while (xIter.hasNext()) {
-					Entry<String, Set<Integer>> xEntry = xIter.next();
+					Entry<String, Set<Long>> xEntry = xIter.next();
 					b.append(xEntry.getValue().size());
 					if (xIter.hasNext())
 						b.append(", ");
@@ -656,7 +656,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			Map<String, JointDistribution> conceptJointDistroMap,
 			Map<String, Integer> conceptDistMap, ConcRel cr,
 			Map<String, JointDistribution> rawJointDistroMap,
-			Map<String, Set<Integer>> yMargin, String xMerge, double minInfo,
+			Map<String, Set<Long>> yMargin, String xMerge, double minInfo,
 			List<String> path) {
 		if (conceptJointDistroMap.containsKey(cr.getConceptID())) {
 			return conceptJointDistroMap.get(cr.getConceptID());
@@ -722,15 +722,15 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	/**
 	 * 
 	 */
-	private double calculateFoldEntropy(Map<String, Set<Integer>> classCountMap) {
+	private double calculateFoldEntropy(Map<String, Set<Long>> classCountMap) {
 		int total = 0;
 		List<Double> classProbs = new ArrayList<Double>(classCountMap.size());
 		// calculate total number of instances in this fold
-		for (Set<Integer> instances : classCountMap.values()) {
+		for (Set<Long> instances : classCountMap.values()) {
 			total += instances.size();
 		}
 		// calculate per-class probability in this fold
-		for (Set<Integer> instances : classCountMap.values()) {
+		for (Set<Long> instances : classCountMap.values()) {
 			classProbs.add((double) instances.size() / (double) total);
 		}
 		return entropy(classProbs);
@@ -746,13 +746,13 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	 * @param xLeftover
 	 */
 	private Map<String, JointDistribution> completeJointDistroForFold(
-			Map<String, Map<String, Set<Integer>>> conceptInstanceMap,
-			Map<String, Set<Integer>> yMargin, Set<String> xVals,
+			Map<String, Map<String, Set<Long>>> conceptInstanceMap,
+			Map<String, Set<Long>> yMargin, Set<String> xVals,
 			Set<String> yVals, String xLeftover) {
 		//
 		Map<String, JointDistribution> foldJointDistroMap = new HashMap<String, JointDistribution>(
 				conceptInstanceMap.size());
-		for (Map.Entry<String, Map<String, Set<Integer>>> conceptInstance : conceptInstanceMap
+		for (Map.Entry<String, Map<String, Set<Long>>> conceptInstance : conceptInstanceMap
 				.entrySet()) {
 			foldJointDistroMap.put(
 					conceptInstance.getKey(),
@@ -828,9 +828,9 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	}
 
 	private void evaluateCorpusFold(Parameters params,
-			Map<String, Set<Integer>> yMargin, ConceptGraph cg,
+			Map<String, Set<Long>> yMargin, ConceptGraph cg,
 			InstanceData instanceData, String label,
-			Map<String, Map<String, Set<Integer>>> conceptInstanceMap,
+			Map<String, Map<String, Set<Long>>> conceptInstanceMap,
 			int foldId) {
 		if (log.isInfoEnabled())
 			log.info("evaluateCorpusFold() label = " + label + ", fold = "
@@ -879,7 +879,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			InstanceData instanceData, String label) {
 		if (log.isInfoEnabled())
 			log.info("evaluateCorpusLabel() label = " + label);
-		Map<String, Map<String, Set<Integer>>> conceptInstanceMap = loadConceptInstanceMap(
+		Map<String, Map<String, Set<Long>>> conceptInstanceMap = loadConceptInstanceMap(
 				params.getClassFeatureQuery(), cg, label);
 		for (int run : instanceData.getLabelToInstanceMap().get(label).keySet()) {
 			for (int fold : instanceData.getLabelToInstanceMap().get(label)
@@ -887,7 +887,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 				int foldId = this.getFoldId(params, label, run, fold);
 				// evaluate for the specified fold training set
 				// construct map of class - [instance ids]
-				Map<String, Set<Integer>> yMargin = getFoldYMargin(
+				Map<String, Set<Long>> yMargin = getFoldYMargin(
 						instanceData, label, run, fold);
 				evaluateCorpusFold(params, yMargin, cg, instanceData, label,
 						conceptInstanceMap, foldId);
@@ -925,17 +925,17 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		return foldId;
 	}
 
-	private Map<String, Set<Integer>> getFoldYMargin(InstanceData instanceData,
+	private Map<String, Set<Long>> getFoldYMargin(InstanceData instanceData,
 			String label, int run, int fold) {
-		Map<Integer, String> instanceClassMap = instanceData
+		Map<Long, String> instanceClassMap = instanceData
 				.getLabelToInstanceMap().get(label).get(run).get(fold)
 				.get(true);
-		Map<String, Set<Integer>> yMargin = new HashMap<String, Set<Integer>>();
-		for (Map.Entry<Integer, String> instanceClass : instanceClassMap
+		Map<String, Set<Long>> yMargin = new HashMap<String, Set<Long>>();
+		for (Map.Entry<Long, String> instanceClass : instanceClassMap
 				.entrySet()) {
-			Set<Integer> instanceIds = yMargin.get(instanceClass.getValue());
+			Set<Long> instanceIds = yMargin.get(instanceClass.getValue());
 			if (instanceIds == null) {
-				instanceIds = new HashSet<Integer>();
+				instanceIds = new HashSet<Long>();
 				yMargin.put(instanceClass.getValue(), instanceIds);
 			}
 			instanceIds.add(instanceClass.getKey());
@@ -970,9 +970,9 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	 * @param label
 	 * @return
 	 */
-	private Map<String, Map<String, Set<Integer>>> loadConceptInstanceMap(
+	private Map<String, Map<String, Set<Long>>> loadConceptInstanceMap(
 			String classFeatureQuery, ConceptGraph cg, String label) {
-		Map<String, Map<String, Set<Integer>>> conceptInstanceMap = new HashMap<String, Map<String, Set<Integer>>>();
+		Map<String, Map<String, Set<Long>>> conceptInstanceMap = new HashMap<String, Map<String, Set<Long>>>();
 		Map<String, Object> args = new HashMap<String, Object>(1);
 		if (label != null && label.length() > 0) {
 			args.put("label", label);
@@ -1001,7 +1001,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	private void propagateJointDistribution(
 			Map<String, JointDistribution> rawJointDistroMap,
 			Parameters params, String label, int foldId, ConceptGraph cg,
-			Map<String, Set<Integer>> yMargin) {
+			Map<String, Set<Long>> yMargin) {
 		// get the entropy of Y for this fold
 		double yEntropy = this.calculateFoldEntropy(yMargin);
 		// allocate a map to hold the results of the propagation across the

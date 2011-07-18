@@ -27,6 +27,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -43,9 +45,6 @@ import ytex.kernel.tree.Node;
 import ytex.kernel.tree.TreeMappingInfo;
 
 public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
-	private static final Log log = LogFactory
-			.getLog(CorpusKernelEvaluator.class);
-
 	protected class InstanceIDRowMapper implements RowMapper<Integer> {
 
 		@Override
@@ -55,32 +54,77 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	}
 
+	public class SliceEvaluator implements Callable<Object> {
+		Map<Integer, Node> instanceIDMap;
+		int nMod;
+		int nSlice;
+		boolean evalTest;
+
+		public SliceEvaluator(Map<Integer, Node> instanceIDMap, int nMod,
+				int nSlice, boolean evalTest) {
+			this.nSlice = nSlice;
+			this.nMod = nMod;
+			this.instanceIDMap = instanceIDMap;
+			this.evalTest = evalTest;
+		}
+
+		@Override
+		public Object call() throws Exception {
+			try {
+				evaluateKernelOnCorpus(instanceIDMap, nMod, nSlice, evalTest);
+			} catch (Exception e) {
+				log.error("error on slice: " + nSlice, e);
+				throw e;
+			}
+			return null;
+		}
+	}
+
+	private static final Log log = LogFactory
+			.getLog(CorpusKernelEvaluator.class);
+
 	@SuppressWarnings("static-access")
 	private static Options initOptions() {
-		Option oBeanref = OptionBuilder
+		Options options = new Options();
+		options.addOption(OptionBuilder
 				.withArgName("classpath*:simSvcBeanRefContext.xml")
 				.hasArg()
 				.withDescription(
 						"use specified beanRefContext.xml, default classpath*:simSvcBeanRefContext.xml")
-				.create("beanref");
-		Option oAppctx = OptionBuilder
+				.create("beanref"));
+		options.addOption(OptionBuilder
 				.withArgName("kernelApplicationContext")
 				.hasArg()
 				.withDescription(
 						"use specified applicationContext, default kernelApplicationContext")
-				.create("appctx");
-		Option oBeans = OptionBuilder
+				.create("appctx"));
+		options.addOption(OptionBuilder
 				.withArgName("beans-corpus.xml")
 				.hasArg()
 				.withDescription(
 						"use specified beans.xml, no default.  This file is typically required.")
-				.create("beans");
-		Option oHelp = new Option("help", "print this message");
-		Options options = new Options();
-		options.addOption(oBeanref);
-		options.addOption(oAppctx);
-		options.addOption(oBeans);
-		options.addOption(oHelp);
+				.create("beans"));
+		options.addOption(OptionBuilder
+				.withArgName("yes/no")
+				.hasArg()
+				.withDescription(
+						"should test instances be evaluated? default no.")
+				.create("evalTest"));
+		options.addOption(OptionBuilder
+				.withArgName("instanceMap.obj")
+				.hasArg()
+				.withDescription(
+						"load instanceMap from file system instead of from db.  Use after storing instance map.  If not specified will attempt to load from db.")
+				.create("loadInstanceMap"));
+		options.addOption(OptionBuilder
+				.withDescription(
+						"for parallelization, split the instances into mod slices")
+				.hasArg().create("mod"));
+		options.addOption(OptionBuilder
+				.withDescription(
+						"for parallelization, parameter that determines which slice we work on.  If this is not specified, nMod threads will be started to evaluate all slices in parallel.")
+				.hasArg().create("slice"));
+		options.addOption(new Option("help", "print this message"));
 		return options;
 	}
 
@@ -108,13 +152,42 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 					appCtxSource = new FileSystemXmlApplicationContext(
 							new String[] { beans }, appCtx);
 				}
-				CorpusKernelEvaluator corpusEvaluator = appCtxSource.getBean(
-						"corpusKernelEvaluator", CorpusKernelEvaluator.class);
-				corpusEvaluator.evaluateKernelOnCorpus();
+				evalKernel(appCtxSource, line);
 			} catch (ParseException e) {
 				printHelp(options);
 				throw e;
 			}
+		}
+	}
+
+	private static void evalKernel(ApplicationContext appCtxSource,
+			CommandLine line) throws Exception {
+		InstanceTreeBuilder builder = appCtxSource
+				.getBean(InstanceTreeBuilder.class);
+		CorpusKernelEvaluator corpusEvaluator = appCtxSource
+				.getBean(CorpusKernelEvaluator.class);
+		String loadInstanceMap = line.getOptionValue("loadInstanceMap");
+		String strMod = line.getOptionValue("mod");
+		String strSlice = line.getOptionValue("slice");
+		boolean evalTest = "yes".equals(line.getOptionValue("evalTest", "no"));
+		int nMod = strMod != null ? Integer.parseInt(strMod) : 0;
+		Integer nSlice = null;
+		if (nMod == 0) {
+			nSlice = 0;
+		} else if (strSlice != null) {
+			nSlice = Integer.parseInt(strSlice);
+		}
+		Map<Integer, Node> instanceMap = null;
+		if (loadInstanceMap != null) {
+			instanceMap = builder.loadInstanceTrees(loadInstanceMap);
+		} else {
+			instanceMap = builder.loadInstanceTrees(appCtxSource
+					.getBean(TreeMappingInfo.class));
+		}
+		if (nSlice != null) {
+			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, nSlice, evalTest);
+		} else {
+			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, evalTest);
 		}
 	}
 
@@ -127,78 +200,74 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 	}
 
 	private DataSource dataSource;
+
+	private String experiment;
+
+	private int foldId = 0;
+
+	private String instanceIDQuery;
+
 	private Kernel instanceKernel;
 
 	private InstanceTreeBuilder instanceTreeBuilder;
 
+	private JdbcTemplate jdbcTemplate;
+
 	private KernelEvaluationDao kernelEvaluationDao;
 
-	public String getExperiment() {
-		return experiment;
-	}
-
-	public void setExperiment(String experiment) {
-		this.experiment = experiment;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
-	public int getFoldId() {
-		return foldId;
-	}
-
-	public void setFoldId(int foldId) {
-		this.foldId = foldId;
-	}
-
-	private String experiment;
-	private String name;
 	private String label = DBUtil.getEmptyString();
+
+	private String name;
+
 	private double param1 = 0;
+
 	private String param2 = DBUtil.getEmptyString();
-	private int foldId = 0;
-
-	public double getParam1() {
-		return param1;
-	}
-
-	public void setParam1(double param1) {
-		this.param1 = param1;
-	}
-
-	public String getParam2() {
-		return param2;
-	}
-
-	public void setParam2(String param2) {
-		this.param2 = param2;
-	}
-
 	private SimpleJdbcTemplate simpleJdbcTemplate;
-	private String testInstanceIDQuery;
-	private String trainInstanceIDQuery;
 	private PlatformTransactionManager transactionManager;
-
 	private TreeMappingInfo treeMappingInfo;
-
 	private TransactionTemplate txTemplate;
 
+	private void evalInstance(Map<Integer, Node> instanceIDMap,
+			KernelEvaluation kernelEvaluation, long instanceId1,
+			SortedSet<Long> rightDocumentIDs) {
+		if (log.isDebugEnabled()) {
+			log.debug("left: " + instanceId1 + ", right: " + rightDocumentIDs);
+		}
+		for (long instanceId2 : rightDocumentIDs) {
+			// if (instanceId1 != instanceId2) {
+			final long i1 = instanceId1;
+			final long i2 = instanceId2;
+			final Node root1 = instanceIDMap.get(i1);
+			final Node root2 = instanceIDMap.get(i2);
+			if (root1 != null && root2 != null) {
+				kernelEvaluationDao.storeKernel(kernelEvaluation, i1, i2,
+						instanceKernel.evaluate(root1, root2));
+			}
+		}
+	}
+
+	@Override
+	public void evaluateKernelOnCorpus() {
+		final Map<Integer, Node> instanceIDMap = instanceTreeBuilder
+				.loadInstanceTrees(treeMappingInfo);
+		this.evaluateKernelOnCorpus(instanceIDMap, 0, 0, false);
+	}
+
+	@Override
+	public void evaluateKernelOnCorpus(Map<Integer, Node> instanceIDMap,
+			int nMod, boolean evalTest) throws InterruptedException {
+		ExecutorService svc = Executors.newFixedThreadPool(nMod);
+		List<Callable<Object>> taskList = new ArrayList<Callable<Object>>(nMod);
+		for (int nSlice = 1; nSlice <= nMod; nSlice++) {
+			taskList.add(new SliceEvaluator(instanceIDMap, nMod, nSlice, evalTest));
+		}
+		svc.invokeAll(taskList);
+		svc.shutdown();
+		svc.awaitTermination(60 * 4, TimeUnit.MINUTES);
+	}
+
 	public void evaluateKernelOnCorpus(final Map<Integer, Node> instanceIDMap,
-			int nMod, int nSlice) {
+			int nMod, int nSlice, boolean evalTest) {
 		KernelEvaluation kernelEvaluationTmp = new KernelEvaluation();
 		kernelEvaluationTmp.setExperiment(this.getExperiment());
 		kernelEvaluationTmp.setFoldId(this.getFoldId());
@@ -208,27 +277,12 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		kernelEvaluationTmp.setParam2(getParam2());
 		final KernelEvaluation kernelEvaluation = this.kernelEvaluationDao
 				.storeKernelEval(kernelEvaluationTmp);
-		final List<Integer> documentIds = txTemplate
-				.execute(new TransactionCallback<List<Integer>>() {
-					@Override
-					public List<Integer> doInTransaction(TransactionStatus arg0) {
-						return simpleJdbcTemplate.query(trainInstanceIDQuery,
-								new InstanceIDRowMapper());
-					}
-				});
-
-		final List<Integer> testDocumentIds = new ArrayList<Integer>();
-		if (testInstanceIDQuery != null) {
-			testDocumentIds.addAll(txTemplate
-					.execute(new TransactionCallback<List<Integer>>() {
-						@Override
-						public List<Integer> doInTransaction(
-								TransactionStatus arg0) {
-							return simpleJdbcTemplate.query(
-									testInstanceIDQuery,
-									new InstanceIDRowMapper());
-						}
-					}));
+		final List<Long> documentIds = new ArrayList<Long>();
+		final List<Long> testDocumentIds = new ArrayList<Long>();
+		loadDocumentIds(documentIds, testDocumentIds, instanceIDQuery);
+		if(!evalTest) {
+			//throw away the test ids if we're not going to evaluate them
+			testDocumentIds.clear();
 		}
 		int nStart = 0;
 		int nEnd = documentIds.size();
@@ -248,11 +302,11 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		}
 		for (int i = nStart; i < nEnd; i++) {
 			// left hand side of kernel evaluation
-			final int instanceId1 = documentIds.get(i);
+			final long instanceId1 = documentIds.get(i);
 			if (log.isInfoEnabled())
 				log.info("evaluating kernel for instance_id1 = " + instanceId1);
 			// list of instance ids right hand side of kernel evaluation
-			final SortedSet<Integer> rightDocumentIDs = new TreeSet<Integer>(
+			final SortedSet<Long> rightDocumentIDs = new TreeSet<Long>(
 					testDocumentIds);
 			if (i < documentIds.size()) {
 				// rightDocumentIDs.addAll(documentIds.subList(i + 1,
@@ -283,37 +337,20 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		}
 	}
 
-	private void evalInstance(Map<Integer, Node> instanceIDMap,
-			KernelEvaluation kernelEvaluation, int instanceId1,
-			SortedSet<Integer> rightDocumentIDs) {
-		if (log.isDebugEnabled()) {
-			log.debug("left: " + instanceId1 + ", right: " + rightDocumentIDs);
-		}
-		for (Integer instanceId2 : rightDocumentIDs) {
-			// if (instanceId1 != instanceId2) {
-			final int i1 = instanceId1;
-			final int i2 = instanceId2;
-			final Node root1 = instanceIDMap.get(i1);
-			final Node root2 = instanceIDMap.get(i2);
-			if (root1 != null && root2 != null) {
-				// store in separate tx so that there are less objects
-				// in session for hibernate to deal with
-				// txTemplate.execute(new TransactionCallback() {
-				// @Override
-				// public Object doInTransaction(TransactionStatus arg0)
-				// {
-				kernelEvaluationDao.storeKernel(kernelEvaluation, i1, i2,
-						instanceKernel.evaluate(root1, root2));
-			}
-			// return null;
-			// }
-			// });
-			// }
-		}
-	}
-
 	public DataSource getDataSource() {
 		return dataSource;
+	}
+
+	public String getExperiment() {
+		return experiment;
+	}
+
+	public int getFoldId() {
+		return foldId;
+	}
+
+	public String getInstanceIDQuery() {
+		return instanceIDQuery;
 	}
 
 	public Kernel getInstanceKernel() {
@@ -328,47 +365,21 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		return kernelEvaluationDao;
 	}
 
-	public String getTestInstanceIDQuery() {
-		return testInstanceIDQuery;
+	public String getLabel() {
+		return label;
 	}
 
-	public String getTrainInstanceIDQuery() {
-		return trainInstanceIDQuery;
+	public String getName() {
+		return name;
 	}
 
-	//
-	// public List<NodeMappingInfo> getNodeTypes() {
-	// return nodeTypes;
-	// }
-	//
-	// public void setNodeTypes(List<NodeMappingInfo> nodeTypes) {
-	// this.nodeTypes = nodeTypes;
-	// }
-	//
-	// public String getInstanceIDField() {
-	// return instanceIDField;
-	// }
-	//
-	// public void setInstanceIDField(String instanceIDField) {
-	// this.instanceIDField = instanceIDField;
-	// }
-	//
-	// public String getInstanceTreeQuery() {
-	// return instanceTreeQuery;
-	// }
-	//
-	// public void setInstanceTreeQuery(String instanceTreeQuery) {
-	// this.instanceTreeQuery = instanceTreeQuery;
-	// }
-	//
-	// public Map<String, Object> getInstanceTreeQueryArgs() {
-	// return instanceTreeQueryArgs;
-	// }
-	//
-	// public void setInstanceTreeQueryArgs(
-	// Map<String, Object> instanceTreeQueryArgs) {
-	// this.instanceTreeQueryArgs = instanceTreeQueryArgs;
-	// }
+	public double getParam1() {
+		return param1;
+	}
+
+	public String getParam2() {
+		return param2;
+	}
 
 	public PlatformTransactionManager getTransactionManager() {
 		return transactionManager;
@@ -378,9 +389,66 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		return treeMappingInfo;
 	}
 
+	/**
+	 * load the document ids from the instanceIDQuery
+	 * 
+	 * @param documentIds
+	 * @param testDocumentIds
+	 * @param instanceIDQuery
+	 */
+	private void loadDocumentIds(final List<Long> documentIds,
+			final List<Long> testDocumentIds, final String instanceIDQuery) {
+		txTemplate.execute(new TransactionCallback<Object>() {
+			@Override
+			public List<Integer> doInTransaction(TransactionStatus arg0) {
+				jdbcTemplate.query(instanceIDQuery, new RowCallbackHandler() {
+					Boolean trainFlag = null;
+
+					/**
+					 * <ul>
+					 * <li>1st column - document id
+					 * <li>2nd column - optional - train/test flag (train = 1)
+					 * </ul>
+					 */
+					@Override
+					public void processRow(ResultSet rs) throws SQLException {
+						if (trainFlag == null) {
+							// see how many columns there are
+							// if we have 2 columsn, then we assume that the 2nd
+							// column has the train/test flag
+							// else we assume everything is training data
+							trainFlag = rs.getMetaData().getColumnCount() == 2;
+						}
+						long id = rs.getLong(1);
+						int train = trainFlag.booleanValue() ? rs.getInt(2) : 1;
+						if (train != 0) {
+							documentIds.add(id);
+						} else {
+							testDocumentIds.add(id);
+						}
+					}
+				});
+				return null;
+			}
+		});
+	}
+
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
 		this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
+	}
+
+	public void setExperiment(String experiment) {
+		this.experiment = experiment;
+	}
+
+	public void setFoldId(int foldId) {
+		this.foldId = foldId;
+	}
+
+	public void setInstanceIDQuery(String instanceIDQuery) {
+		this.instanceIDQuery = instanceIDQuery;
 	}
 
 	public void setInstanceKernel(Kernel instanceKernel) {
@@ -395,12 +463,20 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		this.kernelEvaluationDao = kernelEvaluationDao;
 	}
 
-	public void setTestInstanceIDQuery(String testInstanceIDQuery) {
-		this.testInstanceIDQuery = testInstanceIDQuery;
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
-	public void setTrainInstanceIDQuery(String trainInstanceIDQuery) {
-		this.trainInstanceIDQuery = trainInstanceIDQuery;
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setParam1(double param1) {
+		this.param1 = param1;
+	}
+
+	public void setParam2(String param2) {
+		this.param2 = param2;
 	}
 
 	public void setTransactionManager(
@@ -413,49 +489,5 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	public void setTreeMappingInfo(TreeMappingInfo treeMappingInfo) {
 		this.treeMappingInfo = treeMappingInfo;
-	}
-
-	@Override
-	public void evaluateKernelOnCorpus() {
-		final Map<Integer, Node> instanceIDMap = instanceTreeBuilder
-				.loadInstanceTrees(treeMappingInfo);
-		this.evaluateKernelOnCorpus(instanceIDMap, 0, 0);
-	}
-
-	public class SliceEvaluator implements Callable<Object> {
-		int nSlice;
-		Map<Integer, Node> instanceIDMap;
-		int nMod;
-
-		public SliceEvaluator(Map<Integer, Node> instanceIDMap, int nMod,
-				int nSlice) {
-			this.nSlice = nSlice;
-			this.nMod = nMod;
-			this.instanceIDMap = instanceIDMap;
-		}
-
-		@Override
-		public Object call() throws Exception {
-			try {
-				evaluateKernelOnCorpus(instanceIDMap, nMod, nSlice);
-			} catch (Exception e) {
-				log.error("error on slice: " + nSlice, e);
-				throw e;
-			}
-			return null;
-		}
-	}
-
-	@Override
-	public void evaluateKernelOnCorpus(Map<Integer, Node> instanceIDMap,
-			int nMod) throws InterruptedException {
-		ExecutorService svc = Executors.newFixedThreadPool(nMod);
-		List<Callable<Object>> taskList = new ArrayList<Callable<Object>>(nMod);
-		for (int nSlice = 1; nSlice <= nMod; nSlice++) {
-			taskList.add(new SliceEvaluator(instanceIDMap, nMod, nSlice));
-		}
-		svc.invokeAll(taskList);
-		svc.shutdown();
-		svc.awaitTermination(60 * 4, TimeUnit.MINUTES);
 	}
 }

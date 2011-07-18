@@ -119,7 +119,7 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 			SparseData bagOfWordsData,
 			Map<String, Integer> numericAttributeMap,
 			Map<String, Map<String, Integer>> nominalAttributeMap,
-			int instanceId) {
+			long instanceId) {
 		SortedMap<Integer, Double> instanceValues = new TreeMap<Integer, Double>();
 		// get numeric values for instance
 		if (bagOfWordsData.getInstanceNumericWords().containsKey(instanceId)) {
@@ -143,7 +143,7 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 		return instanceValues;
 	}
 
-	protected void exportSparseRow(SparseData bagOfWordsData, int instanceId,
+	protected void exportSparseRow(SparseData bagOfWordsData, long instanceId,
 			BufferedWriter wData, int row) throws IOException {
 		SortedMap<Integer, Double> instanceValues = getSparseLineValues(
 				bagOfWordsData, numericAttributeMap, nominalAttributeMap,
@@ -183,7 +183,7 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 		try {
 			wData = new BufferedWriter(new FileWriter(filename));
 			int row = 1;
-			for (int instanceId : sparseData.getInstanceIds()) {
+			for (long instanceId : sparseData.getInstanceIds()) {
 				exportSparseRow(sparseData, instanceId, wData, row);
 				row++;
 			}
@@ -193,29 +193,29 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 		}
 	}
 
-	protected List<Integer> getInstanceIdsForScope(InstanceData instanceLabel,
-			String label, Integer run, Integer fold) {
-		List<Integer> instanceIds = new ArrayList<Integer>();
-		SortedSet<Integer> sortedInstanceIds = new TreeSet<Integer>();
-		if (label == null || label.length() == 0) {
-			// add all instance ids
-			for (SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> runMap : instanceLabel.labelToInstanceMap
-					.values()) {
-				for (SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>> foldMap : runMap
-						.values()) {
-					for (SortedMap<Boolean, SortedMap<Integer, String>> trainTestFold : foldMap
-							.values()) {
-						for (SortedMap<Integer, String> trainMap : trainTestFold
-								.values())
-							sortedInstanceIds.addAll(trainMap.keySet());
-					}
-				}
-			}
-		} else if (label != null && label.length() > 0 && run == null) {
-			// label scope
-		}
-		return instanceIds;
-	}
+//	protected List<Integer> getInstanceIdsForScope(InstanceData instanceLabel,
+//			String label, Integer run, Integer fold) {
+//		List<Integer> instanceIds = new ArrayList<Integer>();
+//		SortedSet<Long> sortedInstanceIds = new TreeSet<Long>();
+//		if (label == null || label.length() == 0) {
+//			// add all instance ids
+//			for (SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> runMap : instanceLabel.labelToInstanceMap
+//					.values()) {
+//				for (SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>> foldMap : runMap
+//						.values()) {
+//					for (SortedMap<Boolean, SortedMap<Long, String>> trainTestFold : foldMap
+//							.values()) {
+//						for (SortedMap<Long, String> trainMap : trainTestFold
+//								.values())
+//							sortedInstanceIds.addAll(trainMap.keySet());
+//					}
+//				}
+//			}
+//		} else if (label != null && label.length() > 0 && run == null) {
+//			// label scope
+//		}
+//		return instanceIds;
+//	}
 
 	/**
 	 * get needed properties out of outdir. convert class names into integers

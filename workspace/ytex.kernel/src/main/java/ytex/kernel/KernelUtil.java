@@ -39,12 +39,10 @@ public interface KernelUtil {
 
 	public abstract void fillGramMatrix(
 			final KernelEvaluation kernelEvaluation,
-			final SortedSet<Integer> trainInstanceLabelMap,
-			final double[][] trainGramMatrix,
-			final SortedSet<Integer> testInstanceLabelMap,
-			final double[][] testGramMatrix);
+			final SortedSet<Long> trainInstanceLabelMap,
+			final double[][] trainGramMatrix);
 
-	public abstract double[][] loadGramMatrix(SortedSet<Integer> instanceIds, String name,
+	public abstract double[][] loadGramMatrix(SortedSet<Long> instanceIds, String name,
 			String splitName, String experiment, String label, int run, int fold,
 			double param1, String param2);
 

@@ -183,7 +183,7 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 
 		@Override
 		public void exportFold(SparseData sparseData,
-				SortedMap<Integer, String> instanceClasses, boolean train,
+				SortedMap<Long, String> instanceClasses, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			if (train) {
 				Instances inst = this.initializeInstances(sparseData,

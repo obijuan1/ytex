@@ -21,7 +21,6 @@ import ytex.kernel.InfoGainEvaluatorImpl;
 import ytex.kernel.InstanceData;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.KernelUtil;
-import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.sparsematrix.InstanceDataExporter;
 
@@ -87,7 +86,7 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 			double param1, String param2, String splitName, String outdir,
 			InstanceData instanceData, String label, int run, int fold)
 			throws IOException {
-		SortedSet<Integer> instanceIds = instanceData.getAllInstanceIds(label,
+		SortedSet<Long> instanceIds = instanceData.getAllInstanceIds(label,
 				run, fold);
 		String filePrefix = FileUtil.getDataFilePrefix(outdir, label, run,
 				fold, null);
@@ -198,7 +197,7 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 	}
 
 	private void outputGramMatrix(double[][] gramMatrix,
-			SortedSet<Integer> instanceIds, String dataFilePrefix)
+			SortedSet<Long> instanceIds, String dataFilePrefix)
 			throws IOException {
 		BufferedWriter w = null;
 		BufferedWriter wId = null;
@@ -206,22 +205,13 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 			w = new BufferedWriter(new FileWriter(dataFilePrefix + "data.txt"));
 			wId = new BufferedWriter(new FileWriter(dataFilePrefix
 					+ "instance_id.txt"));
-			Integer instanceIdArray[] = instanceIds.toArray(new Integer[] {});
-			// write colnames
+			Long instanceIdArray[] = instanceIds.toArray(new Long[] {});
+			// write instance id corresponding to row
 			for (int h = 0; h < instanceIdArray.length; h++) {
-				// w.write("\"");
-				// w.write(Integer.toString(instanceIdArray[h]));
-				// w.write("\" ");
-				wId.write(Integer.toString(instanceIdArray[h]));
+				wId.write(Long.toString(instanceIdArray[h]));
 				wId.write("\n");
 			}
-			// w.write("\n");
-			// write t
 			for (int i = 0; i < instanceIdArray.length; i++) {
-				// // write rowname
-				// w.write("\"");
-				// w.write(Integer.toString(instanceIdArray[i]));
-				// w.write("\" ");
 				// write line from gram matrix
 				for (int j = 0; j < instanceIdArray.length; j++) {
 					w.write(Double.toString(gramMatrix[i][j]));
@@ -238,84 +228,6 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 			}
 		}
 	}
-
-	private void outputInstanceData(InstanceData instanceData, String label,
-			String outdir) throws IOException {
-		this.instanceDataExporter.outputInstanceData(instanceData,
-				FileUtil.getDataFilePrefix(outdir, label, 0, 0, null)
-						+ "instance.txt");
-	}
-
-	// BufferedWriter bw = null;
-	// try {
-	// StringWriter w = new StringWriter();
-	// boolean includeLabel = false;
-	// boolean includeRun = false;
-	// boolean includeFold = false;
-	// boolean includeTrain = false;
-	// for (String label : instanceData.getLabelToInstanceMap().keySet()) {
-	// for (int run : instanceData.getLabelToInstanceMap().get(label)
-	// .keySet()) {
-	// for (int fold : instanceData.getLabelToInstanceMap()
-	// .get(label).get(run).keySet()) {
-	// for (boolean train : instanceData
-	// .getLabelToInstanceMap().get(label).get(run)
-	// .get(fold).keySet()) {
-	// for (Map.Entry<Integer, String> instanceClass : instanceData
-	// .getLabelToInstanceMap().get(label)
-	// .get(run).get(fold).get(train).entrySet()) {
-	// if (label.length() > 0) {
-	// includeLabel = true;
-	// w.write("\"");
-	// w.write(label);
-	// w.write("\" ");
-	// }
-	// if (run > 0) {
-	// includeRun = true;
-	// w.write(Integer.toString(run));
-	// w.write(" ");
-	// }
-	// if (fold > 0) {
-	// includeFold = true;
-	// w.write(Integer.toString(fold));
-	// w.write(" ");
-	// }
-	// if (instanceData.getLabelToInstanceMap()
-	// .get(label).get(run).size() > 1) {
-	// includeTrain = true;
-	// w.write(train ? "1" : "0");
-	// w.write(" ");
-	// }
-	// w.write(Integer.toString(instanceClass.getKey()));
-	// w.write(" ");
-	// w.write("\"");
-	// w.write(instanceClass.getValue());
-	// w.write("\"\n");
-	// }
-	// }
-	// }
-	// }
-	// }
-	// bw = new BufferedWriter(new FileWriter(outdir + "/instance.txt"));
-	// // write colnames
-	// if (includeLabel)
-	// bw.write("\"label\" ");
-	// if (includeRun)
-	// bw.write("\"run\" ");
-	// if (includeFold)
-	// bw.write("\"fold\" ");
-	// if (includeTrain)
-	// bw.write("\"train\" ");
-	// bw.write("\"instance_id\" \"class\"\n");
-	// // write the rest of the data
-	// bw.write(w.toString());
-	// } finally {
-	// if (bw != null) {
-	// bw.close();
-	// }
-	// }
-
-	// }
 
 	public void setInstanceDataExporter(
 			InstanceDataExporter instanceDataExporter) {

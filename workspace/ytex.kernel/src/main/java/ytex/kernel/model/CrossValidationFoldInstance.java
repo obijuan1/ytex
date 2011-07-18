@@ -7,12 +7,12 @@ public class CrossValidationFoldInstance implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private int instanceId;
+	private long instanceId;
 	private boolean train;
-	public int getInstanceId() {
+	public long getInstanceId() {
 		return instanceId;
 	}
-	public void setInstanceId(int instanceId) {
+	public void setInstanceId(long instanceId) {
 		this.instanceId = instanceId;
 	}
 	public boolean isTrain() {
@@ -21,7 +21,7 @@ public class CrossValidationFoldInstance implements Serializable {
 	public void setTrain(boolean train) {
 		this.train = train;
 	}
-	public CrossValidationFoldInstance(int instanceId, boolean train) {
+	public CrossValidationFoldInstance(long instanceId, boolean train) {
 		super();
 		this.instanceId = instanceId;
 		this.train = train;
@@ -33,7 +33,7 @@ public class CrossValidationFoldInstance implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + instanceId;
+		result = prime * result + (int) (instanceId ^ (instanceId >>> 32));
 		result = prime * result + (train ? 1231 : 1237);
 		return result;
 	}
@@ -52,5 +52,6 @@ public class CrossValidationFoldInstance implements Serializable {
 			return false;
 		return true;
 	}
+
 	
 }

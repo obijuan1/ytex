@@ -12,8 +12,8 @@ public class KernelEvaluationInstance implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private int instanceId1;
-	private int instanceId2;
+	private long instanceId1;
+	private long instanceId2;
 
 	private int kernelEvaluationId;
 
@@ -23,13 +23,23 @@ public class KernelEvaluationInstance implements Serializable {
 		super();
 	}
 
-	public KernelEvaluationInstance(int kernelEvaluationId, int instanceId1,
-			int instanceId2, double similarity) {
+	public KernelEvaluationInstance(int kernelEvaluationId, long instanceId1,
+			long instanceId2, double similarity) {
 		super();
 		this.kernelEvaluationId = kernelEvaluationId;
 		this.instanceId1 = instanceId1;
 		this.instanceId2 = instanceId2;
 		this.similarity = similarity;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (instanceId1 ^ (instanceId1 >>> 32));
+		result = prime * result + (int) (instanceId2 ^ (instanceId2 >>> 32));
+		result = prime * result + kernelEvaluationId;
+		return result;
 	}
 
 	@Override
@@ -50,11 +60,11 @@ public class KernelEvaluationInstance implements Serializable {
 		return true;
 	}
 
-	public int getInstanceId1() {
+	public long getInstanceId1() {
 		return instanceId1;
 	}
 
-	public int getInstanceId2() {
+	public long getInstanceId2() {
 		return instanceId2;
 	}
 
@@ -66,15 +76,7 @@ public class KernelEvaluationInstance implements Serializable {
 		return similarity;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + instanceId1;
-		result = prime * result + instanceId2;
-		result = prime * result + kernelEvaluationId;
-		return result;
-	}
+	
 
 	public void setInstanceId1(int instanceId1) {
 		this.instanceId1 = instanceId1;

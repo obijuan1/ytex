@@ -212,16 +212,18 @@ public class AbstractBagOfWordsExporter {
 			this.getNumericInstanceWords(instanceNumericWordQuery,
 					bagOfWordsData);
 		// added to support adding gram matrix index in GramMatrixExporter
-		if (bDecorator != null)
-			bDecorator.decorateNumericInstanceWords(
-					bagOfWordsData.getInstanceNumericWords(),
-					bagOfWordsData.getNumericWords());
-		if (instanceNominalWordQuery.trim().length() > 0)
-			this.getNominalInstanceWords(instanceNominalWordQuery,
-					bagOfWordsData);
-		if (bDecorator != null)
-			bDecorator.decorateNominalInstanceWords(
-					bagOfWordsData.getInstanceNominalWords(),
-					bagOfWordsData.getNominalWordValueMap());
+		// TODO fix this
+		// currently not using weka gram matrix
+//		if (bDecorator != null)
+//			bDecorator.decorateNumericInstanceWords(
+//					bagOfWordsData.getInstanceNumericWords(),
+//					bagOfWordsData.getNumericWords());
+//		if (instanceNominalWordQuery.trim().length() > 0)
+//			this.getNominalInstanceWords(instanceNominalWordQuery,
+//					bagOfWordsData);
+//		if (bDecorator != null)
+//			bDecorator.decorateNominalInstanceWords(
+//					bagOfWordsData.getInstanceNominalWords(),
+//					bagOfWordsData.getNominalWordValueMap());
 	}
 }

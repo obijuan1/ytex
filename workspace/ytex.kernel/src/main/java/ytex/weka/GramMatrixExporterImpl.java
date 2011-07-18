@@ -72,20 +72,20 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 	public static class GramMatrixArffDecorator implements BagOfWordsDecorator {
 		public static final String INDEX_NAME = "gramIndex";
 		public static final String INDEX_NAME_NOMINAL = "gramIndexN";
-		Map<Integer, Integer> instanceIdToIndexMap;
+		Map<Long, Integer> instanceIdToIndexMap;
 
 		public GramMatrixArffDecorator(
-				Map<Integer, Integer> instanceIdToIndexMap) {
+				Map<Long, Integer> instanceIdToIndexMap) {
 			this.instanceIdToIndexMap = instanceIdToIndexMap;
 		}
 
 		@Override
 		public void decorateNumericInstanceWords(
-				Map<Integer, SortedMap<String, Double>> instanceNumericWords,
+				Map<Long, SortedMap<String, Double>> instanceNumericWords,
 				SortedSet<String> numericWords) {
-			for (Map.Entry<Integer, Integer> instanceIdToIndex : instanceIdToIndexMap
+			for (Map.Entry<Long, Integer> instanceIdToIndex : instanceIdToIndexMap
 					.entrySet()) {
-				int instanceId = instanceIdToIndex.getKey();
+				long instanceId = instanceIdToIndex.getKey();
 				int index = instanceIdToIndex.getValue();
 				if (!instanceNumericWords.containsKey(instanceId)) {
 					instanceNumericWords.put(instanceId,
@@ -102,7 +102,7 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 		 */
 		@Override
 		public void decorateNominalInstanceWords(
-				Map<Integer, SortedMap<String, String>> instanceNominalWords,
+				Map<Long, SortedMap<String, String>> instanceNominalWords,
 				Map<String, SortedSet<String>> nominalWordValueMap) {
 		}
 	}
@@ -119,9 +119,9 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 		InputStream in = null;
 		try {
 			// map of instance id -> index in gram matrix
-			final Map<Integer, Integer> instanceIdToIndexMap = new HashMap<Integer, Integer>();
+			final Map<Long, Integer> instanceIdToIndexMap = new HashMap<Long, Integer>();
 			// map of instance id -> class label
-			final Map<Integer, String> instanceIDClassLabel = new TreeMap<Integer, String>();
+			final Map<Long, String> instanceIDClassLabel = new TreeMap<Long, String>();
 			in = new FileInputStream(propertyFile);
 			if (propertyFile.endsWith(".xml"))
 				props.loadFromXML(in);
@@ -157,10 +157,10 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 		}
 	}
 
-	protected Map<Integer, Integer> exportGramMatrix(BufferedWriter writer,
+	protected Map<Long, Integer> exportGramMatrix(BufferedWriter writer,
 			final KernelEvaluation kernelEvaluation, GramMatrixType matrixType,
-			final Map<Integer, String> instanceIDClassLabel,
-			final Map<Integer, Integer> instanceToIndexMap) throws IOException {
+			final Map<Long, String> instanceIDClassLabel,
+			final Map<Long, Integer> instanceToIndexMap) throws IOException {
 		// allocate gram matrix
 		final double[][] gramMatrix = new double[instanceIDClassLabel.size()][instanceIDClassLabel
 				.size()];
@@ -168,10 +168,10 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 		// do this row by row - pulling the entire matrix at once is too slow
 		// do this in a separate transaction so that the 1st level cache doesn't
 		// fill up
-		for (Map.Entry<Integer, Integer> instanceIdIndex : instanceToIndexMap
+		for (Map.Entry<Long, Integer> instanceIdIndex : instanceToIndexMap
 				.entrySet()) {
 			final int indexThis = instanceIdIndex.getValue();
-			final int instanceId = instanceIdIndex.getKey();
+			final long instanceId = instanceIdIndex.getKey();
 			txNew.execute(new TransactionCallback<Object>() {
 				@Override
 				public Object doInTransaction(TransactionStatus arg0) {
@@ -223,17 +223,17 @@ public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implement
 	}
 
 	private void initializeInstanceIndices(String instanceClassQuery,
-			final Map<Integer, String> instanceIDClassLabel,
-			final Map<Integer, Integer> instanceToIndexMap) {
+			final Map<Long, String> instanceIDClassLabel,
+			final Map<Long, Integer> instanceToIndexMap) {
 		// read in all instance ids
 		jdbcTemplate.query(instanceClassQuery, new RowCallbackHandler() {
 			@Override
 			public void processRow(ResultSet rs) throws SQLException {
-				instanceIDClassLabel.put(rs.getInt(1), rs.getString(2));
+				instanceIDClassLabel.put(rs.getLong(1), rs.getString(2));
 			}
 		});
 		int i = 0;
-		for (Integer instanceId : instanceIDClassLabel.keySet()) {
+		for (Long instanceId : instanceIDClassLabel.keySet()) {
 			instanceToIndexMap.put(instanceId, i);
 			i++;
 		}

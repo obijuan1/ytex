@@ -86,7 +86,7 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 							labelBase.length() - "label".length())
 					+ "class.txt";
 			// load instance ids and their class ids
-			List<List<Integer>> listClassInfo = loadClassInfo(classFileName);
+			List<List<Long>> listClassInfo = loadClassInfo(classFileName);
 			// process .output files
 			if (listClassInfo != null) {
 				for (File output : outputDir.listFiles(new FilenameFilter() {
@@ -113,19 +113,19 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	 * @return null if file not found
 	 * @throws IOException
 	 */
-	private List<List<Integer>> loadClassInfo(String classFileName)
+	private List<List<Long>> loadClassInfo(String classFileName)
 			throws IOException {
 		BufferedReader r = null;
 		try {
 			r = new BufferedReader(new FileReader(classFileName));
-			List<List<Integer>> listClassInfo = new ArrayList<List<Integer>>();
+			List<List<Long>> listClassInfo = new ArrayList<List<Long>>();
 			String line = null;
 			while ((line = r.readLine()) != null) {
 				if (line.trim().length() > 0) {
 					String classInfoToks[] = line.split("\\s");
-					List<Integer> classInfo = new ArrayList<Integer>(3);
+					List<Long> classInfo = new ArrayList<Long>(3);
 					for (String tok : classInfoToks) {
-						classInfo.add(Integer.parseInt(tok));
+						classInfo.add(Long.parseLong(tok));
 					}
 					if (classInfo.size() != 3) {
 						log.error("error parsing line: " + line);
@@ -163,7 +163,7 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	 * @throws IOException
 	 */
 	private void parseSemiLOutput(String fileBaseName, Properties kernelProps,
-			File output, List<List<Integer>> listClassInfo) throws IOException {
+			File output, List<List<Long>> listClassInfo) throws IOException {
 		BufferedReader outputReader = null;
 		try {
 			outputReader = new BufferedReader(new FileReader(output));
@@ -210,14 +210,14 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	 *            stored?
 	 */
 	private void parsePredictedClasses(SemiLClassifierEvaluation ce,
-			String predictLine, List<List<Integer>> listClassInfo,
+			String predictLine, List<List<Long>> listClassInfo,
 			boolean storeUnlabeled) {
 		String classIds[] = predictLine.split("\\s");
 		for (int i = 0; i < classIds.length; i++) {
-			List<Integer> classInfo = listClassInfo.get(i);
-			int instanceId = classInfo.get(0);
+			List<Long> classInfo = listClassInfo.get(i);
+			long instanceId = classInfo.get(0);
 			boolean train = classInfo.get(1) == 1;
-			int targetClassId = classInfo.get(2);
+			int targetClassId = classInfo.get(2).intValue();
 			// if we are storing unlabeled instance ids, save this instance
 			// evaluation
 			// else only store it if this is a test instance id - save it

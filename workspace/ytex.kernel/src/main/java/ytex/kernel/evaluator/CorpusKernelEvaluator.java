@@ -8,8 +8,9 @@ public interface CorpusKernelEvaluator {
 	public void evaluateKernelOnCorpus();
 
 	public void evaluateKernelOnCorpus(Map<Integer, Node> instanceMap,
-			int nMod, int nSlice);
+			int nMod, int nSlice, boolean evalTest);
 
-	public abstract void evaluateKernelOnCorpus(Map<Integer, Node> instanceIDMap, int nMod)
+	public abstract void evaluateKernelOnCorpus(
+			Map<Integer, Node> instanceIDMap, int nMod, boolean evalTest)
 			throws InterruptedException;
 }

@@ -41,14 +41,14 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 	}
 
 	public static class SVMLightFormatter extends LibSVMFormatter {
-		protected SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap;
+		protected SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap;
 
 		/**
 		 * export the given train/test set
 		 */
 		@Override
 		public void exportFold(SparseData sparseData,
-				SortedMap<Integer, String> instanceClassMap, boolean train,
+				SortedMap<Long, String> instanceClassMap, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			String filename = FileUtil.getDataFilePrefix(outdir, label, run,
 					fold, train)
@@ -83,12 +83,12 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 		 * @return instance ids in order they are in the output file
 		 * @throws IOException
 		 */
-		protected List<Integer> exportTransductiveData(String filename, String idFilename,
+		protected List<Long> exportTransductiveData(String filename, String idFilename,
 				SparseData bagOfWordsData,
-				SortedMap<Integer, String> trainClassMap,
-				Set<Integer> testInstances, Map<String, Integer> classToIndexMap)
+				SortedMap<Long, String> trainClassMap,
+				Set<Long> testInstances, Map<String, Integer> classToIndexMap)
 				throws IOException {
-			List<Integer> instanceIds = new ArrayList<Integer>();
+			List<Long> instanceIds = new ArrayList<Long>();
 			BufferedWriter wData = null;
 			BufferedWriter wId = null;
 			try {
@@ -96,8 +96,8 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 				wId = new BufferedWriter(new FileWriter(idFilename));
 				instanceIds.addAll(exportDataForInstances(bagOfWordsData, trainClassMap,
 						classToIndexMap, wData, wId));
-				SortedMap<Integer, String> testClassMap = new TreeMap<Integer, String>();
-				for (Integer instanceId : testInstances) {
+				SortedMap<Long, String> testClassMap = new TreeMap<Long, String>();
+				for (Long instanceId : testInstances) {
 					// for sparse datasets may duplicate instances in train/test
 					// set. Don't do that for transductive learning
 					if (!trainClassMap.containsKey(instanceId))
@@ -179,7 +179,7 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 				String label,
 				Integer run,
 				Integer fold,
-				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
+				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 				throws IOException {
 			super.initializeFold(sparseData, label, run, fold,
 					foldInstanceLabelMap);

@@ -83,7 +83,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		@Override
 		public void initializeLabel(
 				String label,
-				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> labelInstances,
+				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
 				Properties properties, SparseData sparseData)
 				throws IOException {
 			super.initializeLabel(label, labelInstances, properties, sparseData);
@@ -98,7 +98,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				String label,
 				Integer run,
 				Integer fold,
-				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
+				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 				throws IOException {
 			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {
 				exportSemiL(sparseData, label, run, fold);
@@ -162,7 +162,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 
 		@Override
 		public void exportFold(SparseData sparseData,
-				SortedMap<Integer, String> instanceClassMap, boolean train,
+				SortedMap<Long, String> instanceClassMap, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			// do nothing
 		}
@@ -180,16 +180,16 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		 * @throws IOException
 		 */
 		private void exportLabel(String idFilename, String lblFilename,
-				SortedMap<Integer, String> trainInstanceClassMap,
-				SortedMap<Integer, String> testInstanceClassMap,
+				SortedMap<Long, String> trainInstanceClassMap,
+				SortedMap<Long, String> testInstanceClassMap,
 				Map<String, Integer> classToIndexMap,
-				SortedSet<Integer> instanceIds) throws IOException {
+				SortedSet<Long> instanceIds) throws IOException {
 			BufferedWriter wId = null;
 			BufferedWriter wLabel = null;
 			try {
 				wId = new BufferedWriter(new FileWriter(idFilename));
 				wLabel = new BufferedWriter(new FileWriter(lblFilename));
-				for (Integer instanceId : instanceIds) {
+				for (Long instanceId : instanceIds) {
 					// for training default to unlabeled
 					int classIdTrain = 0;
 					if (trainInstanceClassMap.containsKey(instanceId)) {
@@ -207,7 +207,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 						classIdGold = classIdTrain;
 					// write instance id, if this is in the train set, and it's
 					// class
-					wId.write(Integer.toString(instanceId));
+					wId.write(Long.toString(instanceId));
 					wId.write("\t");
 					wId.write(trainInstanceClassMap.containsKey(instanceId) ? "1"
 							: "0");

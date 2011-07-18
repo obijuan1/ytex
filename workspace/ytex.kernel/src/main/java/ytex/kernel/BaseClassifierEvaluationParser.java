@@ -49,16 +49,16 @@ public abstract class BaseClassifierEvaluationParser implements
 		return token;
 	}
 
-	public List<Integer> parseInstanceIds(String instanceIdFile)
+	public List<Long> parseInstanceIds(String instanceIdFile)
 			throws IOException {
 		BufferedReader instanceIdReader = null;
-		List<Integer> instanceIds = new ArrayList<Integer>();
+		List<Long> instanceIds = new ArrayList<Long>();
 		try {
 			instanceIdReader = new BufferedReader(
 					new FileReader(instanceIdFile));
 			String instanceId = null;
 			while ((instanceId = instanceIdReader.readLine()) != null)
-				instanceIds.add(Integer.parseInt(instanceId));
+				instanceIds.add(Long.parseLong(instanceId));
 			return instanceIds;
 		} finally {
 			if (instanceIdReader != null)

@@ -57,11 +57,11 @@ public class InstanceDataExporterImpl implements InstanceDataExporter {
 						for (boolean train : instanceData
 								.getLabelToInstanceMap().get(label).get(run)
 								.get(fold).keySet()) {
-							for (Map.Entry<Integer, String> instanceClass : instanceData
+							for (Map.Entry<Long, String> instanceClass : instanceData
 									.getLabelToInstanceMap().get(label)
 									.get(run).get(fold).get(train).entrySet()) {
 								// write instance id
-								w.write(Integer.toString(instanceClass.getKey()));
+								w.write(Long.toString(instanceClass.getKey()));
 								w.write(fieldDelim);
 								// write class
 								appendString(instanceClass.getValue(),

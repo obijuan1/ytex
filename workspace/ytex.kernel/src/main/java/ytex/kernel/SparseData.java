@@ -18,15 +18,15 @@ public class SparseData {
 	/**
 	 * the instance ids in this sparse data set
 	 */
-	SortedSet<Integer> instanceIds = new TreeSet<Integer>();
+	SortedSet<Long> instanceIds = new TreeSet<Long>();
 	/**
 	 * instance nominal attribute values
 	 */
-	Map<Integer, SortedMap<String, String>> instanceNominalWords = new HashMap<Integer, SortedMap<String, String>>();
+	Map<Long, SortedMap<String, String>> instanceNominalWords = new HashMap<Long, SortedMap<String, String>>();
 	/**
 	 * map if instance id to map of attribute name - value pairs
 	 */
-	Map<Integer, SortedMap<String, Double>> instanceNumericWords = new HashMap<Integer, SortedMap<String, Double>>();
+	Map<Long, SortedMap<String, Double>> instanceNumericWords = new HashMap<Long, SortedMap<String, Double>>();
 
 	/**
 	 * nominal attribute names and values
@@ -40,19 +40,19 @@ public class SparseData {
 	
 	
 
-	public SortedSet<Integer> getInstanceIds() {
+	public SortedSet<Long> getInstanceIds() {
 		return instanceIds;
 	}
 
-	public void setInstanceIds(SortedSet<Integer> instanceIds) {
+	public void setInstanceIds(SortedSet<Long> instanceIds) {
 		this.instanceIds = instanceIds;
 	}
 
-	public Map<Integer, SortedMap<String, String>> getInstanceNominalWords() {
+	public Map<Long, SortedMap<String, String>> getInstanceNominalWords() {
 		return instanceNominalWords;
 	}
 
-	public Map<Integer, SortedMap<String, Double>> getInstanceNumericWords() {
+	public Map<Long, SortedMap<String, Double>> getInstanceNumericWords() {
 		return instanceNumericWords;
 	}
 
@@ -65,12 +65,12 @@ public class SparseData {
 	}
 
 	public void setInstanceNominalWords(
-			Map<Integer, SortedMap<String, String>> instanceNominalWords) {
+			Map<Long, SortedMap<String, String>> instanceNominalWords) {
 		this.instanceNominalWords = instanceNominalWords;
 	}
 
 	public void setInstanceNumericWords(
-			Map<Integer, SortedMap<String, Double>> instanceNumericWords) {
+			Map<Long, SortedMap<String, Double>> instanceNumericWords) {
 		this.instanceNumericWords = instanceNumericWords;
 	}
 

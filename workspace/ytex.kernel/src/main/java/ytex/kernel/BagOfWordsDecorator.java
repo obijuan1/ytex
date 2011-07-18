@@ -13,10 +13,10 @@ import java.util.SortedSet;
  */
 public interface BagOfWordsDecorator {
 	public void decorateNumericInstanceWords(
-			Map<Integer, SortedMap<String, Double>> instanceNumericWords,
+			Map<Long, SortedMap<String, Double>> instanceNumericWords,
 			SortedSet<String> numericWords);
 
 	public void decorateNominalInstanceWords(
-			Map<Integer, SortedMap<String, String>> instanceNominalWords,
+			Map<Long, SortedMap<String, String>> instanceNominalWords,
 			Map<String, SortedSet<String>> nominalWordValueMap);
 }

@@ -199,9 +199,9 @@ public class KernelLauncher {
 					"treeMappingInfo", TreeMappingInfo.class));
 		}
 		if (nSlice != null) {
-			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, nSlice);
+			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, nSlice, false);
 		} else {
-			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod);
+			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, false);
 		}
 	}
 

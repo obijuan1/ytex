@@ -67,7 +67,7 @@ public class SparseMatrixFormatterFactory implements SparseDataFormatterFactory 
 		@Override
 		public void initializeLabel(
 				String label,
-				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> labelInstances,
+				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
 				Properties properties, SparseData sparseData)
 				throws IOException {
 			super.initializeLabel(label, labelInstances, properties, sparseData);
@@ -82,7 +82,7 @@ public class SparseMatrixFormatterFactory implements SparseDataFormatterFactory 
 				String label,
 				Integer run,
 				Integer fold,
-				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
+				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 				throws IOException {
 			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {
 				exportSparseMatrix(sparseData, label, run, fold);
@@ -91,7 +91,7 @@ public class SparseMatrixFormatterFactory implements SparseDataFormatterFactory 
 
 		@Override
 		public void exportFold(SparseData sparseData,
-				SortedMap<Integer, String> instanceClassMap, boolean train,
+				SortedMap<Long, String> instanceClassMap, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			// do nothing
 		}

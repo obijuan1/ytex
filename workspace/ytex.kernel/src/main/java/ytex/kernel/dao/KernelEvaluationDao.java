@@ -8,19 +8,19 @@ import ytex.kernel.model.KernelEvaluationInstance;
 public interface KernelEvaluationDao {
 
 	public abstract void storeNorm(KernelEvaluation kernelEvaluation,
-			int instanceId, double norm);
+			long instanceId, double norm);
 
 	public abstract Double getNorm(KernelEvaluation kernelEvaluation,
-			int instanceId);
+			long instanceId);
 
 	public abstract void storeKernel(KernelEvaluation kernelEvaluation,
-			int instanceId1, int instanceId2, double kernel);
+			long instanceId1, long instanceId2, double kernel);
 
 	public abstract Double getKernel(KernelEvaluation kernelEvaluation,
-			int instanceId1, int instanceId2);
+			long instanceId1, long instanceId2);
 
 	public List<KernelEvaluationInstance> getAllKernelEvaluationsForInstance(
-			KernelEvaluation kernelEvaluation, int instanceId);
+			KernelEvaluation kernelEvaluation, long instanceId);
 
 	/**
 	 * store the kernel evaluation if it doesn't exist, else return the existing

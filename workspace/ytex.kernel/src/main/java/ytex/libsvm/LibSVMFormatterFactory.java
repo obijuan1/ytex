@@ -31,7 +31,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		@Override
 		public void initializeLabel(
 				String label,
-				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> labelInstances,
+				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
 				Properties properties, SparseData sparseData)
 				throws IOException {
 			// TODO Auto-generated method stub
@@ -48,7 +48,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 				String label,
 				Integer run,
 				Integer fold,
-				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
+				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 				throws IOException {
 			exportAttributeNames(sparseData, label, run, fold);
 		}
@@ -58,7 +58,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 */
 		@Override
 		public void exportFold(SparseData sparseData,
-				SortedMap<Integer, String> instanceClassMap, boolean train,
+				SortedMap<Long, String> instanceClassMap, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			String filename = FileUtil.getDataFilePrefix(outdir, label, run,
 					fold, train) + "_data.txt";
@@ -82,7 +82,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 */
 		protected void exportDataForLabel(String filename, String idFilename,
 				SparseData bagOfWordsData,
-				SortedMap<Integer, String> instanceClassMap,
+				SortedMap<Long, String> instanceClassMap,
 				Map<String, Integer> classToIndexMap) throws IOException {
 			BufferedWriter wData = null;
 			BufferedWriter wId = null;
@@ -115,15 +115,15 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 *         were exported
 		 * @throws IOException
 		 */
-		protected List<Integer> exportDataForInstances(
+		protected List<Long> exportDataForInstances(
 				SparseData bagOfWordsData,
-				SortedMap<Integer, String> instanceClassMap,
+				SortedMap<Long, String> instanceClassMap,
 				Map<String, Integer> classToIndexMap, BufferedWriter wData,
 				BufferedWriter wId) throws IOException {
-			List<Integer> instanceIds = new ArrayList<Integer>();
-			for (Map.Entry<Integer, String> instanceClass : instanceClassMap
+			List<Long> instanceIds = new ArrayList<Long>();
+			for (Map.Entry<Long, String> instanceClass : instanceClassMap
 					.entrySet()) {
-				int instanceId = instanceClass.getKey();
+				long instanceId = instanceClass.getKey();
 				instanceIds.add(instanceId);
 				// allocate line with sparse attribute indices and values
 				SortedMap<Integer, Double> instanceValues = getSparseLineValues(
@@ -133,7 +133,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 				// write class id
 				int classId = classToIndexMap.get(instanceClass.getValue());
 				// write id to id file
-				wId.write(Integer.toString(instanceId));
+				wId.write(Long.toString(instanceId));
 				wId.newLine();
 				wData.write(Integer.toString(classId));
 				// write attributes

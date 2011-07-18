@@ -102,8 +102,8 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	 * @throws IOException
 	 */
 	private void exportFold(double[][] gramMatrix,
-			Map<Boolean, SortedMap<Integer, String>> instanceIdToClassMap,
-			boolean train, Map<Integer, Integer> mapInstanceIdToIndex,
+			Map<Boolean, SortedMap<Long, String>> instanceIdToClassMap,
+			boolean train, Map<Long, Integer> mapInstanceIdToIndex,
 			String filePrefix) throws IOException {
 		String fileName = new StringBuilder(filePrefix).append("_data.txt")
 				.toString();
@@ -115,11 +115,11 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 		// are the training instance ids. This is already sorted,
 		// but we stuff it in a list, so make sure it is sorted
 		// the order has to be the same in both the train and test files
-		List<Integer> colInstanceIds = new ArrayList<Integer>(
+		List<Long> colInstanceIds = new ArrayList<Long>(
 				instanceIdToClassMap.get(true).keySet());
 		Collections.sort(colInstanceIds);
 		// the rows - train or test instance ids and their class labels
-		SortedMap<Integer, String> rowInstanceToClassMap = instanceIdToClassMap
+		SortedMap<Long, String> rowInstanceToClassMap = instanceIdToClassMap
 				.get(train);
 		try {
 			w = new BufferedWriter(new FileWriter(fileName));
@@ -128,13 +128,13 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 			// the rows in the gramMatrix correspond to the entries in the
 			// instanceLabelMap
 			// both are in the same order
-			for (Map.Entry<Integer, String> instanceClass : rowInstanceToClassMap
+			for (Map.Entry<Long, String> instanceClass : rowInstanceToClassMap
 					.entrySet()) {
 				// classId - we assume that this is value is valid for libsvm
 				// this can be a real number (for regression)
 				String classId = instanceClass.getValue();
 				// the instance id of this row
-				int rowInstanceId = instanceClass.getKey();
+				long rowInstanceId = instanceClass.getKey();
 				// the index to gramMatrix corresponding to this instance
 				int rowInstanceIndex = mapInstanceIdToIndex.get(rowInstanceId);
 				// write class Id
@@ -146,7 +146,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 				// write column entries
 				for (int columnIndex = 0; columnIndex < colInstanceIds.size(); columnIndex++) {
 					// column instance id
-					int colInstanceId = colInstanceIds.get(columnIndex);
+					long colInstanceId = colInstanceIds.get(columnIndex);
 					// index into gram matrix for this instance id
 					int colInstanceIndex = mapInstanceIdToIndex
 							.get(colInstanceId);
@@ -164,7 +164,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 				// increment the row number
 				rowIndex++;
 				// write id to file
-				wId.write(Integer.toString(rowInstanceId));
+				wId.write(Long.toString(rowInstanceId));
 				wId.write("\n");
 			}
 		} finally {
@@ -188,9 +188,9 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 		// the full, symmetric gram matrix
 		double[][] gramMatrix = null;
 		// the set of all instance ids
-		SortedSet<Integer> instanceIds = new TreeSet<Integer>();
+		SortedSet<Long> instanceIds = new TreeSet<Long>();
 		// map of instance id to index in gramMatrix
-		Map<Integer, Integer> mapInstanceIdToIndex = new HashMap<Integer, Integer>();
+		Map<Long, Integer> mapInstanceIdToIndex = new HashMap<Long, Integer>();
 		if (scope == null || scope.length() == 0) {
 			// empty scope - load gram matrix
 			gramMatrix = loadGramMatrix(name, experiment, param1, param2,
@@ -220,7 +220,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 					}
 					if (gramMatrix != null) {
 						// get folds
-						Map<Boolean, SortedMap<Integer, String>> foldMap = instanceData
+						Map<Boolean, SortedMap<Long, String>> foldMap = instanceData
 								.getLabelToInstanceMap().get(label).get(run)
 								.get(fold);
 						// export training fold
@@ -284,14 +284,14 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	private double[][] loadGramMatrix(String name, String experiment,
 			double param1, String param2, String splitName, String label,
 			int run, int fold, InstanceData instanceData,
-			SortedSet<Integer> instanceIds,
-			Map<Integer, Integer> mapInstanceIdToIndex) {
+			SortedSet<Long> instanceIds,
+			Map<Long, Integer> mapInstanceIdToIndex) {
 		double[][] gramMatrix;
 		instanceIds.clear();
 		mapInstanceIdToIndex.clear();
 		instanceIds.addAll(instanceData.getAllInstanceIds(label, run, fold));
 		int index = 0;
-		for (int instanceId : instanceIds) {
+		for (long instanceId : instanceIds) {
 			mapInstanceIdToIndex.put(instanceId, index++);
 		}
 		gramMatrix = this.kernelUtil.loadGramMatrix(instanceIds, name,

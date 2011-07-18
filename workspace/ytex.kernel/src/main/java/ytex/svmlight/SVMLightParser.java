@@ -41,7 +41,7 @@ public class SVMLightParser extends LibSVMParser {
 	protected void parsePredictions(String predictionFile, String instanceFile,
 			Properties props, String instanceIdFile,
 			SVMClassifierEvaluation eval) throws IOException {
-		List<Integer> instanceIds = null;
+		List<Long> instanceIds = null;
 		if (instanceIdFile != null)
 			instanceIds = parseInstanceIds(instanceIdFile);
 		boolean bStoreUnlabeled = YES.equals(props.getProperty(
@@ -58,7 +58,7 @@ public class SVMLightParser extends LibSVMParser {
 			int nLine = 0;
 			while (((instanceLine = instanceReader.readLine()) != null)
 					&& ((predictionLine = predictionReader.readLine()) != null)) {
-				int instanceId = instanceIds.size() > nLine ? instanceIds
+				long instanceId = instanceIds.size() > nLine ? instanceIds
 						.get(nLine) : nLine;
 				nLine++;
 				int classIdTarget = Integer.parseInt(extractFirstToken(

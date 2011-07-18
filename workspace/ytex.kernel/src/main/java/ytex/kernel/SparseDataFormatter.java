@@ -45,7 +45,7 @@ public interface SparseDataFormatter {
 	 */
 	void initializeFold(SparseData sparseData, String label, Integer run,
 			Integer fold,
-			SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
+			SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 			throws IOException;
 
 	/**
@@ -61,7 +61,7 @@ public interface SparseDataFormatter {
 	 * @throws IOException
 	 */
 	void exportFold(SparseData sparseData,
-			SortedMap<Integer, String> sortedMap, boolean train, String label,
+			SortedMap<Long, String> sortedMap, boolean train, String label,
 			Integer run, Integer fold) throws IOException;
 
 	/**
@@ -81,7 +81,7 @@ public interface SparseDataFormatter {
 
 	void initializeLabel(
 			String label,
-			SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> labelInstances,
+			SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
 			Properties properties, SparseData sparseData) throws IOException;
 
 	void clearLabel();

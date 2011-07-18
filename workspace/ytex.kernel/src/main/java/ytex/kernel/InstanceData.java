@@ -20,14 +20,14 @@ public class InstanceData {
 	 * map of labels - runs - folds - train/test - instances - class for test
 	 * instances
 	 */
-	SortedMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>>> labelToInstanceMap = new TreeMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>>>();
+	SortedMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>> labelToInstanceMap = new TreeMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>>();
 
-	public SortedMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>>> getLabelToInstanceMap() {
+	public SortedMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>> getLabelToInstanceMap() {
 		return labelToInstanceMap;
 	}
 
 	public void setLabelToInstanceMap(
-			SortedMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>>> labelToInstanceMap) {
+			SortedMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>> labelToInstanceMap) {
 		this.labelToInstanceMap = labelToInstanceMap;
 	}
 
@@ -52,8 +52,8 @@ public class InstanceData {
 	 *            fold
 	 * @return
 	 */
-	public SortedSet<Integer> getAllInstanceIds(String label, int run, int fold) {
-		SortedSet<Integer> instanceIds = new TreeSet<Integer>();
+	public SortedSet<Long> getAllInstanceIds(String label, int run, int fold) {
+		SortedSet<Long> instanceIds = new TreeSet<Long>();
 		if (label == null) {
 			for (String labelKey : this.getLabelToInstanceMap().keySet()) {
 				instanceIds.addAll(getAllInstanceIds(labelKey, 0, 0));
@@ -68,7 +68,7 @@ public class InstanceData {
 			}
 		}
 		if (fold != 0 && run != 0) {
-			for (SortedMap<Integer, String> foldInst : this
+			for (SortedMap<Long, String> foldInst : this
 					.getLabelToInstanceMap().get(label).get(run).get(fold)
 					.values()) {
 				instanceIds.addAll(foldInst.keySet());

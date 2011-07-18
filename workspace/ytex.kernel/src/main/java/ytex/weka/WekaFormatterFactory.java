@@ -38,7 +38,7 @@ public class WekaFormatterFactory implements SparseDataFormatterFactory {
 				String label,
 				Integer run,
 				Integer fold,
-				SortedMap<Boolean, SortedMap<Integer, String>> foldInstanceLabelMap)
+				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 				throws IOException {
 			if (SCOPE_FOLD.equals(exportProperties.getProperty(SCOPE))) {
 				this.initializeAttributes(sparseData, instanceLabel
@@ -48,7 +48,7 @@ public class WekaFormatterFactory implements SparseDataFormatterFactory {
 
 		@Override
 		public void exportFold(SparseData sparseData,
-				SortedMap<Integer, String> sortedMap, boolean train,
+				SortedMap<Long, String> sortedMap, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			Instances inst = initializeInstances(sparseData, sortedMap, train,
 					label, run, fold);
@@ -81,7 +81,7 @@ public class WekaFormatterFactory implements SparseDataFormatterFactory {
 		@Override
 		public void initializeLabel(
 				String label,
-				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Integer, String>>>> labelInstances,
+				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
 				Properties properties, SparseData sparseData)
 				throws IOException {
 			if (SCOPE_LABEL.equals(properties.getProperty(SCOPE))
@@ -167,7 +167,7 @@ public class WekaFormatterFactory implements SparseDataFormatterFactory {
 		 * @throws IOException
 		 */
 		public Instances initializeInstances(SparseData sparseData,
-				SortedMap<Integer, String> instanceClasses, boolean train,
+				SortedMap<Long, String> instanceClasses, boolean train,
 				String label, Integer run, Integer fold) throws IOException {
 			// add label, run, fold, train/test to relation
 			String arffRelation = this.exportProperties.getProperty(
@@ -191,8 +191,8 @@ public class WekaFormatterFactory implements SparseDataFormatterFactory {
 		 */
 		private void addWordsToInstances(Instances instances,
 				SparseData bagOfWordsData,
-				SortedMap<Integer, String> instanceClasses) throws IOException {
-			for (Map.Entry<Integer, String> entry : instanceClasses.entrySet()) {
+				SortedMap<Long, String> instanceClasses) throws IOException {
+			for (Map.Entry<Long, String> entry : instanceClasses.entrySet()) {
 				double[] zeroValues = new double[instances.numAttributes()];
 				Arrays.fill(zeroValues, 0.0d);
 				SparseInstance wekaInstance = new SparseInstance(1.0d,

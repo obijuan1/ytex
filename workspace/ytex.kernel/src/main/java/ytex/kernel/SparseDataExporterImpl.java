@@ -133,7 +133,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 	}
 
 	protected void addNumericWordToInstance(SparseData sparseData,
-			int instanceId, String word, double wordValue) {
+			long instanceId, String word, double wordValue) {
 		// add the instance id to the set of instance ids if necessary
 		if (!sparseData.getInstanceIds().contains(instanceId))
 			sparseData.getInstanceIds().add(instanceId);
@@ -149,7 +149,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 	}
 
 	protected void addNominalWordToInstance(SparseData sparseData,
-			int instanceId, String word, String wordValue) {
+			long instanceId, String word, String wordValue) {
 		// add the instance id to the set of instance ids if necessary
 		if (!sparseData.getInstanceIds().contains(instanceId))
 			sparseData.getInstanceIds().add(instanceId);
