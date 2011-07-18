@@ -27,17 +27,18 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</bean>
 		</property>
 	</bean>
-	<bean id="tuiSemanticTypeKernel" parent="abstractTuiSemanticTypeKernel">
-	</bean>
 	<bean id="linKernel" parent="abstractLinKernel">
 		<property name="label" value="@export.label.name@" />
 		<property name="cutoff" value="@export.param2@" />
 	</bean>
-	<!-- Check overlapping main semantic type. Concept kernel is tuifilter * lin -->
+	<!-- Check overlapping main semantic type. Concept kernel is tuifilter * 
+		lin -->
 	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
 		<property name="attributeName" value="code" />
 		<property name="delegateKernel">
 			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="cacheName" value="conceptSimCache" />
+				<property name="cacheManager" ref="cacheManager" />
 				<property name="delegateKernels">
 					<list>
 						<ref bean="tuiSemanticTypeKernel" />
