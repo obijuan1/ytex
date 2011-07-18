@@ -1,0 +1,7 @@
+kernel.name=i2b2.2008-test
+kernel.experiment=@kernel.experiment@
+kernel.param1=@export.cutoff@
+kernel.param2=@export.param2@
+kernel.types=@kernel.types@
+kernel.label=@export.label@
+cv.costs=@cv.costs@
