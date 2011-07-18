@@ -236,7 +236,7 @@
 		<antcall target="kernel.eval.slice" />
 	</target>
 	<target name="kernel.eval.slice" description="eval slice">
-		<echo>export.label ${export.label}</echo>
+		<echo>export.tree.outdir ${export.tree.outdir}</echo>
 		<echo>kernel.xml ${kernel.xml}</echo>
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<echo>kernel.evalTest ${kernel.evalTest}</echo>
