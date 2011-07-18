@@ -62,8 +62,11 @@ public class InstanceData {
 			for (int runKey : this.getLabelToInstanceMap().get(label).keySet()) {
 				for (int foldKey : this.getLabelToInstanceMap().get(label)
 						.get(runKey).keySet()) {
-					instanceIds
-							.addAll(getAllInstanceIds(label, runKey, foldKey));
+					for (SortedMap<Long, String> inst : this
+							.getLabelToInstanceMap().get(label).get(runKey)
+							.get(foldKey).values()) {
+						instanceIds.addAll(inst.keySet());
+					}
 				}
 			}
 		}

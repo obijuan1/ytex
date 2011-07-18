@@ -21,8 +21,8 @@
 			<key-many-to-one name="kernelEvaluation" class="KernelEvaluation" column="kernel_eval_id"/>
 			 -->
 			<key-property name="kernelEvaluationId" column="kernel_eval_id" />
-			<key-property name="instanceId1" column="instance_id1" />
-			<key-property name="instanceId2" column="instance_id2" />
+			<key-property name="instanceId1" column="instance_id1" type="long"/>
+			<key-property name="instanceId2" column="instance_id2" type="long" />
 		</composite-id>
 		<property name="similarity" column="similarity" />
 	</class>

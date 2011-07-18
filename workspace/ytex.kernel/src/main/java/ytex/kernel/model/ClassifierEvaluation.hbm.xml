@@ -128,7 +128,7 @@
 				<param name="sequence">classifier_instance_eval_sequence</param>
 			</generator>
 		</id>
-		<property name="instanceId" column="instance_id" />
+		<property name="instanceId" column="instance_id" type="long" />
 		<property name="predictedClassId" column="pred_class_id" />
 		<property name="targetClassId" column="target_class_id" />
 		<many-to-one name="classifierEvaluation" class="ClassifierEvaluation"

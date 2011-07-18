@@ -55,12 +55,12 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 	}
 
 	public class SliceEvaluator implements Callable<Object> {
-		Map<Integer, Node> instanceIDMap;
+		Map<Long, Node> instanceIDMap;
 		int nMod;
 		int nSlice;
 		boolean evalTest;
 
-		public SliceEvaluator(Map<Integer, Node> instanceIDMap, int nMod,
+		public SliceEvaluator(Map<Long, Node> instanceIDMap, int nMod,
 				int nSlice, boolean evalTest) {
 			this.nSlice = nSlice;
 			this.nMod = nMod;
@@ -169,7 +169,10 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		String loadInstanceMap = line.getOptionValue("loadInstanceMap");
 		String strMod = line.getOptionValue("mod");
 		String strSlice = line.getOptionValue("slice");
-		boolean evalTest = "yes".equals(line.getOptionValue("evalTest", "no"));
+		boolean evalTest = "yes".equalsIgnoreCase(line.getOptionValue(
+				"evalTest", "no"))
+				|| "true".equalsIgnoreCase(line
+						.getOptionValue("evalTest", "no"));
 		int nMod = strMod != null ? Integer.parseInt(strMod) : 0;
 		Integer nSlice = null;
 		if (nMod == 0) {
@@ -177,7 +180,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		} else if (strSlice != null) {
 			nSlice = Integer.parseInt(strSlice);
 		}
-		Map<Integer, Node> instanceMap = null;
+		Map<Long, Node> instanceMap = null;
 		if (loadInstanceMap != null) {
 			instanceMap = builder.loadInstanceTrees(loadInstanceMap);
 		} else {
@@ -185,7 +188,8 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 					.getBean(TreeMappingInfo.class));
 		}
 		if (nSlice != null) {
-			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, nSlice, evalTest);
+			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, nSlice,
+					evalTest);
 		} else {
 			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, evalTest);
 		}
@@ -227,7 +231,7 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 	private TreeMappingInfo treeMappingInfo;
 	private TransactionTemplate txTemplate;
 
-	private void evalInstance(Map<Integer, Node> instanceIDMap,
+	private void evalInstance(Map<Long, Node> instanceIDMap,
 			KernelEvaluation kernelEvaluation, long instanceId1,
 			SortedSet<Long> rightDocumentIDs) {
 		if (log.isDebugEnabled()) {
@@ -248,25 +252,26 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 
 	@Override
 	public void evaluateKernelOnCorpus() {
-		final Map<Integer, Node> instanceIDMap = instanceTreeBuilder
+		final Map<Long, Node> instanceIDMap = instanceTreeBuilder
 				.loadInstanceTrees(treeMappingInfo);
 		this.evaluateKernelOnCorpus(instanceIDMap, 0, 0, false);
 	}
 
 	@Override
-	public void evaluateKernelOnCorpus(Map<Integer, Node> instanceIDMap,
-			int nMod, boolean evalTest) throws InterruptedException {
+	public void evaluateKernelOnCorpus(Map<Long, Node> instanceIDMap, int nMod,
+			boolean evalTest) throws InterruptedException {
 		ExecutorService svc = Executors.newFixedThreadPool(nMod);
 		List<Callable<Object>> taskList = new ArrayList<Callable<Object>>(nMod);
 		for (int nSlice = 1; nSlice <= nMod; nSlice++) {
-			taskList.add(new SliceEvaluator(instanceIDMap, nMod, nSlice, evalTest));
+			taskList.add(new SliceEvaluator(instanceIDMap, nMod, nSlice,
+					evalTest));
 		}
 		svc.invokeAll(taskList);
 		svc.shutdown();
 		svc.awaitTermination(60 * 4, TimeUnit.MINUTES);
 	}
 
-	public void evaluateKernelOnCorpus(final Map<Integer, Node> instanceIDMap,
+	public void evaluateKernelOnCorpus(final Map<Long, Node> instanceIDMap,
 			int nMod, int nSlice, boolean evalTest) {
 		KernelEvaluation kernelEvaluationTmp = new KernelEvaluation();
 		kernelEvaluationTmp.setExperiment(this.getExperiment());
@@ -280,8 +285,8 @@ public class CorpusKernelEvaluatorImpl implements CorpusKernelEvaluator {
 		final List<Long> documentIds = new ArrayList<Long>();
 		final List<Long> testDocumentIds = new ArrayList<Long>();
 		loadDocumentIds(documentIds, testDocumentIds, instanceIDQuery);
-		if(!evalTest) {
-			//throw away the test ids if we're not going to evaluate them
+		if (!evalTest) {
+			// throw away the test ids if we're not going to evaluate them
 			testDocumentIds.clear();
 		}
 		int nStart = 0;

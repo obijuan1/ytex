@@ -78,11 +78,11 @@ public class KernelEvaluationInstance implements Serializable {
 
 	
 
-	public void setInstanceId1(int instanceId1) {
+	public void setInstanceId1(long instanceId1) {
 		this.instanceId1 = instanceId1;
 	}
 
-	public void setInstanceId2(int instanceId2) {
+	public void setInstanceId2(long instanceId2) {
 		this.instanceId2 = instanceId2;
 	}
 

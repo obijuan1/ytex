@@ -1,8 +1,5 @@
 package ytex;
 
-import java.io.IOException;
-import java.util.Map;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -16,10 +13,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.access.ContextSingletonBeanFactoryLocator;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import ytex.kernel.BagOfWordsExporter;
-import ytex.kernel.evaluator.CorpusKernelEvaluator;
 import ytex.kernel.tree.InstanceTreeBuilder;
-import ytex.kernel.tree.Node;
 import ytex.kernel.tree.TreeMappingInfo;
 
 public class KernelLauncher {
@@ -151,10 +145,10 @@ public class KernelLauncher {
 					}
 					if (storeInstanceMap != null) {
 						storeInstanceMap(appCtxSource, storeInstanceMap, line);
-					} else if (evalKernel) {
-						evalKernel(appCtxSource, line);
-					} else if (exportBagOfWords != null) {
-						exportBagOfWords(appCtxSource, exportBagOfWords, line);
+//					} else if (evalKernel) {
+//						evalKernel(appCtxSource, line);
+//					} else if (exportBagOfWords != null) {
+//						exportBagOfWords(appCtxSource, exportBagOfWords, line);
 					}
 				}
 			} catch (ParseException e) {
@@ -164,46 +158,46 @@ public class KernelLauncher {
 		}
 	}
 
-	private static void exportBagOfWords(ApplicationContext appCtxSource,
-			String exportBagOfWords, CommandLine line) throws IOException {
-		String beanName = "wekaBagOfWordsExporter";
-		if ("libsvm".equals(line.getOptionValue("exportType"))) {
-			beanName = "libsvmBagOfWordsExporter";
-		}
-		BagOfWordsExporter exporter = (BagOfWordsExporter) appCtxSource
-				.getBean(beanName);
-		exporter.exportBagOfWords(exportBagOfWords);
-	}
+//	private static void exportBagOfWords(ApplicationContext appCtxSource,
+//			String exportBagOfWords, CommandLine line) throws IOException {
+//		String beanName = "wekaBagOfWordsExporter";
+//		if ("libsvm".equals(line.getOptionValue("exportType"))) {
+//			beanName = "libsvmBagOfWordsExporter";
+//		}
+//		BagOfWordsExporter exporter = (BagOfWordsExporter) appCtxSource
+//				.getBean(beanName);
+//		exporter.exportBagOfWords(exportBagOfWords);
+//	}
 
-	private static void evalKernel(ApplicationContext appCtxSource,
-			CommandLine line) throws Exception {
-		InstanceTreeBuilder builder = appCtxSource.getBean(
-				"instanceTreeBuilder", InstanceTreeBuilder.class);
-		CorpusKernelEvaluator corpusEvaluator = appCtxSource.getBean(
-				"corpusKernelEvaluator", CorpusKernelEvaluator.class);
-		String loadInstanceMap = line.getOptionValue("loadInstanceMap");
-		String strMod = line.getOptionValue("mod");
-		String strSlice = line.getOptionValue("slice");
-		int nMod = strMod != null ? Integer.parseInt(strMod) : 0;
-		Integer nSlice = null;
-		if (nMod == 0) {
-			nSlice = 0;
-		} else if (strSlice != null) {
-			nSlice = Integer.parseInt(strSlice);
-		}
-		Map<Integer, Node> instanceMap = null;
-		if (loadInstanceMap != null) {
-			instanceMap = builder.loadInstanceTrees(loadInstanceMap);
-		} else {
-			instanceMap = builder.loadInstanceTrees(appCtxSource.getBean(
-					"treeMappingInfo", TreeMappingInfo.class));
-		}
-		if (nSlice != null) {
-			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, nSlice, false);
-		} else {
-			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, false);
-		}
-	}
+//	private static void evalKernel(ApplicationContext appCtxSource,
+//			CommandLine line) throws Exception {
+//		InstanceTreeBuilder builder = appCtxSource.getBean(
+//				"instanceTreeBuilder", InstanceTreeBuilder.class);
+//		CorpusKernelEvaluator corpusEvaluator = appCtxSource.getBean(
+//				"corpusKernelEvaluator", CorpusKernelEvaluator.class);
+//		String loadInstanceMap = line.getOptionValue("loadInstanceMap");
+//		String strMod = line.getOptionValue("mod");
+//		String strSlice = line.getOptionValue("slice");
+//		int nMod = strMod != null ? Integer.parseInt(strMod) : 0;
+//		Integer nSlice = null;
+//		if (nMod == 0) {
+//			nSlice = 0;
+//		} else if (strSlice != null) {
+//			nSlice = Integer.parseInt(strSlice);
+//		}
+//		Map<Integer, Node> instanceMap = null;
+//		if (loadInstanceMap != null) {
+//			instanceMap = builder.loadInstanceTrees(loadInstanceMap);
+//		} else {
+//			instanceMap = builder.loadInstanceTrees(appCtxSource.getBean(
+//					"treeMappingInfo", TreeMappingInfo.class));
+//		}
+//		if (nSlice != null) {
+//			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, nSlice, false);
+//		} else {
+//			corpusEvaluator.evaluateKernelOnCorpus(instanceMap, nMod, false);
+//		}
+//	}
 
 	private static void storeInstanceMap(ApplicationContext appCtxSource,
 			String storeInstanceMap, CommandLine line) throws Exception {

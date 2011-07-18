@@ -28,12 +28,12 @@ public class FileUtil {
 	 * @param filename
 	 * @return null if not in file name
 	 */
-	public static Integer parseFoldFromFileName(String filename) {
+	public static int parseFoldFromFileName(String filename) {
 		Matcher m = pFold.matcher(filename);
 		if (m.find()) {
 			return Integer.parseInt(m.group(1));
 		} else
-			return null;
+			return 0;
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class FileUtil {
 		if (m.find()) {
 			return Integer.parseInt(m.group(1));
 		} else
-			return null;
+			return 0;
 	}
 
 	/**

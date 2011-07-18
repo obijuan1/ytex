@@ -20,7 +20,7 @@ public class TreePrinter {
 		ApplicationContext appCtxSource = appCtx;
 		InstanceTreeBuilder builder = appCtxSource.getBean(
 				"instanceTreeBuilder", InstanceTreeBuilder.class);
-		Map<Integer, Node> instanceMap = builder.loadInstanceTrees(args[0]);
+		Map<Long, Node> instanceMap = builder.loadInstanceTrees(args[0]);
 		for(Node node : instanceMap.values())
 			printTree(node, 0);
 	}

@@ -54,13 +54,13 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<Integer, Node> loadInstanceTrees(String filename)
+	public Map<Long, Node> loadInstanceTrees(String filename)
 			throws IOException, ClassNotFoundException {
 		ObjectInputStream os = null;
 		try {
 			os = new ObjectInputStream(new BufferedInputStream(
 					new FileInputStream(filename)));
-			return (Map<Integer, Node>) os.readObject();
+			return (Map<Long, Node>) os.readObject();
 		} finally {
 			if (os != null)
 				os.close();
@@ -81,9 +81,9 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 		}
 	}
 
-	public Map<Integer, Node> loadInstanceTrees(TreeMappingInfo mappingInfo) {
+	public Map<Long, Node> loadInstanceTrees(TreeMappingInfo mappingInfo) {
 		Map<NodeKey, Node> nodeKeyMap = new HashMap<NodeKey, Node>();
-		Map<Integer, Node> instanceMap = loadInstanceTrees(
+		Map<Long, Node> instanceMap = loadInstanceTrees(
 				mappingInfo.getInstanceIDField(),
 				mappingInfo.getInstanceQueryMappingInfo(), nodeKeyMap);
 		if (mappingInfo.getNodeQueryMappingInfos() != null) {
@@ -102,10 +102,10 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 	 * ytex.kernel.tree.InstanceTreeBuilder#loadInstanceTrees(java.util.List,
 	 * java.lang.String, java.lang.String, java.util.Map)
 	 */
-	public Map<Integer, Node> loadInstanceTrees(String instanceIDField,
+	public Map<Long, Node> loadInstanceTrees(String instanceIDField,
 			QueryMappingInfo qInfo, Map<NodeKey, Node> nodeKeyMap) {
 		Node[] currentPath = new Node[qInfo.getNodeTypes().size()];
-		Map<Integer, Node> instanceMap = new HashMap<Integer, Node>();
+		Map<Long, Node> instanceMap = new HashMap<Long, Node>();
 		List<Map<String, Object>> rowData = simpleJdbcTemplate.queryForList(
 				qInfo.getQuery(), qInfo.getQueryArgs());
 		for (Map<String, Object> row : rowData) {
@@ -120,7 +120,7 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 						} else {
 							// this is a new root, i.e. a new instance
 							// add it to the instance map
-							instanceMap.put((Integer) row.get(instanceIDField),
+							instanceMap.put(((Number) row.get(instanceIDField)).longValue(),
 									newNode);
 						}
 						// put the new node in the path
