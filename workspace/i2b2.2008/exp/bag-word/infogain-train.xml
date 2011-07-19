@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.corpusName">i2b2.2008</entry>
+	<entry key="scope">label</entry>
+	<entry key="ytex.featureSetName">word</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+select a.docId, j.judgement_id, 1, a.disease
+from i2b2_2008_anno a
+/* limit to training set */
+inner join i2b2_2008_doc doc 
+	on doc.docId = a.docId 
+	and doc.documentSet = 'train'
+inner join i2b2_2008_judgement j 
+	on j.judgement = a.judgement
+where a.source = 'intuitive'
+]]></entry>
+	<entry key="nominalWordQuery"><![CDATA[
+select docId, lower(canonical_form), 1
+from
+(
+	select distinct d.docId, canonical_form
+	from i2b2_2008_doc d 
+	inner join i2b2_2008_anno a 
+	      on a.docId = d.docId 
+	      and a.source = 'intuitive'
+	      and a.disease = :label
+	/* get ytex document */
+	inner join document yd 
+		on yd.uid = d.docId
+		and yd.analysis_batch = 'i2b2.2008'
+	/* get words in document */
+	inner join anno_base ab 
+		on ab.document_id = yd.document_id
+	inner join anno_word_token w
+	    on w.anno_base_id = ab.anno_base_id
+	    and canonical_form is not null
+	/* exclude stopwords */
+	left join stopword sw on sw.stopword = w.canonical_form
+	where d.documentSet = 'train'
+	and sw.stopword is null
+) s	
+]]></entry>
+</properties>

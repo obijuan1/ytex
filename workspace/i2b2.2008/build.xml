@@ -26,6 +26,26 @@
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
 	</target>
 
+	<target name="eval.infogain" description="run WekaAttributeEvaluator to evaluate infogain for specified dir and prop file">
+		<property name="eval.infogain.dir" value="${basedir}/exp/${kernel.experiment}" />
+		<property name="eval.infogain.prop" value="infogain-train.xml" />
+		<java classname="ytex.weka.WekaAttributeEvaluator" classpathref="${kernel.cp}" fork="yes" dir="${eval.infogain.dir}">
+			<arg value="-prop" />
+			<arg value="${eval.infogain.prop}" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	<target name="insert.hotspot" description="insert hotspots for experiment">
+		<property name="insert.hotspot.dir" value="${basedir}/exp/${kernel.experiment}" />
+		<property name="insert.hotspot.sql" value="insert_hotspot.sql" />
+		<antcall target="mysql">
+			<param name="mysql.dir" value="${insert.hotspot.dir}" />
+			<param name="mysql.script" value="${insert.hotspot.sql}" />
+		</antcall>
+	</target>
+
 	<target name="insert_hotspot_zero_vector_tt" depends="init.exp" description="setup truth table for ontocuis">
 		<property name="mysql.script" value="insert_hotspot_zero_vector_tt.sql" />
 		<copy file="data/${mysql.script}" todir="libsvm/${kernel.experiment}" overwrite="yes">
@@ -389,6 +409,7 @@
 	</target>
 	<target name="test.libsvm.label" depends="test.init.label" description="run libsvm">
 		<echo>run libsvm on directory export.dir</echo>
+		<echo>export.dir ${export.dir}</echo>
 		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
 			<property name="ytex.home" value="${ytex.home}" />
 			<property name="kernel.data" value="${export.dir}" />
@@ -404,5 +425,5 @@
 			<param name="mysql.script" value="insert_classifier_eval_irzv.sql" />
 		</antcall>
 	</target>
-	
+
 </project>
