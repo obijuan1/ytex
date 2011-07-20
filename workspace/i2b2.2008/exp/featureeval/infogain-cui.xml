@@ -3,7 +3,7 @@
 <properties>
 	<entry key="ytex.corpusName">i2b2.2008</entry>
 	<entry key="scope">label</entry>
-	<entry key="ytex.featureSetName">word</entry>
+	<entry key="ytex.featureSetName">cui</entry>
 	<entry key="instanceClassQuery"><![CDATA[
 select a.docId, j.judgement_id, 1, a.disease
 from i2b2_2008_anno a
@@ -35,7 +35,6 @@ from
 	inner join anno_ontology_concept c
 	    on c.anno_base_id = ab.anno_base_id
 	where d.documentSet = 'train'
-	and sw.stopword is null
 ) s	
 ]]></entry>
 </properties>

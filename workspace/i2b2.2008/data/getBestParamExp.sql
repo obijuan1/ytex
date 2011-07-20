@@ -24,7 +24,7 @@ from
 	inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
 	inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
 	where name = 'i2b2.2008'
-  and experiment = 'bag-word'
+  and experiment = 'bag-snword'
 	group by label, kernel, cost, gamma, weight, param1, param2
 ) s
 group by label
@@ -44,7 +44,7 @@ from
 	inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
 	inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
 	where name = 'i2b2.2008'
-  and experiment = 'bag-word'
+  and experiment = 'bag-snword'
 	group by label, experiment, kernel, cost, gamma, weight, param1, param2
 ) s inner join cv_best c on c.label = s.label and s.f1 >= c.f1
 group by c.label
@@ -67,7 +67,7 @@ from
 	inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
 	inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
 	where name = 'i2b2.2008'
-  and experiment = 'bag-word'
+  and experiment = 'bag-snword'
 	group by label, experiment, kernel, cost, gamma, weight, param1, param2
 ) s 
 inner join cv_best c 

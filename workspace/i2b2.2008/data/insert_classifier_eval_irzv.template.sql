@@ -51,6 +51,7 @@ from
 
 /*
 sanity check all - this should return 0
+make sure the number of instances for each class is the same
 */
 select *
 from
@@ -71,6 +72,36 @@ from
     group by label, run, fold, param1
 ) s where mt <> xt
 ;
+
+/*
+sanity check - this should return no rows
+make sure the number of instances in the test fold is identical
+to the number of instances in our truth table
+*/
+select e.*, (tp+tn+fp+fn) tot, fc
+from classifier_eval_irzv t
+inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
+inner join i2b2_2008_disease d on d.disease_id = e.label
+inner join
+(
+	/* count up instances per test fold */
+    select corpus_name, label, run, fold, count(*) fc
+    from cv_fold f
+    inner join cv_fold_instance i 
+        on f.cv_fold_id = i.cv_fold_id
+        and i.train = 0
+    group by corpus_name, label, run, fold
+) cv on cv.corpus_name = e.name
+    and d.disease = cv.label 
+    and e.run = cv.run 
+    and e.fold = cv.fold
+where e.experiment = '@kernel.experiment@'
+and e.name = '@kernel.name@' 
+and e.run > 0
+and e.fold > 0
+and (tp+tn+fp+fn) <> fc
+;
+
 /*
  * show the best f1 per label for the experiment
  */

@@ -22,6 +22,7 @@
 	from i2b2_2008_doc d
 	inner join i2b2_2008_anno a on a.docId = d.docId and a.source = 'intuitive'
 	where d.documentSet = 'train'
+	and a.disease = 'Hypertension'
 	]]></entry>
 	<entry key="ytex.conceptInstanceQuery"><![CDATA[
 	select *, 1
