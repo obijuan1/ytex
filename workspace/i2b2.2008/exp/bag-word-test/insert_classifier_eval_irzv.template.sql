@@ -43,7 +43,7 @@ from
 		/* convert to label id */
 		inner join i2b2_2008_disease ds
 		  on ds.disease = a.disease
-      and ds.disease_id = 1
+      and ds.disease_id = @export.label@
 		/* join with zero vectors */
 		inner join hotspot_instance hi 
 			on hi.instance_id = d.docId

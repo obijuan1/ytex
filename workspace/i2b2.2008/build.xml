@@ -87,7 +87,7 @@
 		</for>
 	</target>
 	<target name="export.cutoff" depends="init.exp" description="export libsvm data for specified cutoff">
-		<property name="export.cutoff" value="0.25" />
+		<property name="export.cutoff" value="0.05" />
 		<property name="export.dir" value="libsvm/${kernel.experiment}/${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
 		<delete dir="${export.dir}" quiet="yes" />
@@ -322,7 +322,7 @@
 	</target>
 
 	<target name="test.init.label" description="load properties for the specified label">
-		<property name="export.label" value="4" />
+		<property name="export.label" value="16" />
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
 		<propertycopy property="cv.costs" from="label.${export.label}.cv.costs" />
 		<propertycopy property="kernel.param1" from="label.${export.label}.kernel.param1" />
@@ -416,6 +416,7 @@
 		</ant>
 	</target>
 	<target name="test.zv" depends="test.init.label">
+		<mkdir dir="${export.dir}" />
 		<!-- generate export property file -->
 		<copy tofile="${export.dir}/insert_classifier_eval_irzv.sql" overwrite="yes" file="${export.src.dir}/insert_classifier_eval_irzv.template.sql">
 			<filterset refid="export.filterset" />
@@ -424,6 +425,15 @@
 			<param name="mysql.dir" value="${export.dir}" />
 			<param name="mysql.script" value="insert_classifier_eval_irzv.sql" />
 		</antcall>
+	</target>
+	<target name="test">
+		<for list="${labels}" param="export.label">
+			<sequential>
+				<antcall target="test.zv">
+					<param name="export.label" value="@{export.label}" />
+				</antcall>
+			</sequential>
+		</for>	
 	</target>
 
 </project>

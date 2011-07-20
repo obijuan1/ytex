@@ -6,7 +6,10 @@ delete classifier_eval_irzv
 from classifier_eval_irzv
 inner join classifier_eval e on classifier_eval_irzv.classifier_eval_id = e.classifier_eval_id
 where e.experiment = '@kernel.experiment@'
-and e.name = 'i2b2.2008';
+and e.name = '@kernel.name@'
+and e.fold > 0
+and e.run > 0
+;
 
 /*
  * combined classifier + zero vector truth table and ir metrics
@@ -36,7 +39,9 @@ from
 		inner join classifier_eval e 
 			on ir.classifier_eval_id = e.classifier_eval_id
 			and e.experiment = '@kernel.experiment@'
-			and e.name = 'i2b2.2008'
+			and e.name = '@kernel.name@'
+			and e.run > 0
+			and e.fold > 0
 		left join hotspot_zero_vector_tt z
 			on (z.name, z.label, z.run, z.fold, z.ir_class_id, z.cutoff) = (e.name, e.label, e.run, e.fold, ir.ir_class_id, e.param1)
 			and z.experiment = '@kernel.hzv.experiment@'
@@ -44,6 +49,28 @@ from
 ) s
 ;
 
+/*
+sanity check all - this should return 0
+*/
+select *
+from
+(
+    -- get min and max - they should be identical
+    select label, run, fold, param1, min(tot) mt, max(tot) xt
+    from
+    (
+    	-- get number of instances per fold/class combo
+	    select label, run, fold, ir_class_id, param1, tp+tn+fp+fn tot
+	    from classifier_eval_irzv ir
+	    inner join classifier_eval e on ir.classifier_eval_id = e.classifier_eval_id 
+	    where name = '@kernel.name@' 
+		and experiment = '@kernel.experiment@'
+	    and run > 0
+	    and fold > 0
+    ) s
+    group by label, run, fold, param1
+) s where mt <> xt
+;
 /*
  * show the best f1 per label for the experiment
  */
@@ -58,7 +85,9 @@ from
 	inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
 	inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
 	where experiment = '@kernel.experiment@'
-	and name = 'i2b2.2008'
+	and name = '@kernel.name@'
+	and run > 0
+	and fold > 0
 	group by label, kernel, cost, gamma, weight, param1, param2
 ) s
 group by label
