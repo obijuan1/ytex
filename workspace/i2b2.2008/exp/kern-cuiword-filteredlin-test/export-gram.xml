@@ -2,7 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 	<entry key="ytex.corpusName">i2b2.2008</entry>
-	<entry key="ytex.experiment">@kernel.experiment@</entry>
+	<entry key="ytex.experiment">kern-cuiword-filteredlin</entry>
 	<entry key="ytex.param1">@export.cutoff@</entry>
 	<entry key="ytex.param2">@export.param2@</entry>
 	<entry key="scope">label</entry>
