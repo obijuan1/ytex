@@ -19,7 +19,7 @@
 	inner join i2b2_2008_judgement j on j.judgement = a.judgement
   inner join hotspot_instance i
     on i.corpus_name = 'i2b2.2008'
-		and i.experiment = 'bag-word'
+		and i.experiment = 'bag-cuiword'
 		and i.label = d.disease
     and i.instance_id = doc.docId
 	left join hotspot_zero_vector hzv
