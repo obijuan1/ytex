@@ -66,7 +66,7 @@
 	</target>
 	<target name="insert_classifier_eval_irzv" depends="init.exp" description="setup truth table for ontocuis">
 		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
-		<copy file="data/insert_classifier_eval_irzv.template.sql" tofile="libsvm/${kernel.experiment}/insert_classifier_eval_irzv.sql" overwrite="yes">
+		<copy file="data/insert_classifier_eval_irzv.sql" tofile="libsvm/${kernel.experiment}/insert_classifier_eval_irzv.sql" overwrite="yes">
 			<filterset>
 				<filterset refid="exp.filter" />
 			</filterset>
