@@ -94,8 +94,7 @@
 		<mkdir dir="${export.dir}" />
 		<filterset id="export.filterset">
 			<filter token="export.cutoff" value="${export.cutoff}" />
-			<filter token="kernel.name" value="${kernel.name}" />
-			<filter token="kernel.experiment" value="${kernel.experiment}" />
+			<filterset refid="exp.filter" />
 		</filterset>
 		<!-- generate export property file -->
 		<copy todir="${export.dir}" overwrite="yes">
@@ -104,18 +103,22 @@
 			<filterset refid="export.filterset" />
 		</copy>
 		<!-- run script to insert zero vectors for the cutoff if available -->
-		<available file="${export.dir}/insert_hotspot_zv.sql" property="run.insert.hotspot" />
-		<antcall target="export.cutoff.insert.hotspot" />
+		<if>
+			<equals arg1="${kernel.experiment}" arg2="${kernel.hzv.experiment}" />
+			<then>
+				<copy file="${basedir}/data/insert_hotspot_zv.sql" tofile="${export.dir}/insert_hotspot_zv.sql" overwrite="yes">
+					<filterset refid="export.filterset" />
+				</copy>
+				<antcall target="mysql">
+					<param name="mysql.dir" value="${export.dir}" />
+					<param name="mysql.script" value="insert_hotspot_zv.sql" />
+				</antcall>
+			</then>
+		</if>
 		<!-- export the data -->
 		<antcall target="SparseDataExporter">
 			<param name="export.type" value="libsvm" />
 			<param name="export.dir" value="${export.dir}" />
-		</antcall>
-	</target>
-	<target name="export.cutoff.insert.hotspot" if="run.insert.hotspot" description="run script to insert zero vectors for the cutoff if available">
-		<antcall target="mysql">
-			<param name="mysql.dir" value="${export.dir}" />
-			<param name="mysql.script" value="insert_hotspot_zv.sql" />
 		</antcall>
 	</target>
 
@@ -433,7 +436,7 @@
 					<param name="export.label" value="@{export.label}" />
 				</antcall>
 			</sequential>
-		</for>	
+		</for>
 	</target>
 
 </project>
