@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.corpusName">i2b2.2008</entry>
+	<entry key="ytex.experiment">@kernel.experiment@</entry>
+	<entry key="ytex.param1">@export.cutoff@</entry>
+	<entry key="ytex.param2">@export.param2@</entry>
+	<entry key="scope">label</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+select doc.docId, j.judgement_id, 
+	case
+		when documentSet = 'train' then 1
+		else 0
+	end,
+	d.disease_id
+from i2b2_2008_doc doc
+inner join i2b2_2008_anno a 
+	on a.docId = doc.docId
+	and a.source = 'intuitive'
+inner join i2b2_2008_disease d 
+	on d.disease = a.disease
+	and d.disease_id = @export.label@
+inner join i2b2_2008_judgement j on j.judgement = a.judgement
+inner join hotspot_instance i
+	on i.corpus_name = 'i2b2.2008'
+	and i.experiment = 'bag-cuiword'
+	and i.label = d.disease
+	and i.instance_id = doc.docId
+left join hotspot_zero_vector hzv
+	on hzv.hotspot_instance_id = i.hotspot_instance_id
+	and hzv.cutoff = @export.cutoff@
+where hzv.hotspot_zero_vector_id is null
+	]]></entry>
+</properties>

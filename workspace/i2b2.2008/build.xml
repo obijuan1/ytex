@@ -325,7 +325,7 @@
 	</target>
 
 	<target name="test.init.label" description="load properties for the specified label">
-		<property name="export.label" value="16" />
+		<property name="export.label" value="12" />
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
 		<propertycopy property="cv.costs" from="label.${export.label}.cv.costs" />
 		<propertycopy property="kernel.param1" from="label.${export.label}.kernel.param1" />
@@ -387,7 +387,7 @@
 	</target>
 	<target name="test.kernel.export.label" depends="test.init.label" unless="eval.bag" description="export gram matrix">
 		<!-- generate export property file -->
-		<copy tofile="${export.dir}/export-gram.xml" overwrite="yes" file="${export.src.dir}/export-${kernel.experiment}.xml">
+		<copy tofile="${export.dir}/export-gram.xml" overwrite="yes" file="${export.src.dir}/export-gram.xml">
 			<filterset refid="export.filterset" />
 		</copy>
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
