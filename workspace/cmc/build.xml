@@ -19,8 +19,8 @@
 	<target name="kernel.init.label" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="tree-sujeevan" />
 		<property name="export.label" value="" />
-		<property name="kernel.experiment" value="kern-sujeean" />
-		<property name="kernel.xml" value="kernel.xml" />
+		<property name="kernel.experiment" value="kern-sujeevan" />
+		<property name="kernel.xml" value="${kernel.experiment}.xml" />
 		<property name="label.tree" value="tree.obj" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
@@ -41,6 +41,7 @@
 			<filter token="export.label" value="${export.label}" />
 			<filter token="export.cutoff" value="${export.cutoff}" />
 			<filter token="export.label.name" value="${export.label.name}" />
+			<filter token="kernel.experiment" value="${kernel.experiment}" />
 		</filterset>
 	</target>	
 	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
@@ -84,6 +85,28 @@
 		<echo>kernel.evalTest ${kernel.evalTest}</echo>
 		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
 			<arg line="-beans ${kernel.xml} -loadInstanceMap ${label.tree} -mod ${kernel.mod} -slice ${kernel.slice} -evalTest ${kernel.evalTest}" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	<target name="kernel.export" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
+		<property name="export.dir" value="libsvm/${kernel.experiment}" />
+		<mkdir dir="${export.dir}" />
+		<copy file="${export.tree.srcdir}/export.xml" tofile="libsvm/${kernel.experiment}/export.xml" overwrite="yes">
+			<filterset>
+				<filterset refid="export.filterset" />
+			</filterset>
+		</copy>
+		<copy file="exp/${kernel.experiment}/kernel.properties.template" tofile="${export.dir}/kernel.properties" overwrite="yes">
+			<filterset>
+				<filterset refid="export.filterset" />
+			</filterset>
+		</copy>
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
+			<arg value="-prop" />
+			<arg value="export.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />
