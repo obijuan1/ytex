@@ -1,0 +1,93 @@
+<project name="cmc">
+	<property environment="env" />
+	<property name="ytex.home" value=".." />
+	<include file="${ytex.home}/libs.system/build-classpath.xml" />
+	<property name="mysql.home" value="${env.MYSQL_HOME}" />
+	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
+	<target name="kernel.tree" description="export the tree">
+		<mkdir dir="tree/tree-sujeevan" />
+		<copy file="exp/tree-sujeevan/tree.xml" tofile="tree/tree-sujeevan/tree.xml" overwrite="yes">
+		</copy>
+		<java classname="ytex.KernelLauncher" fork="yes" classpathref="${kernel.cp}" dir="tree/tree-sujeevan">
+			<arg line="-beans tree.xml -storeInstanceMap tree.obj" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	<target name="kernel.init.label" description="load the export.cutoff for the specified label">
+		<property name="tree.name" value="tree-sujeevan" />
+		<property name="export.label" value="" />
+		<property name="kernel.experiment" value="kern-sujeean" />
+		<property name="kernel.xml" value="kernel.xml" />
+		<property name="label.tree" value="tree.obj" />
+		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
+		<property name="export.tree.basedir" value="./tree/${tree.name}" />
+		<property name="export.tree.outdir" value="./tree/${tree.name}" />
+		<property name="export.libsvm.outdir" value="libsvm/${kernel.experiment}" />
+		<!--
+		<property file="${export.tree.srcdir}/label.properties" />
+		<property file="${basedir}/exp/labelNames.properties" />
+		<propertycopy property="export.label.name" from="label.${export.label}.name" />
+		<propertycopy property="export.cutoff" from="label.${export.label}.kernel.param1" />
+		<propertycopy property="export.param2.list" from="label.${export.label}.kernel.param2" silent="yes" />
+		<echo>export.param2.list ${export.param2.list}</echo>
+		<echo>export.cutoff ${export.cutoff}</echo>
+		<echo>export.label.name ${export.label.name}</echo>
+		-->
+		<property name="label.tree" value="tree" />
+		<filterset id="export.filterset">
+			<filter token="export.label" value="${export.label}" />
+			<filter token="export.cutoff" value="${export.cutoff}" />
+			<filter token="export.label.name" value="${export.label.name}" />
+		</filterset>
+	</target>	
+	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
+		<property name="export.param2.suffix" value="" />
+		<property name="export.param2" value="" />
+		<property name="kernel.evalTest" value="no" />
+		<copy file="exp/${kernel.experiment}/kernel.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
+			<filterset>
+				<filterset refid="export.filterset" />
+				<filter token="export.param2" value="${export.param2}" />
+			</filterset>
+		</copy>
+		<antcall target="kernel.eval.label.local" />
+		<antcall target="kernel.eval.label.cluster" />
+	</target>
+	<target name="kernel.eval.label.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
+			<sequential>
+				<antcall target="kernel.eval.slice">
+					<param name="kernel.slice" value="@{kernel.slice}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="kernel.eval.label.cluster" if="kernel.cluster" description="send slices to slaves for processing">
+		<!-- pass the properties to the slave that aren't in ytex.properties -->
+		<exec executable="qsub">
+			<arg line="-sync y -t 1-${kernel.mod} ${cmcant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest}" />
+		</exec>
+	</target>
+	<target name="kernel.eval.slice.cluster" if="kernel.cluster" description="eval slice on cluster slave">
+		<property name="kernel.slice" value="${env.SGE_TASK_ID}" />
+		<property file="${export.tree.outdir}/kernel.properties" />
+		<echo>kernel.slice ${kernel.slice}</echo>
+		<antcall target="kernel.eval.slice" />
+	</target>
+	<target name="kernel.eval.slice" description="eval slice">
+		<echo>export.tree.outdir ${export.tree.outdir}</echo>
+		<echo>kernel.xml ${kernel.xml}</echo>
+		<echo>kernel.slice ${kernel.slice}</echo>
+		<echo>kernel.evalTest ${kernel.evalTest}</echo>
+		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
+			<arg line="-beans ${kernel.xml} -loadInstanceMap ${label.tree} -mod ${kernel.mod} -slice ${kernel.slice} -evalTest ${kernel.evalTest}" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>	
+</project>

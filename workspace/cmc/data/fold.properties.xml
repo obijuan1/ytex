@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.corpusName">cmc.2007</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+select cd.doc_id, cda.class, 1, cda.label
+from corpus_doc cd
+inner join corpus_doc_anno cda 
+    on cd.corpus_doc_id = cda.corpus_doc_id 
+    and cda.corpus_doc_id
+where doc_set = 'train'
+]]></entry>
+</properties>
+   

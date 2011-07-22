@@ -1,0 +1,29 @@
+= 2011-07-20 =
+
+Prepare cmc corpus
+	# Set up corpus: 
+	copy documents and annotations into corpus_doc tables
+	would like to use same format for both i2b2 and cmc corpora
+	run data/corpus_doc.sql
+	
+	# Set up folds: FoldGeneratorImpl on data/corpus.properties.xml
+	
+	# Set up anno_contain table
+	run data/insert_anno_contain.sql
+	
+	# Try 'Sujeevan' kernel
+	in libsvm/sujeevan/beans-corpus-kernel.xml
+	doc -> section -> named entities -> concepts
+	               -> words
+	Use outermost named entities - named entities contained within other named entities
+
+	# Generate concept graph
+	Run ConceptDaoImpl on data/corpus.properties.xml
+	
+	# Store infocontent
+	Run InfoContentEvaluatorImpl on data/corpus.properties.xml
+	
+	# Modified beans-kernel-sim.xml to use placeholders for conceptGraphName and corpusName
+	need to verify that this doesn't break anything
+	
+	
