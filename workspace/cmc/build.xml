@@ -68,7 +68,7 @@
 	<target name="kernel.eval.label.cluster" if="kernel.cluster" description="send slices to slaves for processing">
 		<!-- pass the properties to the slave that aren't in ytex.properties -->
 		<exec executable="qsub">
-			<arg line="-sync y -t 1-${kernel.mod} cmcant.pbs kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest}" />
+			<arg line="-sync y -t 1-${kernel.mod} ${cmcant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest}" />
 		</exec>
 	</target>
 	<target name="kernel.eval.slice.cluster" if="kernel.cluster" description="eval slice on cluster slave">
