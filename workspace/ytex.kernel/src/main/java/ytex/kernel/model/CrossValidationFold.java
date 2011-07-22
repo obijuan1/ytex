@@ -3,6 +3,8 @@ package ytex.kernel.model;
 import java.io.Serializable;
 import java.util.Set;
 
+import ytex.kernel.DBUtil;
+
 public class CrossValidationFold implements Serializable {
 	/**
 	 * 
@@ -13,10 +15,10 @@ public class CrossValidationFold implements Serializable {
 	private int fold = 0;
 	private Set<CrossValidationFoldInstance> instanceIds;
 
-	private String label = "";
+	private String label = DBUtil.getEmptyString();
 
 	private int run = 0;
-	private String splitName = "";
+	private String splitName = DBUtil.getEmptyString();
 
 	public CrossValidationFold() {
 		super();
@@ -25,12 +27,11 @@ public class CrossValidationFold implements Serializable {
 	public CrossValidationFold(String name, String splitName, String label, Integer run,
 			Integer fold, Set<CrossValidationFoldInstance> instanceIds) {
 		super();
-		this.corpusName = name;
-		this.splitName = splitName;
-		this.run = run;
-		this.fold = fold;
-		this.label = label;
-		// this.train = train;
+		this.setCorpusName(name);
+		this.setSplitName(splitName);
+		this.setLabel(label);
+		this.setRun(run);
+		this.setFold(fold);
 		this.instanceIds = instanceIds;
 	}
 
@@ -91,7 +92,7 @@ public class CrossValidationFold implements Serializable {
 	}
 
 	public void setLabel(String label) {
-		this.label = label;
+		this.label = DBUtil.nullToEmptyString(label);
 	}
 
 	public void setRun(int run) {
@@ -99,7 +100,7 @@ public class CrossValidationFold implements Serializable {
 	}
 
 	public void setSplitName(String splitName) {
-		this.splitName = splitName;
+		this.splitName = DBUtil.nullToEmptyString(splitName);
 	}
 
 }

@@ -7,7 +7,7 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.kernel.FoldGeneratorImpl"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-prop infogain.xml -name i2b2.2008 -runs 5 -folds 2"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-prop fold.properties.xml"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ytex.kernel"/>
-<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:i2b2.2008/libsvm/ambert}"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:cmc/data}"/>
 </launchConfiguration>

@@ -48,7 +48,7 @@
 		<set name="instanceIds" table="cv_fold_instance" cascade="all">
 			<key column="cv_fold_id" />
 			<composite-element class="CrossValidationFoldInstance">
-				<property name="instanceId" column="instance_id" type="int" />
+				<property name="instanceId" column="instance_id" type="long" />
 				<property name="train" />
 			</composite-element>
 		</set>
@@ -77,7 +77,7 @@
 		<map name="classifierInstanceEvaluations" inverse="true"
 			table="classifier_instance_eval">
 			<key column="classifier_eval_id" />
-			<map-key column="instance_id" type="int" />
+			<map-key column="instance_id" type="long" />
 			<one-to-many class="ClassifierInstanceEvaluation" />
 		</map>
 		<joined-subclass name="SVMClassifierEvaluation" table="classifier_eval_svm">

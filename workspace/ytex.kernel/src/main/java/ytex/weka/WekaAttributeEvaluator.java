@@ -30,7 +30,7 @@ public interface WekaAttributeEvaluator {
 	 * @throws Exception
 	 */
 	public abstract void evaluateAttributesFromProps(String corpusName,
-			String featureSetName, String splitName, Properties props)
+			String splitName, String featureSetName, Properties props)
 			throws Exception;
 
 }

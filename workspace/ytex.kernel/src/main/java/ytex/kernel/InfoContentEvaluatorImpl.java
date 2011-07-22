@@ -54,7 +54,7 @@ import ytex.kernel.model.FeatureRank;
  * @author vijay
  * 
  */
-public class CorpusEvaluatorImpl implements CorpusEvaluator {
+public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 	private ConceptDao conceptDao;
 	// private CorpusDao corpusDao;
 	private JdbcTemplate jdbcTemplate;
@@ -232,8 +232,8 @@ public class CorpusEvaluatorImpl implements CorpusEvaluator {
 				System.err.println("error: required parameter not specified");
 				System.exit(1);
 			} else {
-				CorpusEvaluator corpusEvaluator = KernelContextHolder
-						.getApplicationContext().getBean(CorpusEvaluator.class);
+				InfoContentEvaluator corpusEvaluator = KernelContextHolder
+						.getApplicationContext().getBean(InfoContentEvaluator.class);
 				corpusEvaluator.evaluateCorpusInfoContent(
 						props.getProperty("ytex.freqQuery"),
 						props.getProperty("ytex.corpusName"),
@@ -249,7 +249,7 @@ public class CorpusEvaluatorImpl implements CorpusEvaluator {
 
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java " + CorpusEvaluatorImpl.class.getName()
+		formatter.printHelp("java " + InfoContentEvaluatorImpl.class.getName()
 				+ " calculate information content of corpus wrt concept graph",
 				options);
 	}

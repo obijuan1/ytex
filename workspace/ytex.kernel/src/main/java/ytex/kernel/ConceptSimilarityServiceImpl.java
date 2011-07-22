@@ -45,19 +45,20 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private String conceptSetName;
 
 	private String corpusName;
-	private List<String> tuiList;
 	private Map<String, BitSet> cuiTuiMap;
 	/**
 	 * cache to hold lcs's
 	 */
 	private Cache lcsCache;
+	private String lcsImputedType = ImputedFeatureEvaluator.INFOGAIN;
 	private PlatformTransactionManager transactionManager;
+
+	private List<String> tuiList;
 
 	/*
 	 * valid lcs cache
 	 */
 	private Map<String, Map<String, FeatureRank>> validLCSCache;
-
 	private void addCuiTuiToMap(Map<String, Set<String>> cuiTuiMap,
 			Map<String, String> tuiMap, String cui, String tui) {
 		// get 'the' tui string
@@ -72,14 +73,6 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		}
 		tuis.add(tui);
 	}
-
-//	private String createKey(String c1, String c2) {
-//		if (c1.compareTo(c2) < 0) {
-//			return new StringBuilder(c1).append("-").append(c2).toString();
-//		} else {
-//			return new StringBuilder(c2).append("-").append(c1).toString();
-//		}
-//	}
 
 	/**
 	 * return lin measure. optionally filter lin measure so that only concepts
@@ -164,6 +157,14 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		return 0;
 	}
 
+	// private String createKey(String c1, String c2) {
+	// if (c1.compareTo(c2) < 0) {
+	// return new StringBuilder(c1).append("-").append(c2).toString();
+	// } else {
+	// return new StringBuilder(c2).append("-").append(c1).toString();
+	// }
+	// }
+
 	public CacheManager getCacheManager() {
 		return cacheManager;
 	}
@@ -196,11 +197,6 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	@Override
 	public Map<String, BitSet> getCuiTuiMap() {
 		return cuiTuiMap;
-	}
-
-	@Override
-	public List<String> getTuiList() {
-		return this.tuiList;
 	}
 
 	/**
@@ -264,8 +260,17 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		}
 	}
 
+	public String getLcsImputedType() {
+		return lcsImputedType;
+	}
+
 	public PlatformTransactionManager getTransactionManager() {
 		return transactionManager;
+	}
+
+	@Override
+	public List<String> getTuiList() {
+		return this.tuiList;
 	}
 
 	public void init() {
@@ -320,22 +325,6 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	/**
-	 * convert the list of tuis into a bitset
-	 * 
-	 * @param tuis
-	 * @param mapTuiIndex
-	 * @return
-	 */
-	private BitSet tuiListToBitset(Set<String> tuis,
-			SortedMap<String, Integer> mapTuiIndex) {
-		BitSet bs = new BitSet(mapTuiIndex.size());
-		for (String tui : tuis) {
-			bs.set(mapTuiIndex.get(tui));
-		}
-		return bs;
-	}
-
-	/**
 	 * initialize information content caches
 	 */
 	public void initInfoContent() {
@@ -346,7 +335,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	public void initValidLCSCache() {
 		List<FeatureEvaluation> feList = this.classifierEvaluationDao
 				.getFeatureEvaluations(this.corpusName, this.conceptSetName,
-						CorpusLabelEvaluator.MUTUALINFO_CHILD,
+						this.lcsImputedType
+								+ ImputedFeatureEvaluator.SUFFIX_IMPUTED,
 						this.conceptGraphName);
 		this.validLCSCache = new HashMap<String, Map<String, FeatureRank>>();
 		for (FeatureEvaluation r : feList) {
@@ -440,8 +430,28 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		this.corpusName = corpusName;
 	}
 
+	public void setLcsImputedType(String lcsImputedType) {
+		this.lcsImputedType = lcsImputedType;
+	}
+
 	public void setTransactionManager(
 			PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
+	}
+
+	/**
+	 * convert the list of tuis into a bitset
+	 * 
+	 * @param tuis
+	 * @param mapTuiIndex
+	 * @return
+	 */
+	private BitSet tuiListToBitset(Set<String> tuis,
+			SortedMap<String, Integer> mapTuiIndex) {
+		BitSet bs = new BitSet(mapTuiIndex.size());
+		for (String tui : tuis) {
+			bs.set(mapTuiIndex.get(tui));
+		}
+		return bs;
 	}
 }

@@ -33,6 +33,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import weka.core.ContingencyTables;
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.ConceptDao;
 import ytex.kernel.model.ConcRel;
@@ -95,7 +96,7 @@ import ytex.kernel.model.FeatureRank;
  * @author vijay
  * 
  */
-public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
+public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 
 	/**
 	 * fill in map of Concept Id - bin - instance ids
@@ -118,25 +119,19 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			String conceptId = rs.getString(1);
 			long instanceId = rs.getLong(2);
 			String x = rs.getString(3);
-			// limit to concepts from our graph
-			ConcRel cr = cg.getConceptMap().get(conceptId);
-			if (cr != null) {
-				Map<String, Set<Long>> binInstanceMap = conceptInstanceMap
-						.get(cr.getConceptID());
-				if (binInstanceMap == null) {
-					// use the conceptId from the concept to save memory
-					binInstanceMap = new HashMap<String, Set<Long>>(2);
-					conceptInstanceMap.put(cr.getConceptID(), binInstanceMap);
-				}
-				Set<Long> instanceIds = binInstanceMap.get(x);
-				if (instanceIds == null) {
-					instanceIds = new HashSet<Long>();
-					binInstanceMap.put(x, instanceIds);
-				}
-				instanceIds.add(instanceId);
+			Map<String, Set<Long>> binInstanceMap = conceptInstanceMap.get(conceptId);
+			if (binInstanceMap == null) {
+				// use the conceptId from the concept to save memory
+				binInstanceMap = new HashMap<String, Set<Long>>(2);
+				conceptInstanceMap.put(conceptId, binInstanceMap);
 			}
+			Set<Long> instanceIds = binInstanceMap.get(x);
+			if (instanceIds == null) {
+				instanceIds = new HashSet<Long>();
+				binInstanceMap.put(x, instanceIds);
+			}
+			instanceIds.add(instanceId);
 		}
-
 	}
 
 	/**
@@ -179,8 +174,8 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 				// iterate over other bins
 				for (String x : xVals) {
 					if (!x.equals(xMerge)) {
-						Set<Long> intersectIds = mergedDistro.getInstances(
-								x, y);
+						Set<Long> intersectIds = mergedDistro
+								.getInstances(x, y);
 						boolean bFirstIter = true;
 						// iterate over all joint distribution tables
 						for (JointDistribution distro : jointDistros) {
@@ -224,6 +219,8 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		 */
 		protected Set<String> yVals;
 
+		protected double[][] contingencyTable;
+
 		/**
 		 * set up the joint distribution table.
 		 * 
@@ -246,8 +243,8 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		}
 
 		public JointDistribution(Set<String> xVals, Set<String> yVals,
-				Map<String, Set<Long>> xMargin,
-				Map<String, Set<Long>> yMargin, String xLeftover) {
+				Map<String, Set<Long>> xMargin, Map<String, Set<Long>> yMargin,
+				String xLeftover) {
 			this.xVals = xVals;
 			this.yVals = yVals;
 			jointDistroTable = new TreeMap<String, SortedMap<String, Set<Long>>>();
@@ -263,8 +260,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 				String yName = yEntry.getKey();
 				Set<Long> yInst = new HashSet<Long>(yEntry.getValue());
 				// iterate over 'columns' i.e. the values of x
-				for (Map.Entry<String, Set<Long>> xEntry : xMargin
-						.entrySet()) {
+				for (Map.Entry<String, Set<Long>> xEntry : xMargin.entrySet()) {
 					// copy the instances
 					Set<Long> foldXInst = jointDistroTable.get(yName).get(
 							xEntry.getKey());
@@ -403,6 +399,30 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			return entropyY + this.getEntropyX() - this.getEntropyXY();
 		}
 
+		public double getInfoGain() {
+			return ContingencyTables.entropyOverColumns(getContingencyTable())
+					- ContingencyTables
+							.entropyConditionedOnRows(getContingencyTable());
+		}
+
+		public double[][] getContingencyTable() {
+			if (contingencyTable == null) {
+				contingencyTable = new double[this.yVals.size()][this.xVals
+						.size()];
+				int i = 0;
+				for (String yVal : yVals) {
+					int j = 0;
+					for (String xVal : xVals) {
+						contingencyTable[i][j] = jointDistroTable.get(yVal)
+								.get(xVal).size();
+						j++;
+					}
+					i++;
+				}
+			}
+			return contingencyTable;
+		}
+
 		/**
 		 * print out joint distribution table
 		 */
@@ -451,6 +471,11 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		String xLeftover;
 		String xMerge;
 		Set<String> xVals;
+		MeasureType measure;
+
+		public MeasureType getMeasure() {
+			return measure;
+		}
 
 		public Parameters() {
 
@@ -469,6 +494,8 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			xVals.addAll(Arrays.asList(xValStr.split(",")));
 			xLeftover = props.getProperty("ytex.xLeftover", "0");
 			xMerge = props.getProperty("ytex.xMerge", "1");
+			this.measure = MeasureType.valueOf(props.getProperty(
+					"ytex.measure", "INFOGAIN"));
 			parentConceptMutualInfoThreshold = FileUtil.getDoubleProperty(
 					props, "ytex.parentConceptMutualInfoThreshold", null);
 			parentConceptTopThreshold = parentConceptMutualInfoThreshold == null ? FileUtil
@@ -568,7 +595,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	// }
 
 	private static final Log log = LogFactory
-			.getLog(CorpusLabelEvaluatorImpl.class);
+			.getLog(ImputedFeatureEvaluatorImpl.class);
 
 	protected static double entropy(double[] classProbs) {
 		double entropy = 0;
@@ -610,7 +637,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 			CommandLineParser parser = new GnuParser();
 			CommandLine line = parser.parse(options, args);
 			if (!KernelContextHolder.getApplicationContext()
-					.getBean(CorpusLabelEvaluator.class)
+					.getBean(ImputedFeatureEvaluator.class)
 					.evaluateCorpus(line.getOptionValue("prop"))) {
 				printHelp(options);
 			}
@@ -770,8 +797,10 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	 * @param foldId
 	 */
 	private void deleteFeatureEval(Parameters params, String label, int foldId) {
-		for (String type : new String[] { MUTUALINFO, MUTUALINFO_PARENT,
-				MUTUALINFO_CHILD })
+
+		for (String type : new String[] { params.getMeasure().getName(),
+				params.getMeasure().getName() + SUFFIX_PROP,
+				params.getMeasure().getName() + SUFFIX_IMPUTED })
 			this.classifierEvaluationDao.deleteFeatureEvaluation(
 					params.getCorpusName(), params.getConceptSetName(), label,
 					type, foldId, params.getConceptGraphName());
@@ -830,8 +859,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	private void evaluateCorpusFold(Parameters params,
 			Map<String, Set<Long>> yMargin, ConceptGraph cg,
 			InstanceData instanceData, String label,
-			Map<String, Map<String, Set<Long>>> conceptInstanceMap,
-			int foldId) {
+			Map<String, Map<String, Set<Long>>> conceptInstanceMap, int foldId) {
 		if (log.isInfoEnabled())
 			log.info("evaluateCorpusFold() label = " + label + ", fold = "
 					+ foldId);
@@ -846,7 +874,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 						instanceData.getLabelToClassMap().get(label), params
 								.getxLeftover());
 		saveFeatureEvaluation(rawJointDistro, params, label, foldId, yEntropy,
-				MUTUALINFO);
+				"");
 		// initialize the object we'll be saving all this in
 		// CorpusLabelEvaluation labelEval = this.initCorpusLabelEval(eval,
 		// label,
@@ -887,8 +915,8 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 				int foldId = this.getFoldId(params, label, run, fold);
 				// evaluate for the specified fold training set
 				// construct map of class - [instance ids]
-				Map<String, Set<Long>> yMargin = getFoldYMargin(
-						instanceData, label, run, fold);
+				Map<String, Set<Long>> yMargin = getFoldYMargin(instanceData,
+						label, run, fold);
 				evaluateCorpusFold(params, yMargin, cg, instanceData, label,
 						conceptInstanceMap, foldId);
 			}
@@ -994,10 +1022,6 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 	 * @param xMerge
 	 * @param minInfo
 	 */
-	// private void propagateJointDistribution(
-	// Map<String, JointDistribution> rawJointDistroMap,
-	// CorpusLabelEvaluation labelEval, ConceptGraph cg,
-	// Map<String, Set<Integer>> yMargin, String xMerge, double minInfo) {
 	private void propagateJointDistribution(
 			Map<String, JointDistribution> rawJointDistroMap,
 			Parameters params, String label, int foldId, ConceptGraph cg,
@@ -1018,20 +1042,26 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 					Arrays.asList(new String[] { cr.getConceptID() }));
 		}
 		this.saveFeatureEvaluation(conceptJointDistroMap, params, label,
-				foldId, yEntropy, MUTUALINFO_PARENT);
+				foldId, yEntropy, SUFFIX_PROP);
 	}
 
-	private List<FeatureRank> rank(FeatureEvaluation fe,
+	private List<FeatureRank> rank(MeasureType measureType,
+			FeatureEvaluation fe,
 			Map<String, JointDistribution> rawJointDistro, double yEntropy) {
 		List<FeatureRank> featureRankList = new ArrayList<FeatureRank>();
 		for (Map.Entry<String, JointDistribution> conceptJointDistro : rawJointDistro
 				.entrySet()) {
 			JointDistribution d = conceptJointDistro.getValue();
 			if (d != null) {
-				double mi = d.getMutualInformation(yEntropy);
-				if (mi > 1e-3) {
+				double evaluation;
+				if (MeasureType.MUTUALINFO.equals(measureType)) {
+					evaluation = d.getMutualInformation(yEntropy);
+				} else {
+					evaluation = d.getInfoGain();
+				}
+				if (evaluation > 1e-3) {
 					FeatureRank r = new FeatureRank(fe,
-							conceptJointDistro.getKey(), mi);
+							conceptJointDistro.getKey(), evaluation);
 					featureRankList.add(r);
 				}
 			}
@@ -1042,9 +1072,10 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 
 	private void saveFeatureEvaluation(
 			Map<String, JointDistribution> rawJointDistro, Parameters params,
-			String label, int foldId, double yEntropy, String type) {
-		FeatureEvaluation fe = initFeatureEval(params, label, foldId, type);
-		fe.setFeatures(rank(fe, rawJointDistro, yEntropy));
+			String label, int foldId, double yEntropy, String suffix) {
+		FeatureEvaluation fe = initFeatureEval(params, label, foldId, params
+				.getMeasure().getName() + suffix);
+		fe.setFeatures(rank(params.getMeasure(), fe, rawJointDistro, yEntropy));
 		this.classifierEvaluationDao.saveFeatureEvaluation(fe);
 	}
 
@@ -1147,7 +1178,7 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		Map<String, Double> conceptICMap = this.classifierEvaluationDao
 				.getFeatureRankEvaluations(params.getCorpusName(),
 						params.getConceptSetName(), null,
-						CorpusEvaluator.INFOCONTENT, 0,
+						InfoContentEvaluator.INFOCONTENT, 0,
 						params.getConceptGraphName());
 		// get the top parent concepts - use either top N, or those with a
 		// cutoff greater than the specified threshold
@@ -1156,19 +1187,20 @@ public class CorpusLabelEvaluatorImpl implements CorpusLabelEvaluator {
 		// .getTopCorpusLabelStat(labelEval, parentConceptTopThreshold)
 		// : this.corpusDao.getThresholdCorpusLabelStat(labelEval,
 		// parentConceptMutualInfoThreshold);
+		String propagatedType = params.getMeasure().getName() + SUFFIX_PROP;
 		List<FeatureRank> listConceptStat = params
 				.getParentConceptTopThreshold() != null ? this.classifierEvaluationDao
 				.getTopFeatures(params.getCorpusName(),
-						params.getConceptSetName(), label, MUTUALINFO_PARENT,
+						params.getConceptSetName(), label, propagatedType,
 						foldId, params.getConceptGraphName(),
 						params.getParentConceptTopThreshold())
 				: this.classifierEvaluationDao.getThresholdFeatures(
 						params.getCorpusName(), params.getConceptSetName(),
-						label, MUTUALINFO_PARENT, foldId,
+						label, propagatedType, foldId,
 						params.getConceptGraphName(),
 						params.getParentConceptMutualInfoThreshold());
 		FeatureEvaluation fe = this.initFeatureEval(params, label, foldId,
-				MUTUALINFO_CHILD);
+				params.getMeasure().getName() + SUFFIX_IMPUTED);
 		// map of concept id to children and the 'best' statistic
 		Map<String, FeatureRank> mapChildConcept = new HashMap<String, FeatureRank>();
 		// get all the children of the parent concepts

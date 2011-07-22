@@ -1,8 +1,6 @@
 package ytex.kernel;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,9 +20,10 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.CrossValidationFold;
@@ -36,131 +35,7 @@ import ytex.kernel.model.CrossValidationFoldInstance;
  * @author vijay
  */
 public class FoldGeneratorImpl implements FoldGenerator {
-	KernelUtil kernelUtil;
-	ClassifierEvaluationDao classifierEvaluationDao;
-
-	public KernelUtil getKernelUtil() {
-		return kernelUtil;
-	}
-
-	public void setKernelUtil(KernelUtil kernelUtil) {
-		this.kernelUtil = kernelUtil;
-	}
-
-	public ClassifierEvaluationDao getClassifierEvaluationDao() {
-		return classifierEvaluationDao;
-	}
-
-	public void setClassifierEvaluationDao(
-			ClassifierEvaluationDao classifierEvaluationDao) {
-		this.classifierEvaluationDao = classifierEvaluationDao;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ytex.kernel.FoldGenerator#generateRuns(java.lang.String,
-	 * java.lang.String, int, int, java.lang.Integer, int)
-	 */
-	@Override
-	public void generateRuns(String corpusName, String splitName, String query, int nFolds,
-			int nMinPerClass, Integer nSeed, int nRuns) {
-		Random r = new Random(nSeed != null ? nSeed : System
-				.currentTimeMillis());
-		SortedSet<String> labels = new TreeSet<String>();
-		InstanceData instances = kernelUtil.loadInstances(query);
-		this.getClassifierEvaluationDao().deleteCrossValidationFoldByName(corpusName, splitName);
-		for (int run = 1; run <= nRuns; run++) {
-			generateFolds(labels, instances, corpusName, splitName, run, query, nFolds,
-					nMinPerClass, r);
-		}
-	}
-
-	/**
-	 * generate folds for a run
-	 * 
-	 * @param labels
-	 * @param mapInstanceToClassLabel
-	 * @param name
-	 * @param splitName 
-	 * @param run
-	 * @param query
-	 * @param nFolds
-	 * @param nMinPerClass
-	 * @param r
-	 */
-	public void generateFolds(Set<String> labels, InstanceData instances,
-			String corpusName, String splitName, int run, String query, int nFolds, int nMinPerClass,
-			Random r) {
-		for (String label : instances.getLabelToInstanceMap().keySet()) {
-			// there should not be any runs/folds/train test split - just unpeel
-			// until we get to the instance - class map
-			SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> runMap = instances
-					.getLabelToInstanceMap().get(label);
-			SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>> foldMap = runMap
-					.values().iterator().next();
-			SortedMap<Boolean, SortedMap<Long, String>> trainMap = foldMap
-					.values().iterator().next();
-			SortedMap<Long, String> mapInstanceIdToClass = trainMap.values()
-					.iterator().next();
-			// invert the mapInstanceIdToClass
-			Map<String, List<Long>> mapClassToInstanceId = new TreeMap<String, List<Long>>();
-			for (Map.Entry<Long, String> instance : mapInstanceIdToClass
-					.entrySet()) {
-				String className = instance.getValue();
-				long instanceId = instance.getKey();
-				List<Long> classInstanceIds = mapClassToInstanceId
-						.get(className);
-				if (classInstanceIds == null) {
-					classInstanceIds = new ArrayList<Long>();
-					mapClassToInstanceId.put(className, classInstanceIds);
-				}
-				classInstanceIds.add(instanceId);
-			}
-			// stratified split into folds
-			List<Set<Long>> folds = createFolds(mapClassToInstanceId,
-					nFolds, nMinPerClass, r);
-			// insert the folds
-			insertFolds(folds, corpusName, splitName, label, run);
-		}
-	}
-
-	/**
-	 * insert the folds into the database
-	 * 
-	 * @param folds
-	 * @param corpusName
-	 * @param run
-	 */
-	private void insertFolds(List<Set<Long>> folds, String corpusName, String splitName,
-			String label, int run) {
-		// iterate over fold numbers
-		for (int foldNum = 1; foldNum <= folds.size(); foldNum++) {
-			Set<CrossValidationFoldInstance> instanceIds = new HashSet<CrossValidationFoldInstance>();
-			// iterate over instances in each fold
-			for (int trainFoldNum = 1; trainFoldNum <= folds.size(); trainFoldNum++) {
-				// add the instance, set the train flag
-				for (long instanceId : folds.get(trainFoldNum - 1))
-					instanceIds.add(new CrossValidationFoldInstance(instanceId,
-							trainFoldNum != foldNum));
-			}
-			classifierEvaluationDao.saveFold(new CrossValidationFold(corpusName, splitName,
-					label, run, foldNum, instanceIds));
-			// insert test set
-			// classifierEvaluationDao.saveFold(new CrossValidationFold(name,
-			// label, run, foldNum, false, folds.get(foldNum - 1)));
-			// insert training set
-			// Set<Integer> trainInstances = new TreeSet<Integer>();
-			// for (int trainFoldNum = 1; trainFoldNum <= folds.size();
-			// trainFoldNum++) {
-			// if (trainFoldNum != foldNum)
-			// trainInstances.addAll(folds.get(trainFoldNum - 1));
-			// }
-			// classifierEvaluationDao.saveFold(new CrossValidationFold(name,
-			// label, run, foldNum, true, trainInstances));
-		}
-	}
-
+	private static final Log log = LogFactory.getLog(FoldGeneratorImpl.class);
 	/**
 	 * iterate through the labels, split instances into folds
 	 * 
@@ -229,79 +104,87 @@ public class FoldGeneratorImpl implements FoldGenerator {
 		}
 		return folds;
 	}
-
 	@SuppressWarnings("static-access")
 	public static void main(String args[]) throws ParseException, IOException {
 		Options options = new Options();
-		OptionGroup group = new OptionGroup();
-		group
-				.addOption(OptionBuilder
-						.withArgName("query")
-						.hasArg()
-						.withDescription(
-								"query to retrieve instance id - label - class triples")
-						.create("query"));
-		group
-				.addOption(OptionBuilder
-						.withArgName("prop")
-						.hasArg()
-						.withDescription(
-								"property file with query to retrieve instance id - label - class triples")
-						.create("prop"));
-		group.isRequired();
-		options.addOptionGroup(group);
-		options.addOption(OptionBuilder.withArgName("name").hasArg()
-				.isRequired().withDescription("name. required").create("name"));
-		options.addOption(OptionBuilder.withArgName("runs").hasArg()
-				.withDescription("number of runs, default 1").create("runs"));
-		options.addOption(OptionBuilder.withArgName("folds").hasArg()
-				.withDescription("number of folds, default 4").create("folds"));
-		options.addOption(OptionBuilder.withArgName("minPerClass").hasArg()
-				.withDescription("minimum instances per class, default 1")
-				.create("minPerClass"));
-		options.addOption(OptionBuilder.withArgName("rand").hasArg()
+		options.addOption(OptionBuilder
+				.withArgName("prop")
+				.hasArg()
 				.withDescription(
-						"random number seed; default current time in millis")
-				.create("rand"));
+						"property file with query to retrieve instance id - label - class triples")
+				.create("prop"));
+		// OptionGroup group = new OptionGroup();
+		// group
+		// .addOption(OptionBuilder
+		// .withArgName("query")
+		// .hasArg()
+		// .withDescription(
+		// "query to retrieve instance id - label - class triples")
+		// .create("query"));
+		// group
+		// .addOption(OptionBuilder
+		// .withArgName("prop")
+		// .hasArg()
+		// .withDescription(
+		// "property file with query to retrieve instance id - label - class triples")
+		// .create("prop"));
+		// group.isRequired();
+		// options.addOptionGroup(group);
+		// options.addOption(OptionBuilder.withArgName("name").hasArg()
+		// .isRequired().withDescription("name. required").create("name"));
+		// options.addOption(OptionBuilder.withArgName("runs").hasArg()
+		// .withDescription("number of runs, default 1").create("runs"));
+		// options.addOption(OptionBuilder.withArgName("folds").hasArg()
+		// .withDescription("number of folds, default 4").create("folds"));
+		// options.addOption(OptionBuilder.withArgName("minPerClass").hasArg()
+		// .withDescription("minimum instances per class, default 1")
+		// .create("minPerClass"));
+		// options.addOption(OptionBuilder.withArgName("rand").hasArg()
+		// .withDescription(
+		// "random number seed; default current time in millis")
+		// .create("rand"));
 		try {
 			if (args.length == 0)
 				printHelp(options);
 			else {
 				CommandLineParser parser = new GnuParser();
 				CommandLine line = parser.parse(options, args);
-				Integer rand = line.hasOption("rand") ? Integer.parseInt(line
-						.getOptionValue("rand")) : null;
-				int runs = Integer.parseInt(line.getOptionValue("runs", "1"));
-				int minPerClass = Integer.parseInt(line.getOptionValue(
-						"minPerClass", "1"));
-				int folds = Integer.parseInt(line.getOptionValue("folds", "4"));
-				String corpusName = line.getOptionValue("ytex.corpusName");
-				String splitName = line.getOptionValue("ytex.splitName");
-				String query;
-				if (line.hasOption("query")) {
-					query = line.getOptionValue("query");
-				} else {
-					String propFile = line.getOptionValue("prop");
-					InputStream is = null;
-					try {
-						is = new FileInputStream(propFile);
-						Properties props = new Properties();
-						if (propFile.endsWith(".xml"))
-							props.loadFromXML(is);
-						else
-							props.load(is);
-						query = props.getProperty("instanceClassQuery");
-					} finally {
-						if (is != null)
-							is.close();
-					}
+				String propFile = line.getOptionValue("prop");
+				Properties props = FileUtil.loadProperties(propFile, true);
+				// Integer rand = line.hasOption("rand") ? Integer.parseInt(line
+				// .getOptionValue("rand")) : null;
+				// int runs = Integer.parseInt(line.getOptionValue("runs",
+				// "1"));
+				// int minPerClass = Integer.parseInt(line.getOptionValue(
+				// "minPerClass", "1"));
+				// int folds = Integer.parseInt(line.getOptionValue("folds",
+				// "4"));
+				String corpusName = props.getProperty("ytex.corpusName");
+				String splitName = props.getProperty("ytex.splitName");
+				String query = props.getProperty("instanceClassQuery");
+				int folds = Integer.parseInt(props.getProperty("folds", "2"));
+				int runs = Integer.parseInt(props.getProperty("runs", "5"));
+				int minPerClass = Integer.parseInt(props.getProperty("minPerClass", "1"));
+				Integer rand = props.containsKey("rand") ? Integer
+						.parseInt(props.getProperty("rand")) : null;
+				boolean argsOk = true;
+				if(corpusName == null) {
+					log.error("missing parameter: ytex.corpusName");
+					argsOk = false;
 				}
-				if (query != null && corpusName != null) {
-					KernelContextHolder.getApplicationContext().getBean(
-							FoldGenerator.class).generateRuns(corpusName, splitName, query,
-							folds, minPerClass, rand, runs);
-				} else {
+				if(query == null) {
+					log.error("missing parameter: instanceClassQuery");
+					argsOk = false;
+				}
+				if (!argsOk) {
 					printHelp(options);
+					System.exit(1);
+				} else {
+					KernelContextHolder
+							.getApplicationContext()
+							.getBean(FoldGenerator.class)
+							.generateRuns(corpusName, splitName, query, folds,
+									minPerClass, rand, runs);
 				}
 			}
 		} catch (ParseException pe) {
@@ -313,8 +196,135 @@ public class FoldGeneratorImpl implements FoldGenerator {
 		HelpFormatter formatter = new HelpFormatter();
 		formatter
 				.printHelp(
-						"java ytex.kernel.FoldGenerator splits training data into mxn training/test sets for mxn-fold cross validation",
+						"java ytex.kernel.FoldGeneratorImpl splits training data into mxn training/test sets for mxn-fold cross validation",
 						options);
+	}
+
+	ClassifierEvaluationDao classifierEvaluationDao;
+
+	KernelUtil kernelUtil;
+
+	/**
+	 * generate folds for a run
+	 * 
+	 * @param labels
+	 * @param mapInstanceToClassLabel
+	 * @param name
+	 * @param splitName
+	 * @param run
+	 * @param query
+	 * @param nFolds
+	 * @param nMinPerClass
+	 * @param r
+	 */
+	public void generateFolds(Set<String> labels, InstanceData instances,
+			String corpusName, String splitName, int run, String query,
+			int nFolds, int nMinPerClass, Random r) {
+		for (String label : instances.getLabelToInstanceMap().keySet()) {
+			// there should not be any runs/folds/train test split - just unpeel
+			// until we get to the instance - class map
+			SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> runMap = instances
+					.getLabelToInstanceMap().get(label);
+			SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>> foldMap = runMap
+					.values().iterator().next();
+			SortedMap<Boolean, SortedMap<Long, String>> trainMap = foldMap
+					.values().iterator().next();
+			SortedMap<Long, String> mapInstanceIdToClass = trainMap.values()
+					.iterator().next();
+			// invert the mapInstanceIdToClass
+			Map<String, List<Long>> mapClassToInstanceId = new TreeMap<String, List<Long>>();
+			for (Map.Entry<Long, String> instance : mapInstanceIdToClass
+					.entrySet()) {
+				String className = instance.getValue();
+				long instanceId = instance.getKey();
+				List<Long> classInstanceIds = mapClassToInstanceId
+						.get(className);
+				if (classInstanceIds == null) {
+					classInstanceIds = new ArrayList<Long>();
+					mapClassToInstanceId.put(className, classInstanceIds);
+				}
+				classInstanceIds.add(instanceId);
+			}
+			// stratified split into folds
+			List<Set<Long>> folds = createFolds(mapClassToInstanceId, nFolds,
+					nMinPerClass, r);
+			// insert the folds
+			insertFolds(folds, corpusName, splitName, label, run);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ytex.kernel.FoldGenerator#generateRuns(java.lang.String,
+	 * java.lang.String, int, int, java.lang.Integer, int)
+	 */
+	@Override
+	public void generateRuns(String corpusName, String splitName, String query,
+			int nFolds, int nMinPerClass, Integer nSeed, int nRuns) {
+		Random r = new Random(nSeed != null ? nSeed
+				: System.currentTimeMillis());
+		SortedSet<String> labels = new TreeSet<String>();
+		InstanceData instances = kernelUtil.loadInstances(query);
+		this.getClassifierEvaluationDao().deleteCrossValidationFoldByName(
+				corpusName, splitName);
+		for (int run = 1; run <= nRuns; run++) {
+			generateFolds(labels, instances, corpusName, splitName, run, query,
+					nFolds, nMinPerClass, r);
+		}
+	}
+	
+	public ClassifierEvaluationDao getClassifierEvaluationDao() {
+		return classifierEvaluationDao;
+	}
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	/**
+	 * insert the folds into the database
+	 * 
+	 * @param folds
+	 * @param corpusName
+	 * @param run
+	 */
+	private void insertFolds(List<Set<Long>> folds, String corpusName,
+			String splitName, String label, int run) {
+		// iterate over fold numbers
+		for (int foldNum = 1; foldNum <= folds.size(); foldNum++) {
+			Set<CrossValidationFoldInstance> instanceIds = new HashSet<CrossValidationFoldInstance>();
+			// iterate over instances in each fold
+			for (int trainFoldNum = 1; trainFoldNum <= folds.size(); trainFoldNum++) {
+				// add the instance, set the train flag
+				for (long instanceId : folds.get(trainFoldNum - 1))
+					instanceIds.add(new CrossValidationFoldInstance(instanceId,
+							trainFoldNum != foldNum));
+			}
+			classifierEvaluationDao.saveFold(new CrossValidationFold(
+					corpusName, splitName, label, run, foldNum, instanceIds));
+			// insert test set
+			// classifierEvaluationDao.saveFold(new CrossValidationFold(name,
+			// label, run, foldNum, false, folds.get(foldNum - 1)));
+			// insert training set
+			// Set<Integer> trainInstances = new TreeSet<Integer>();
+			// for (int trainFoldNum = 1; trainFoldNum <= folds.size();
+			// trainFoldNum++) {
+			// if (trainFoldNum != foldNum)
+			// trainInstances.addAll(folds.get(trainFoldNum - 1));
+			// }
+			// classifierEvaluationDao.saveFold(new CrossValidationFold(name,
+			// label, run, foldNum, true, trainInstances));
+		}
+	}
+
+	public void setClassifierEvaluationDao(
+			ClassifierEvaluationDao classifierEvaluationDao) {
+		this.classifierEvaluationDao = classifierEvaluationDao;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
 	}
 
 }

@@ -12,8 +12,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="conceptDao" ref="conceptDao" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="cacheManager" ref="cacheManager" />
-		<property name="corpusName" value="i2b2.2008" />
-		<property name="conceptGraphName" value="rbpar" />
+		<property name="corpusName" value="${ytex.corpusName}" />
+		<property name="conceptGraphName" value="${ytex.conceptGraphName}" />
 	</bean>
 	<bean id="abstractConceptKernel" class="ytex.kernel.evaluator.ConceptKernel"
 		abstract="true" init-method="init">

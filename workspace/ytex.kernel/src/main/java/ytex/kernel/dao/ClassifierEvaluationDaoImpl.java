@@ -11,7 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 
-import ytex.kernel.CorpusEvaluator;
+import ytex.kernel.InfoContentEvaluator;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.ClassifierEvaluationIRStat;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
@@ -273,7 +273,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	public List<Object[]> getCorpusCuiTuis(String corpusName,
 			String conceptGraphName, String conceptSetName) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, conceptSetName,
-				null, CorpusEvaluator.INFOCONTENT, 0, conceptGraphName,
+				null, InfoContentEvaluator.INFOCONTENT, 0, conceptGraphName,
 				"getCorpusCuiTuis");
 		return q.list();
 	}
@@ -282,7 +282,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	public Map<String, Double> getInfoContent(String corpusName,
 			String conceptGraphName, String conceptSet) {
 		return getFeatureRankEvaluations(corpusName, conceptSet, null,
-				CorpusEvaluator.INFOCONTENT, 0, conceptGraphName);
+				InfoContentEvaluator.INFOCONTENT, 0, conceptGraphName);
 	}
 
 	@SuppressWarnings("unchecked")

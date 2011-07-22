@@ -245,12 +245,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="asEvaluation" ref="infogainAttributeEval" />
 	</bean>
-	<bean id="corpusEvaluator" class="ytex.kernel.CorpusEvaluatorImpl">
+	<bean id="infoContentEvaluator" class="ytex.kernel.InfoContentEvaluatorImpl">
 		<property name="conceptDao" ref="conceptDao" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="dataSource" ref="dataSource" />
 	</bean>
-	<bean id="corpusLabelEvaluator" class="ytex.kernel.CorpusLabelEvaluatorImpl">
+	<bean id="imputedFeatureEvaluator" class="ytex.kernel.ImputedFeatureEvaluatorImpl">
 		<property name="conceptDao" ref="conceptDao" />
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelUtil" ref="kernelUtil" />

@@ -101,7 +101,7 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 	 */
 	@Override
 	public void evaluateAttributesFromProps(String corpusName,
-			String featureSetName, String splitName, Properties props)
+			String splitName, String featureSetName, Properties props)
 			throws Exception {
 		sparseDataExporter.exportData(props,
 				new WekaAttributeEvaluatorFormatter(corpusName, featureSetName,

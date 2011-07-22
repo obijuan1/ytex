@@ -1,6 +1,6 @@
 package ytex.kernel;
 
-public interface CorpusEvaluator {
+public interface InfoContentEvaluator {
 
 	public static final String INFOCONTENT = "infocontent";
 

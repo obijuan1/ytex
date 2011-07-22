@@ -3,6 +3,8 @@ package ytex.kernel.model;
 import java.io.Serializable;
 import java.util.List;
 
+import ytex.kernel.DBUtil;
+
 public class FeatureEvaluation implements Serializable {
 
 	/**
@@ -15,9 +17,9 @@ public class FeatureEvaluation implements Serializable {
 	private String evaluationType;
 	private int featureEvaluationId;
 	private List<FeatureRank> features;
-	private String featureSetName = "";
-	private String label = "";
-	private String param1 = "";
+	private String featureSetName = DBUtil.getEmptyString();
+	private String label = DBUtil.getEmptyString();
+	private String param1 = DBUtil.getEmptyString();
 
 	public FeatureEvaluation() {
 		super();
@@ -87,15 +89,15 @@ public class FeatureEvaluation implements Serializable {
 	}
 
 	public void setFeatureSetName(String featureSetName) {
-		this.featureSetName = featureSetName;
+		this.featureSetName = DBUtil.nullToEmptyString(featureSetName);
 	}
 
 	public void setLabel(String label) {
-		this.label = label;
+		this.label = DBUtil.nullToEmptyString(label);
 	}
 
 	public void setParam1(String param1) {
-		this.param1 = param1;
+		this.param1 = DBUtil.nullToEmptyString(param1);
 	}
 
 }
