@@ -41,6 +41,7 @@ public class KernelUtilImpl implements KernelUtil {
 
 	private KernelEvaluationDao kernelEvaluationDao = null;
 	private PlatformTransactionManager transactionManager;
+
 	private Map<Long, Integer> createInstanceIdToIndexMap(
 			SortedSet<Long> instanceIDs) {
 		Map<Long, Integer> instanceIdToIndexMap = new HashMap<Long, Integer>(
@@ -52,9 +53,9 @@ public class KernelUtilImpl implements KernelUtil {
 		}
 		return instanceIdToIndexMap;
 	}
+
 	@Override
-	public void fillGramMatrix(
-			final KernelEvaluation kernelEvaluation,
+	public void fillGramMatrix(final KernelEvaluation kernelEvaluation,
 			final SortedSet<Long> trainInstanceLabelMap,
 			final double[][] trainGramMatrix) {
 		// final Set<String> kernelEvaluationNames = new HashSet<String>(1);
@@ -82,19 +83,19 @@ public class KernelUtilImpl implements KernelUtil {
 									kernelEvaluation, instanceId);
 					for (KernelEvaluationInstance keval : kevals) {
 						// determine the index of the instance
-						// the index could be in the training or test matrix
 						Integer indexOtherTrain = null;
-						Integer indexOtherTest = null;
 						long instanceIdOther = instanceId != keval
 								.getInstanceId1() ? keval.getInstanceId1()
 								: keval.getInstanceId2();
 						// look in training set for the instance id
 						indexOtherTrain = trainInstanceToIndexMap
 								.get(instanceIdOther);
-						trainGramMatrix[indexThis][indexOtherTrain] = keval
-								.getSimilarity();
-						trainGramMatrix[indexOtherTrain][indexThis] = keval
-								.getSimilarity();
+						if (indexOtherTrain != null) {
+							trainGramMatrix[indexThis][indexOtherTrain] = keval
+									.getSimilarity();
+							trainGramMatrix[indexOtherTrain][indexThis] = keval
+									.getSimilarity();
+						}
 					}
 					return null;
 				}
@@ -124,9 +125,9 @@ public class KernelUtilImpl implements KernelUtil {
 	}
 
 	@Override
-	public double[][] loadGramMatrix(SortedSet<Long> instanceIds,
-			String name, String splitName, String experiment, String label,
-			int run, int fold, double param1, String param2) {
+	public double[][] loadGramMatrix(SortedSet<Long> instanceIds, String name,
+			String splitName, String experiment, String label, int run,
+			int fold, double param1, String param2) {
 		int foldId = 0;
 		double[][] gramMatrix = null;
 		if (run != 0 && fold != 0) {
