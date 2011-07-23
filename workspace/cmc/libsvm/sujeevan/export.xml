@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.corpusName">cmc.2007</entry>
+	<entry key="ytex.experiment">sujeevan</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+select i.instance_id, a.class, i.train, l.label_id, f.fold, f.run
+from cv_fold f
+inner join cv_fold_instance i 
+    on f.cv_fold_id = i.cv_fold_id
+inner join corpus_doc_anno a 
+    on a.corpus_name = f.corpus_name
+    and a.doc_id = i.instance_id
+    and a.label = f.label 
+inner join corpus_label l 
+    on l.corpus_name = f.corpus_name 
+    and l.label = f.label
+where f.corpus_name = 'cmc.2007'
+	]]></entry>
+</properties>
