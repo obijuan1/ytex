@@ -104,6 +104,9 @@
 				<filterset refid="export.filterset" />
 			</filterset>
 		</copy>
+		<antcall target="kernel.export.gram"/>
+	</target>	
+	<target name="kernel.export.gram">
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
 			<arg value="-prop" />
 			<arg value="export.xml" />
@@ -111,6 +114,16 @@
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
+		</java>	
+	</target>
+	<target name="suj.ic" description="calculate ic for sujeevan annotations">
+		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/exp/kern-sujeevan">
+			<arg value="-prop" />
+			<arg value="corpus.properties.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 		</java>
-	</target>	
+	</target>
 </project>
