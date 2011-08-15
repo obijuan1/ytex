@@ -50,6 +50,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 
 import org.apache.uima.analysis_engine.ResultSpecification;
 import org.apache.uima.analysis_engine.annotator.AnnotatorConfigurationException;
@@ -348,6 +349,10 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase
                 String[] output = null;
                 if(out != null)
                 	output = out.split("\\|");
+                else {
+               		logger.warn("mutateToString returned null for: " + word);
+                }
+                	
 
                 if ((output != null)
                         && (output.length >= 2)
