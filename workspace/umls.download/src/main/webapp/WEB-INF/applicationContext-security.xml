@@ -68,12 +68,12 @@
 		value="https://${cas.server.host}/cas/logout" /> <b:constructor-arg> <b:bean 
 		class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler" 
 		/> </b:constructor-arg> </b:bean> <b:bean id="serviceProperties" class="org.springframework.security.cas.ServiceProperties" 
-		p:service="http://${cas.service.host}/umls.download/j_spring_cas_security_check" 
+		p:service="http://${cas.service.host}/j_spring_cas_security_check" 
 		p:authenticateAllArtifacts="true" /> -->
 
 	<b:bean id="serviceProperties" class="org.springframework.security.cas.ServiceProperties">
 		<b:property name="service"
-			value="http://${cas.service.host}/umls.download/j_spring_cas_security_check" />
+			value="http://${cas.service.host}/j_spring_cas_security_check" />
 		<b:property name="sendRenew" value="false" />
 	</b:bean>
 
@@ -100,7 +100,7 @@
 	<context:property-placeholder
 		system-properties-mode="OVERRIDE" properties-ref="environment" />
 	<util:properties id="environment">
-		<b:prop key="cas.service.host">localhost:8080</b:prop>
+		<b:prop key="cas.service.host">localhost:8080/umls.download</b:prop>
 		<b:prop key="cas.server.host">utslogin.nlm.nih.gov</b:prop>
 	</util:properties>
 

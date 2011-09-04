@@ -24,10 +24,12 @@ public class FileDownloadServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final String[] VERSIONS = { "0.3", "0.4" };
 	private static final String[] PLATFORMS = { "mssql", "mysql", "orcl" };
-	
+
 	private static Set<String> versions = new HashSet<String>();
 	private static Set<String> platforms = new HashSet<String>();
-	
+	private static String umlsDir = System.getProperty("umls.download.dir",
+			"e:/projects/ytex-umls");
+
 	static {
 		versions.addAll(Arrays.asList(VERSIONS));
 		platforms.addAll(Arrays.asList(PLATFORMS));
@@ -38,10 +40,11 @@ public class FileDownloadServlet extends HttpServlet {
 		// Get requested file by path info.
 		String version = request.getParameter("version");
 		String platform = request.getParameter("platform");
-		if(!versions.contains(version) || !platforms.contains(platform)) {
+		if (!versions.contains(version) || !platforms.contains(platform)) {
 			throw new IOException("invalid platform/version");
 		}
-		String filePath = "e:/projects/ytex-umls/"+version+"/umls-"+platform+".zip";
+		String filePath = umlsDir + "/" + version + "/umls-" + platform
+				+ ".zip";
 		// Decode the file name (might contain spaces and on) and prepare file
 		// object.
 		File file = new File(filePath);
@@ -92,20 +95,21 @@ public class FileDownloadServlet extends HttpServlet {
 			}
 		} finally {
 			// Gently close streams.
-//			close(output);
+			// close(output);
 			close(input);
 		}
 	}
 
 	private static void close(Closeable resource) {
-        if (resource != null) {
-            try {
-                resource.close();
-            } catch (IOException e) {
-                // Do your thing with the exception. Print it, log it or mail it.
-                e.printStackTrace();
-            }
-        }
-    }
+		if (resource != null) {
+			try {
+				resource.close();
+			} catch (IOException e) {
+				// Do your thing with the exception. Print it, log it or mail
+				// it.
+				e.printStackTrace();
+			}
+		}
+	}
 
 }
