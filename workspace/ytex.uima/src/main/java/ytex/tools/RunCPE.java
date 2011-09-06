@@ -158,7 +158,7 @@ public class RunCPE extends Thread {
 			// stop the JVM. Otherwise main thread will still be blocked waiting
 			// for
 			// user to press Enter.
-			System.exit(1);
+			System.exit(0);
 		}
 
 		/**
