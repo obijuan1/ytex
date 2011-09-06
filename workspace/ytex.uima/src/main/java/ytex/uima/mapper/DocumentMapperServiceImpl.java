@@ -135,10 +135,11 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			saveDocumentAnnotation((Annotation) annoIterator.next(), doc,
 					setTypesToIgnore);
 		}
-		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
-				"insertAnnotationContainmentLinks");
-		q.setInteger("documentID", doc.getDocumentID());
-		q.executeUpdate();
+		// this causes deadlocks when running in parallel!
+		// Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
+		// "insertAnnotationContainmentLinks");
+		// q.setInteger("documentID", doc.getDocumentID());
+		// q.executeUpdate();
 		return doc.getDocumentID();
 	}
 
