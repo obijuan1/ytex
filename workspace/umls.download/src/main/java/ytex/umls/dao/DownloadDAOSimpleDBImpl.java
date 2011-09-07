@@ -14,6 +14,7 @@
  */
 package ytex.umls.dao;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +33,17 @@ public class DownloadDAOSimpleDBImpl implements DownloadDAO {
 	// }
 
 	private static EntityManagerFactoryImpl factory = new EntityManagerFactoryImpl(
-			"ytex-umlsdownload-test", properties);
+			"ytex-umlsdownload", properties);
+	
+	@Override
+	public void saveDownloadEntry(String username, String version, String platform) {
+		DownloadEntry de = new DownloadEntry();
+		de.setUsername(username);
+		de.setPlatform(platform);
+		de.setVersion(version);
+		de.setDate(new Date());
+		this.saveDownloadEntry(de);
+	}
 
 	@Override
 	public void saveDownloadEntry(DownloadEntry downloadEntry) {

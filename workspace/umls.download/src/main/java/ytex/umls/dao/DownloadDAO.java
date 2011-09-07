@@ -20,5 +20,8 @@ import ytex.umls.model.DownloadEntry;
 public interface DownloadDAO {
 
 	public abstract void saveDownloadEntry(DownloadEntry downloadEntry);
+
+	public abstract void saveDownloadEntry(String username, String version,
+			String platform);
 	
 }

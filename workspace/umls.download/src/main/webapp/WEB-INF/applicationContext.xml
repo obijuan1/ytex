@@ -59,5 +59,13 @@
 	<b:bean class="ytex.umls.model.DownloadEntry" />
 	<b:bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
+	<b:bean id="awsProperties"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<b:property name="location" value="classpath:AwsCredentials.properties" />
+	</b:bean>		
+	<b:bean id="downloadUrlGenerator"
+		class="ytex.umls.DownloadURLGeneratorImpl">
+		<b:property name="awsProperties" ref="awsProperties" />
+	</b:bean>		
 
 </b:beans>
