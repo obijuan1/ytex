@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.Principal;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,8 +17,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import ytex.umls.dao.DownloadDAO;
+import ytex.umls.model.DownloadEntry;
+
 public class FileDownloadServlet extends HttpServlet {
 	private static final int DEFAULT_BUFFER_SIZE = 10240;
+	private static final Log log = LogFactory.getLog(FileDownloadServlet.class);
 
 	/**
 	 * 
@@ -35,11 +45,30 @@ public class FileDownloadServlet extends HttpServlet {
 		platforms.addAll(Arrays.asList(PLATFORMS));
 	}
 
+	private void saveDownloadEntry(Principal p, String version, String platform) {
+		try {
+			DownloadDAO downloadDao = WebApplicationContextUtils
+					.getWebApplicationContext(this.getServletContext())
+					.getBean(DownloadDAO.class);
+			DownloadEntry de = new DownloadEntry();
+			de.setDate(new Date());
+			de.setPlatform(platform);
+			de.setUsername(p != null ? p.getName() : null);
+			de.setVersion(version);
+			downloadDao.saveDownloadEntry(de);
+		} catch (Exception e) {
+			log.error("user: " + p + ", platform: " + platform, e);
+		}
+	}
+
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+
 		// Get requested file by path info.
 		String version = request.getParameter("version");
 		String platform = request.getParameter("platform");
+		saveDownloadEntry(request.getUserPrincipal(), version, platform);
+
 		if (!versions.contains(version) || !platforms.contains(platform)) {
 			throw new IOException("invalid platform/version");
 		}

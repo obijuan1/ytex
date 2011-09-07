@@ -1,0 +1,521 @@
+a {text-decoration: none;}
+a:visited {text-decoration: none;}
+
+
+body {
+    background: #ffffff;
+    color: #000000;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+}
+
+
+/*
+body	
+{
+	background-color: #FBFAE8;
+	font-size: 100%;
+}
+*/
+
+li
+{
+	margin-top: 5px;
+}
+
+#banner	
+{
+	/*
+	position: fixed;
+	*/
+	top: 0px;
+	left: 0px;
+	background-color: #0e4d94;
+	border-bottom: 1px solid #fff;
+	width: 100%;
+	color: white;
+	padding-left: 10px;
+	padding-top: 15px;
+	padding-bottom: 10px;
+	font-size: 36px;
+	/*
+	font-family: san-serif;
+	*/
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+#contentWrapper {
+	/* width: 850px; */
+}
+
+#mainContent
+{
+	margin-left: 10px;
+	/*
+	margin-top: 93px;
+	overflow: hidden;
+	*/
+	padding-left: 20px;
+	padding-right: 20px;
+	/* width: 600px; */
+}
+
+#sectionHeader
+{
+	margin-top: 50px;
+	width: 600px;
+}
+
+
+sectionHeader.figure {
+	float: left;
+	margin-right: 10px;
+	
+	border: 1px solid #666;
+
+}
+
+#mainNav
+{
+	/*
+	position: fixed;
+	*/
+	top: 67px;
+	left: 0px;
+	width: 100%;
+	background-color: #c7511f;
+}
+
+			
+#mainNav ul	
+{
+	font-size: 13px;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+	/*	font-family: Times New Roman; */
+	margin: 0px;
+	padding: 5px;
+}
+
+#mainNav ul li	
+{
+	display: inline;
+}
+
+#mainNav ul li a	
+{
+	padding: 9px 12px;
+	color: #fff;
+}
+
+
+#mainNav li a:hover	
+{
+	color: #fe6;
+}
+
+
+#leftMenu	
+{
+	position: fixed;
+	top: 96px;
+	left: 5px;
+	width: 177px;
+	margin: 10px, 15px, 0, 0;
+	height: 100%;
+}
+
+#leftMenu h3 {
+	margin-left: 5px;
+	margin-top: 10px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	padding: 0px;
+	font-weight: bold;
+}
+	
+
+#leftMenu li
+{
+	margin-left: 5px;
+	margin-top: 10px;
+	list-style-type: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	padding: 0px;
+}
+
+#leftMenu ul
+{
+	margin-top: 0px;
+	margin-left: -5px;
+}
+	
+
+#leftMenu ul li
+{
+	margin-left: 0px;
+	list-style-type: none;
+	color: #323232;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+}
+
+#leftMenu li a
+{
+	margin-left: -5px;
+	list-style-type: none;
+	line-height: 1.0em;
+	display: block;
+	padding: 4px 0 4px 0;
+	text-decoration: none;
+	color: #505050;
+	height: 1%; /* closes space between items in IE */
+}
+
+#leftMenu li a:hover {
+	color: #39f;
+}
+
+#leftMenu li a:active { 
+	color: #666;
+	list-style-type: disc; 
+}
+
+ul.subMenu {
+	display: block;
+}
+
+.list li {
+	font-weight: bold;
+}
+	
+
+
+
+#objectivesWrap {
+	float:left;
+	margin-bottom: 20px;
+	width: 550px;
+}
+
+#objectives li 
+{
+	margin-top: 5px;
+}
+
+#keywords {
+	padding-top: 20px;
+
+}
+
+#keywords ul {
+	margin-top: -10px;
+	float: left;
+	width: 40em;
+}
+
+#keywords li {
+	float: left;
+	width: 20em;
+}
+
+#labMenu {
+	float: left;
+}
+
+#labMenu table
+{
+	padding-top: 20px;
+}
+
+#labMenu th
+{
+	border-bottom: 2px solid black;
+	font-size: 20px;
+}
+
+#labMenu tr
+{
+	padding-top: 5px;
+}
+#labMenu td
+{
+	padding-top: 10px;
+	padding-left: 20px;
+}
+
+
+#labMenu a {
+	text-decoration: none;
+	color: #505050;
+}
+
+#labMenu a.lab
+{
+	color: #0e4d94;
+	font-size: 20px;
+}
+
+#slidePresentations {
+	float: left;
+	padding-top: 100px;
+}
+
+#slidePresentations table
+{
+	padding-top: 20px;
+}
+
+#slidePresentations th
+{
+	border-bottom: 2px solid black;
+	font-size: 20px;
+}
+
+#slidePresentations tr
+{
+	padding-top: 5px;
+}
+
+#slidePresentations td
+{
+	padding-top: 10px;
+	padding-left: 20px;
+}
+
+
+#slidePresentations a {
+	text-decoration: none;
+	color: #505050;
+}
+
+
+#line {
+	float: left;
+	margin-top: 25px;
+	margin-bottom: 25px;
+	margin-right: auto;
+	border-top: 1px solid #0e4d94;
+	border-bottom: 1px solid #0e4d94;
+	width: 600px;
+}
+
+img.figure {
+	float: left;
+	margin-right: 20px;
+	border: 1px solid #666;
+}
+
+img.figure2 {
+	float: left;
+	margin-left: 10px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	padding: 5px;
+	border: 1px solid #666;
+}
+
+#preLab {
+	float: left;
+	padding-top: 100px;
+}
+
+
+#preLab li a {
+	list-style-type: decimal;
+	text-decoration: none;
+	
+}
+
+#preLab li a:hover {
+	color: #39f;
+}
+
+#quizTable
+{
+	float: left;
+	border: 1px solid black;
+	width: 60em;
+}
+
+#preLabQuiz {
+	float: left;
+	padding-top: 100px;
+}
+
+#preLabQuiz table
+{
+	border: 2px solid black;
+	border-collapse: collapse;
+}
+
+#preLabQuiz th
+{
+	border: 1px solid black;
+	padding: 5px;
+	}
+
+#preLabQuiz td
+{
+	border: 1px solid black;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 5px;
+	padding-right: 25px;
+}
+
+#preLabQuiz tr
+{
+	padding: 5px;
+}
+
+table.matching
+{
+	border: hidden;
+	margin: 20px 0px 20px 0px;
+}
+
+
+tr.matching
+{
+	border: hidden;
+}
+
+#preLabQuiz  td.matching
+{	
+	border: hidden;
+}
+
+#labQuiz td.matching
+{
+	padding-right: 50px;
+}
+
+#slides {
+	float: left;
+	padding-top: 100px;
+
+}
+
+#slides li a {
+	list-style-type: decimal;
+	text-decoration: none;
+	
+}
+
+#slides li a:hover {
+	color: #39f;
+}
+
+#virtual {
+	float: left;
+	padding-top: 100px;
+
+}
+
+#virtual li a {
+	list-style-type: decimal;
+	text-decoration: none;
+	
+}
+
+#virtual li a:hover {
+	color: #39f;
+}
+
+
+#pathology {
+	float: left;
+	padding-top: 100px;
+
+}
+
+#pathology li a {
+	list-style-type: decimal;
+	text-decoration: none;
+	
+}
+
+#pathology li a:hover {
+	color: #39f;
+}
+	
+#keywordsCol1 
+{
+	position: absolute;
+	left: 0px;
+	width: 200px;
+}
+
+#keywordsCol2 {
+	position: absolute;
+	left: 250px;
+	width: 300px;
+}
+
+
+
+#labQuiz {
+	float: left;
+	padding-top: 100px;
+}
+
+a.rollover
+{
+	text-decoration: none;
+	color:red;
+}
+
+#labQuiz img {
+	border: 1px solid black;
+}
+
+#labQuiz li {
+	padding-top: 20px;
+	padding-bottom: 5px;
+}
+
+.answer {
+	visibility: hidden;
+	font-style: italic;
+}
+
+#clinical {
+	float: left;
+}
+
+#labMenu table
+{
+	padding-top: 20px;
+}
+
+#clinical th
+{
+	border-bottom: 2px solid black;
+	font-size: 20px;
+}
+
+#clinical tr
+{
+	padding-top: 5px;
+}
+#clinical td
+{
+	padding-top: 10px;
+	padding-left: 20px;
+}
+
+
+#clinical a {
+	text-decoration: none;
+	color: #505050;
+}
+
+#clinical a.lab
+{
+	color: #0e4d94;
+	font-size: 20px;
+}
+
