@@ -64,7 +64,7 @@
 		<b:property name="location" value="classpath:AwsCredentials.properties" />
 	</b:bean>		
 	<b:bean id="downloadUrlGenerator"
-		class="ytex.umls.DownloadURLGeneratorImpl">
+		class="ytex.umls.S3DownloadURLGeneratorImpl">
 		<b:property name="awsProperties" ref="awsProperties" />
 	</b:bean>		
 

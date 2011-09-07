@@ -1,5 +1,7 @@
 package ytex.umls;
 
+import java.io.IOException;
+
 import org.jets3t.service.CloudFrontServiceException;
 
 public interface DownloadURLGenerator {
@@ -12,6 +14,6 @@ public interface DownloadURLGenerator {
 	 * @throws CloudFrontServiceException
 	 */
 	public abstract String getDownloadURL(String version, String platform)
-			throws CloudFrontServiceException;
+			throws IOException;
 
 }
