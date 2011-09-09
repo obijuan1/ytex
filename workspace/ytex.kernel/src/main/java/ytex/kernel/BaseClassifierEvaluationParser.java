@@ -1,18 +1,18 @@
 package ytex.kernel;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.ClassifierEvaluation;
@@ -25,6 +25,8 @@ import ytex.kernel.model.ClassifierEvaluation;
  */
 public abstract class BaseClassifierEvaluationParser implements
 		ClassifierEvaluationParser {
+	private static final Log log = LogFactory
+			.getLog(BaseClassifierEvaluationParser.class);
 
 	public static Pattern wsPattern = Pattern.compile("\\s|\\z");
 	public static Pattern wsDotPattern = Pattern.compile("\\s|\\.|\\z");
@@ -76,10 +78,15 @@ public abstract class BaseClassifierEvaluationParser implements
 	 */
 	protected Double parseDoubleOption(Pattern pCost, String options) {
 		Matcher m = pCost.matcher(options);
-		if (m.find())
-			return Double.parseDouble(m.group(1));
-		else
-			return null;
+		if (m.find()) {
+			String toParse = m.group(1);
+			try {
+				return Double.parseDouble(toParse);
+			} catch (NumberFormatException nfe) {
+				log.warn("could not parse: " + toParse, nfe);
+			}
+		}
+		return null;
 	}
 
 	/**
