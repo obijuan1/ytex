@@ -1,0 +1,4 @@
+kernel.name=cmc.2007
+kernel.experiment=sujeevan-test2
+kernel.types=4
+cv.costs=@cv.costs@
