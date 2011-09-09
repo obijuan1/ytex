@@ -19,8 +19,8 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 	public static Pattern labelsPattern = Pattern.compile("labels\\s+(.*)");
 	public static Pattern totalSVPattern = Pattern.compile("total_sv (\\d+)");
 	public static Pattern pKernel = Pattern.compile("-t\\s+(\\d)");
-	public static Pattern pGamma = Pattern.compile("-g\\s+([\\d\\.-e]+)");
-	public static Pattern pCost = Pattern.compile("-c\\s+([\\d\\.-e]+)");
+	public static Pattern pGamma = Pattern.compile("-g\\s+([\\d\\.eE-]+)");
+	public static Pattern pCost = Pattern.compile("-c\\s+([\\d\\.eE-]+)");
 	public static Pattern pWeight = Pattern
 			.compile("-w-{0,1}\\d\\s+[\\d\\.]+\\b");
 	public static Pattern pDegree = Pattern.compile("-d\\s+(\\d+)");
