@@ -20,7 +20,7 @@
 	<target name="kernel.init.label" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="tree-ctakes" />
 		<property name="export.label" value="" />
-		<property name="kernel.experiment" value="kern-ctakes" />
+		<property name="kernel.experiment" value="kern-ctakes-ic" />
 		<property name="kernel.xml" value="${kernel.experiment}.xml" />
 		<property name="label.tree" value="tree.obj" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
@@ -44,7 +44,7 @@
 			<filter token="export.label.name" value="${export.label.name}" />
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
 		</filterset>
-	</target>	
+	</target>
 	<target name="kernel.eval" depends="kernel.init.label" description="evaluate kernel on instance tree map">
 		<property name="export.param2.suffix" value="" />
 		<property name="export.param2" value="" />
@@ -105,8 +105,8 @@
 				<filterset refid="export.filterset" />
 			</filterset>
 		</copy>
-		<antcall target="kernel.export.gram"/>
-	</target>	
+		<antcall target="kernel.export.gram" />
+	</target>
 	<target name="kernel.export.gram">
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
 			<arg value="-prop" />
@@ -115,7 +115,7 @@
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
-		</java>	
+		</java>
 	</target>
 	<target name="suj.ic" description="calculate ic for sujeevan annotations">
 		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/exp/kern-sujeevan">
@@ -128,7 +128,7 @@
 		</java>
 	</target>
 	<target name="test.all">
-		<property name="test.all.target" value="test.label"/>
+		<property name="test.all.target" value="test.label" />
 		<for list="${labels}" param="export.label">
 			<sequential>
 				<antcall target="${test.all.target}">
@@ -137,7 +137,7 @@
 			</sequential>
 		</for>
 	</target>
-	
+
 	<target name="test.init.label" description="load properties for the specified label">
 		<property name="export.label" value="12" />
 		<echo>${basedir}/exp/${kernel.experiment}/experiment.properties</echo>
@@ -224,5 +224,14 @@
 			<property name="kernel.data" value="${export.dir}" />
 		</ant>
 	</target>
-	
+	<target name="infocontent">
+		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="exp/kern-ctakes-ic">
+			<arg value="-prop" />
+			<arg value="corpus.properties.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
 </project>
