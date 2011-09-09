@@ -86,8 +86,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
 		<property name="treeMappingInfo" ref="treeMappingInfo" />
 		<property name="name" value="cmc.2007" />
-		<property name="experiment" value="${kernel.experiment}" />
-		<property name="param2" value="${ytex.conceptGraphName}" />
+		<property name="experiment" value="kern-ctakes" />
+		<property name="param2" value="cmcorig" />
 		<property name="instanceIDQuery">
 			<value><![CDATA[
 select doc_id, case when doc_set = 'train' then 1 else 0 end 
