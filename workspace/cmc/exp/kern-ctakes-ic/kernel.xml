@@ -91,10 +91,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 select doc_id, case when doc_set = 'train' then 1 else 0 end 
 from corpus_doc 
 where corpus_name = 'cmc.2007'
-and doc_id in (97634811, 97634910, 97634946, 97634957, 97635019, 
-				97635067, 97635380) 
 			]]></value>
-			<!-- testing -->
 		</property>
 	</bean>
 </beans>
