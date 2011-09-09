@@ -137,6 +137,7 @@
 			</sequential>
 		</for>
 	</target>
+	
 	<target name="test.init.label" description="load properties for the specified label">
 		<property name="export.label" value="12" />
 		<echo>${basedir}/exp/${kernel.experiment}/experiment.properties</echo>
@@ -169,7 +170,7 @@
 		</filterset>
 	</target>
 	<target name="test.label" depends="test.init.label" description="export libsvm data for the specified label, run libsvm">
-		<antcall target="test.kernel.eval" />
+		<!-- antcall target="test.kernel.eval" / -->
 		<antcall target="test.export.label" />
 		<antcall target="test.libsvm.label" />
 	</target>
