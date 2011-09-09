@@ -45,7 +45,7 @@
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
 		</filterset>
 	</target>	
-	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
+	<target name="kernel.eval" depends="kernel.init.label" description="evaluate kernel on instance tree map">
 		<property name="export.param2.suffix" value="" />
 		<property name="export.param2" value="" />
 		<property name="kernel.evalTest" value="no" />
@@ -55,10 +55,10 @@
 				<filter token="export.param2" value="${export.param2}" />
 			</filterset>
 		</copy>
-		<antcall target="kernel.eval.label.local" />
-		<antcall target="kernel.eval.label.cluster" />
+		<antcall target="kernel.eval.local" />
+		<antcall target="kernel.eval.cluster" />
 	</target>
-	<target name="kernel.eval.label.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
+	<target name="kernel.eval.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
 		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
 			<sequential>
 				<antcall target="kernel.eval.slice">
@@ -67,7 +67,7 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="kernel.eval.label.cluster" if="kernel.cluster" description="send slices to slaves for processing">
+	<target name="kernel.eval.cluster" if="kernel.cluster" description="send slices to slaves for processing">
 		<!-- pass the properties to the slave that aren't in ytex.properties -->
 		<exec executable="qsub">
 			<arg line="-sync y -t 1-${kernel.mod} ${cmcant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest}" />
@@ -169,11 +169,11 @@
 		</filterset>
 	</target>
 	<target name="test.label" depends="test.init.label" description="export libsvm data for the specified label, run libsvm">
-		<antcall target="test.kernel.eval.label" />
+		<antcall target="test.kernel.eval" />
 		<antcall target="test.export.label" />
 		<antcall target="test.libsvm.label" />
 	</target>
-	<target name="test.kernel.eval.label" unless="eval.bag" depends="test.init.label" if="eval.kernel" description="evaluate kernel on test instances">
+	<target name="test.kernel.eval" unless="eval.bag" depends="test.init.label" if="eval.kernel" description="evaluate kernel on test instances">
 		<!-- export the tree -->
 		<antcall target="kernel.tree.label" />
 		<!-- evaluate the kernel -->
