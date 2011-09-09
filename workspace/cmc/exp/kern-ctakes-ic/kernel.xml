@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-this kernel is identical to the ctakes-tuifilter kernel.
-when we ran this kernel, we did not have the corresponding infocontent set up, so the concept kernel
-is essentiall the string identity function 
--->
+<!-- this kernel is identical to the kern-ctakes kernel. however, we have 
+	set up the infocontent for the cmcorig concept graph using ctakes annotations, 
+	so we have a non-trivial concept kernel. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
 	xmlns:tx="http://www.springframework.org/schema/tx"
@@ -51,7 +49,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</bean>
 		</property>
 	</bean>
-	<bean id="linKernel" parent="abstractLinKernel"/>
+	<bean id="linKernel" parent="abstractLinKernel" />
 	<!-- namedEntityKernel - norm of convolution of concepts -->
 	<bean id="namedEntityKernel" parent="abstractNormKernel">
 		<property name="delegateKernel">
@@ -87,17 +85,16 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
 		<property name="treeMappingInfo" ref="treeMappingInfo" />
 		<property name="name" value="cmc.2007" />
-		<property name="experiment" value="kern-ctakes" />
+		<property name="experiment" value="kern-ctakes-ic" />
 		<property name="instanceIDQuery">
 			<value><![CDATA[
 select doc_id, case when doc_set = 'train' then 1 else 0 end 
 from corpus_doc 
 where corpus_name = 'cmc.2007'
+and doc_id in (97634811, 97634910, 97634946, 97634957, 97635019, 
+				97635067, 97635380) 
 			]]></value>
-<!-- 
-testing
-and doc_id in (97634811, 97634910, 97634946, 97634957, 97635019, 97635067, 97635380)
- -->
+			<!-- testing -->
 		</property>
 	</bean>
 </beans>

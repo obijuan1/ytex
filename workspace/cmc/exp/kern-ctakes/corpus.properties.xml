@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<!--
+this is all over the place - takes concept frequency from suj_concept
+but for concept-class cooccurrence takes ctakes annotations
+-->
 <properties>
 	<entry key="ytex.freqQuery"><![CDATA[
 select cui, count(*)
@@ -9,11 +13,16 @@ group by cui
 	<entry key="ytex.corpusName">cmc.2007</entry>
 	<entry key="ytex.conceptSetName">sujeevan</entry>
 	<entry key="ytex.conceptGraphName">cmcorig</entry>
+	<!--
+	cmcorig is the old concept graph used with sujeevan
+	it may contain illegal concepts
+	used just for testing and comparison 
 	<entry key="ytex.conceptGraphQuery"><![CDATA[
 select cui1, cui2 
 from umls.MRREL 
 where rel = 'PAR' and rela = 'inverse_isa'
 	]]></entry>
+	 -->
 	<entry key="instanceClassQuery"><![CDATA[
 select cd.doc_id, cda.class, 1, cda.label
 from corpus_doc cd
