@@ -199,10 +199,10 @@
 	<target name="test.eval" depends="test.init.label" description="run libsvm">
 		<echo>run libsvm on directory export.dir</echo>
 		<echo>kernel.exp.base ${kernel.exp.base}</echo>
-		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="iter.dirs" inheritall="true">
+		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
 			<property name="ytex.home" value="${ytex.home}" />
 			<property name="no.genParams" value="yes"/>
-			<property name="kernel.exp.base" value="${basedir}/libsvm/${kernel.experiment}" />
+			<property name="kernel.data" value="${basedir}/libsvm/${kernel.experiment}" />
 		</ant>
 	</target>
 	<target name="infocontent" description="compute infocontent using the specified properties.  you must specify the correct concept graph in ytex.properties.">
