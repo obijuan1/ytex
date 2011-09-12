@@ -224,8 +224,9 @@
 			<property name="kernel.data" value="${export.dir}" />
 		</ant>
 	</target>
-	<target name="infocontent">
-		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="exp/kern-ctakes-ic">
+	<target name="infocontent" description="compute infocontent using the specified properties.  you must specify the correct concept graph in ytex.properties.">
+		<property name="kernel.experiment" value="kern-ctakes-umlspar" />
+		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="exp/${kernel.experiment}">
 			<arg value="-prop" />
 			<arg value="corpus.properties.xml" />
 			<jvmarg value="-Xmx1g" />

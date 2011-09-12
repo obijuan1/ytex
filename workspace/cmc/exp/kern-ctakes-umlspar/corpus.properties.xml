@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.freqQuery"><![CDATA[
+select code, count(*)
+from anno_ontology_concept o
+inner join anno_base b on b.anno_base_id = o.anno_base_id
+inner join document d on d.document_id = b.document_id
+where d.analysis_batch = 'cmc-word'
+group by code
+	]]></entry>
+	<entry key="ytex.corpusName">cmc.2007</entry>
+	<entry key="ytex.conceptGraphName">umlspar</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+select cui1, cui2 
+from umls.MRREL 
+where rel = 'PAR' and rela = 'inverse_isa'
+	]]></entry>
+</properties>
