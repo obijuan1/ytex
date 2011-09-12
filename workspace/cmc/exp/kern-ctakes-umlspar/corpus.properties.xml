@@ -11,6 +11,7 @@ group by code
 	]]></entry>
 	<entry key="ytex.corpusName">cmc.2007</entry>
 	<entry key="ytex.conceptGraphName">umlspar</entry>
+	<entry key="ytex.conceptSetName">ctakes</entry>
 	<entry key="ytex.conceptGraphQuery"><![CDATA[
 select cui1, cui2 
 from umls.MRREL 
