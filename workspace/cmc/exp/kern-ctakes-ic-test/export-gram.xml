@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.corpusName">cmc.2007</entry>
+	<entry key="ytex.experiment">kern-ctakes-ic</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+select d.doc_id, a.class, doc_set = 'train', l.label_id
+from corpus_doc d
+inner join corpus_doc_anno a 
+    on a.corpus_name = d.corpus_name
+    and a.doc_id = d.doc_id
+inner join corpus_label l 
+    on l.corpus_name = a.corpus_name 
+    and l.label = a.label
+where d.corpus_name = 'cmc.2007'
+and l.label_id = @export.label@
+	]]></entry>
+</properties>
