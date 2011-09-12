@@ -171,7 +171,6 @@
 		<copy todir="${basedir}/libsvm/${kernel.experiment}" overwrite="yes">
 			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="*.xml,kernel.properties" />
 		</copy>
-		<!--
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/libsvm/${kernel.experiment}">
 			<arg value="-prop" />
 			<arg value="export-gram.xml" />
@@ -180,7 +179,6 @@
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
-		-->
 		<for list="${labels}" param="export.label">
 			<sequential>
 				<antcall target="test.init.export">
