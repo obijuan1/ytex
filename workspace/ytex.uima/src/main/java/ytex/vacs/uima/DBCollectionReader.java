@@ -164,6 +164,7 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 							String clobText = lobHandler.getClobAsString(
 									rs, 1);
 							aCAS.setDocumentText(clobText);
+							bFirstRowRead = true;
 						} else {
 							log
 									.error("Multiple documents for document key: "
