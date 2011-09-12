@@ -93,7 +93,7 @@
 		</java>
 	</target>
 	<target name="kernel.export" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
-		<property name="export.dir" value="libsvm/${kernel.experiment}" />
+		<property name="export.dir" value="${basedir}/libsvm/${kernel.experiment}" />
 		<mkdir dir="${export.dir}" />
 		<copy file="${export.tree.srcdir}/export.xml" tofile="libsvm/${kernel.experiment}/export.xml" overwrite="yes">
 			<filterset>
