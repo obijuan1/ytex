@@ -1,0 +1,4 @@
+kernel.name=cmc.2007
+kernel.experiment=kern-ctakes-umlspar-test
+kernel.types=4
+cv.costs=@cv.costs@
