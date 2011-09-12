@@ -5,7 +5,7 @@
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<target name="kernel.tree" description="export the tree">
-		<property name="tree.name" value="tree-ctakes" />
+		<property name="tree.name" value="tree-ctakes-flatne" />
 		<mkdir dir="tree/${tree.name}" />
 		<copy file="exp/${tree.name}/tree.xml" tofile="tree/${tree.name}/tree.xml" overwrite="yes">
 		</copy>
@@ -126,6 +126,12 @@
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
+	</target>
+	<target name="cv.all" depends="kernel.eval,kernel.export" description="evaluation kernel, export gram matrices for cv, run libsvm">
+		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
+			<property name="ytex.home" value="${ytex.home}" />
+			<property name="kernel.data" value="${export.dir}" />
+		</ant>
 	</target>
 	<target name="test.all">
 		<property name="test.all.target" value="test.label" />
