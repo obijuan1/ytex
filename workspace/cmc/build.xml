@@ -48,7 +48,7 @@
 	<target name="kernel.eval" depends="kernel.init.label" description="evaluate kernel on instance tree map">
 		<property name="export.param2.suffix" value="" />
 		<property name="export.param2" value="" />
-		<property name="kernel.evalTest" value="no" />
+		<property name="kernel.evalTest" value="yes" />
 		<copy file="exp/${kernel.experiment}/kernel.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
 			<filterset>
 				<filterset refid="export.filterset" />
