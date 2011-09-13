@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- this kernel is identical to the kern-ctakes-flatne kernel, except we 
+	use the WeightedPolynomialMixingKernel. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<import resource="tree.xml" />
+	<!-- top level kernel - norm of polynomial mixing kernel on documents -->
+	<bean id="instanceKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.WeightedPolynomialMixingKernel">
+				<property name="delegateKernel" ref="documentKernel" />
+				<property name="pow" value="2" />
+				<property name="attributeKey" value="document_type_id" />
+				<property name="mapIndexWeight">
+					<map>
+						<entry>
+							<key>
+								<value>100</value>
+							</key>
+							<value>1</value>
+						</entry>
+						<entry>
+							<key>
+								<value>101</value>
+							</key>
+							<value>1</value>
+						</entry>
+					</map>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<!-- document kernel - norm of convolution on lexical units. -->
+	<bean id="documentKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.SumKernel">
+				<property name="delegateKernels">
+					<list>
+						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+							<property name="nodeType" value="named_entity" />
+							<property name="delegateKernel" ref="namedEntityKernel" />
+						</bean>
+						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+							<property name="nodeType" value="word" />
+							<property name="delegateKernel" ref="wordKernel" />
+						</bean>
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<bean id="linKernel" parent="abstractLinKernel" />
+	<!-- namedEntityKernel - norm of convolution of concepts -->
+	<bean id="namedEntityKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+				<property name="delegateKernel" ref="compositeConceptKernel" />
+			</bean>
+		</property>
+	</bean>
+	<!-- Check overlapping main semantic type. Concept kernel is lin * lch -->
+	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
+		<property name="attributeName" value="code" />
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="cacheName" value="conceptSimCache" />
+				<property name="cacheManager" ref="cacheManager" />
+				<property name="delegateKernels">
+					<list>
+						<ref bean="tuiSemanticTypeKernel" />
+						<ref bean="linKernel" />
+						<ref bean="lchKernel" />
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<!-- wordKernel - simply compare words -->
+	<bean id="wordKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
+		<property name="attributeName" value="canonical_form" />
+		<property name="delegateKernel" ref="equalityKernel" />
+	</bean>
+	<bean id="corpusKernelEvaluator" parent="abstractCorpusKernelEvaluator">
+		<property name="instanceKernel" ref="instanceKernel" />
+		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
+		<property name="treeMappingInfo" ref="treeMappingInfo" />
+		<property name="name" value="cmc.2007" />
+		<property name="experiment" value="kern-ctakes-poly" />
+		<property name="instanceIDQuery">
+			<value><![CDATA[
+select doc_id, case when doc_set = 'train' then 1 else 0 end 
+from corpus_doc 
+where corpus_name = 'cmc.2007'
+and doc_id in (97634811, 97634910, 97634946, 97634957, 97635019, 97635067, 97635380)
+			]]></value>
+		</property>
+	</bean>
+</beans>
