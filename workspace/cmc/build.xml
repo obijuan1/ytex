@@ -18,9 +18,9 @@
 		</java>
 	</target>
 	<target name="kernel.init.label" description="load the export.cutoff for the specified label">
-		<property name="tree.name" value="tree-ctakes" />
+		<property name="tree.name" value="tree-ctakes-flatne" />
 		<property name="export.label" value="" />
-		<property name="kernel.experiment" value="kern-ctakes-ic" />
+		<property name="kernel.experiment" value="kern-ctakes-ident" />
 		<property name="export.dir" value="${basedir}/libsvm/${kernel.experiment}" />
 		<property name="kernel.xml" value="${kernel.experiment}.xml" />
 		<property name="label.tree" value="tree.obj" />
