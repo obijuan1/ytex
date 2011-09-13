@@ -21,6 +21,7 @@
 		<property name="tree.name" value="tree-ctakes" />
 		<property name="export.label" value="" />
 		<property name="kernel.experiment" value="kern-ctakes-ic" />
+		<property name="export.dir" value="${basedir}/libsvm/${kernel.experiment}" />
 		<property name="kernel.xml" value="${kernel.experiment}.xml" />
 		<property name="label.tree" value="tree.obj" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
@@ -93,7 +94,6 @@
 		</java>
 	</target>
 	<target name="kernel.export" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
-		<property name="export.dir" value="${basedir}/libsvm/${kernel.experiment}" />
 		<mkdir dir="${export.dir}" />
 		<copy file="${export.tree.srcdir}/export.xml" tofile="libsvm/${kernel.experiment}/export.xml" overwrite="yes">
 			<filterset>
