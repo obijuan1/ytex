@@ -127,7 +127,7 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	<target name="cv.eval" description="run libsvm cross-validation on directory">
+	<target name="cv.eval" depends="kernel.init.label" description="run libsvm cross-validation on directory">
 		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
 			<property name="ytex.home" value="${ytex.home}" />
 			<property name="kernel.data" value="${export.dir}" />
