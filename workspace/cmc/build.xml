@@ -141,11 +141,14 @@
 		<property name="export.label" value="12" />
 		<echo>${basedir}/exp/${kernel.experiment}/experiment.properties</echo>
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
+		<property file="${basedir}/exp/${kernel.experiment}/classWeights.properties" />
 		<propertycopy property="test.cv.costs" from="label.${export.label}.cv.costs" />
+		<propertycopy property="test.weights" from="class.weight.${export.label}" silent="yes" />
 		<propertycopy property="test.kernel.param1" from="label.${export.label}.kernel.param1" silent="yes" />
 		<propertycopy property="test.kernel.param2" from="label.${export.label}.kernel.param2" silent="yes" />
 		<property name="test.kernel.param1" value="" />
 		<property name="test.kernel.param2" value="" />
+		<property name="test.weights" value="" />
 		<condition property="eval.kernel">
 			<equals arg1="${kernel.types}" arg2="4" />
 		</condition>
@@ -190,7 +193,7 @@
 		</for>
 	</target>
 	<target name="test.init.export" depends="test.init.label" description="clean export dir, generate kernel.properties">
-		<property name="kernel.evalLines" value="-q -b 1  -t 4 -c ${test.cv.costs}" />
+		<property name="kernel.evalLines" value="-q -b 1 -t 4 -c ${test.cv.costs} ${test.weights}" />
 		<echo>${basedir}/libsvm/${kernel.experiment}/label${export.label}_train_data.properties</echo>
 		<echoproperties destfile="${basedir}/libsvm/${kernel.experiment}/label${export.label}_train_data.properties">
 			<propertyset id="properties-starting-with-bar">
