@@ -13,6 +13,5 @@ inner join corpus_label l
     on l.corpus_name = a.corpus_name 
     and l.label = a.label
 where d.corpus_name = 'cmc.2007'
-and l.label_id = @export.label@
 	]]></entry>
 </properties>
