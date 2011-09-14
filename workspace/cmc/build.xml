@@ -133,7 +133,7 @@
 			<property name="kernel.data" value="${export.dir}" />
 		</ant>
 	</target>
-	<target name="cv.all" depends="kernel.eval,kernel.export,cv.eval" description="evaluation kernel, export gram matrices for cv, run libsvm"/>
+	<target name="cv.all" depends="kernel.eval,kernel.export,cv.eval" description="evaluation kernel, export gram matrices for cv, run libsvm" />
 
 	<target name="test.all" depends="test.export,test.eval" />
 
@@ -172,7 +172,7 @@
 		</filterset>
 	</target>
 	<target name="test.export" description="export gram matrices, move each gram matrix to a different dir">
-		<mkdir dir="${basedir}/libsvm/${kernel.experiment}"/>
+		<mkdir dir="${basedir}/libsvm/${kernel.experiment}" />
 		<copy todir="${basedir}/libsvm/${kernel.experiment}" overwrite="yes">
 			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="*.xml,kernel.properties" />
 		</copy>
@@ -206,7 +206,7 @@
 		<echo>kernel.exp.base ${kernel.exp.base}</echo>
 		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
 			<property name="ytex.home" value="${ytex.home}" />
-			<property name="no.genParams" value="yes"/>
+			<property name="no.genParams" value="yes" />
 			<property name="kernel.data" value="${basedir}/libsvm/${kernel.experiment}" />
 		</ant>
 	</target>
@@ -222,8 +222,6 @@
 		</java>
 	</target>
 	<target name="cv.semil">
-		<!--
-
 		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="semil/kern-ctakes-ident" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="export.xml" />
@@ -233,7 +231,6 @@
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
-		-->
 		<java classname="ytex.R.RGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="semil/kern-ctakes-ident" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="export-gram.xml" />
@@ -242,5 +239,50 @@
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
+	</target>
+	<target name="test.semil.export">
+		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="semil/kern-ctakes-ident-test" failonerror="yes">
+			<arg value="-prop" />
+			<arg value="export-test.xml" />
+			<arg value="-type" />
+			<arg value="semil" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	<target name="test.semil.prepare">
+		<for list="${labels}" param="export.label">
+			<sequential>
+				<antcall target="test.semil.prepare.label">
+					<param name="export.label" value="@{export.label}" />
+				</antcall>
+			</sequential>
+		</for>
+		<copy todir="semil/kern-ctakes-ident-test">
+			<fileset dir="semil/kern-ctakes-ident" includes="dist*.txt" />
+		</copy>
+	</target>
+	<target name="test.semil.prepare.label">
+		<property name="export.label" value="1" />
+		<property file="semil/kern-ctakes-ident-test/kernel.properties" />
+		<propertycopy property="kernel.distFiles" from="label.${export.label}.kernel.distFiles" />
+		<propertycopy property="kernel.evalLines" from="label.${export.label}.kernel.evalLines" />
+		<echoproperties destfile="semil/kern-ctakes-ident-test/label${export.label}_label.properties">
+			<propertyset id="kernel">
+				<propertyref name="kernel.distFiles" />
+				<propertyref name="kernel.evalLines" />
+			</propertyset>
+		</echoproperties>
+	</target>
+	<target name="test.semil.eval">
+		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="semil.evaluate" inheritall="true">
+			<property name="ytex.home" value="${ytex.home}" />
+			<property name="kernel.data" value="${basedir}/semil/kern-ctakes-ident-test" />
+		</ant>
+		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="kernel.storeResults" inheritall="true">
+			<property name="ytex.home" value="${ytex.home}" />
+			<property name="kernel.data" value="${basedir}/semil/kern-ctakes-ident-test" />
+		</ant>		
 	</target>
 </project>
