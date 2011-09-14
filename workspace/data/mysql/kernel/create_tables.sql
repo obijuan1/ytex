@@ -212,7 +212,7 @@ create table classifier_eval_irzv (
 create table classifier_instance_eval (
 	classifier_instance_eval_id int not null auto_increment primary key,
 	classifier_eval_id int not null comment 'fk classifier_eval',
-	instance_id int not null,
+	instance_id bigint not null,
 	pred_class_id int not null,
 	target_class_id int null,
 	unique key nk_result (classifier_eval_id, instance_id)
