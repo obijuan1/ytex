@@ -18,5 +18,9 @@ public class PairTest extends TestCase {
 		OrderedPair<String> p1 = new OrderedPair<String>("foo", "bar");
 		OrderedPair<String> p2 = new OrderedPair<String>("bar", "foo");
 		System.out.println(p1.equals(p2) ? "yes" : "no");
-	}	
+	}
+	
+	public void testFormat() {
+		System.out.println(Double.parseDouble("1e-4"));
+	}
 }

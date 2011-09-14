@@ -12,7 +12,7 @@ public class ClassifierInstanceEvaluation implements Serializable {
 	int predictedClassId;
 	Integer targetClassId;
 	ClassifierEvaluation classifierEvaluation;
-	long classifierInstanceEvaluationId;
+	int classifierInstanceEvaluationId;
 	Map<Integer, Double> classifierInstanceProbabilities = new HashMap<Integer, Double>();
 	long instanceId;
 	public int getPredictedClassId() {
@@ -21,7 +21,7 @@ public class ClassifierInstanceEvaluation implements Serializable {
 	public ClassifierEvaluation getClassifierEvaluation() {
 		return classifierEvaluation;
 	}
-	public long getClassifierInstanceEvaluationId() {
+	public int getClassifierInstanceEvaluationId() {
 		return classifierInstanceEvaluationId;
 	}
 	public Map<Integer, Double> getClassifierInstanceProbabilities() {

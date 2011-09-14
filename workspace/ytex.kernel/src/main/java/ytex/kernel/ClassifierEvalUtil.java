@@ -305,7 +305,7 @@ public class ClassifierEvalUtil {
 		// no matches, check unscoped
 		if (distFiles == null || distFiles.length == 0) {
 			distFiles = kernelDataDir.listFiles(new FileUtil.PrefixFileFilter(
-					"_dist_"));
+					"dist_"));
 		}
 		if (distFiles != null && distFiles.length > 0) {
 			List<String> listDistFiles = new ArrayList<String>(distFiles.length);

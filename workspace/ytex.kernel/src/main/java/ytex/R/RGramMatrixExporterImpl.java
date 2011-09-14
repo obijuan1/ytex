@@ -96,25 +96,25 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 			outputGramMatrix(gramMatrix, instanceIds, filePrefix);
 	}
 
-//	private KernelEvaluation getKernelEval(String name, String splitName,
-//			String experiment, String label, int run, int fold, double param1,
-//			String param2) {
-//		int foldId = 0;
-//		if (run != 0 && fold != 0) {
-//			CrossValidationFold f = this.classifierEvaluationDao
-//					.getCrossValidationFold(name, splitName, label, run, fold);
-//			if (f != null)
-//				foldId = f.getCrossValidationFoldId();
-//		}
-//		KernelEvaluation kEval = this.kernelEvaluationDao.getKernelEval(name,
-//				experiment, label, foldId, param1, param2);
-//		if (kEval == null) {
-//			log.warn("could not find kernelEvaluation.  name=" + name
-//					+ ", experiment=" + experiment + ", label=" + label
-//					+ ", fold=" + fold + ", run=" + run);
-//		}
-//		return kEval;
-//	}
+	// private KernelEvaluation getKernelEval(String name, String splitName,
+	// String experiment, String label, int run, int fold, double param1,
+	// String param2) {
+	// int foldId = 0;
+	// if (run != 0 && fold != 0) {
+	// CrossValidationFold f = this.classifierEvaluationDao
+	// .getCrossValidationFold(name, splitName, label, run, fold);
+	// if (f != null)
+	// foldId = f.getCrossValidationFoldId();
+	// }
+	// KernelEvaluation kEval = this.kernelEvaluationDao.getKernelEval(name,
+	// experiment, label, foldId, param1, param2);
+	// if (kEval == null) {
+	// log.warn("could not find kernelEvaluation.  name=" + name
+	// + ", experiment=" + experiment + ", label=" + label
+	// + ", fold=" + fold + ", run=" + run);
+	// }
+	// return kEval;
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -135,6 +135,8 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 				props.getProperty("instanceClassQuery"));
 		exportGramMatrices(name, experiment, param1, param2, splitName, scope,
 				outdir, instanceData);
+		instanceDataExporter.outputInstanceData(instanceData,
+				FileUtil.addFilenameToDir(outdir, "instance.txt"));
 	}
 
 	//
@@ -215,7 +217,8 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 				// write line from gram matrix
 				for (int j = 0; j < instanceIdArray.length; j++) {
 					w.write(Double.toString(gramMatrix[i][j]));
-					w.write(" ");
+					if (j < instanceIdArray.length - 1)
+						w.write(" ");
 				}
 				w.write("\n");
 			}

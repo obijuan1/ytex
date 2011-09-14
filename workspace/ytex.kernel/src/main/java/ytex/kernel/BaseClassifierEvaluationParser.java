@@ -62,6 +62,9 @@ public abstract class BaseClassifierEvaluationParser implements
 			while ((instanceId = instanceIdReader.readLine()) != null)
 				instanceIds.add(Long.parseLong(instanceId));
 			return instanceIds;
+		} catch(FileNotFoundException e) {
+			log.warn(instanceIdFile + " not available, instance_ids will not be stored");
+			return null;
 		} finally {
 			if (instanceIdReader != null)
 				instanceIdReader.close();

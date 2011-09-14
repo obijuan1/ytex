@@ -11,7 +11,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import ytex.kernel.DBUtil;
+import ytex.dao.DBUtil;
 import ytex.kernel.model.KernelEvaluation;
 import ytex.kernel.model.KernelEvaluationInstance;
 

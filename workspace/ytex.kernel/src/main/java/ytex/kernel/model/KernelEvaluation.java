@@ -2,7 +2,7 @@ package ytex.kernel.model;
 
 import java.io.Serializable;
 
-import ytex.kernel.DBUtil;
+import ytex.dao.DBUtil;
 
 public class KernelEvaluation implements Serializable {
 	/**

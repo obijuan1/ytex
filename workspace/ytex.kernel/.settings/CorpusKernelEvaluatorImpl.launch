@@ -8,9 +8,9 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE" value="e:\temp\kern.txt"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-beans kern-cuiword-filteredlin_0.25_0.25.xml -loadInstanceMap tree_0.25.obj -evalTest yes"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-beans kern-ctakes-poly.xml -loadInstanceMap tree.obj -evalTest yes"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ytex.kernel"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g&#13;&#10;-Dlog4j.configuration=file:///E:/projects/ytex/config/desc/log4j.properties &#13;&#10;-Djava.util.logging.config.file=E:\projects\ytex\config\desc\Logger.properties"/>
-<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:i2b2.2008/tree/tree-cuiword/15}"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:cmc/tree/tree-ctakes-flatne}"/>
 <stringAttribute key="yk-options" value="&#13;&#10;additional-options2=onexit\=snapshot&#13;&#10;startup=0&#13;&#10;"/>
 </launchConfiguration>

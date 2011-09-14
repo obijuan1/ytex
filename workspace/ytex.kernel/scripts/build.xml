@@ -256,13 +256,15 @@
 		<basename file="${kernel.data.file.name}" property="kernel.basename" suffix="data.txt" />
 		<!-- load label.properties file - can override default cv.semil.metrics and cv.semil.degrees there -->
 		<property file="${kernel.data}/${kernel.basename}label.properties" />
+		<property name="semil.prefix" value="${kernel.basename}dist_" />
 		<property name="semil.metrics" value="${cv.semil.metrics}" />
 		<property name="semil.degrees" value="${cv.semil.degrees}" />
+		<property name="semil.gram" value="${cv.semil.gram}" />
 		<echo>semil.metrics ${semil.metrics}</echo>
 		<echo>semil.degrees ${semil.degrees}</echo>
 		<mkdir dir="${kernel.dist.dir}" />
 		<exec executable="${R.bin}/R" dir="${kernel.data}">
-			<arg line="--slave --file=${basedir}/semil_dist.R --args ${kernel.data.file} ${semil.metrics} ${kernel.basename} ${semil.degrees}" />
+			<arg line="--slave --file=${basedir}/semil_dist.R --args ${kernel.data.file} ${semil.metrics} ${semil.prefix} ${semil.degrees} ${semil.gram}" />
 		</exec>
 	</target>
 	<target name="semil.evaluate" depends="init.dir" description="iterate over *label.txt, call semil.processLabelFile">

@@ -1,7 +1,6 @@
 package ytex.kernel;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Map;
 

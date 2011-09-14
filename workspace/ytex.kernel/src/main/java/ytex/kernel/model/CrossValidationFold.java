@@ -3,7 +3,7 @@ package ytex.kernel.model;
 import java.io.Serializable;
 import java.util.Set;
 
-import ytex.kernel.DBUtil;
+import ytex.dao.DBUtil;
 
 public class CrossValidationFold implements Serializable {
 	/**

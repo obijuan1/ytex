@@ -3,7 +3,7 @@ package ytex.kernel.model;
 import java.io.Serializable;
 import java.util.List;
 
-import ytex.kernel.DBUtil;
+import ytex.dao.DBUtil;
 
 public class FeatureEvaluation implements Serializable {
 

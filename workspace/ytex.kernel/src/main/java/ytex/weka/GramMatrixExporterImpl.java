@@ -29,7 +29,11 @@ import ytex.kernel.BagOfWordsExporter;
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.kernel.model.KernelEvaluation;
 import ytex.kernel.model.KernelEvaluationInstance;
-
+/**
+ * @deprecated don't know if this works ...
+ * @author vijay
+ *
+ */
 public class GramMatrixExporterImpl extends WekaBagOfWordsExporterImpl implements
 		GramMatrixExporter {
 	private JdbcTemplate jdbcTemplate;
