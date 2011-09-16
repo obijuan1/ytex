@@ -151,6 +151,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="libSVMParser" class="ytex.libsvm.LibSVMParser" parent="baseClassifierEvaluationParser" />
 	<bean id="svmLightParser" class="ytex.svmlight.SVMLightParser"
 		parent="baseClassifierEvaluationParser" />
+	<bean id="svmlinParser" class="ytex.kernel.SvmlinEvaluationParser"
+		parent="baseClassifierEvaluationParser" />
 
 	<bean id="ClassifierEvaluationImporter" class="ytex.kernel.ClassifierEvaluationImporter">
 		<property name="nameToParserMap">
@@ -172,6 +174,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						<value>semil</value>
 					</key>
 					<ref bean="semiLEvaluationParser" />
+				</entry>
+				<entry>
+					<key>
+						<value>svmlin</value>
+					</key>
+					<ref bean="svmlinParser" />
 				</entry>
 			</map>
 		</property>
@@ -267,17 +275,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="cacheKeyGenerator">
 			<bean class="ytex.kernel.evaluator.SymmetricPairCacheKeyGenerator" />
 		</property>
-		<property name="methodName" value="evaluate"/>
+		<property name="methodName" value="evaluate" />
 	</bean>
-<!-- 
-	<bean id="abstractKernelCacheAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor">
-		<property name="pointcut">
-			<bean class="org.springframework.aop.support.JdkRegexpMethodPointcut">
-				<property name="pattern">
-					<value>.*evaluate.*</value>
-				</property>
-			</bean>
-		</property>
-	</bean>
- -->	
+	<!-- <bean id="abstractKernelCacheAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor"> 
+		<property name="pointcut"> <bean class="org.springframework.aop.support.JdkRegexpMethodPointcut"> 
+		<property name="pattern"> <value>.*evaluate.*</value> </property> </bean> 
+		</property> </bean> -->
 </beans>

@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.ClassifierEvaluation;
+import ytex.kernel.model.ClassifierInstanceEvaluation;
 
 /**
  * miscellaneous methods used for parsing various output types
@@ -62,8 +63,9 @@ public abstract class BaseClassifierEvaluationParser implements
 			while ((instanceId = instanceIdReader.readLine()) != null)
 				instanceIds.add(Long.parseLong(instanceId));
 			return instanceIds;
-		} catch(FileNotFoundException e) {
-			log.warn(instanceIdFile + " not available, instance_ids will not be stored");
+		} catch (FileNotFoundException e) {
+			log.warn(instanceIdFile
+					+ " not available, instance_ids will not be stored");
 			return null;
 		} finally {
 			if (instanceIdReader != null)
@@ -166,5 +168,81 @@ public abstract class BaseClassifierEvaluationParser implements
 		// save the classifier evaluation
 		this.getClassifierEvaluationDao().saveClassifierEvaluation(ce,
 				storeInstanceEval || storeUnlabeled, storeIR, 0);
+	}
+
+	/**
+	 * used by semil & svmlin to store semisupervised predictions. these train
+	 * ml and make test predictions in a single step.
+	 * 
+	 * @param ce
+	 *            updated
+	 * @param listClassInfo
+	 *            the class info 0 - instance id, 1 - train/test, 2 - target
+	 *            class id
+	 * @param storeUnlabeled
+	 *            should the unlabeled predictions be stored?
+	 * @param classIds
+	 *            predicted class ids
+	 */
+	protected void updateSemiSupervisedPredictions(ClassifierEvaluation ce,
+			List<List<Long>> listClassInfo, boolean storeUnlabeled,
+			int[] classIds) {
+		for (int i = 0; i < classIds.length; i++) {
+			List<Long> classInfo = listClassInfo.get(i);
+			long instanceId = classInfo.get(0);
+			boolean train = classInfo.get(1) == 1;
+			int targetClassId = classInfo.get(2).intValue();
+			// if we are storing unlabeled instance ids, save this instance
+			// evaluation
+			// else only store it if this is a test instance id - save it
+			if (storeUnlabeled || !train) {
+				ClassifierInstanceEvaluation cie = new ClassifierInstanceEvaluation();
+				cie.setClassifierEvaluation(ce);
+				cie.setInstanceId(instanceId);
+				cie.setPredictedClassId(classIds[i]);
+				if (targetClassId != 0)
+					cie.setTargetClassId(targetClassId);
+				// add the instance eval to the parent
+				ce.getClassifierInstanceEvaluations().put(instanceId, cie);
+			}
+		}
+	}
+
+	protected List<List<Long>> loadClassInfo(File dataDir, String labelBase)
+			throws IOException {
+		List<List<Long>> listClassInfo = null;
+		// construct the name of the class.txt file
+		String classFileName = dataDir + File.separator
+				+ labelBase.substring(0, labelBase.length() - "label".length())
+				+ "class.txt";
+		// load instance ids and their class ids
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(new FileReader(classFileName));
+			listClassInfo = new ArrayList<List<Long>>();
+			String line = null;
+			while ((line = r.readLine()) != null) {
+				if (line.trim().length() > 0) {
+					String classInfoToks[] = line.split("\\s");
+					List<Long> classInfo = new ArrayList<Long>(3);
+					for (String tok : classInfoToks) {
+						classInfo.add(Long.parseLong(tok));
+					}
+					if (classInfo.size() != 3) {
+						log.error("error parsing line: " + line);
+						return null;
+					}
+					listClassInfo.add(classInfo);
+				}
+			}
+		} catch (FileNotFoundException fe) {
+			log.warn("class.txt file not available: " + classFileName, fe);
+			listClassInfo = null;
+		} finally {
+			if (r != null) {
+				r.close();
+			}
+		}
+		return listClassInfo;
 	}
 }

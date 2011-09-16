@@ -5,7 +5,7 @@
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 
 	<target name="iter.dirs" description="iterate over ${kernel.dirs} in ${kernel.exp.base}, call process.dir">
-		<property name="kernel.dirs" value="*"/>
+		<property name="kernel.dirs" value="*" />
 		<echo>kernel.exp.base ${kernel.exp.base}</echo>
 		<echo>kernel.dirs ${kernel.dirs}</echo>
 		<for param="kernel.data">
@@ -31,9 +31,15 @@
 		<condition property="semil">
 			<equals arg1="${kernel.algo}" arg2="semil" />
 		</condition>
+		<condition property="svmlin">
+			<equals arg1="${kernel.algo}" arg2="svmlin" />
+		</condition>
 		<!-- set flags to control which machine learning target to run on each fold -->
-		<condition property="process.dir.target" value="semil.process.dir" else="svm.process.dir">
+		<condition property="process.dir.target" value="semil.process.dir">
 			<isset property="semil" />
+		</condition>
+		<condition property="process.dir.target" value="svmlin.process.dir" else="svm.process.dir">
+			<isset property="svmlin" />
 		</condition>
 		<property name="kernel.eval.tmpdir" value="${java.io.tmpdir}" />
 		<property name="kernel.tmpdir" value="${kernel.eval.tmpdir}/${kernel.name}-${kernel.experiment}-${kernel.algo}${kernel.param1}${kernel.param2}" />
@@ -194,11 +200,11 @@
 		<!-- train the svm -->
 		<property name="kernel.train.line" value="${kernel.evalLine} -l ${kernel.outdir}/transduct.txt ${eval.train.data} ${kernel.outdir}/model.txt" />
 		<echo>kernel.train.line ${kernel.train.line}</echo>
-		<exec executable="${svmlight.bin}/svm_learn" dir="${kernel.workdir}" failonerror="no" output="${label.dir}/${kernel.outdir}/output.txt" timeout="${kernel.timeout}">
+		<exec executable="${svmlight.bin}/svm_learn" dir="${kernel.workdir}" failonerror="yes" output="${label.dir}/${kernel.outdir}/output.txt" timeout="${kernel.timeout}">
 			<arg line="${kernel.train.line}" />
 		</exec>
 		<!-- test the svm -->
-		<exec executable="${svmlight.bin}/svm_classify" dir="${kernel.workdir}" failonerror="no" timeout="${kernel.timeout}">
+		<exec executable="${svmlight.bin}/svm_classify" dir="${kernel.workdir}" failonerror="yes" timeout="${kernel.timeout}">
 			<arg line="${eval.test.data} ${kernel.outdir}/model.txt ${kernel.outdir}/predict.txt" />
 		</exec>
 		<antcall target="svm.store.options" />
@@ -262,7 +268,6 @@
 		<property name="semil.gram" value="${cv.semil.gram}" />
 		<echo>semil.metrics ${semil.metrics}</echo>
 		<echo>semil.degrees ${semil.degrees}</echo>
-		<mkdir dir="${kernel.dist.dir}" />
 		<exec executable="${R.bin}/R" dir="${kernel.data}">
 			<arg line="--slave --file=${basedir}/semil_dist.R --args ${kernel.data.file} ${semil.metrics} ${semil.prefix} ${semil.degrees} ${semil.gram}" />
 		</exec>
@@ -328,6 +333,66 @@
 		<exec executable="${semil.bin}/Semil" dir="${kernel.label.dir}">
 			<arg line="${kernel.line} ${kernel.dist.file} ${kernel.label.filename}" />
 		</exec>
+	</target>
+	<!--
+	-->
+	<target name="svmlin.process.dir" depends="init.dir,kernel.genParams,svmlin.evaluate,kernel.storeResults" description="run svmlin" />
+	<target name="svmlin.evaluate" depends="init.dir" description="iterate over *label.txt, call semil.processLabelFile">
+		<for param="kernel.label.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
+			<fileset dir="${kernel.data}" includes="*label.txt" />
+			<sequential>
+				<antcall target="svmlin.processLabelFile">
+					<param name="kernel.label.file" value="@{kernel.label.file}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="svmlin.processLabelFile" depends="init.dir" description="for each label file, call svmlin.iter.evalLines">
+		<property name="kernel.label.file" value="${kernel.data}/label1_run1_fold1_label.txt" />
+		<basename file="${kernel.label.file}" property="kernel.label.filename" />
+		<basename file="${kernel.label.filename}" property="kernel.data.basename" suffix=".txt" />
+		<!-- load properties kernel.distFiles and kernel.evalLines defined -->
+		<echo>${kernel.data}/${kernel.data.basename}.properties</echo>
+		<property file="${kernel.data}/${kernel.data.basename}.properties" />
+		<fail unless="kernel.dataFile" />
+		<property name="kernel.label.dir" value="${kernel.tmpdir}-${kernel.data.basename}" />
+		<echo>kernel.label.dir ${kernel.label.dir}</echo>
+		<mkdir dir="${kernel.label.dir}" />
+		<!-- copy distance files to working directory -->
+		<copy todir="${kernel.label.dir}">
+			<fileset dir="${kernel.data}" includes="${kernel.dataFile}" />
+			<fileset dir="${kernel.data}" includes="${kernel.label.filename}" />
+		</copy>
+		<!-- iterate over parameter grid -->
+		<for list="${kernel.evalLines}" param="kernel.train.line">
+			<sequential>
+				<antcall target="svmlin.eval.label">
+					<param name="kernel.train.line" value="@{kernel.train.line}" />
+				</antcall>
+			</sequential>
+		</for>
+		<!-- delete unneeded files -->
+		<delete dir="${kernel.label.dir}" quiet="yes" />
+	</target>
+	<target name="svmlin.eval.label" description="evaluate semil, copy results to timestamped dir under eval">
+		<exec executable="${svmlin.bin}/svmlin" dir="${kernel.label.dir}" output="${kernel.label.dir}/svmlin.out">
+			<arg line="${kernel.train.line} ${kernel.dataFile} ${kernel.label.filename}" />
+		</exec>
+		<tstamp>
+			<format property="cv.tstamp" pattern="dd-hh-mm-s.S" />
+		</tstamp>
+		<!-- copy results -->
+		<property name="result.dir" value="${kernel.data}/eval/${kernel.data.basename}/${cv.tstamp}"/>
+		<mkdir dir="${result.dir}" />
+		<move file="${kernel.label.dir}/${kernel.dataFile}.weights" tofile="${result.dir}/weights"/>
+		<move file="${kernel.label.dir}/${kernel.dataFile}.outputs" tofile="${result.dir}/outputs"/>
+		<move file="${kernel.label.dir}/svmlin.out" todir="${result.dir}"/>
+		<!-- store svmlin options -->
+		<echoproperties destfile="${result.dir}/options.properties">
+			<propertyset>
+				<propertyref prefix="kernel." />
+			</propertyset>
+		</echoproperties>
 	</target>
 
 </project>

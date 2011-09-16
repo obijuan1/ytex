@@ -2,11 +2,9 @@ package ytex.semil;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +17,7 @@ import org.apache.commons.logging.LogFactory;
 
 import ytex.kernel.BaseClassifierEvaluationParser;
 import ytex.kernel.KernelContextHolder;
-import ytex.kernel.model.ClassifierInstanceEvaluation;
+import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.SemiLClassifierEvaluation;
 
 /**
@@ -42,7 +40,7 @@ import ytex.kernel.model.SemiLClassifierEvaluation;
  * 
  */
 public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
-	private final static Log log = LogFactory
+	public final static Log log = LogFactory
 			.getLog(SemiLEvaluationParser.class);
 	/**
 	 * parse options
@@ -79,14 +77,9 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 		// get the name of the label file
 		String labelBase = kernelProps.getProperty("kernel.label.basename");
 		if (labelBase != null && labelBase.length() > 0) {
-			// construct the name of the class.txt file
-			String classFileName = dataDir
-					+ File.separator
-					+ labelBase.substring(0,
-							labelBase.length() - "label".length())
-					+ "class.txt";
 			// load instance ids and their class ids
-			List<List<Long>> listClassInfo = loadClassInfo(classFileName);
+			List<List<Long>> listClassInfo = super.loadClassInfo(dataDir,
+					labelBase);
 			// process .output files
 			if (listClassInfo != null) {
 				for (File output : outputDir.listFiles(new FilenameFilter() {
@@ -101,48 +94,8 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 				}
 			}
 		} else {
-			log.warn("couldn't parse directory; kernel.label.base not defined. Dir: " + outputDir);
-		}
-	}
-
-	/**
-	 * list of instances id - train/test flag - target class id. order of list
-	 * corresponds to order of training instances.
-	 * 
-	 * @param classFileName
-	 * @return null if file not found
-	 * @throws IOException
-	 */
-	private List<List<Long>> loadClassInfo(String classFileName)
-			throws IOException {
-		BufferedReader r = null;
-		try {
-			r = new BufferedReader(new FileReader(classFileName));
-			List<List<Long>> listClassInfo = new ArrayList<List<Long>>();
-			String line = null;
-			while ((line = r.readLine()) != null) {
-				if (line.trim().length() > 0) {
-					String classInfoToks[] = line.split("\\s");
-					List<Long> classInfo = new ArrayList<Long>(3);
-					for (String tok : classInfoToks) {
-						classInfo.add(Long.parseLong(tok));
-					}
-					if (classInfo.size() != 3) {
-						log.error("error parsing line: " + line);
-						return null;
-					}
-					listClassInfo.add(classInfo);
-				}
-			}
-			return listClassInfo;
-		} catch (FileNotFoundException fe) {
-			log.warn("class.txt file not available: " + classFileName, fe);
-			return null;
-		} finally {
-			if (r != null) {
-				r.close();
-			}
-
+			log.warn("couldn't parse directory; kernel.label.base not defined. Dir: "
+					+ outputDir);
 		}
 	}
 
@@ -209,29 +162,15 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	 *            should all predictions - not only for test instances be
 	 *            stored?
 	 */
-	private void parsePredictedClasses(SemiLClassifierEvaluation ce,
+	private void parsePredictedClasses(ClassifierEvaluation ce,
 			String predictLine, List<List<Long>> listClassInfo,
 			boolean storeUnlabeled) {
-		String classIds[] = predictLine.split("\\s");
-		for (int i = 0; i < classIds.length; i++) {
-			List<Long> classInfo = listClassInfo.get(i);
-			long instanceId = classInfo.get(0);
-			boolean train = classInfo.get(1) == 1;
-			int targetClassId = classInfo.get(2).intValue();
-			// if we are storing unlabeled instance ids, save this instance
-			// evaluation
-			// else only store it if this is a test instance id - save it
-			if (storeUnlabeled || !train) {
-				ClassifierInstanceEvaluation cie = new ClassifierInstanceEvaluation();
-				cie.setClassifierEvaluation(ce);
-				cie.setInstanceId(instanceId);
-				cie.setPredictedClassId(Integer.parseInt(classIds[i]));
-				if (targetClassId != 0)
-					cie.setTargetClassId(targetClassId);
-				// add the instance eval to the parent
-				ce.getClassifierInstanceEvaluations().put(instanceId, cie);
-			}
-		}
+		String strClassIds[] = predictLine.split("\\s");
+		int classIds[] = new int[strClassIds.length];
+		for (int i = 0; i < classIds.length; i++)
+			classIds[i] = Integer.parseInt(strClassIds[i]);
+		updateSemiSupervisedPredictions(ce, listClassInfo, storeUnlabeled,
+				classIds);
 	}
 
 	/**
