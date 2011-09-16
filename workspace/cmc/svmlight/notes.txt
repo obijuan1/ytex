@@ -1,0 +1,18 @@
+* copy data.txt and instance_id.txt from semil folder
+* run query to generate instance.txt:
+mysql -u ytex -p ytex -h ristretto.med.yale.edu < instance.sql > instance.txt
+* run to generate svmlight train and test files:
+source("svmlight.R")
+exportKpcaSvmLight(100)
+* run cross validation
+
+* run test
+export data in R:
+	instance = read.table("../kern-ctakes-ident-test/instance.txt")
+	colnames(instance) = c("instance_id", "class", "train", "label")
+	for(label in unique(instance$label)) {
+		prefix = paste("../kern-ctakes-ident-test/label", label, "_", sep="")
+		exportSvmlight(instance[instance$label == label,], prefix, iid, data.libsvm)
+	}
+
+
