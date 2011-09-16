@@ -283,6 +283,32 @@
 		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="kernel.storeResults" inheritall="true">
 			<property name="ytex.home" value="${ytex.home}" />
 			<property name="kernel.data" value="${basedir}/semil/kern-ctakes-ident-test" />
-		</ant>		
+		</ant>
+	</target>
+	<target name="test.kpca">
+		<for list="${labels}" param="export.label">
+			<sequential>
+				<antcall target="test.kpca.init.label">
+					<param name="export.label" value="@{export.label}" />
+				</antcall>
+			</sequential>
+		</for>
+		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
+			<property name="ytex.home" value="${ytex.home}" />
+			<property name="no.genParams" value="yes" />
+		</ant>
+	</target>
+	<target name="test.kpca.init.label">
+		<property file="${kernel.data}/kernel.properties" />
+		<property name="export.label" value="12" />
+		<propertycopy property="test.cv.costs" from="label.${export.label}.cv.costs" />
+		<propertycopy property="test.weights" from="class.weight.${export.label}" silent="yes" />
+		<property name="kernel.evalLines" value="-q -b 1 -t 0 -c ${test.cv.costs} ${test.weights}" />
+		<echo>${kernel.data}/label${export.label}_train_data.properties</echo>
+		<echoproperties destfile="${kernel.data}/label${export.label}_train_data.properties">
+			<propertyset id="properties-starting-with-bar">
+				<propertyref name="kernel.evalLines" />
+			</propertyset>
+		</echoproperties>
 	</target>
 </project>

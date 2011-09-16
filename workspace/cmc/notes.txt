@@ -373,7 +373,61 @@ where corpus_name = 'cmc.2007'
 nohup ant -Dytex.home=${YTEX_HOME} -Dkernel.experiment=kern-ctakes-ident kernel.eval > ant.out 2>&1 &
 }}}
 
+== semil results ==
+much worse:
+test macro f1: 0.3386398355159
+test micro ppv/sens/f1: 0.7891	0.6830	0.732226479179
+However - for many classes semiL is much higher.
+TODO: select best method by cross validation, use best method for final test eval. 
 
+== svmlight results ==
+* export cv data
+mysql --user=ytex --host=ristretto.med.yale.edu ytex < instance.sql > instance.txt
+cd to svmlight/kern-ctakes-ident
+source("svmlight.R")
+export(gramFile = "../../semiL/kern-ctakes-ident/data.txt", 
+	idFile = "../../semiL/kern-ctakes-ident/instance_id.txt", 
+	features=100)
+* way too slow - computer crashed after a couple hours...
 
+== libsvm w/ kpca ==
+verify that libsvm works properly with kpca'ed representation before testing svmlin
+* export instance data
+mysql -u ytex -p ytex -h ristretto.med.yale.edu < instance.sql > instance.txt
+* run to generate libsvm cv files:
+when using all features get a wide, dense matrix - takes too long to write out to disk!
+take top 200 features
+{{{
+source("svmlight.R")
+export(gramFile = "semiL/kern-ctakes-ident/data.txt", 
+	idFile = "semiL/kern-ctakes-ident/instance_id.txt", 
+	instanceFile = "libsvm/kpca/instance.txt", 
+	outputDir= "libsvm/kpca/",
+	features=200)
+}}}
+* run cross validation
+micro ppv/sens/f1: 0.8866	0.7103	0.788718116350
 
+* test
+{{{
+export(gramFile = "semiL/kern-ctakes-ident/data.txt", 
+	idFile = "semiL/kern-ctakes-ident/instance_id.txt", 
+	instanceFile = "libsvm/kpca-test/instance.txt", 
+	outputDir= "libsvm/kpca-test/",
+	features=200)
+}}}
+
+== svmlin w/kpca ==
+query to get positive classes
+{{{
+select cast(concat('kernel.classrel.', label_id, '=', pos/neg) as char(100))
+from
+(
+    select l.label_id, sum(case when a.class = 1 then 1 else 0 end) pos, sum(case when a.class = 0 then 1 else 0 end) neg
+    from corpus_doc d
+    inner join corpus_doc_anno a on a.corpus_name = d.corpus_name and a.doc_id = d.doc_id
+    inner join corpus_label l on l.corpus_name = d.corpus_name and l.label = a.label
+    group by label_id
+) s
+}}}
 
