@@ -430,4 +430,85 @@ from
     group by label_id
 ) s
 }}}
+macro: 0.41
+micro: 0.7149	0.7826	0.747219686144
+but outperformed libsvm on many classes
 
+== best of the best ==
+micro ppv/sens/f1: 0.8606, 0.8199, 0.839757143707
+select *, 2*ppv*sens/(ppv+sens)
+from
+(
+	select tp/(tp+fp) ppv, tp/(tp+fn) sens
+	from
+	(
+		select sum(tp) tp, sum(fp) fp, sum(tn) tn, sum(fn) fn
+		from
+		(
+		    select e.experiment, e.label, i.*
+		    from classifier_eval e
+		    inner join classifier_eval_ir i on e.classifier_eval_id = i.classifier_eval_id and 
+		        (
+		            (experiment not like '%semil%' and i.ir_class_id = 1)  
+		            or
+		            (experiment like '%semil%' and i.ir_class_id = 2)
+		        )
+		    inner join
+		    (
+		    select e.label, 
+		        case 
+		            when min(e.exp) = 1 then 'kern-ctakes-ident-test'
+		            when min(e.exp) = 2 then 'kern-ctakes-ident-semil-test'
+		            else '10kpca-svmlin-test'
+		        end experiment
+		    from
+		    (
+		            select experiment, label, i.*,
+		            case
+		                when experiment = 'kern-ctakes-ident-semil-test' then 2
+		                when experiment = 'kern-ctakes-ident-test' then 1
+		                else 3
+		            end exp
+		            from classifier_eval e
+		            inner join classifier_eval_ir i on e.classifier_eval_id = i.classifier_eval_id and 
+		                (
+		                    (experiment not like '%semil%' and i.ir_class_id = 1)  
+		                    or
+		                    (experiment like '%semil%' and i.ir_class_id = 2)
+		                )
+		        where experiment in ('kern-ctakes-ident-semil-test', 'kern-ctakes-ident-test', '10kpca-svmlin-test')
+		    ) e inner join
+		    (
+		            select label, max(f1) f1
+		            from classifier_eval e
+		            inner join classifier_eval_ir i on e.classifier_eval_id = i.classifier_eval_id and 
+		                (
+		                    (experiment not like '%semil%' and i.ir_class_id = 1)  
+		                    or
+		                    (experiment like '%semil%' and i.ir_class_id = 2)
+		                )
+		        where experiment in ('kern-ctakes-ident-semil-test', 'kern-ctakes-ident-test', '10kpca-svmlin-test')
+		        group by label
+		    ) s on e.label = s.label and e.f1 = s.f1
+		    group by label
+		    ) l on l.label = e.label and l.experiment = e.experiment
+		)s
+	)s
+)s
+;
+
+== svmlin ==
+ok, go back to basics - cross validation to get best params.
+maybe the cost param is important.  
+test transductive svm with various lambdaW.  
+use a low lambdaU to speed things up.
+del label12*
+del label19*
+del label21*
+del label25*
+del label26*
+del label28*
+del label32*
+del label37*
+del label41*
+del label42*
