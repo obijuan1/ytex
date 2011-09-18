@@ -1,2 +1,1 @@
-DROP TABLE umls_ms_2009;
-DROP TABLE umls_snomed_map;
+DROP TABLE umls_aui_fword;
