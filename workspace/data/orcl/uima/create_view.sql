@@ -15,8 +15,7 @@ o.code,
 substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, 
 substr(d.doc_text, sentence.span_begin+1, sentence.span_end-sentence.span_begin) sentence_text,
 d.analysis_batch
-FROM 
-anno_base  da 
+FROM anno_base  da 
 INNER JOIN anno_named_entity  ne ON da.anno_base_id = ne.anno_base_id 
 INNER JOIN anno_ontology_concept  o ON o.anno_base_id = ne.anno_base_id 
 INNER join anno_base sentence on da.document_id = sentence.document_id
@@ -26,24 +25,6 @@ sentence.span_begin <= da.span_begin
 and sentence.span_end >= da.span_end
 and sentence.uima_type_id in (select uima_type_id from ref_uima_type t where t.uima_type_name = 'edu.mayo.bmi.uima.core.sentence.type.Sentence');
 ;
-
-create view v_snomed_fword_lookup
-as
-select fword, cui, text
-from umls_ms_2009
-where 
-(
-	tui in 
-	(
-	'T021','T022','T023','T024','T025','T026','T029','T030','T031',
-	'T059','T060','T061',
-	'T019','T020','T037','T046','T047','T048','T049','T050','T190','T191',
-	'T033','T034','T040','T041','T042','T043','T044','T045','T046','T056','T057','T184'
-	)
-	and sourcetype = 'SNOMEDCT'
-) 
-;
-
 
 CREATE VIEW v_document_ontoanno
 AS

@@ -1,13 +1,12 @@
 create sequence document_id_sequence;
 create sequence anno_base_id_sequence;
-create sequence document_class_id_sequence;
 create sequence anno_onto_concept_id_sequence;
 create sequence anno_contain_id_sequence;
 
 CREATE TABLE document(
 	document_id int  NOT NULL,
-	uid NUMBER(19) not null default 0,
-	analysis_batch varchar2(50) NOT NULL default ' ',
+	"uid" NUMBER(19) default 0 not null,
+	analysis_batch varchar2(50) default ' ' NOT NULL,
 	cas blob NULL,
 	doc_text clob NULL,
 	CONSTRAINT PK_document PRIMARY KEY
@@ -26,28 +25,10 @@ CREATE INDEX IX_document_analysis_batch ON document
 
 CREATE INDEX IX_uid ON document 
 (
-	uid
-)
-;
-CREATE TABLE document_class(
-	document_class_id int  NOT NULL,
-	document_id int NOT NULL,
-	task varchar2(50) NOT NULL,
-	class_auto int NOT NULL,
-	class_gold int NOT NULL,
-PRIMARY KEY
-(
-	document_class_id
-)
+	"uid"
 )
 ;
 
-CREATE UNIQUE INDEX NK_document_class ON document_class
-(
-	document_id ,
-	task 
-)
-;
 
 create table anno_base (
 	anno_base_id int  not null,
@@ -63,6 +44,7 @@ create table anno_base (
 
 CREATE INDEX IX_docanno_doc ON anno_base (document_id)
 ;
+
 
 create table anno_sentence (
 	anno_base_id int not null,
@@ -92,6 +74,10 @@ create table anno_ontology_concept (
 	primary key (anno_ontology_concept_id),
 	foreign key (anno_base_id) references anno_named_entity(anno_base_id)  ON DELETE CASCADE
 );
+
+CREATE INDEX IX_ontology_concept_code ON anno_ontology_concept (code)
+;
+
 
 create table anno_umls_concept (
 	anno_ontology_concept_id int not null,
@@ -226,12 +212,50 @@ create table anno_contain (
   child_anno_base_id int not null,
   child_uima_type_id int not null,
   primary key (anno_contain_id),
-  key ix_child_id (child_anno_base_id),
-  key ix_parent_id (parent_anno_base_id),
-  key IX_parent_id_child_type (parent_anno_base_id, child_uima_type_id),
-  key IX_child_id_parent_type (child_anno_base_id, parent_uima_type_id),
-  unique key nk_anno_contain (parent_anno_base_id, child_anno_base_id),
   foreign key (parent_anno_base_id)
 		references anno_base(anno_base_id)
 		ON DELETE CASCADE
 );
+
+CREATE UNIQUE INDEX NK_anno_contain ON anno_contain (parent_anno_base_id, child_anno_base_id)
+;
+
+CREATE INDEX IX_anno_contain_p ON anno_contain (parent_anno_base_id, child_uima_type_id)
+;
+
+CREATE INDEX IX_anno_contain_c ON anno_contain (child_anno_base_id, parent_uima_type_id)
+;
+
+/
+
+create or replace trigger trg_document before insert on document
+for each row
+when (new.document_id is null)
+begin
+ select document_id_sequence.nextval into :new.document_id from dual;
+end;
+/
+
+create trigger trg_anno_base before insert on anno_base
+for each row
+when (new.anno_base_id is null)
+begin
+ select anno_base_id_sequence.nextval into :new.anno_base_id from dual;
+end;
+/
+
+create trigger trg_anno_ontology_concept before insert on anno_ontology_concept
+for each row
+when (new.anno_ontology_concept_id is null)
+begin
+ select anno_onto_concept_id_sequence.nextval into :new.anno_ontology_concept_id from dual;
+end;
+/
+
+create trigger trg_anno_contain before insert on anno_contain
+for each row
+when (new.anno_contain_id is null)
+begin
+ select anno_contain_id_sequence.nextval into :new.anno_contain_id from dual;
+end;
+/
