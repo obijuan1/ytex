@@ -13,45 +13,12 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
-public class DocumentSearchServiceImpl implements DocumentSearchService {
-	private static final Log log = LogFactory
-			.getLog(DocumentSearchServiceImpl.class);
-	private SimpleJdbcTemplate jdbcTemplate;
-	private DataSource dataSource;
-	private Properties searchProperties;
-	private String query;
-	private SessionFactory sessionFactory;
-
-	public SessionFactory getSessionFactory() {
-		return sessionFactory;
-	}
-
-	public void setSessionFactory(SessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
-	}
-
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
-		this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
-	}
-
-	public DataSource getDataSource() {
-		return this.dataSource;
-	}
-
-	public void setSearchProperties(Properties searchProperties) {
-		this.searchProperties = searchProperties;
-		this.query = searchProperties.getProperty("retrieveDocumentByCUI")
-				+ searchProperties.getProperty("retrieveDocumentEndClause");
-	}
-
-	public Properties getSearchProperties() {
-		return searchProperties;
-	}
-
+public class DocumentSearchServiceImpl implements DocumentSearchService,
+		InitializingBean {
 	public static class DocumentSearchResultMapper implements
 			RowMapper<DocumentSearchResult> {
 
@@ -67,24 +34,21 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
 			return result;
 		}
 	}
+	private static final Log log = LogFactory
+			.getLog(DocumentSearchServiceImpl.class);
+	private DataSource dataSource;
+	private SimpleJdbcTemplate jdbcTemplate;
+	private String query;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gov.va.vacs.esld.dao.DocumentSearchDao#searchByCui(java.lang.String)
-	 */
-	public List<DocumentSearchResult> searchByCui(String code) {
-		Map<String, Object> mapArgs = new HashMap<String, Object>(1);
-		mapArgs.put("code", code);
-		return this.jdbcTemplate.query(query, new DocumentSearchResultMapper(),
-				mapArgs);
-		// String query =
-		// "select new ytex.web.search.DocumentSearchResult(d.documentID, substring(d.docText, 1,10), current_timestamp(), substring(d.docText, 1,10), substring(d.docText, 1,10), substring(d.docText, ne.begin+1,ne.end-ne.begin)) from OntologyConceptAnnotation o inner join o.namedEntityAnnotation ne inner join o.namedEntityAnnotation.document d";
-		// Query q =
-		// this.getSessionFactory().getCurrentSession().createQuery(searchProperties.getProperty("retrieveDocumentByCUIHql"));
-		// q.setParameter("code", code);
-		// q.setMaxResults(100);
-		// return q.list();
+	private Properties searchProperties;
+
+	private SessionFactory sessionFactory;
+
+	private Properties ytexProperties;
+	public void afterPropertiesSet() throws Exception {
+		this.query = searchProperties.getProperty("retrieveDocumentByCUI")
+				.replaceAll("@db\\.schema@",
+						this.getYtexProperties().getProperty("db.schema"));
 	}
 
 	/**
@@ -107,46 +71,27 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
 	public List<DocumentSearchResult> extendedSearch(String code,
 			String documentTypeName, Date dateFrom, Date dateTo,
 			Integer patientId, Boolean negationStatus) {
-		StringBuilder queryBuilder = new StringBuilder(searchProperties.getProperty("retrieveDocumentByCUI"));
-		Map<String, Object> mapArgs = new HashMap<String, Object>(1);
-		mapArgs.put("code", code);
+		Map<String, Object> mapArgs = this.initMapArgs(code);
 		if (documentTypeName != null) {
-			queryBuilder.append("\n").append(
-					searchProperties
-							.getProperty("retrieveDocumentDocTypeClause"));
 			mapArgs.put("document_type_name", documentTypeName);
 		}
 		if (dateFrom != null) {
-			queryBuilder.append("\n").append(
-					searchProperties
-							.getProperty("retrieveDocumentFromDateClause"));
 			mapArgs.put("from_doc_date", dateFrom);
 		}
 		if (dateTo != null) {
-			queryBuilder.append("\n").append(
-					searchProperties
-							.getProperty("retrieveDocumentToDateClause"));
 			mapArgs.put("to_doc_date", dateTo);
 		}
 		if (patientId != null) {
-			queryBuilder.append("\n").append(
-					searchProperties
-							.getProperty("retrieveDocumentPatientIDClause"));
-			mapArgs.put("study_id", patientId);
+			mapArgs.put("patient_id", patientId);
 		}
 		if (negationStatus != null) {
-			queryBuilder.append("\n").append(
-					searchProperties.getProperty("retrieveDocumentNegClause"));
 			mapArgs.put("certainty", negationStatus ? 0 : -1);
 		}
-		queryBuilder.append(searchProperties
-				.getProperty("retrieveDocumentEndClause"));
-		String extendedSearchQuery = queryBuilder.toString();
 		if (log.isDebugEnabled()) {
-			log.debug("executing query, query=" + extendedSearchQuery
+			log.debug("executing query, query=" + query
 					+ ", args=" + mapArgs);
 		}
-		return this.jdbcTemplate.query(extendedSearchQuery,
+		return this.jdbcTemplate.query(query,
 				new DocumentSearchResultMapper(), mapArgs);
 	}
 
@@ -159,8 +104,13 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
 	 *         NOTE (string) fields.
 	 */
 	public List<Map<String, Object>> fullTextSearch(String searchTerm) {
-		return this.jdbcTemplate.queryForList(this.searchProperties
-				.getProperty("retrieveDocumentFullText"), searchTerm);
+		return this.jdbcTemplate.queryForList(
+				this.searchProperties.getProperty("retrieveDocumentFullText"),
+				searchTerm);
+	}
+
+	public DataSource getDataSource() {
+		return this.dataSource;
 	}
 
 	/**
@@ -173,5 +123,63 @@ public class DocumentSearchServiceImpl implements DocumentSearchService {
 		return this.jdbcTemplate.queryForObject(this.searchProperties
 				.getProperty("retrieveFullTextSearchDocument"), String.class,
 				documentId);
+	}
+
+	public Properties getSearchProperties() {
+		return searchProperties;
+	}
+
+	public SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+
+	public Properties getYtexProperties() {
+		return ytexProperties;
+	}
+
+	private Map<String, Object> initMapArgs(String code) {
+		Map<String, Object> mapArgs = new HashMap<String, Object>(1);
+		mapArgs.put("code", code);
+		mapArgs.put("document_type_name", null);
+		mapArgs.put("from_doc_date", null);
+		mapArgs.put("to_doc_date", null);
+		mapArgs.put("patient_id", null);
+		mapArgs.put("certainty", null);
+		return mapArgs;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see gov.va.vacs.esld.dao.DocumentSearchDao#searchByCui(java.lang.String)
+	 */
+	public List<DocumentSearchResult> searchByCui(String code) {
+		Map<String, Object> mapArgs = this.initMapArgs(code);
+		return this.jdbcTemplate.query(query, new DocumentSearchResultMapper(),
+				mapArgs);
+		// String query =
+		// "select new ytex.web.search.DocumentSearchResult(d.documentID, substring(d.docText, 1,10), current_timestamp(), substring(d.docText, 1,10), substring(d.docText, 1,10), substring(d.docText, ne.begin+1,ne.end-ne.begin)) from OntologyConceptAnnotation o inner join o.namedEntityAnnotation ne inner join o.namedEntityAnnotation.document d";
+		// Query q =
+		// this.getSessionFactory().getCurrentSession().createQuery(searchProperties.getProperty("retrieveDocumentByCUIHql"));
+		// q.setParameter("code", code);
+		// q.setMaxResults(100);
+		// return q.list();
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+		this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+	}
+
+	public void setSearchProperties(Properties searchProperties) {
+		this.searchProperties = searchProperties;
+	}
+
+	public void setSessionFactory(SessionFactory sessionFactory) {
+		this.sessionFactory = sessionFactory;
+	}
+
+	public void setYtexProperties(Properties ytexProperties) {
+		this.ytexProperties = ytexProperties;
 	}
 }

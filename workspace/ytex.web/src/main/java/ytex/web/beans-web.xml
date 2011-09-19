@@ -12,15 +12,17 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</aop:config>
 	<bean id="searchProperties"
 		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-		<property name="location" value="classpath:/ytex/search.properties" />
+		<property name="location" value="classpath:/ytex/search.${db.type}.properties" />
 	</bean>
 	<bean id="documentSearchService" class="ytex.web.search.DocumentSearchServiceImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="searchProperties" ref="searchProperties" />
+		<property name="ytexProperties" ref="ytexProperties" />
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 	<bean id="umlsFirstWordService" class="ytex.web.search.UMLSFirstWordServiceImpl">
 		<property name="dataSource" ref="dataSource" />
+		<property name="ytexProperties" ref="ytexProperties" />
 		<property name="searchProperties" ref="searchProperties" />
 	</bean>
 </beans>

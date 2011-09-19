@@ -9,35 +9,12 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
-
-public class UMLSFirstWordServiceImpl implements UMLSFirstWordService {
-	private SimpleJdbcTemplate jdbcTemplate;
-	private DataSource dataSource;
-	private Properties searchProperties;
-
-	private String query;
-
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
-		this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
-	}
-
-	public DataSource getDataSource() {
-		return this.dataSource;
-	}
-
-	public void setSearchProperties(Properties searchProperties) {
-		this.searchProperties = searchProperties;
-		this.query = searchProperties.getProperty("retrieveCUIByFword");
-	}
-
-	public Properties getSearchProperties() {
-		return searchProperties;
-	}
-
+public class UMLSFirstWordServiceImpl implements UMLSFirstWordService,
+		InitializingBean {
 	public static class UMLSFirstWordRowMapper implements
 			RowMapper<UMLSFirstWord> {
 
@@ -51,6 +28,27 @@ public class UMLSFirstWordServiceImpl implements UMLSFirstWordService {
 		}
 
 	}
+	private DataSource dataSource;
+	private SimpleJdbcTemplate jdbcTemplate;
+	private String query;
+
+	private Properties searchProperties;
+
+	private Properties ytexProperties;
+
+	public void afterPropertiesSet() throws Exception {
+		this.query = searchProperties.getProperty("retrieveCUIByFword")
+				.replaceAll("@db\\.schema@",
+						this.getYtexProperties().getProperty("db.schema"));
+	}
+
+	public DataSource getDataSource() {
+		return this.dataSource;
+	}
+
+	public Properties getSearchProperties() {
+		return searchProperties;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -62,20 +60,38 @@ public class UMLSFirstWordServiceImpl implements UMLSFirstWordService {
 	public List<UMLSFirstWord> getUMLSbyFirstWord(String textStart) {
 		String words[] = textStart.toLowerCase().split("\\s+");
 		String fword = textStart.toLowerCase();
-//		int nFWordLength = fword.length();
+		// int nFWordLength = fword.length();
 		String text = textStart.toLowerCase();
 		int nTextLength = textStart.length();
 		if (words.length > 1) {
 			fword = words[0];
-//			nFWordLength = fword.length();
+			// nFWordLength = fword.length();
 		}
-//		return this.jdbcTemplate.query(query, new UMLSFirstWordRowMapper(),
-//		new Object[] { fword.length(), fword, nTextLength, text });
+		// return this.jdbcTemplate.query(query, new UMLSFirstWordRowMapper(),
+		// new Object[] { fword.length(), fword, nTextLength, text });
 		Map<String, Object> args = new HashMap<String, Object>();
 		args.put("fword", fword);
 		args.put("fwordlen", fword.length());
 		args.put("term", text);
-		args.put("termlen", nTextLength);		
-		return this.jdbcTemplate.query(query, new UMLSFirstWordRowMapper(), args);
+		args.put("termlen", nTextLength);
+		return this.jdbcTemplate.query(query, new UMLSFirstWordRowMapper(),
+				args);
+	}
+
+	public Properties getYtexProperties() {
+		return ytexProperties;
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+		this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+	}
+
+	public void setSearchProperties(Properties searchProperties) {
+		this.searchProperties = searchProperties;
+	}
+
+	public void setYtexProperties(Properties ytexProperties) {
+		this.ytexProperties = ytexProperties;
 	}
 }

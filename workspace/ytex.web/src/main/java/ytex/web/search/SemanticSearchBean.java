@@ -13,15 +13,15 @@ import javax.faces.model.SelectItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 import com.icesoft.faces.component.selectinputtext.SelectInputText;
 
 /**
- * JSF Backing Bean for semanticSearch.jspx.
- * Search for documents based on concept ids, negation status, patient, and date.
- * Based on the IceFaces autocomplete example.
+ * JSF Backing Bean for semanticSearch.jspx. Search for documents based on
+ * concept ids, negation status, patient, and date. Based on the IceFaces
+ * autocomplete example.
+ * 
  * @author vijay
- *
+ * 
  */
 public class SemanticSearchBean {
 	private static final Log log = LogFactory.getLog(SemanticSearchBean.class);
@@ -37,7 +37,8 @@ public class SemanticSearchBean {
 		return umlsFirstWordService;
 	}
 
-	public void setUmlsFirstWordService(UMLSFirstWordService umlsFirstWordService) {
+	public void setUmlsFirstWordService(
+			UMLSFirstWordService umlsFirstWordService) {
 		this.umlsFirstWordService = umlsFirstWordService;
 	}
 
@@ -45,7 +46,8 @@ public class SemanticSearchBean {
 		return documentSearchService;
 	}
 
-	public void setDocumentSearchService(DocumentSearchService documentSearchService) {
+	public void setDocumentSearchService(
+			DocumentSearchService documentSearchService) {
 		this.documentSearchService = documentSearchService;
 	}
 
@@ -70,7 +72,8 @@ public class SemanticSearchBean {
 	}
 
 	public void setPatientId(Integer patientId) {
-		this.patientId = patientId;
+		if (patientId != null && patientId != 0)
+			this.patientId = patientId;
 	}
 
 	public Boolean getNegationStatus() {
@@ -112,10 +115,10 @@ public class SemanticSearchBean {
 		if (this.currentCUI != null) {
 			if (this.getNegationStatus() != null || this.getPatientId() != null
 					|| this.getDateFrom() != null || this.getDateTo() != null) {
-				this.searchResultList = this.documentSearchService.extendedSearch(
-						this.currentCUI.getCui(), null, this.getDateFrom(),
-						this.getDateTo(), this.getPatientId(), this
-								.getNegationStatus());
+				this.searchResultList = this.documentSearchService
+						.extendedSearch(this.currentCUI.getCui(), null,
+								this.getDateFrom(), this.getDateTo(),
+								this.getPatientId(), this.getNegationStatus());
 			} else {
 				this.searchResultList = this.documentSearchService
 						.searchByCui(this.currentCUI.getCui());
@@ -133,8 +136,8 @@ public class SemanticSearchBean {
 		this.setSearchResultList(null);
 		this.searchCUI = null;
 		// can't clear cui in UI - only in backing bean
-//		this.currentCUI = null;
-//		this.matchesList = null;
+		// this.currentCUI = null;
+		// this.matchesList = null;
 	}
 
 	/**
