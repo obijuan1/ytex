@@ -70,7 +70,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	private static Set<Integer> numericTypes = new HashSet<Integer>();
 
 	static {
-		stringTypes.addAll(Arrays.asList(Types.CHAR, Types.NCHAR));
+		stringTypes.addAll(Arrays.asList(Types.CHAR, Types.NCHAR,
+				Types.VARCHAR, Types.NVARCHAR));
 		numericTypes.addAll(Arrays.asList(Types.BIGINT, Types.BIT,
 				Types.BOOLEAN, Types.DECIMAL, Types.FLOAT, Types.DOUBLE,
 				Types.INTEGER));
@@ -309,7 +310,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	public void initDocKeyMapping() {
 		AbstractEntityPersister cm = (AbstractEntityPersister) this.sessionFactory
 				.getClassMetadata(Document.class);
-//		this.formattedTableName = DBUtil.formatTableName(cm.getTableName());
+		// this.formattedTableName = DBUtil.formatTableName(cm.getTableName());
 		this.formattedTableName = cm.getTableName();
 		log.info("document table name = " + formattedTableName);
 		final String query = "select * from " + formattedTableName

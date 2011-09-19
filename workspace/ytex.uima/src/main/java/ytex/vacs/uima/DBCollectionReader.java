@@ -140,7 +140,9 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 					p.setValueString(val.toString());
 				}
 				keyValuePairs.set(i, p);
+				i++;
 			}
+			docKey.setKeyValuePairs(keyValuePairs);
 			docKey.addToIndexes();
 		} catch (CASException ce) {
 			throw new CollectionException(ce);
