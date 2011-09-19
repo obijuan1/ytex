@@ -1,34 +1,52 @@
 package ytex.uima.mapper;
 
 import java.io.ByteArrayOutputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.uima.cas.FSIterator;
 import org.apache.uima.cas.impl.XmiCasSerializer;
 import org.apache.uima.cas.text.AnnotationIndex;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.util.XMLSerializer;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
+import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.dao.DBUtil;
 import ytex.model.Document;
 import ytex.model.DocumentAnnotation;
 import ytex.model.UimaType;
+import ytex.uima.types.DocKey;
+import ytex.uima.types.KeyValuePair;
 
 /**
  * Map document annotations to the database. Delegates to AnnotationMapper
@@ -44,6 +62,28 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			.getLog(DocumentMapperServiceImpl.class);
 	private SessionFactory sessionFactory;
 	private PlatformTransactionManager transactionManager;
+	private DataSource dataSource;
+	private JdbcTemplate jdbcTemplate;
+	private CaseInsensitiveMap docTableCols = new CaseInsensitiveMap();
+	private String formattedTableName = null;
+	private static Set<Integer> stringTypes = new HashSet<Integer>();
+	private static Set<Integer> numericTypes = new HashSet<Integer>();
+
+	static {
+		stringTypes.addAll(Arrays.asList(Types.CHAR, Types.NCHAR));
+		numericTypes.addAll(Arrays.asList(Types.BIGINT, Types.BIT,
+				Types.BOOLEAN, Types.DECIMAL, Types.FLOAT, Types.DOUBLE,
+				Types.INTEGER));
+	}
+
+	public DataSource getDataSource() {
+		return jdbcTemplate.getDataSource();
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+		jdbcTemplate = new JdbcTemplate(dataSource);
+	}
 
 	public void setTransactionManager(
 			PlatformTransactionManager transactionManager) {
@@ -135,11 +175,10 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			saveDocumentAnnotation((Annotation) annoIterator.next(), doc,
 					setTypesToIgnore);
 		}
-		// this causes deadlocks when running in parallel!
-		// Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
-		// "insertAnnotationContainmentLinks");
-		// q.setInteger("documentID", doc.getDocumentID());
-		// q.executeUpdate();
+		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
+				"insertAnnotationContainmentLinks");
+		q.setInteger("documentID", doc.getDocumentID());
+		q.executeUpdate();
 		return doc.getDocumentID();
 	}
 
@@ -154,7 +193,9 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 */
 	private DocumentAnnotation saveDocumentAnnotation(Annotation annotation,
 			Document document, Set<String> setTypesToIgnore) {
-		if (setTypesToIgnore != null
+		if (annotation instanceof DocKey) {
+			saveDocKey(document, (DocKey) annotation);
+		} else if (setTypesToIgnore != null
 				&& !setTypesToIgnore.contains(annotation.getClass().getName())) {
 			DocumentAnnotationMapper<? extends DocumentAnnotation> mapper = this
 					.getMapperForAnnotation(annotation.getClass().getName());
@@ -166,6 +207,72 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * update the document table - set key values from dockey for the give
+	 * document_id
+	 * 
+	 * @param document
+	 *            document
+	 * @param dk
+	 *            key
+	 */
+	private void saveDocKey(Document document, DocKey dk) {
+		int documentId = document.getDocumentID();
+		FSArray fsa = dk.getKeyValuePairs();
+		// build query dynamically
+		StringBuilder queryBuilder = (new StringBuilder("update ")).append(
+				formattedTableName).append(" set ");
+		List<Object> args = new ArrayList<Object>();
+		boolean bFirstArg = true;
+		// iterate over key/value pairs
+		for (int i = 0; i < fsa.size(); i++) {
+			KeyValuePair kp = (KeyValuePair) fsa.get(i);
+			String key = kp.getKey();
+			if (key.equalsIgnoreCase("uid")) {
+				// uid is something we 'know' about - set it
+				document.setUid(kp.getValueLong());
+			} else if (this.docTableCols.containsKey(key)) {
+				// only attempt to map keys that correspond to valid columns
+				boolean badArg = false;
+				// verify that the value matches the datatype
+				// if valueString not null then assume integer
+				if (kp.getValueString() != null
+						&& stringTypes.contains(docTableCols.get(key))) {
+					args.add(kp.getValueString());
+				} else if (numericTypes.contains(docTableCols.get(key))) {
+					args.add(kp.getValueLong());
+				} else {
+					// invalid type for argument
+					badArg = true;
+					log.warn("document_id: " + documentId
+							+ ", bad type for key=" + key + ", value="
+							+ kp.getValueString() == null ? kp.getValueLong()
+							: kp.getValueString());
+				}
+				if (!badArg) {
+					// update
+					if (!bFirstArg) {
+						queryBuilder.append(", ");
+					}
+					queryBuilder.append(DBUtil.formatFieldName(key));
+					queryBuilder.append("=? ");
+				}
+			}
+		}
+		if (args.size() > 0) {
+			// have something to update - add the where condition
+			queryBuilder.append(" where document_id = ?");
+			args.add(documentId);
+			String sql = queryBuilder.toString();
+			if (log.isDebugEnabled()) {
+				log.debug(sql);
+			}
+			jdbcTemplate.update(sql, args.toArray());
+		} else {
+			log.warn("document_id: " + documentId + "could not map key");
+		}
 	}
 
 	/**
@@ -199,6 +306,55 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 
 	}
 
+	public void initDocKeyMapping() {
+		AbstractEntityPersister cm = (AbstractEntityPersister) this.sessionFactory
+				.getClassMetadata(Document.class);
+//		this.formattedTableName = DBUtil.formatTableName(cm.getTableName());
+		this.formattedTableName = cm.getTableName();
+		log.info("document table name = " + formattedTableName);
+		final String query = "select * from " + formattedTableName
+				+ " where 1=2";
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		try {
+			conn = dataSource.getConnection();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(query);
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int nCols = rsmd.getColumnCount();
+			for (int i = 1; i <= nCols; i++) {
+				docTableCols.put(rsmd.getColumnName(i), rsmd.getColumnType(i));
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("docTableCols: " + docTableCols);
+			}
+		} catch (SQLException e) {
+			log.error("problem determining document table fields", e);
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+		}
+	}
+
 	/**
 	 * load the map of uima annotation class name to mapper class name from the
 	 * database.
@@ -227,6 +383,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 					documentAnnotationMappers.put(uimaType.getUimaTypeName(),
 							uimaType.getMapperName());
 				}
+				initDocKeyMapping();
 				return null;
 			}
 		});
