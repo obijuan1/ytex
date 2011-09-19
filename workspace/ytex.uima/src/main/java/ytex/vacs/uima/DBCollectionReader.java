@@ -9,15 +9,13 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReader_ImplBase;
-import org.apache.uima.jcas.tcas.Annotation;
+import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.ConfigurationParameterSettings;
 import org.apache.uima.resource.metadata.ProcessingResourceMetaData;
@@ -30,7 +28,8 @@ import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 import ytex.uima.ApplicationContextHolder;
-import ytex.vacs.uima.types.DocumentKey;
+import ytex.uima.types.DocKey;
+import ytex.uima.types.KeyValuePair;
 
 /**
  * 
@@ -110,40 +109,7 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 				log.info("loading document with id = " + id);
 			}
 			getDocumentById(aCAS, id);
-			try {
-				if (keyTypeName != null) {
-					Annotation key = (Annotation)ConstructorUtils.invokeConstructor(Class
-							.forName(keyTypeName), aCAS.getJCas());
-					// just copy properties with the specified key names
-					BeanUtils.populate(key, id);
-					if (key instanceof DocumentKey) {
-						// backwards compatibility
-						DocumentKey docKey = (DocumentKey)key;
-						if (id.get("studyid") != null)
-							docKey.setStudyID(((Number) id.get("studyid")).intValue());
-						if (id.get("uid") != null)
-							docKey.setUid(((Number) id.get("uid")).longValue());
-						if (id.get("document_type_id") != null)
-							docKey.setDocumentType(((Number) id
-									.get("document_type_id")).intValue());
-						if (id.get("site_id") != null)
-							docKey.setSiteID((String) id.get("site_id"));
-					}
-					key.addToIndexes();
-				}
-			} catch (CASException ce) {
-				throw new CollectionException(ce);
-			} catch (InvocationTargetException ce) {
-				throw new CollectionException(ce);
-			} catch (IllegalAccessException ce) {
-				throw new CollectionException(ce);
-			} catch (NoSuchMethodException ce) {
-				throw new CollectionException(ce);
-			} catch (InstantiationException ce) {
-				throw new CollectionException(ce);
-			} catch (ClassNotFoundException ce) {
-				throw new CollectionException(ce);
-			}
+			addDocKey(aCAS, id);
 		} else {
 			// shouldn't get here?
 			throw new CollectionException("no documents to process",
@@ -151,27 +117,62 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 		}
 	}
 
-	protected void getDocumentById(final CAS aCAS, final Map<String, Object> id) {
-		namedJdbcTemplate.query(queryGetDocument, id,
-				new RowCallbackHandler() {
-					boolean bFirstRowRead = false;
+	private void addDocKey(CAS aCAS, Map<String, Object> id)
+			throws CollectionException {
+		try {
+//			DocKey docKey = (DocKey) ConstructorUtils.invokeConstructor(
+//					DocKey.class, aCAS.getJCas());
+			DocKey docKey = new DocKey(aCAS.getJCas());
+			FSArray keyValuePairs = new FSArray(aCAS.getJCas(), id.size());
+			int i = 0;
+			for (Map.Entry<String, Object> idVal : id.entrySet()) {
+				String key = idVal.getKey();
+				Object val = idVal.getValue();
+				KeyValuePair p = new KeyValuePair(aCAS.getJCas());
+				p.setKey(key);
+				if (val instanceof Number) {
+					p.setValueLong(((Number) val).longValue());
+				} else if (val instanceof String) {
+					p.setValueString((String) val);
+				} else {
+					log.warn("Don't know how to handle key attribute, converting to string, key="
+							+ key + ", value=" + val);
+					p.setValueString(val.toString());
+				}
+				keyValuePairs.set(i, p);
+			}
+			docKey.addToIndexes();
+		} catch (CASException ce) {
+			throw new CollectionException(ce);
+//		} catch (InvocationTargetException ce) {
+//			throw new CollectionException(ce);
+//		} catch (IllegalAccessException ce) {
+//			throw new CollectionException(ce);
+//		} catch (NoSuchMethodException ce) {
+//			throw new CollectionException(ce);
+//		} catch (InstantiationException ce) {
+//			throw new CollectionException(ce);
+//		} catch (ClassNotFoundException ce) {
+//			throw new CollectionException(ce);
+		}
+	}
 
-					@Override
-					public void processRow(ResultSet rs)
-							throws SQLException {
-						if (!bFirstRowRead) {
-							LobHandler lobHandler = new DefaultLobHandler();
-							String clobText = lobHandler.getClobAsString(
-									rs, 1);
-							aCAS.setDocumentText(clobText);
-							bFirstRowRead = true;
-						} else {
-							log
-									.error("Multiple documents for document key: "
-											+ id);
-						}
-					}
-				});
+	protected void getDocumentById(final CAS aCAS, final Map<String, Object> id) {
+		namedJdbcTemplate.query(queryGetDocument, id, new RowCallbackHandler() {
+			boolean bFirstRowRead = false;
+
+			@Override
+			public void processRow(ResultSet rs) throws SQLException {
+				if (!bFirstRowRead) {
+					LobHandler lobHandler = new DefaultLobHandler();
+					String clobText = lobHandler.getClobAsString(rs, 1);
+					aCAS.setDocumentText(clobText);
+					bFirstRowRead = true;
+				} else {
+					log.error("Multiple documents for document key: " + id);
+				}
+			}
+		});
 	}
 
 	@Override

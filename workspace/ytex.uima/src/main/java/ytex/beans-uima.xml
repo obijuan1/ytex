@@ -20,5 +20,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="documentMapperService" class="ytex.uima.mapper.DocumentMapperServiceImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 		<property name="transactionManager" ref="transactionManager" />
+		<property name="dataSource" ref="dataSource" />
 	</bean>
 </beans>
