@@ -7,5 +7,6 @@
 			<attribute name="owner.project.facets" value="jst.utility"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/ytex.uima"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

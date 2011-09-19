@@ -16,22 +16,19 @@ db.password=ytex
 # alternatively, the user must have access to the schema
 db.schema=ytex
 
+# the schema where umls is installed
+# if not specified, will default to schema from ytex
+#umls.schema=umls
+
+
+# you should not have to modify anything below
 # hibernate database dialect
 # specify Oracle8iDialect, Oracle9iDialect, or Oracle10gDialect
 # can use Oracle10gDialect for Oracle11
 hibernate.dialect=org.hibernate.dialect.Oracle10gDialect
 
-# initialization statements
-# set nls parameters to enable case-insensitive string comparisons
-# The following works for oracle >= 10gR2
-# for older versions, use NLS_COMP=ASCII
-db.initStatements=alter session set NLS_COMP=LINGUISTIC;alter session set NLS_SORT=BINARY_CI
-
-# you should not have to modify anything below
 db.type=orcl
 db.driver=oracle.jdbc.driver.OracleDriver
-ytex.beanRefContext=classpath*:beanRefContext.orcl.xml
 
-# the schema where umls is installed
-# if not specified, will default to schema from ytex
-#umls.schema=umls
+# transaction isolation level
+db.isolationLevel=READ_UNCOMMITTED

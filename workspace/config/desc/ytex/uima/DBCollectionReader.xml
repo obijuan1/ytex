@@ -20,12 +20,6 @@
         <multiValued>false</multiValued>
         <mandatory>true</mandatory>
       </configurationParameter>
-      <configurationParameter>
-        <name>keyTypeName</name>
-        <type>String</type>
-        <multiValued>false</multiValued>
-        <mandatory>true</mandatory>
-      </configurationParameter>
     </configurationParameters>
     <configurationParameterSettings>
       <nameValuePair>
@@ -40,16 +34,10 @@
           <string>select doc_text from esld.dummy_document where site_id = :site_id and uid = :uid and document_type_id = :document_type_id</string>
         </value>
       </nameValuePair>
-      <nameValuePair>
-        <name>keyTypeName</name>
-        <value>
-          <string>ytex.vacs.uima.types.DocumentKey</string>
-        </value>
-      </nameValuePair>
     </configurationParameterSettings>
     <typeSystemDescription>
       <imports>
-        <import name="ytex.vacs.uima.types.DocumentKeyTypeSystem"/>
+        <import name="ytex.uima.types.DocKeyTypeSystem"/>
       </imports>
     </typeSystemDescription>
     <typePriorities/>

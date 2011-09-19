@@ -69,7 +69,7 @@
     </configurationParameterSettings>
     <typeSystemDescription>
       <imports>
-        <import name="ytex.vacs.uima.types.DocumentKeyTypeSystem"/>
+        <import name="ytex.uima.types.DocKeyTypeSystem"/>
       </imports>
     </typeSystemDescription>
     <typePriorities/>

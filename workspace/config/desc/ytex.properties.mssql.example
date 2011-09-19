@@ -1,5 +1,5 @@
 # database name
-db.name=VACS_TEST
+db.name=YTEX_TEST
 # host name of database server
 db.host=localhost
 
@@ -14,6 +14,11 @@ db.url=jdbc:sqlserver://localhost;databaseName=VACS_TEST;integratedSecurity=true
 db.username=
 db.password=
 
+# the schema and catalog (database) where umls is installed
+# if not specified, will default to schema/database from ytex
+#umls.schema=dbo
+#umls.catalog=umls
+
 # you should not have to modify anything below
 db.type=mssql
 db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
@@ -21,7 +26,5 @@ db.initStatements=
 ytex.beanRefContext=classpath*:beanRefContext.xml
 hibernate.dialect=org.hibernate.dialect.SQLServerDialect
 
-# the schema and catalog (database) where umls is installed
-# if not specified, will default to schema/database from ytex
-#umls.schema=dbo
-#umls.catalog=umls
+# transaction isolation level
+db.isolationLevel=READ_UNCOMMITTED
