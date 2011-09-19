@@ -6,6 +6,7 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ctakes-patches"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/libs.system"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/libs.ytex"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/maveric"/>

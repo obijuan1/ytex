@@ -167,9 +167,12 @@
 				<include name="*.cmd" />
 				<include name="*.sh" />
 				<include name="*.profile" />
-				<include name="build-setup.xml" />
+				<include name="*.xml" />
+				<exclude name="build.xml"/>
 			</fileset>
+			<!--
 			<fileset dir="../" includes="ytex.kernel/scripts/*.*" />
+			-->
 		</copy>
 		<copy todir="${ytex.dist.home}/">
 			<fileset dir=".." includes="libs.system/**/*.*" excludes="**/.svn/**/*.*,*.*,.settings/**/*.*" />

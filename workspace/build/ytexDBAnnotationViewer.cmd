@@ -1,4 +1,4 @@
 @setlocal
 @call %~dp0setenv.cmd
-javaw -classpath %TOOLS_CP% %TOOLS_OPTIONS% ytex.tools.DBAnnotationViewerMain
+@call %YTEX_HOME%\ytexTools.cmd DBAnnotationViewer
 @endlocal

@@ -25,7 +25,7 @@ and templateToConfig
 	<property name="ytex.home" value=".." />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="lvg.download.dir" value="${ytex.home}/.." />
-	<property name="lvg.basename" value="lvg2010lite" />
+	<property name="lvg.basename" value="lvg2011lite" />
 	<property name="lvg.filename" value="${lvg.basename}.tgz" />
 	<property name="lvg.tgz" value="${lvg.download.dir}/${lvg.filename}" />
 	<property name="context.root" value="ytex.web" />
@@ -108,7 +108,7 @@ Call with option -projecthelp for more info.
 		<echo>Downloading ${lvg.filename} to ${lvg.download.dir}.  this may take a while!</echo>
 		<copy todir="${lvg.download.dir}" flatten="true">
 			<resources>
-				<url url="http://lexsrv3.nlm.nih.gov/LexSysGroup/Projects/lvg/2010/release/${lvg.filename}" />
+				<url url="http://lexsrv3.nlm.nih.gov/LexSysGroup/Projects/lvg/2011/release/lvg2011lite.tgz" />
 			</resources>
 		</copy>
 	</target>
