@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import ytex.model.Document;
 import ytex.model.SentenceAnnotation;
 import ytex.uima.ApplicationContextHolder;
+import ytex.uima.mapper.DocumentMapperService;
 
 
 public class DocumentDaoTest extends TestCase {
@@ -37,6 +38,10 @@ public class DocumentDaoTest extends TestCase {
 			(PlatformTransactionManager) ApplicationContextHolder
 					.getApplicationContext().getBean("transactionManager"));
 
+	public void testInit() {
+		ApplicationContextHolder.getApplicationContext().getBean(
+				DocumentMapperService.class);
+	}
 	public void testGetDocument() throws IOException {
 		final int docId = 1;
 		tx.execute(new TransactionCallback() {
