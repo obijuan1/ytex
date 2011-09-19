@@ -1,3 +1,13 @@
+/*
+ * We assume the metadata about documents (patient id, date) come from
+ * some table in your database.  modify this view to join with that table
+ * and get this info
+ */
+create view v_document as
+select analysis_batch, document_id, doc_text, uid, null patient_id, null doc_date, null doc_title, null document_type_name
+from document;
+
+
 create view v_annotation
 AS
 SELECT anno.*, ur.uima_type_name, substring(doc.doc_text, anno.span_begin+1, anno.span_end-anno.span_begin) anno_text, doc.analysis_batch
@@ -7,46 +17,33 @@ INNER JOIN ref_uima_type AS ur on ur.uima_type_id = anno.uima_type_id
 ;
 
 
+/*
+this view gives the document info, cui info, and sentence info in which a cui is found.
+this joins with v_document - you may want to inline document for performance
+*/
 create view v_document_cui_sent
 as
-SELECT da.document_id, 
-ne.certainty, 
-o.code, 
-substring(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, 
-substring(d.doc_text, sentence.span_begin+1, sentence.span_end-sentence.span_begin) sentence_text,
-d.analysis_batch
-FROM 
-anno_base AS da 
-INNER JOIN anno_named_entity AS ne ON da.anno_base_id = ne.anno_base_id 
-INNER JOIN anno_ontology_concept AS o ON o.anno_base_id = ne.anno_base_id 
-INNER join anno_base as sentence on da.document_id = sentence.document_id
-INNER JOIN document AS d on da.document_id = d.document_id
-where 
-sentence.span_begin <= da.span_begin 
-and sentence.span_end >= da.span_end
-and sentence.uima_type_id in (select uima_type_id from ref_uima_type t where t.uima_type_name = 'edu.mayo.bmi.uima.core.sentence.type.Sentence')
+SELECT
+  da.anno_base_id,
+  d.analysis_batch,
+  da.document_id,
+  ne.certainty,
+  o.code,
+  substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text,
+  substr(d.doc_text, s.span_begin+1, s.span_end-s.span_begin) sentence_text,
+  null patient_id,
+  null doc_date,
+  null doc_title,
+  null document_type_name
+FROM anno_base da
+INNER JOIN anno_named_entity  ne ON da.anno_base_id = ne.anno_base_id
+INNER JOIN anno_ontology_concept  o ON o.anno_base_id = ne.anno_base_id
+inner join anno_contain ac on da.anno_base_id = ac.child_anno_base_id
+INNER join anno_base s
+  on ac.parent_anno_base_id = s.anno_base_id
+  and s.uima_type_id in (select uima_type_id from ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.sentence.type.Sentence')
+INNER JOIN document d on da.document_id = d.document_id
 ;
-
-/*
- * view performance on mysql is abominable, use a table instead
-create view v_snomed_fword_lookup
-as
-select fword, cui, text
-from umls_ms_2009
-where 
-(
-	tui in 
-	(
-	'T021','T022','T023','T024','T025','T026','T029','T030','T031',
-	'T059','T060','T061',
-	'T019','T020','T037','T046','T047','T048','T049','T050','T190','T191',
-	'T033','T034','T040','T041','T042','T043','T044','T045','T046','T056','T057','T184'
-	)
-	and sourcetype = 'SNOMEDCT'
-) 
-;
-
- */
 
 CREATE VIEW v_document_ontoanno
 AS
@@ -56,16 +53,3 @@ anno_base AS da ON d.document_id = da.document_id INNER JOIN
 anno_named_entity AS ne ON da.anno_base_id = ne.anno_base_id INNER JOIN
 anno_ontology_concept AS o ON o.anno_base_id = ne.anno_base_id
 ;
-
-
-
-create view v_anno_segment
-as
-select da2.anno_base_id, s.segment_id
-from anno_base da 
-inner join anno_segment s on da.anno_base_id = s.anno_base_id
-inner join anno_base da2 on da2.span_begin >= da.span_begin and da2.span_end <= da.span_end and da2.document_id = da.document_id
-inner join ref_uima_type t on da2.uima_type_id = t.uima_type_id
-where t.uima_type_name <> 'edu.mayo.bmi.uima.core.ae.type.Segment'
-;
-

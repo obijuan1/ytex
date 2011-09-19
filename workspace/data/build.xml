@@ -60,6 +60,11 @@ These variables are set by setenv.cmd / ytex.profile script
 		</condition>
 		<available file="${umls.zip}" property="umls.zip.available" />
 	</target>
+	<target name="test" depends="init">
+		<echo>umls.zip.available ${umls.zip.available}</echo>
+		<echo>db.schema ${db.schema}</echo>
+		<echo>db.type ${db.type}</echo>
+	</target>
 
 	<target name="sqlcmd.orcl" if="orcl" description="execute sql script for oracle server">
 		<echo>executing ${sqlcmd.dir}/${sqlcmd.script}</echo>
@@ -109,7 +114,7 @@ quit</echo>
 		<exec executable="sqlplus" dir="${sql.dir}/umls">
 			<arg line="${sqlplus.line} @check_mrconso.sql ${umls.schema}" />
 		</exec>
-		<loadfile srcFile="${sql.dir}/umls/mrconso-check.txt" property="mrconso.out"/>
+		<loadfile srcFile="${sql.dir}/umls/mrconso-check.txt" property="mrconso.out" />
 		<condition property="mrconso.exists">
 			<equals arg1="1" arg2="${mrconso.out}" casesensitive="false" trim="true" />
 		</condition>
@@ -170,19 +175,19 @@ quit</echo>
 			<arg line="${db.name}.${db.schema}.umls_aui_fword in umls_aui_fword.bcp -T -S ${db.host} -n" />
 		</exec>
 	</target>
-	<target name="umls.import.orcl">
+	<target name="umls.import.orcl" if="orcl">
 		<echo>import umls tables into ${umls.schema} schema.  Be patient, this can take a while.</echo>
 		<antcall target="sqlcmd">
 			<param name="sqlcmd.dir" value="umls" />
 			<param name="sqlcmd.script" value="import_umls.sql" />
 		</antcall>
-		<exec executable="sqlldr" dir="${sql.dir}/umls">
+		<exec executable="sqlldr" dir="${sql.dir}/umls" failonerror="yes">
 			<arg line="${sqlplus.line} control=mrconso.ctl" />
 		</exec>
-		<exec executable="sqlldr" dir="${sql.dir}/umls">
+		<exec executable="sqlldr" dir="${sql.dir}/umls" failonerror="yes">
 			<arg line="${sqlplus.line} control=mrsty.ctl" />
 		</exec>
-		<exec executable="sqlldr" dir="${sql.dir}/umls">
+		<exec executable="sqlldr" dir="${sql.dir}/umls" failonerror="yes">
 			<arg line="${sqlplus.line} control=umls_aui_fword.ctl" />
 		</exec>
 	</target>
