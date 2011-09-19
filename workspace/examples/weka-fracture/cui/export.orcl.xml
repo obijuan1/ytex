@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="arffRelation">fracture-cui</entry>
+<entry key="instanceClassQuery"><![CDATA[
+select
+	d.document_id,
+ 	case
+    when MOD(TO_NUMBER(SUBSTR(uri, INSTR(uri, '/reference set/') + 15, 4)), 3)  = 0 then 'no fracture'
+    else 'fracture'
+  end class
+from anno_source_doc_info s
+inner join anno_base da on s.anno_base_id = da.anno_base_id
+inner join document d on da.document_id = d.document_id
+where d.analysis_batch = 'weka_demo' 
+and s.uri like '%/reference set/%'
+]]></entry>
+<entry key="numericWordQuery"><![CDATA[
+select o.document_id, code, COUNT(*)
+from v_document_ontoanno o
+inner join anno_base b on o.document_id = b.document_id
+inner join anno_source_doc_info s on b.anno_base_id = s.anno_base_id
+where certainty <> -1
+and analysis_batch = 'weka_demo'
+and s.uri like '%/reference set/%'
+group by o.document_id, code
+]]></entry>
+</properties>
