@@ -15,7 +15,7 @@ Main target is 'all', which does the following:
   * setup.lvg unpack the lvg to the appropriate directory
   * templateToConfig generates configuration files from templates. 
   * setupDatabase call data/build.xml to setup the database.
-  * setup.ytex.web generate configuration files for ytex web application
+  * setup.ytex.web fixes crlf and makes executable tomcat setenv.sh script
 
 For setting up a development environment, you should execute setup.lvg 
 and templateToConfig
@@ -98,31 +98,10 @@ Call with option -projecthelp for more info.
 		</copy>
 	</target>
 	-->
-	<target name="search.templateToConfig" description="setup ytex.web search.properties">
-		<!-- default for development environment -->
-		<property file="${ytex.properties}" />
-		<property name="search.properties.path" value="../ytex.web/src/main/java/ytex" />
-		<property name="web-inf.path" value="../ytex.web/WebContent/WEB-INF" />
-		<copy file="${search.properties.path}/search.template-${db.type}.properties" tofile="${search.properties.path}/search.properties" overwrite="yes">
-			<filterset>
-				<filtersfile file="${ytex.properties}" />
-			</filterset>
-		</copy>
-		<condition property="appCtx" value="orcl" else="generic">
-			<equals arg1="${db.type}" arg2="orcl" />
-		</condition>
-		<copy file="${web-inf.path}/applicationContext.${appCtx}.xml" tofile="${web-inf.path}/applicationContext.xml" overwrite="yes" />
-	</target>
 	<target name="setup.ytex.web" description="setup ytex.web application for tomcat">
 		<mkdir dir="${catalina.base}/temp" />
-		<antcall target="search.templateToConfig">
-			<param name="search.properties.path" value="${catalina.base}/webapps/${context.root}/WEB-INF/classes/ytex" />
-			<param name="web-inf.path" value="${catalina.base}/webapps/${context.root}/WEB-INF" />
-		</antcall>
-		<echo>
-Default search.properties set up in ${catalina.base}/webapps/${context.root}/WEB-INF/classes/ytex.
-Modify to match your configuration.
-		</echo>
+		<fixcrlf file="${catalina.base}/bin/setenv.sh" />
+		<chmod file="${catalina.base}/bin/setenv.sh" perm="u+x"/>
 	</target>
 
 	<target name="download.lvg" description="download lvg2010lite.tgz from nlm">
