@@ -10,7 +10,7 @@
 		<property name="docText" column="doc_text" type="text" />
 		<property name="cas" column="cas" type="binary" />
 		<property name="analysisBatch" column="analysis_batch" />
-		<property name="uid" />
+		<property name="uid" column="`uid`" />
 		<bag name="documentAnnotations" inverse="true" cascade="delete">
 			<key column="document_id" />
 			<one-to-many class="DocumentAnnotation" />

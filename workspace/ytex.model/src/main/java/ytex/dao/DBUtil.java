@@ -32,7 +32,7 @@ public class DBUtil {
 			ytexPropsIn = DBUtil.class.getResourceAsStream("/ytex.properties");
 			ytexProperties = new Properties();
 			ytexProperties.load(ytexPropsIn);
-			oracle = "oracle".equals(ytexProperties.getProperty("db.type"));
+			oracle = "orcl".equals(ytexProperties.getProperty("db.type"));
 			mysql = "mysql".equals(ytexProperties.getProperty("db.type"));
 			mssql = "mssql".equals(ytexProperties.getProperty("db.type"));
 			if (mssql) {
@@ -42,7 +42,8 @@ public class DBUtil {
 				escapeBegin = "`";
 				escapeEnd = "`";
 			} else if (oracle) {
-
+				escapeBegin = "";
+				escapeEnd = "";
 			}
 		} catch (Exception e) {
 			log.error("initalizer", e);
@@ -84,7 +85,7 @@ public class DBUtil {
 
 	public static String formatTableName(String tableName) {
 		return getEscapeBegin()
-				+ tableName.replaceAll("\\.", getEscapeBegin() + '.'
-						+ getEscapeEnd()) + getEscapeEnd();
+				+ tableName.replaceAll("\\.", getEscapeEnd() + '.'
+						+ getEscapeBegin()) + getEscapeEnd();
 	}
 }
