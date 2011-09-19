@@ -21,7 +21,8 @@
 	properties passed to java programs.
 	-->
 	<property environment="env" />
-	<property name="ytex.properties" value="${ytex.home}/config/desc/ytex.properties" />
+	<property name="config.local" value="${ytex.home}/config/desc" />
+	<property name="ytex.properties" value="${config.local}/ytex.properties" />
 	<property file="${ytex.properties}" />
 	<path id="kernel.cp.common">
 		<fileset dir="${ytex.home}/libs.system" includes="**/*.jar" />
@@ -53,7 +54,12 @@
 	<property name="kernel.cp" value="kernel.cp.prod" />
 	<property name="java.log.arg" value="-Djava.util.logging.config.file=${ytex.home}/config/desc/Logger.properties" />
 	<makeurl property="log4j.url" file="${ytex.home}/config/desc/log4j.properties" />
-	<property name="log4j.arg" value="-Dlog4j.configuration=${log4j.url}" />
+	<property name="log4j.configuration" value="log4j.url"/>
+	<property name="java.util.logging.config.file" value="java.log.arg"/>
+	<propertyset id="ytex.jvm.props">
+		<propertyref name="log4j.configuration" />
+		<propertyref name="java.util.logging.config.file" />
+	</propertyset>
 	<!-- 
 	for some reason on linux just copying the jars to the ant/lib directory doesn't work.
 	explicitly define the task.
