@@ -11,7 +11,7 @@
 	<property name="nlp.home" value="c:/java" />
 	<property name="tomcat.dir" value="apache-tomcat-6.0.26" />
 	<property name="ant.dir" value="apache-ant-1.8.0" />
-
+	<property name="ytex.version" value="" />
 
 	<path id="cp.maveric">
 		<fileset dir="${maveric.home}/ext">
@@ -248,10 +248,10 @@
 	</target>
 	<target name="zip.dist">
 		<delete dir="${dist.home}" includes="ytex*.zip" />
-		<zip destfile="${dist.home}/ytex.zip" update="no">
+		<zip destfile="${dist.home}/ytex${ytex.version}.zip" update="no">
 			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
 		</zip>
-		<zip destfile="${dist.home}/ytex-with-dependencies.zip" update="no">
+		<zip destfile="${dist.home}/ytex-with-dependencies${ytex.version}.zip" update="no">
 			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
 			<zipfileset dir="${nlp.home}" includes="${tomcat.dir}/**/*.*" excludes="${tomcat.dir}/webapps/**/*.*" />
 			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*,${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
