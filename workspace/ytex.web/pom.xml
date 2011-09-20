@@ -177,10 +177,12 @@
 
 
 
+		<!--  maven won't download this for some reason / downloads the wrong version! -->
 		<dependency>
 			<groupId>xml-apis</groupId>
 			<artifactId>xml-apis</artifactId>
 			<version>1.4.01</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
