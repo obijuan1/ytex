@@ -40,12 +40,12 @@ inner join
 (
 select distinct code from anno_ontology_concept
 ) c on mrc.cui = c.code
-where mrc.sab = 'SNOMEDCT';
+where mrc.sab in ( 'SNOMEDCT', 'RXNORM', 'SRC');
 
 select fw.*
 into outfile 'E:/projects/ytex/data/mysql/umls/umls_aui_fword.txt'
 from umls_aui_fword fw
-inner join umls.mrconso mrc on fw.aui = mrc.aui and mrc.sab = 'SNOMEDCT'
+inner join umls.mrconso mrc on fw.aui = mrc.aui and mrc.sab in ( 'SNOMEDCT', 'RXNORM', 'SRC')
 inner join
 (
 select distinct code from anno_ontology_concept
