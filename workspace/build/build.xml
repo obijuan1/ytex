@@ -18,18 +18,7 @@
 			<include name="mavericPipeline-1.0.0.jar" />
 		</fileset>
 		<fileset dir="${maveric.home}/lib">
-			<include name="log4j-1.2.14.jar" />
-			<include name="lvg2010dist.jar" />
-			<include name="opennlp-tools-1.4.0.jar" />
-			<include name="jdom.jar" />
-			<include name="maxent-2.5.0.jar" />
-			<include name="OpenAI_FSM.jar" />
-			<include name="trove.jar" />
-			<include name="lucene-1.4-final.jar" />
-			<include name="uima-cpe.jar" />
-			<include name="uima-core.jar" />
-			<include name="uima-tools.jar" />
-			<include name="uima-document-annotation.jar" />
+			<include name="*.jar" />
 		</fileset>
 		<dirset dir="${maveric.home}" includes="dest" />
 		<dirset dir="${maveric.home}" includes="resources" />
@@ -265,7 +254,7 @@
 		<zip destfile="${dist.home}/ytex-with-dependencies.zip" update="no">
 			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
 			<zipfileset dir="${nlp.home}" includes="${tomcat.dir}/**/*.*" excludes="${tomcat.dir}/webapps/**/*.*" />
-			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
+			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*,${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
 		</zip>
 	</target>
 	<target name="build.all" depends="clean.dist,build.ctakes-patches,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />

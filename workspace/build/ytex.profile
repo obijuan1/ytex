@@ -8,15 +8,22 @@
 ################################
 
 # where the JDK is installed
-JAVA_HOME=${HOME}/java/jdk1.6.0_21-x64
+JAVA_HOME=/usr/lib/jvm/java-6-openjdk
 export JAVA_HOME
 
 # where ytex is installed
 YTEX_HOME=${HOME}/clinicalnlp/ytex
 export YTEX_HOME
 
+# where ant is installed - if you installed from ytex-with-dependencies.zip
+# there is no need to change this
+ANT_HOME=${YTEX_HOME}/../apache-ant-1.8.0
+export ANT_HOME
+
+# PATH variable
+# make sure mysql or oracle binaries are in this path
 # add java and ant to the front of the path
-PATH=${HOME}/java/apache-ant-1.8.2/bin:${JAVA_HOME}/bin:${PATH}:
+PATH=${ANT_HOME}/bin:${JAVA_HOME}/bin:${PATH}:
 export PATH
 
 ################################
@@ -24,10 +31,8 @@ export PATH
 # you should not have to change anything below this line
 ################################
 
-ANT_HOME=${YTEX_HOME}/../apache-ant-1.8.0
-export ANT_HOME
 
-CATALINA_HOME=${HOME}/../apache-tomcat-6.0.20
+CATALINA_HOME=${YTEX_HOME}/../apache-tomcat-6.0.20
 export CATALINA_HOME
 
 # where mysql binary is located - should not need change
