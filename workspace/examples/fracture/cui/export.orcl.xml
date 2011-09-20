@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="arffRelation">fracture-cui</entry>
+<entry key="instanceClassQuery"><![CDATA[
+	select note_id, 
+		fracture, 
+		case when note_set = 'train' then 1 else 0 end train
+	from fracture_demo
+]]></entry>
+<entry key="numericWordQuery"><![CDATA[
+	select f.note_id, code, COUNT(*)
+	from @db.schema@.V_DOCUMENT_ONTOANNO o
+	inner join @db.schema@.document d on d.document_id = o.document_id
+	inner join @db.schema@.fracture_demo f on f.note_id = d."uid"
+	where certainty <> -1
+	and d.analysis_batch = 'cpe-fracture'
+	group by f.note_id, code
+]]></entry>
+</properties>
