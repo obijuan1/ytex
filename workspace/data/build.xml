@@ -69,7 +69,8 @@ These variables are set by setenv.cmd / ytex.profile script
 	<target name="sqlcmd.orcl" if="orcl" description="execute sql script for oracle server">
 		<echo>executing ${sqlcmd.dir}/${sqlcmd.script}</echo>
 		<!-- append quit to end of file -->
-		<copy file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}" tofile="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" overwrite="yes" />
+		<copy file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}" 
+			tofile="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" overwrite="yes" />
 		<echo file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" append="yes">
 quit</echo>
 		<exec executable="sqlplus" dir="${sql.dir}/${sqlcmd.dir}">
@@ -182,10 +183,10 @@ quit</echo>
 			<param name="sqlcmd.script" value="import_umls.sql" />
 		</antcall>
 		<exec executable="sqlldr" dir="${sql.dir}/umls" failonerror="yes">
-			<arg line="${sqlplus.line} control=mrconso.ctl" />
+			<arg line="${sqlplus.line} control=MRCONSO.ctl" />
 		</exec>
 		<exec executable="sqlldr" dir="${sql.dir}/umls" failonerror="yes">
-			<arg line="${sqlplus.line} control=mrsty.ctl" />
+			<arg line="${sqlplus.line} control=MRSTY.ctl" />
 		</exec>
 		<exec executable="sqlldr" dir="${sql.dir}/umls" failonerror="yes">
 			<arg line="${sqlplus.line} control=umls_aui_fword.ctl" />
@@ -265,6 +266,23 @@ quit</echo>
 				</antcall>
 			</sequential>
 		</for>
+		<antcall target="examples.load" />
+	</target>
+	<target name="examples.load" depends="init,examples.load.orcl,examples.load.mssql">
+		<antcall target="sqlcmd">
+			<param name="sqlcmd.dir" value="uima" />
+			<param name="sqlcmd.script" value="fracture_demo.sql" />
+		</antcall>
+	</target>
+	<target name="examples.load.orcl" depends="init" if="orcl" description="load example data with sqlldr">
+		<exec executable="sqlldr" dir="orcl/uima" failonerror="yes">
+			<arg line="${sqlplus.line} control=fracture_demo.ctl" />
+		</exec>
+	</target>
+	<target name="examples.load.mssql" depends="init" if="mssql" description="load example data with bcp">
+		<exec executable="bcp" dir="examples">
+			<arg line="${db.name}.${db.schema}.fracture_demo in fracture_demo.txt -T -S ${db.host} -c" />
+		</exec>
 	</target>
 
 	<target name="kernel.drop" description="create tables for data mining">

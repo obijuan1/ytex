@@ -234,3 +234,12 @@ create index IX_parent_id_child_type on $(db_schema).anno_contain(parent_anno_ba
 create index IX_child_id_parent_type on $(db_schema).anno_contain(child_anno_base_id, parent_uima_type_id);
 
 
+
+CREATE TABLE $(db_schema).fracture_demo(
+	note_id int IDENTITY(1,1) NOT NULL primary key,
+	site_id varchar(10) NULL,
+	note_text varchar(max) NULL,
+	fracture varchar(20) NULL,
+	note_set varchar(10) NULL
+);
+

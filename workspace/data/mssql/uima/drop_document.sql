@@ -1,4 +1,7 @@
 -- drop 'operational' data
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[fracture_demo]') AND type in (N'U'))
+	drop table $(db_schema).fracture_demo;
+go
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[document_class]') AND type in (N'U'))
 	drop table $(db_schema).document_class;
 go

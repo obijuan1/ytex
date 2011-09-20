@@ -2,6 +2,7 @@ create sequence document_id_sequence;
 create sequence anno_base_id_sequence;
 create sequence anno_onto_concept_id_sequence;
 create sequence anno_contain_id_sequence;
+create sequence demo_note_id_sequence;
 
 CREATE TABLE document(
 	document_id int  NOT NULL,
@@ -226,6 +227,15 @@ CREATE INDEX IX_anno_contain_p ON anno_contain (parent_anno_base_id, child_uima_
 CREATE INDEX IX_anno_contain_c ON anno_contain (child_anno_base_id, parent_uima_type_id)
 ;
 
+
+CREATE TABLE fracture_demo (
+	note_id int NOT NULL primary key,
+	site_id varchar(10) NULL,
+	note_text clob NULL,
+	fracture varchar2(20) NULL,
+	note_set varchar2(10) NULL
+);
+
 /
 
 create or replace trigger trg_document before insert on document
@@ -259,3 +269,12 @@ begin
  select anno_contain_id_sequence.nextval into :new.anno_contain_id from dual;
 end;
 /
+
+create trigger trg_fracture_demo before insert on fracture_demo
+for each row
+when (new.note_id is null)
+begin
+ select demo_note_id_sequence.nextval into :new.note_id from dual;
+end;
+/
+

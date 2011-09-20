@@ -1,4 +1,5 @@
 -- drop 'operational' data
+drop table if exists fracture_demo;
 drop table if exists document_class;
 drop table if exists anno_contain;
 drop table if exists anno_source_doc_info;

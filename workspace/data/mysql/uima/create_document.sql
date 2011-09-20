@@ -253,3 +253,12 @@ create table anno_contain (
   key IX_child_id_parent_type (child_anno_base_id, parent_uima_type_id),
   unique key nk_anno_contain (parent_anno_base_id, child_anno_base_id)
 ) engine=myisam, comment 'containment relationships between annotations';
+
+
+CREATE TABLE fracture_demo(
+	note_id int auto_increment NOT NULL primary key,
+	site_id varchar(10) NULL,
+	note_text text NULL,
+	fracture varchar(20) NULL,
+	note_set varchar(10) NULL
+) engine=myisam, comment 'demo data';
