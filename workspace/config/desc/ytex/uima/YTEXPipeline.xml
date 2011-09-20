@@ -42,11 +42,11 @@
     <delegateAnalysisEngine key="DictionaryLookupAnnotator">
       <import name="ytex.uima.annotators.DictionaryLookupAnnotator"/>
     </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="LvgAnnotator">
-      <import name="LVG.LvgAnnotator"/>
-    </delegateAnalysisEngine>
     <delegateAnalysisEngine key="DBConsumer">
       <import name="ytex.uima.annotators.DBConsumer"/>
+    </delegateAnalysisEngine>
+    <delegateAnalysisEngine key="LvgAnnotator">
+      <import name="LVG.LvgAnnotator"/>
     </delegateAnalysisEngine>
   </delegateAnalysisEngineSpecifiers>
   <analysisEngineMetaData>
@@ -102,6 +102,16 @@
           <parameter>DBConsumer/storeCAS</parameter>
         </overrides>
       </configurationParameter>
+      <configurationParameter>
+        <name>typesToIgnore</name>
+        <description>uima types (fully qualified class names) that should not be saved in the database.</description>
+        <type>String</type>
+        <multiValued>true</multiValued>
+        <mandatory>false</mandatory>
+        <overrides>
+          <parameter>DBConsumer/typesToIgnore</parameter>
+        </overrides>
+      </configurationParameter>
     </configurationParameters>
     <configurationParameterSettings>
       <nameValuePair>
@@ -134,6 +144,18 @@
         <name>storeCAS</name>
         <value>
           <boolean>true</boolean>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>typesToIgnore</name>
+        <value>
+          <array>
+            <string>edu.mayo.bmi.uima.core.ae.type.ContractionToken</string>
+            <string>edu.mayo.bmi.uima.core.ae.type.NewlineToken</string>
+            <string>edu.mayo.bmi.uima.core.ae.type.PunctuationToken</string>
+            <string>edu.mayo.bmi.uima.core.ae.type.SymbolToken</string>
+            <string>edu.mayo.bmi.uima.cdt.ae.type.RomanNumeralAnnotation</string>
+          </array>
         </value>
       </nameValuePair>
     </configurationParameterSettings>
