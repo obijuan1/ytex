@@ -263,6 +263,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			}
 		}
 		if (args.size() > 0) {
+			// make sure the document has been saved
+			this.getSessionFactory().getCurrentSession().flush();
 			// have something to update - add the where condition
 			queryBuilder.append(" where document_id = ?");
 			args.add(documentId);

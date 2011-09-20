@@ -22,4 +22,5 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="dataSource" ref="dataSource" />
 	</bean>
+	<alias name="dataSource" alias="collectionReaderDataSource"/>
 </beans>

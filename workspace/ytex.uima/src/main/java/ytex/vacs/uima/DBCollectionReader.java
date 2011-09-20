@@ -1,7 +1,6 @@
 package ytex.vacs.uima;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -88,7 +87,7 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 		this.keyTypeName = (String) paramSettings
 				.getParameterValue("keyTypeName");
 		dataSource = (DataSource) ApplicationContextHolder
-				.getApplicationContext().getBean("dataSource");
+				.getApplicationContext().getBean("collectionReaderDataSource");
 		simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
 		namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 	}
