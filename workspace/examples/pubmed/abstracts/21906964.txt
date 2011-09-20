@@ -1,0 +1,494 @@
+8. PLoS One. 2011;6(9):e24143. Epub 2011 Sep 7.                                    
+                                                                                   
+Plasma free amino Acid profiling of five types of cancer patients and its          
+application for early detection.                                                   
+                                                                                   
+Miyagi Y, Higashiyama M, Gochi A, Akaike M, Ishikawa T, Miura T, Saruki N, Bando   
+E, Kimura H, Imamura F, Moriyama M, Ikeda I, Chiba A, Oshita F, Imaizumi A,        
+Yamamoto H, Miyano H, Horimoto K, Tochikubo O, Mitsushima T, Yamakado M, Okamoto   
+N.                                                                                 
+                                                                                   
+Molecular Pathology and Genetics Division, Kanagawa Cancer Center, Yokohama,       
+Japan.                                                                             
+                                                                                   
+BACKGROUND: Recently, rapid advances have been made in metabolomics-based,         
+easy-to-use early cancer detection methods using blood samples. Among              
+metabolites, profiling of plasma free amino acids (PFAAs) is a promising approach  
+because PFAAs link all organ systems and have important roles in metabolism.       
+Furthermore, PFAA profiles are known to be influenced by specific diseases,        
+including cancers. Therefore, the purpose of the present study was to determine    
+the characteristics of the PFAA profiles in cancer patients and the possibility    
+of using this information for early detection.                                     
+METHODS AND FINDINGS: Plasma samples were collected from approximately 200         
+patients from multiple institutes, each diagnosed with one of the following five   
+types of cancer: lung, gastric, colorectal, breast, or prostate cancer. Patients   
+were compared to gender- and age- matched controls also used in this study. The    
+PFAA levels were measured using high-performance liquid chromatography             
+(HPLC)-electrospray ionization (ESI)-mass spectrometry (MS). Univariate analysis   
+revealed significant differences in the PFAA profiles between the controls and     
+the patients with any of the five types of cancer listed above, even those with    
+asymptomatic early-stage disease. Furthermore, multivariate analysis clearly       
+discriminated the cancer patients from the controls in terms of the area under     
+the receiver-operator characteristics curve (AUC of ROC >0.75 for each cancer),    
+regardless of cancer stage. Because this study was designed as case-control        
+study, further investigations, including model construction and validation using   
+cohorts with larger sample sizes, are necessary to determine the usefulness of     
+PFAA profiling.                                                                    
+CONCLUSIONS: These findings suggest that PFAA profiling has great potential for    
+improving cancer screening and diagnosis and understanding disease pathogenesis.   
+PFAA profiles can also be used to determine various disease diagnoses from a       
+single blood sample, which involves a relatively simple plasma assay and imposes   
+a lower physical burden on subjects when compared to existing screening methods.   
+                                                                                   
+                                                                                   
+PMID: 21915291  [PubMed - in process]                                              
+                                                                                   
+                                                                                   
+9. Can Urol Assoc J. 2011 Sep 8:1-4. doi: 10.5489/cuaj.10195. [Epub ahead of print]
+                                                                                   
+Cancer Care Ontario Guidelines for radical prostatectomy: striving for continuous  
+quality improvement in community practice.                                         
+                                                                                   
+Webster TM, Newell C, Amrhein JF, Newell KJ.                                       
+                                                                                   
+Department of Urology, Grey Bruce Health Services, Owen Sound, ON;                 
+                                                                                   
+OBJECTIVE: Cancer Care Ontario has published an evidence-based guideline on their  
+website "Guideline for Optimization of Surgical and Pathological Quality           
+Performance for Radical Prostatectomy in Prostate Cancer Management: Surgical and  
+Pathological Guidelines." The evidentiary base for this guideline was recently     
+published in CUAJ. The CCO guideline proposes the following: a positive surgical   
+margin (PSM) rate of <25% for organ-confined disease (pT2), a perioperative        
+mortality of <1%, a rate of rectal injury <1%, and a blood transfusion rate <10%   
+in non-anemic patients. The objective of this study was to review the radical      
+prostatectomy practice at the Grey Bruce Health Services, an Ontario community     
+hospital, and to compare our performance in relation to the Cancer Care Ontario    
+guideline and the literature. METHODS: We conducted a retrospective review of all  
+radical prostatectomies performed at the Grey Bruce Health Services from January   
+1, 2006 to December 31, 2007. The following data were obtained from clinical       
+records and pathology reports: patient age, pre-biopsy prostate-specific antigen,  
+biopsy Gleason score, resected prostate gland weight, radical prostatectomy        
+Gleason score, surgical margin status, pathological tumour stage (pT), lymph node  
+dissection status, perioperative incidence of transfusion of blood products and    
+if the patient was anemic (hemoglobin <140 g/L) pre-operatively, incidence of      
+rectal injury, and perioperative mortality within 30 days following surgery.       
+RESULTS: Using the method proposed by D'Amico, most patients undergoing radical    
+prostatectomy were intermediate risk (62%), with a minority of low-risk (24%) and  
+high-risk (14%) patients. The overall PSM rate was 37%. The rate of PSMs in        
+organ-confined disease (pT2) was 26%. There was a statistically significant trend  
+between increasing D'Amico risk category and increasing rate of PSM                
+(Cochran-Armitage trend test, p = 0.023). There was a strong correlation between   
+the pathological tumour stage and the rate of PSM (Cochran-Armitage trend test, p  
+= 0.0003). The rate of blood transfusion in non-anemic patients was 6%. There was  
+1 patient (0.8%) who experienced a rectal injury. There were no perioperative      
+deaths in our study group. CONCLUSION: Our results show that a community hospital  
+group can appropriately select patients to undergo radical prostatectomy, as well  
+as achieve an acceptable rate of PSMs. We believe that ongoing critical appraisal  
+and reflective practice are essential to improving surgical outcomes and           
+providing quality care.                                                            
+                                                                                   
+                                                                                   
+PMID: 21914426  [PubMed - as supplied by publisher]                                
+                                                                                   
+                                                                                   
+10. Zhonghua Bing Li Xue Za Zhi. 2011 Jun;40(6):392-6.                             
+                                                                                   
+[TMPRSS2-ERG gene fusion in metastatic prostate cancers: a study of fine needle    
+aspiration specimens].                                                             
+                                                                                   
+[Article in Chinese]                                                               
+                                                                                   
+Xiao L, Zhu XZ, Wang Y, Gong Y, Guo CC.                                            
+                                                                                   
+Department of Pathology, Huadong Hospital, Fudan University, Shanghai 200040,      
+China.                                                                             
+                                                                                   
+OBJECTIVE: To investigate diagnostic values of the detection of TMPRSS2-ERG gene   
+fusion in metastatic prostate cancer.                                              
+METHODS: A total of 32 fine needle aspiration (FNA) specimens of metastatic        
+prostate carcinomas were retrieved from the pathology files at MD Anderson Cancer  
+Center. The metastatic sites included the pelvic and remote lymph nodes, liver,    
+bone, and thyroid gland. Immunohistochemical staining for PSA, PAP,                
+synaptophysin, chromogranin A was performed. TMPRSS2-ERG gene fusion was           
+evaluated on sections of cell blocks by fluorescence in situ hybridization (FISH)  
+using ERG gene break-apart probes.                                                 
+RESULTS: The mean age of the patients was 67 years. Twenty-six patients had a      
+previous history of prostatic adenocarcinoma, while 6 patients presented           
+initially with metastasis. In 11 patients, the metastatic lesions showed           
+characteristic features of small cell carcinoma (SCC) and were positive for        
+synaptophysin (9/9), chromogranin A (7/8), but negative for prostatic specific     
+antigen (7/7). FISH analysis demonstrated a rearrangement of ERG gene in 10 of 32  
+cases (31.3%), and the rearrangement was associated with deletion of the 5' ERG    
+gene in 6 cases. In addition, the copy number of ERG rearrangement gene locus was  
+increased in 8 cases. Among the 11 cases with SCC features, a rearrangement of     
+ERG gene was present in 5 cases, of which a deletion of the 5' ERG gene and        
+increased copy number were seen in 3 cases.                                        
+CONCLUSIONS: TMPRSS2-ERG gene fusion can be evaluated in FNA specimens of          
+metastatic prostate cancer. Metastatic prostate cancers have a high prevalence of  
+TMPRSS2-ERG gene fusion along with a frequent copy number increase of ERG gene.    
+TMPRSS2-ERG gene fusion persists in metastatic prostate cancers and even in those  
+with poorly differentiated SCC features. Therefore, an identification of the       
+TMPRSS2-ERG gene fusion may be used to establish the prostatic origin of           
+metastasis.                                                                        
+                                                                                   
+                                                                                   
+PMID: 21914348  [PubMed - in process]                                              
+                                                                                   
+                                                                                   
+11. Zhonghua Bing Li Xue Za Zhi. 2011 Jun;40(6):382-6.                             
+                                                                                   
+[PSCA expression in invasive micropapillary carcinoma of breast].                  
+                                                                                   
+[Article in Chinese]                                                               
+                                                                                   
+Hao JY, Yang YL, Li S, Qian XL, Liu FF, Fu L.                                      
+                                                                                   
+Department of Breast Cancer Pathology and Research Laboratory, State Key           
+Laboratory of Breast Cancer Research, Cancer Hospital of Tianjin Medical           
+University, Tianjin 300060, China.                                                 
+                                                                                   
+OBJECTIVE: To study the expression of prostate stem cell antigen (PSCA) at         
+protein and mRNA levels in invasive micropapillary carcinoma of the breast (IMPC)  
+and to analyze the relationship between PSCA expression and clinicopathologic      
+features.                                                                          
+METHODS: The expression of PSCA protein was analyzed by immunohistochemistry       
+(LSAB) in 66 cases of IMPC and 67 cases of invasive ductal carcinoma, not          
+otherwise specified (IDC-NOS). The association between PSCA expression and         
+clinicopathologic features was also analyzed in IMPC. Furthermore, RT-PCR was      
+used to detect PSCA mRNA in 10 cases of primary IMPC and 10 cases of primary       
+IDC-NOS with paired normal breast tissues, each from the same subject.             
+RESULTS: Immunohistochemical analysis revealed the overexpression of PSCA in 47    
+of 66 (71.2%) cases of IMPC and 35 of 67 (52.2%) IDC-NOS. Statistical analysis     
+showed a significant difference of PSCA expression between IMPC and IDC-NOS (P =   
+0.024). In IMPC, the expression of PSCA was correlated with lymph nodes            
+metastasis (P = 0.039). RT-PCR showed the mRNA level of PSCA was significantly     
+higher in primary IMPC and IDC-NOS tissue than that in paired normal breast        
+tissue (7/10 and 5/10, respectively), and it was also significantly higher in      
+primary IMPC tissue than that in IDC-NOS tissue.                                   
+CONCLUSION: PSCA might play an important role in lymph node metastasis in IMPC.    
+                                                                                   
+                                                                                   
+PMID: 21914346  [PubMed - in process]                                              
+                                                                                   
+                                                                                   
+12. Zhonghua Wai Ke Za Zhi. 2011 Jun 1;49(6):542-5.                                
+                                                                                   
+[Modified transperitoneal laparoscopic radical prostatectomy: technique and        
+clinical outcomes].                                                                
+                                                                                   
+[Article in Chinese]                                                               
+                                                                                   
+Shao PF, Yin CJ, Meng XX, Ju XB, L¸ Q, Li J, Qin C, Zhang W, Gu M, Hua LX, Xu ZQ.  
+                                                                                   
+Department of Urology, The First Affiliated Hospital of Nanjing Medical            
+University, Nanjing 210029, China.                                                 
+                                                                                   
+OBJECTIVE: To evaluate the technique and clinical outcomes of modified             
+transperitoneal laparoscopic radical prostatectomy.                                
+METHODS: A total of 105 patients received the operation with age ranging from 51   
+to 73 years from January 2008 to June 2010. Mean level of serum prostate specific  
+antigen was 13.6 µg/L and mean prostatic volume was 45 ml. Pathological studies    
+of biopsy confirmed the prostate carcinoma with Gleason score 6-8. Radionuclide    
+bone scan revealed no metastasis. Based on previously retroperitoneal radical      
+prostatectomy, modified technique was applied involving surgical approach,         
+bladder neck dissection and vesicourethral anastomosis.                            
+RESULTS: Mean operative time was 93 min (65 - 150 min). Intraoperative blood loss  
+was 115 ml (50 - 400 ml). No complication of bowl injury occurred. Positive        
+surgical margin was present in 24 patients. Normal continence were seen in 64      
+patients after catheter removed. Recovery of incontinence within 3 months was      
+seen in 33 patients and 3 to 12 months in 5 patients respectively. Three patients  
+with incontinence were still in the follow-up.                                     
+CONCLUSIONS: Transperitoneal laparoscopic radical prostatectomy provides large     
+working space and clear anatomic exposure. Higher efficiency and lower             
+complication rate are obtained through modified laparoscopic technique involving   
+seminal vesicle isolation, bladder neck dissection and vesicourethral              
+anastomosis.                                                                       
+                                                                                   
+                                                                                   
+PMID: 21914307  [PubMed - in process]                                              
+                                                                                   
+                                                                                   
+13. Eur Radiol. 2011 Sep 14. [Epub ahead of print]                                 
+                                                                                   
+Prostate MRI: diffusion-weighted imaging at 1.5T correlates better with            
+prostatectomy Gleason grades than TRUS-guided biopsies in peripheral zone          
+tumours.                                                                           
+                                                                                   
+Bittencourt LK, Barentsz JO, de Miranda LC, Gasparetto EL.                         
+                                                                                   
+CDPI Clinics-Abdominal and Pelvic Imaging, Rio de Janeiro Federal University, Av.  
+Das Americas, 4666, sl 325, centro medico, 22640102, Rio de Janeiro, RJ, Brazil,   
+lkayat@gmail.com.                                                                  
+                                                                                   
+OBJECTIVES: To investigate the usefulness of Apparent Diffusion Coefficients       
+(ADC) in predicting prostatectomy Gleason Grades (pGG) and Scores (GS), compared   
+with ultrasound-guided biopsy Gleason Grades (bGG). METHODS: Twenty-four patients  
+with biopsy-proven prostate cancer were included in the study. Diffusion-weighted  
+images were obtained using 1.5-T MR with a pelvic phased-array coil. Median ADC    
+values (b0,500,1000 s/mm≤) were measured at the most suspicious areas in the       
+peripheral zone. The relationship between ADC values and pGG or GS was assessed    
+using Pearson's coefficient. The relationship between bGG and pGG or GS was also   
+evaluated. Receiver operating characteristic (ROC) curve analysis was performed    
+to assess the performance of each method on a qualitative level. RESULTS: A        
+significant negative correlation was found between mean ADCs of suspicious         
+lesions and their pGG (r?=?-0.55; p?<?0.01) and GS (r?=?-0.63; p?<?0.01). No       
+significant correlation was found between bGG and pGG (r?=?0.042; p?>?0.05) or GS  
+(r?=?0.048; p?>?0.05). ROC analysis revealed a discriminatory performance of       
+AUC?=?0.82 for ADC and AUC?=?0.46 for bGG in discerning low-grade from             
+intermediate/high-grade lesions. CONCLUSIONS: The ADC values of suspicious areas   
+in the peripheral zone perform better than bGG in the correlation with prostate    
+cancer aggressiveness, although with considerable intra-subject heterogeneity.     
+KEY POINTS: ï Prostate cancer aggressiveness is probably underestimated and        
+undersampled by routine ultrasound-guided biopsies. ï Diffusion-weighted MR        
+images show good linear correlation with prostate cancer aggressiveness. ï DWI     
+information may be used to improve risk-assessment in prostate cancer.             
+                                                                                   
+                                                                                   
+PMID: 21913058  [PubMed - as supplied by publisher]                                
+                                                                                   
+                                                                                   
+14. Adv Urol. 2012;2012:656023. Epub 2011 Sep 7.                                   
+                                                                                   
+A rare location of metastasis from prostate cancer: hydronephrosis associated      
+with ureteral metastasis.                                                          
+                                                                                   
+Schneider S, Popp D, Denzinger S, Otto W.                                          
+                                                                                   
+Department of Urology, St. Joseph's Mecial Center, University of Regensburg,       
+Landshuter Straﬂe 65, 93053 Regensburg, Germany.                                   
+                                                                                   
+Prostate carcinoma is a very rare origin of metastatic disease in the ureter. We   
+report a case of a 74-year-old man who presented in November 2008 initially with   
+flank pain and lower urinary tract symptoms. Diagnostic investigation revealed a   
+skeletal metastasizing prostate carcinoma, and the cause for the flank pain was a  
+hydronephrosis due to ureteral metastasis diagnosed by biopsy. Antihormonal        
+treatment led to disappearance of the hydronephrosis; however, further progress    
+finally ended in acute liver failure with patient's death in July 2010.            
+                                                                                   
+                                                                                   
+PMCID: PMC3168270                                                                  
+PMID: 21912541  [PubMed - in process]                                              
+                                                                                   
+                                                                                   
+15. Prostate Cancer Prostatic Dis. 2011 Sep 13. doi: 10.1038/pcan.2011.45. [Epub   
+ahead of print]                                                                    
+                                                                                   
+Inverse association of p16(INK4a) and p14(ARF) methylation of the CDKN2a locus in  
+different Gleason scores of prostate cancer.                                       
+                                                                                   
+Verdoodt B, Sommerer F, Palisaar RJ, Noldus J, Vogt M, Nambiar S, Tannapfel A,     
+Mirmohammadsadegh A, Neid M.                                                       
+                                                                                   
+Institute of Pathology, Ruhr-University Bochum, Bochum, Germany.                   
+                                                                                   
+Background:Promoter hypermethylation is an important epigenetic mechanism in the   
+regulation of several key modulators of prostate carcinoma progression. Recent     
+studies suggest that the polycomb-group (PcG) protein BMI1 may have an impact on   
+epigenetic regulation of several targets, including the CDKN2a locus.Methods:In    
+this study, we investigated the association of BMI1 expression, promoter           
+methylation of CDKN2a (p16(INK4a) and p14(ARF)) and TMS1 with pathological         
+variables (Gleason score, TNM stage, perineural invasion) in prostate cancer       
+(PCa).Results:Methylation of p16(INK4a) and p14(ARF) revealed an inverse           
+association with Gleason score 7b and Gleason score 6. No significant association  
+could be demonstrated for BMI1 -overexpression and promoter methylation of         
+p16(INK4a), p14(ARF) and TMS1 as well as pT category.Conclusions:Our data suggest  
+that the CDKN2a locus is a switch in PCa with methylation of p16(INK4a) being a    
+marker for more aggressive tumours of Gleason score 7b, but no association with    
+BMI overexpression was observed.Prostate Cancer and Prostatic Diseases advance     
+online publication, 13 September 2011; doi:10.1038/pcan.2011.45.                   
+                                                                                   
+                                                                                   
+PMID: 21912429  [PubMed - as supplied by publisher]                                
+                                                                                   
+                                                                                   
+16. Prostate Cancer Prostatic Dis. 2011 Sep 13. doi: 10.1038/pcan.2011.43. [Epub   
+ahead of print]                                                                    
+                                                                                   
+Prevalence of BPH and lower urinary tract symptoms in West Africans.               
+                                                                                   
+Chokkalingam AP, Yeboah ED, Demarzo A, Netto G, Yu K, Biritwum RB, Tettey Y,       
+Adjei A, Jadallah S, Li Y, Chu LW, Chia D, Niwa S, Partin A, Thompson IM,          
+Roehrborn C, Hoover RN, Hsing AW.                                                  
+                                                                                   
+UC Berkeley School of Public Health, University of California, Berkeley, CA, USA.  
+                                                                                   
+Background:BPH and lower urinary tract symptoms (LUTS) are very common among       
+older men in Western countries. However, the prevalence of these two conditions    
+in the developing countries is less clear.Methods:We assessed the                  
+age-standardized prevalence of BPH and/or LUTS among West Africans in a            
+probability sample of 950 men aged 50-74 in Accra, Ghana, with no evidence of      
+biopsy-confirmed prostate cancer after screening with PSA and digital rectal       
+examination (DRE). Information on LUTS was based on self-reports of the            
+International Prostate Symptom Score (IPSS). BPH was estimated using DRE, PSA      
+levels and imputed prostate volume.Results:The prevalence of DRE-detected          
+enlarged prostate was 62.3%, while that of PSA?1.5?ng?ml(-1) (an estimate of       
+prostate volume ? 30?cm(3)) was 35.3%. The prevalence of moderate-to-severe LUTS   
+(IPSS?8) was 19.9%. The prevalence of IPSS?8 and an enlarged prostate on DRE was   
+13.3%. Although there is no universally agreed-upon definition of BPH/LUTS,        
+making comparisons across populations difficult, BPH and/or LUTS appear to be      
+quite common among older Ghanaian men.Conclusions:We found that after age          
+standardization, the prevalence of DRE-detected enlarged prostate in Ghanaian men  
+is higher than previously reported for American men, but the prevalence of LUTS    
+was lower than previously reported for African Americans. Further studies are      
+needed to confirm these findings and identify the risk factors for BPH in both     
+Africans and African Americans.Prostate Cancer and Prostatic Diseases advance      
+online publication, 13 September 2011; doi:10.1038/pcan.2011.43.                   
+                                                                                   
+                                                                                   
+PMID: 21912428  [PubMed - as supplied by publisher]                                
+                                                                                   
+                                                                                   
+17. Ir J Med Sci. 2011 Sep 11. [Epub ahead of print]                               
+                                                                                   
+Survival after incidental prostate cancer diagnosis at transurethral resection of  
+prostate: 10-year outcomes.                                                        
+                                                                                   
+Ahmad S, O'Kelly F, Manecksha RP, Cullen IM, Flynn RJ, McDermott TE, Grainger R,   
+Thornhill JA.                                                                      
+                                                                                   
+Department of Urology, The Adelaide and Meath Hospital incorporating the National  
+Children's Hospital, Tallaght, Dublin, Ireland, drsarfrazrana@hotmail.com.         
+                                                                                   
+BACKGROUND: The most appropriate management of incidental prostate cancers         
+diagnosed at transurethral resection of prostate has been debated. It is           
+important to determine the long-term outcomes to establish an appropriate          
+management in patients with incidental prostate cancer. AIMS: We aim to determine  
+10-year survival and to identify the factors of worse prognosis of incidental      
+prostate cancers diagnosed at transurethral resection of prostate. METHODS: A      
+retrospective analysis of patients with pT1a-pT1b prostate cancers diagnosed       
+between 1998 and 2003. Medical notes, PSA and pathology results were reviewed.     
+Overall and cancer specific survival was calculated at mean 10-year follow-up.     
+RESULTS: Sixty patients with incidental prostate cancer were identified            
+(pT1a = 18, pT1b = 42). Fifty-one percents of the patients were managed on a       
+watchful waiting strategy with overall 84% survival and 9.7% cancer specific       
+mortality. Twenty patients (all with pT1b) received hormone therapy. Overall       
+survival in this cohort was 50% with 20% cancer specific mortality. Nine patients  
+received curative therapy (Radical prostatectomy = 4, Radiotherapy = 5). In this   
+group, overall survival was 88% with no cancer specific mortality. CONCLUSIONS:    
+Stage pT1a disease and preoperative low PSA were associated with favourable        
+survival. However, for pT1b and/or high Gleason score (=7), mortality was          
+comparatively higher. Hence, patients with high Gleason score and/or pT1b disease  
+should be considered for curative therapy. Additionally, active surveillance may   
+have a role in selected men with incidental prostate cancer.                       
+                                                                                   
+                                                                                   
+PMID: 21910023  [PubMed - as supplied by publisher]                                
+                                                                                   
+                                                                                   
+18. Urology. 2011 Sep 10. [Epub ahead of print]                                    
+                                                                                   
+Prevalence of Fluoroquinolone-resistant Escherichia coli Before and Incidence of   
+Acute Bacterial Prostatitis After Prostate Biopsy.                                 
+                                                                                   
+Minamida S, Satoh T, Tabata K, Kimura M, Tsumura H, Kurosaka S, Matsumoto K,       
+Fujita T, Iwamura M, Baba S.                                                       
+                                                                                   
+Department of Urology, Kitasato University School of Medicine, 1-15-1 Kitasato,    
+Minami-ku, Sagamihara, Kanagawa 252-0374, Japan.                                   
+                                                                                   
+OBJECTIVE: To study the prevalence of fluoroquinolone-resistant Escherichia coli   
+before transrectal ultrasound (TRUS)-guided prostate biopsy and prospectively      
+analyze the rates of infective complications after biopsy in patients receiving    
+fluoroquinolone prophylaxis. E. coli is the pathogen most commonly associated      
+with infections after TRUS-guided prostate biopsy, and the prevalence of           
+fluoroquinolone-resistant E. coli is increasing. METHODS: We analyzed the          
+prospective data from 100 patients who underwent TRUS-guided prostate biopsy from  
+April to December 2010. A stool culture was obtained 1 month before biopsy.        
+Patients received 500 mg levofloxacin orally once daily for 3 days, beginning 2    
+hours before biopsy. All biopsies were performed as outpatient procedures.         
+RESULTS: Of the 100 patients, 13 (13%) had a stool culture positive for            
+fluoroquinolone-resistant E. coli. In 4 (31%) of these 13 patients, acute          
+bacterial prostatitis was detected after TRUS-guided prostate biopsy. Of the 87    
+patients whose stool culture was negative for fluoroquinolone-resistant E. coli,   
+none had acute bacterial prostatitis. All 13 infected patients were treated with   
+carbapenems immediately after diagnosis of prostatitis and made a complete         
+recovery. CONCLUSION: Prophylactic fluoroquinolone is still effective in           
+preventing acute bacterial prostatitis after TRUS-guided prostate biopsy. The      
+incidence is relatively low in patients with fluoroquinolone-sensitive E. coli.    
+However, the prevalence of fluoroquinolone-resistant E. coli is about 13% in this  
+population. Stool cultures for the detection of fluoroquinolone-resistant E. coli  
+might be obtained before TRUS-guided prostate biopsy.                              
+                                                                                   
+                                                                                   
+PMID: 21908030  [PubMed - as supplied by publisher]                                
+                                                                                   
+                                                                                   
+19. Urol Oncol. 2011 Sep 7. [Epub ahead of print]                                  
+                                                                                   
+Combined magnetic resonance spectroscopy and dynamic contrast-enhanced imaging     
+for prostate cancer detection.                                                     
+                                                                                   
+Perdon‡ S, Di Lorenzo G, Autorino R, Buonerba C, De Sio M, Setola SV, Fusco R,     
+Ronza FM, Caraglia M, Ferro M, Petrillo A.                                         
+                                                                                   
+Urology Section, Istituto Nazionale Tumori, Fondazione G. Pascale, Naples, Italy.  
+                                                                                   
+BACKGROUND: The use of magnetic resonance spectroscopy imaging (MRSI) and dynamic  
+contrast enhanced magnetic resonance imaging (DCE-MRI) have emerged as a valid     
+diagnostic tools for prostate cancer (CaP). METHODS: Men with PSA levels below 10  
+ng/ml were enrolled in a prospective cohort study and underwent combined MRSI and  
+DCE-MRI and transrectal ultrasound-guided prostate biopsy. Imaging was performed   
+using a 1.5 T MR scanner (Symphony TIM; Siemens, Erlangen, Germany) with an        
+endorectal coil (Medrad; Pittsburg, PA), inflated with 60 cc of air.               
+Three-dimensional magnetic resonance spectroscopic data were acquired by using     
+water and a lipid-suppressed double-spin-echo point-resolved spectroscopy          
+sequence, which was optimized for quantitative detection of both choline and       
+citrate. Dynamic contrast-enhanced MRI sequences were obtained with 3D             
+T1-weighted FLASH images before and during rapid bolus administration of           
+intravenous paramagnetic contrast medium gadoteric acid. Specificity,              
+sensitivity, positive predictive value, negative predictive value, and accuracy    
+were computed considering patients, each of the 2 lobes, each of the 6 sextants,   
+and each 12th part of the prostate gland as single measurements. RESULTS:          
+Overall, 106 patients were included in the analysis. Median age was 65.9 years     
+(range, 61.2-70.5 years) and median PSA level at study entry was 7.1 ng/ml         
+(range, 2.5-9.9). CaP was detected at biopsy in 24 patients (22.6 % of the         
+population) with a median Gleason score of 8 (range 4-10). Diagnostic accuracy of  
+combined MRSI and DCE-MRI was 85%, sensitivity was 71%, and specificity was 48%,   
+considering patients as single measurements, with a negative predictive value of   
+91%, but a positive predictive value of only 19%. Positive predictive value of     
+the examination improved to 25% for patients who repeated biopsy. CONCLUSIONS:     
+Although this study confirms the potential usefulness of MRI for the diagnosis of  
+CaP, the positive predictive value obtained was unacceptably low due to the high   
+number of false positives recorded. Nevertheless, the high negative predictive     
+value of the examination may serve to avoid unnecessary biopsies. Future research  
+should be directed at assessing the value of combining MRI-based techniques with   
+novel biochemical markers for the diagnosis of CaP in patients with low PSA        
+levels.                                                                            
+                                                                                   
+                                                                                   
+PMID: 21906966  [PubMed - as supplied by publisher]                                
+                                                                                   
+                                                                                   
+20. Urol Oncol. 2011 Sep 7. [Epub ahead of print]                                  
+                                                                                   
+Fine-tuning robot-assisted radical prostatectomy planning with MRI.                
+                                                                                   
+Finley DS, Margolis D, Raman SS, Ellingson BM, Natarajan S, Tan N, Huang J,        
+Reiter RE.                                                                         
+                                                                                   
+Department of Urology, Kaiser Permanente Los Angeles Medical Center, Los Angeles,  
+CA 90027, USA.                                                                     
+                                                                                   
+OBJECTIVES: Robot-assisted radical prostatectomy (RARP) has now become the most    
+common surgical treatment option for prostate cancer (CaP). Clinicopathologic      
+data (i.e., biopsy, digital rectal exam, prostate specific antigen level) and      
+patient-specific factors (e.g., age, erectile function, co-morbidities) are the    
+primary sources of information that urologists use for counseling and treatment    
+decision making. Magnetic resonance imaging (MRI) has evolved along a similar      
+temporal arc to RARP, with increased utilization and precision over the past       
+decade. MRI prior to RARP provides multifaceted adjunctive information, including  
+enhancement of locoregional staging, delineation of spatial anatomic information,  
+and identification of aberrant anatomy, all of which aid in patient treatment      
+counseling and operative planning. This article is designed for urologic surgeons  
+who perform RARP, with the aim of providing a review of prostate MRI imaging and   
+highlighting findings which may specifically alter the operation. METHODS AND      
+MATERIALS: A review of the literature was performed, focusing on the most recent   
+publications. RESULTS: MRI imaging of the prostate has become increasing accurate  
+for the identification, localization, and characterization of CaP lesions. In      
+addition to tumor-specific information, a number of intra- and extra-prostatic     
+findings are consistently identified on MRI which may impact RARP. CONCLUSIONS:    
+MRI provides important information which may alter RARP.                           
+                                                                                   
+                                                                                   
+PMID: 21906964  [PubMed - as supplied by publisher]                                
+                                                                                   
