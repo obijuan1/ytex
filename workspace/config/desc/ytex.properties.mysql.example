@@ -27,3 +27,9 @@ hibernate.dialect=org.hibernate.dialect.MySQLMyISAMDialect
 
 # transaction isolation level
 db.isolationLevel=READ_UNCOMMITTED
+
+# the parameters passed to mysql
+# if you have any additional parameters that must be passed to mysql 
+# (e.g. if you are using a non-standard port)
+# uncomment and modify the line below
+# mysql.line=--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema} 
