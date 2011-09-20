@@ -1,2 +1,0 @@
-bcp "select * from vacs_test.test.umls_ms_2009 where cui in (select code from vacs_test.test.v_document_ontoanno)" queryout umls_ms_2009_sample.bcp  -T -S localhost -w
-bcp "select * from vacs_test.test.umls_snomed_map where cui in (select code from vacs_test.test.v_document_ontoanno)" queryout umls_snomed_map_sample.bcp  -T -S localhost -w

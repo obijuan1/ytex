@@ -1,1 +1,0 @@
-drop table $(db_schema).dummy_document;
