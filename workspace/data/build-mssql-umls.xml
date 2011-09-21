@@ -40,7 +40,7 @@ properties control the import:
   * umls.schema: the schema to install the umls in. 
   Defaults to the ytex schema (db.schema)
   * meta.tables: comma-delimited list of UMLS metathesaurus tables to import.  
-  Defaults to: MRCUI,MRDOC,MRSAB,MRSTY,MRCONSO,MRREL
+  Defaults to: MRCUI,MRDOC,MRSAB,MRSTY,MRCONSO,MRREL,MRXNS_ENG,MRXNW_ENG
   * net.tables: comma-delimted list of UMLS semantic network tables to import.
   Defaults to: SRDEF,SRFIL,SRFLD,SRSTR,SRSTRE1,SRSTRE2
 	]]>
@@ -54,7 +54,7 @@ properties control the import:
 	<property name="umls.sqlcmd.line" value="-d ${umls.catalog} -E -S ${db.host} -v db_schema=${umls.schema}" />
 	<!-- MRREL, MRSTY, MRXNS_ENG, MRXNW_ENG used by sujeevan -->
 	<!-- MRREL, MRSTY, MRDOC, MRSAB, MRCONSO, SRDEF used by UMLS::Interface -->
-	<property name="meta.tables" value="MRCUI,MRDOC,MRSAB,MRSTY,MRCONSO,MRREL" />
+	<property name="meta.tables" value="MRCUI,MRDOC,MRSAB,MRSTY,MRCONSO,MRREL,MRXNS_ENG,MRXNW_ENG" />
 	<!-- SU is in a different format -->
 	<property name="net.tables" value="SRDEF,SRFIL,SRFLD,SRSTR,SRSTRE1,SRSTRE2" />
 	<target name="import.file" description="convert rrf file with RRFtoWideTab, import file with bcp">
@@ -76,7 +76,7 @@ properties control the import:
 				</pathconvert>
 				<echo>importing ${rrf.base.txt}</echo>
 				<exec executable="bcp" failonerror="yes">
-					<arg line="${umls.catalog}.${umls.schema}.${rrf.base} in ${rrf.base.txt} -S ${db.host} -w -T" />
+					<arg line="${umls.catalog}.${umls.schema}.${rrf.base} in ${rrf.base.txt} -S ${db.host} -w -T -k" />
 				</exec>
 			</else>
 		</if>
