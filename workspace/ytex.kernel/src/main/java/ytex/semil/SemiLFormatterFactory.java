@@ -200,7 +200,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 					}
 					// check test set for gold class
 					int classIdGold = 0;
-					if (testInstanceClassMap.containsKey(instanceId))
+					if (testInstanceClassMap != null && testInstanceClassMap.containsKey(instanceId))
 						classIdGold = classToIndexMap.get(testInstanceClassMap
 								.get(instanceId));
 					else
