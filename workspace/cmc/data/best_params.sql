@@ -97,3 +97,4 @@ from best_weight
 select cast(concat('class.weight.',label, '=', best_weight) as char(100))
 from best_weight
 ;
+

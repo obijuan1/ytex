@@ -502,6 +502,7 @@ ok, go back to basics - cross validation to get best params.
 maybe the cost param is important.  
 test transductive svm with various lambdaW.  
 use a low lambdaU to speed things up.
+only trained on labels with > 2 training examples
 del label12*
 del label19*
 del label21*
@@ -512,3 +513,15 @@ del label32*
 del label37*
 del label41*
 del label42*
+
+== svmlin 9/21 ==
+looked at cross-validation results.
+svmlin performed (much) better on labels with fewer training examples.
+this is not going to help micro-averaged f1 that much, but shows that semi-supervised does better with fewer training examples.
+
+TODO: with labels 20 & 9 (most positive examples) test svmlin vs. libsvm 
+with varying number of training examples.
+
+TODO: retest svmlin with lambda parameters determined from cross-validation
+
+TODO: take a closer look at semil
