@@ -116,11 +116,12 @@ public class SparseMatrixFormatterFactory implements SparseDataFormatterFactory 
 		/**
 		 * add instance_id to sparse line values
 		 */
+		@Override
 		protected SortedMap<Integer, Double> getSparseLineValues(
 				SparseData bagOfWordsData,
 				Map<String, Integer> numericAttributeMap,
 				Map<String, Map<String, Integer>> nominalAttributeMap,
-				int instanceId) {
+				long instanceId) {
 			SortedMap<Integer, Double> instanceLine = super
 					.getSparseLineValues(bagOfWordsData, numericAttributeMap,
 							nominalAttributeMap, instanceId);

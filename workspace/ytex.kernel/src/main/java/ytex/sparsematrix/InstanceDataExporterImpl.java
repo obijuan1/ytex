@@ -66,23 +66,27 @@ public class InstanceDataExporterImpl implements InstanceDataExporter {
 								// write class
 								appendString(instanceClass.getValue(),
 										stringEscape, w);
+								// if there are multiple labels, write the label
 								if (label.length() > 0) {
 									includeLabel = true;
 									w.write(fieldDelim);
 									appendString(label, stringEscape, w);
 								}
+								// if there are multiple runs, write the run
 								if (run > 0) {
 									includeRun = true;
 									w.write(fieldDelim);
 									w.write(Integer.toString(run));
 								}
+								// if there are multiple folds, write the fold
 								if (fold > 0) {
 									includeFold = true;
 									w.write(fieldDelim);
 									w.write(Integer.toString(fold));
 								}
+								// if there is a distinction between training/testing, write the train/test flag
 								if (instanceData.getLabelToInstanceMap()
-										.get(label).get(run).size() > 1) {
+										.get(label).get(run).get(fold).size() > 1) {
 									includeTrain = true;
 									w.write(fieldDelim);
 									w.write(train ? "1" : "0");
