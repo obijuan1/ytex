@@ -21,8 +21,13 @@ data.raw = read.delim("data.txt", sep="\t", header=FALSE)
 # sparse matrices (e.g. svm from e1071), or perform feature selection to get a 
 # smaller matrix.
 data = data.frame(as.matrix(sparseMatrix(i=data.raw[,1], j=data.raw[,2], x=data.raw[,3])))
-# load column names from attributes.txt
-colnames(data) = read.delim("attributes.txt", header=F, stringsAsFactors=F)[,1]
+if(length(grep("cui", getwd())) > 0) {
+	# for cuis, load column names from attributes.txt
+	colnames(data) = read.delim("attributes.txt", header=F, stringsAsFactors=F)[,1]
+} else {
+	# words are not legal R column names which breaks rpart
+	colnames(data)[1] = "instance_id"
+}
 # set row names = instance_id
 rownames(data) = data[, "instance_id"]
 # load the class labels
@@ -30,14 +35,15 @@ instance = read.table("instance.txt", header=FALSE, sep="\t", col.names=c("insta
 # get the training instance ids
 train.iid = instance[instance$train == 1, "instance_id"]
 # get the training dataset, drop the instance_id column
-data.train = cbind(class=instance$class[instance$train ==1], data[as.character(train.iid),-1])
+data.train = cbind(frac_class=instance$class[instance$train ==1], data[as.character(train.iid),-1])
 rownames(data.train) = rownames(data[as.character(train.iid),])
 # get the test instance ids and dataset
 test.iid = instance[instance$train == 0, "instance_id"]
-data.test = cbind(class=instance$class[instance$train == 0], data[as.character(test.iid),-1])
+data.test = cbind(frac_class=instance$class[instance$train == 0], data[as.character(test.iid),-1])
 rownames(data.test) = rownames(data[as.character(test.iid),])
 # train a decision tree on the training data
 # you would probably want to do some cross validation
-frac.rpart = rpart(class~., data.train)
+frac.rpart = rpart(frac_class~., data.train)
+print(frac.rpart)
 # see how we did
-print(confusionMatrix(predict(frac.rpart, data.test[,-1], type="class"), data.test$class)) 
+print(confusionMatrix(predict(frac.rpart, data.test[,-1], type="class"), data.test$frac_class)) 
