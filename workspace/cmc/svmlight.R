@@ -125,7 +125,7 @@ exportSvmlight = function(inst.fold, prefix, iid, data.libsvm) {
 }
 
 instanceIdsToIndex = function(iid, instance_ids) {
-	merge(iid, data.frame("instance_id" = inst$instance_id), by = "instance_id")[,"index"]
+	merge(iid, data.frame("instance_id" = instance_ids), by = "instance_id")[,"index"]
 }
 
 exportSvmlightFold = function(inst, filePrefix, data.libsvm, iid) {
