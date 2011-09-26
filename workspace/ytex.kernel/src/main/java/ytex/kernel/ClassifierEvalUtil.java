@@ -37,7 +37,7 @@ public class ClassifierEvalUtil {
 	}
 
 	private void generateEvalFiles() throws IOException {
-		String algo = System.getProperty("kernel.algo");
+		String algo = props.getProperty("kernel.algo");
 		if ("semil".equalsIgnoreCase(algo)) {
 			generateSemilEvalParams();
 		} else if ("svmlight".equalsIgnoreCase(algo)
@@ -102,6 +102,8 @@ public class ClassifierEvalUtil {
 		String posClassFrac = getClassFrac(labelFile);
 		if(posClassFrac != null) {
 			classFracs.add("-R " + posClassFrac);
+		} else {
+			classFracs.add("");
 		}
 		List<String> algos = Arrays.asList(addOptionPrefix(props.getProperty("cv.svmlin.algo")
 				.split(","), "-A "));
