@@ -134,7 +134,7 @@
 		<for param="training.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
 			<fileset dir="${kernel.data}" includes="${train.fileset.filter}" />
 			<sequential>
-				<antcall target="svm.processFile">
+				<antcall target="${svm.processFile}">
 					<param name="kernel.train.data" value="@{training.file}" />
 				</antcall>
 			</sequential>
@@ -156,7 +156,7 @@
 			</filterchain>
 		</loadfile>
 		<echo>kernel.train.data ${kernel.train.data}</echo>
-		<antcall target="svm.processFile" />
+		<antcall target="${svm.processFile}" />
 	</target>
 	<target name="svm.processFile" depends="init.dir" description="iterate over parameter grid and run svm on specified file. calls svm.evaluate on ${kernel.train.data} for each command line in ${kernel.evalLines}">
 		<property name="kernel.train.data" value="${kernel.data}/label1_run1_fold1_train_data.txt" />
