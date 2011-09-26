@@ -35,11 +35,22 @@
 			<equals arg1="${kernel.algo}" arg2="svmlin" />
 		</condition>
 		<!-- set flags to control which machine learning target to run on each fold -->
-		<condition property="process.dir.target" value="semil.process.dir">
+		<condition property="process.dir.target" value="semil.process.dir" else="svm.process.dir">
 			<isset property="semil" />
 		</condition>
-		<condition property="process.dir.target" value="svmlin.process.dir" else="svm.process.dir">
-			<isset property="svmlin" />
+		<!-- set property to control which files to iterate over -->
+		<condition property="train.fileset.filter" value="*train_data.txt" else="*label.txt">
+			<or>
+				<isset property="libsvm" />
+				<isset property="svmlight" />
+			</or>
+		</condition>
+		<!-- set property to control which target to call for each file to be processed -->
+		<condition property="svm.processFile" value="svm.processFile" else="svmlin.processFile">
+			<or>
+				<isset property="libsvm" />
+				<isset property="svmlight" />
+			</or>
 		</condition>
 		<property name="kernel.eval.tmpdir" value="${java.io.tmpdir}" />
 		<property name="kernel.tmpdir" value="${kernel.eval.tmpdir}/${kernel.name}-${kernel.experiment}-${kernel.algo}${kernel.param1}${kernel.param2}" />
@@ -93,7 +104,7 @@
 		<antcall target="svm.iter.train.local" />
 	</target>
 	<target name="svm.iter.train.cluster" if="kernel.cluster" description="iterate over files, send to cluster for processing. will only run if kernel.cluster is set.">
-		<fileset id="train.fileset" dir="${kernel.data}" includes="*train_data.txt" />
+		<fileset id="train.fileset" dir="${kernel.data}" includes="${train.fileset.filter}" />
 		<!--
 		this doesn't work - can't use newline as a separator.  
 		use a for loop to create a list of files for processing
@@ -121,7 +132,7 @@
 	</target>
 	<target name="svm.iter.train.local" unless="kernel.cluster" description="iterate over files, process locally. use multiple threads if parallel.folds.  will only run if kernel.cluster is not set.">
 		<for param="training.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
-			<fileset dir="${kernel.data}" includes="*train_data.txt" />
+			<fileset dir="${kernel.data}" includes="${train.fileset.filter}" />
 			<sequential>
 				<antcall target="svm.processFile">
 					<param name="kernel.train.data" value="@{training.file}" />
@@ -335,21 +346,21 @@
 		</exec>
 	</target>
 	<!--
-	-->
-	<target name="svmlin.process.dir" depends="init.dir,kernel.genParams,svmlin.evaluate,kernel.storeResults" description="run svmlin" />
+	<target name="svmlin.process.dir" depends="init.dir,kernel.genParams,svm.iter.train" description="run svmlin" />
 	<target name="svmlin.evaluate" depends="init.dir" description="iterate over *label.txt, call semil.processLabelFile">
 		<for param="kernel.label.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
 			<fileset dir="${kernel.data}" includes="*label.txt" />
 			<sequential>
 				<antcall target="svmlin.processLabelFile">
-					<param name="kernel.label.file" value="@{kernel.label.file}" />
+					<param name="kernel.train.data" value="@{kernel.label.file}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-	<target name="svmlin.processLabelFile" depends="init.dir" description="for each label file, call svmlin.iter.evalLines">
-		<property name="kernel.label.file" value="${kernel.data}/label1_run1_fold1_label.txt" />
-		<basename file="${kernel.label.file}" property="kernel.label.filename" />
+	-->
+	<target name="svmlin.processFile" depends="init.dir" description="for each label file, call svmlin.iter.evalLines">
+		<property name="kernel.train.data" value="${kernel.data}/label1_run1_fold1_label.txt" />
+		<basename file="${kernel.train.data}" property="kernel.label.filename" />
 		<basename file="${kernel.label.filename}" property="kernel.data.basename" suffix=".txt" />
 		<!-- load properties kernel.distFiles and kernel.evalLines defined -->
 		<echo>${kernel.data}/${kernel.data.basename}.properties</echo>
@@ -384,9 +395,9 @@
 		<!-- copy results -->
 		<property name="result.dir" value="${kernel.data}/eval/${kernel.data.basename}/${cv.tstamp}"/>
 		<mkdir dir="${result.dir}" />
-		<move file="${kernel.label.dir}/${kernel.dataFile}.weights" tofile="${result.dir}/weights"/>
-		<move file="${kernel.label.dir}/${kernel.dataFile}.outputs" tofile="${result.dir}/outputs"/>
-		<move file="${kernel.label.dir}/svmlin.out" todir="${result.dir}"/>
+		<move file="${kernel.label.dir}/${kernel.dataFile}.weights" tofile="${result.dir}/weights" failonerror="false"/>
+		<move file="${kernel.label.dir}/${kernel.dataFile}.outputs" tofile="${result.dir}/outputs" failonerror="false"/>
+		<move file="${kernel.label.dir}/svmlin.out" todir="${result.dir}" failonerror="false"/>
 		<!-- store svmlin options -->
 		<echoproperties destfile="${result.dir}/options.properties">
 			<propertyset>
