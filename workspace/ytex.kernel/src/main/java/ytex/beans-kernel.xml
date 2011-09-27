@@ -211,6 +211,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				</entry>
 				<entry>
 					<key>
+						<value>svmlin</value>
+					</key>
+					<ref bean="svmLinFormatterFactory" />
+				</entry>
+				<entry>
+					<key>
 						<value>semil</value>
 					</key>
 					<ref bean="semiLFormatterFactory" />
@@ -227,6 +233,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="svmLightFormatterFactory" class="ytex.svmlight.SVMLightFormatterFactory">
 	</bean>
 	<bean id="libSVMFormatterFactory" class="ytex.libsvm.LibSVMFormatterFactory">
+	</bean>
+	<bean id="svmLinFormatterFactory" class="ytex.kernel.SVMLinFormatterFactory">
 	</bean>
 	<bean id="sparseMatrixFormatterFactory" class="ytex.sparsematrix.SparseMatrixFormatterFactory">
 		<property name="instanceDataExporter" ref="instanceDataExporter" />

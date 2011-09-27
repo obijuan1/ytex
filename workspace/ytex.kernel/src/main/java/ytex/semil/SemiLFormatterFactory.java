@@ -48,7 +48,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 
 	public static class SemiLDataFormatter extends SVMLightFormatter {
 		NumberFormat semilNumberFormat = new DecimalFormat("#.######");
-		InstanceData instanceLabel = null;
+		protected InstanceData instanceLabel = null;
 
 		// /**
 		// * cosine distance: <tt>1-aa'/sqrt(aa' * bb')</tt>
@@ -76,7 +76,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 			this.instanceLabel = instanceLabel;
 			if (properties.getProperty(SCOPE) == null
 					|| properties.getProperty(SCOPE).length() == 0) {
-				exportSemiL(sparseData, null, null, null);
+				exportData(sparseData, null, null, null);
 			}
 		}
 
@@ -88,7 +88,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				throws IOException {
 			super.initializeLabel(label, labelInstances, properties, sparseData);
 			if (SCOPE_LABEL.equals(this.exportProperties.getProperty(SCOPE))) {
-				exportSemiL(sparseData, label, null, null);
+				exportData(sparseData, label, null, null);
 			}
 		}
 
@@ -101,7 +101,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 				throws IOException {
 			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {
-				exportSemiL(sparseData, label, run, fold);
+				exportData(sparseData, label, run, fold);
 			}
 			String labelFileName = FileUtil.getScopedFileName(outdir, label,
 					run, fold, "label.txt");
@@ -123,7 +123,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		 * @param fold
 		 * @throws IOException
 		 */
-		private void exportSemiL(SparseData sparseData, String label,
+		protected void exportData(SparseData sparseData, String label,
 				Integer run, Integer fold) throws IOException {
 			exportAttributeNames(sparseData, label, run, fold);
 			String filename = FileUtil.getScopedFileName(outdir, label, run,

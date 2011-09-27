@@ -138,16 +138,21 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 				wData.write(Integer.toString(classId));
 				// write attributes
 				// add the attributes
-				for (SortedMap.Entry<Integer, Double> instanceValue : instanceValues
-						.entrySet()) {
-					wData.write("\t");
-					wData.write(Integer.toString(instanceValue.getKey()));
-					wData.write(":");
-					wData.write(Double.toString(instanceValue.getValue()));
-				}
-				wData.newLine();
+				writeLibsvmLine(wData, instanceValues);
 			}
 			return instanceIds;
+		}
+
+		protected void writeLibsvmLine(BufferedWriter wData,
+				SortedMap<Integer, Double> instanceValues) throws IOException {
+			for (SortedMap.Entry<Integer, Double> instanceValue : instanceValues
+					.entrySet()) {
+				wData.write("\t");
+				wData.write(Integer.toString(instanceValue.getKey()));
+				wData.write(":");
+				wData.write(Double.toString(instanceValue.getValue()));
+			}
+			wData.newLine();
 		}
 
 		/**
