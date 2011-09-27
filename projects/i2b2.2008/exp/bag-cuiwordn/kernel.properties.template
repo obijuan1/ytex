@@ -1,3 +1,0 @@
-kernel.experiment=bag-cuiword
-kernel.param1=@export.cutoff@
-kernel.types=0

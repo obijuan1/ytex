@@ -1,3 +1,0 @@
-kernel.experiment=@kernel.experiment@
-kernel.param1=@export.cutoff@
-kernel.types=4
