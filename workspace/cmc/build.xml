@@ -311,4 +311,54 @@
 			</propertyset>
 		</echoproperties>
 	</target>
+	<target name="export.bow-libsvm.cv">
+		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="libsvm/ctakes-bow" failonerror="yes">
+			<arg value="-prop" />
+			<arg value="export-bow.xml" />
+			<arg value="-type" />
+			<arg value="libsvm" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	<target name="export.bow-svmlin.test">
+		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="svmlin/ctakes-bow-test" failonerror="yes">
+			<arg value="-prop" />
+			<arg value="export-bow.xml" />
+			<arg value="-type" />
+			<arg value="svmlin" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	<target name="export.bow-libsvm.test">
+		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="libsvm/ctakes-bow-test" failonerror="yes">
+			<arg value="-prop" />
+			<arg value="export-bow.xml" />
+			<arg value="-type" />
+			<arg value="libsvm" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+		<for list="${labels}" param="export.label">
+			<sequential>
+				<antcall target="export.bow-libsvm.params">
+					<param name="export.label" value="@{export.label}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="export.bow-libsvm.params">
+		<property file="libsvm/ctakes-bow-test/kernel.properties"/>
+		<propertycopy property="kernel.evalLines" from="label.${export.label}.kernel.evalLines" />
+		<echoproperties destfile="libsvm/ctakes-bow-test/label${export.label}_train_data.properties">
+			<propertyset>
+				<propertyref name="kernel.evalLines" />
+			</propertyset>
+		</echoproperties>
+	</target>
+	
 </project>

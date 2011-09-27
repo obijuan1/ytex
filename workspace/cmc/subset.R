@@ -65,11 +65,11 @@ exportSvmlin = function(instance, data, iid, labels.subset) {
 }
 
 main = function() {
-	instanceFile = "data/instance-test.txt"
+	instanceFile = "data/instance_test.txt"
 	gramFile = "data/data.txt"
 	idFile = "data/instance_id.txt"
 	# read label data
-	instance = read.delim(instanceFile, header=is.null(inst.colnames))
+	instance = read.delim(instanceFile, header=F)
 	colnames(instance) = c("instance_id", "class", "train", "label")
 	# read gram matrix
 	data = as.matrix(read.delim(gramFile, header=FALSE, sep=" "))
@@ -82,7 +82,7 @@ main = function() {
 	proportions = c(10, 25, 50, 75)
 	# labels for which subsets will be exported
 	labels.subset = c(20,9)
-	dir.create("./subset", showWarnings = TRUE, recursive = TRUE)
+	dir.create("./subset", showWarnings = FALSE, recursive = TRUE)
 	# write a file with the instance ids to use in each sample
 	for(proportion in proportions) {
 		subsetIid = subsetInstId(20, instance, proportion)

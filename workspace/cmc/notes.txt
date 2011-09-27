@@ -525,3 +525,21 @@ with varying number of training examples.
 TODO: retest svmlin with lambda parameters determined from cross-validation
 
 TODO: take a closer look at semil
+
+== 9/26 fractional training data test ==
+Use R to export 10,25,50,75% of training data, 10 random subsets for R and svmlin.
+use labels 9 and 20 - lots of positive examples
+run - corresponds to fraction
+fold - random split (same labeled training data for both algos)
+script: subset.R - creates libsvm and svmlin data
+nohup ant -Dytex.home=/vol/Users/vng2/ytexWorkspace -Dkernel.data=/vol/Users/vng2/ytexWorkspace/cmc/subset/svmlin process.dir > ant.out 2>&1 &
+libsvm beat svmlin hands-down
+
+== 9/26 bag-of-words ==
+update tfidf tables data/tfidf-cui.sql tfidf-word.sql
+use a bag-of-words+cuis  only include stemmed words outside of cuis not in stopword list, weight by tfidf
+libsvm/ctakes-bow - export file and properties file
+data/best_params_bow.sql - get best params
+libsvm/ctakes-bow-test - for testing, to export cmc/build.xml#export.bow-libsvm.test
+cv macro: 0.3748667
+cv micro: 0.8137	0.5520	0.657776085524
