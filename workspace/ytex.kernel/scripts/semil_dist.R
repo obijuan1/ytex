@@ -126,13 +126,19 @@ generateSemilDistances = function(inputfile, methods, outputfilePrefix, degrees,
 	# compute distance matrix
 	for(method in methods) {
 		x.dist = NULL
+		t1 = Sys.time()
 		if(gram) {
 			x.dist = gramDistance(x, method)
 		} else {
 			x.dist = as.matrix(Dist(x, method))
 		}
+		t2 = Sys.time()
+		print(paste("computing distance took", as.numeric(t2-t1, units="secs"), "seconds"))
 		for(degree in degrees) {
+			t1 = Sys.time()
 			x.conn = knnFromDist(degree, x.dist)
+			t2 = Sys.time()
+			print(paste("computing knn", degree, "took", as.numeric(t2-t1, units="secs"), "seconds"))
 			writeDist(outputfilePrefix, method, degree, x.dist, x.conn) 
 		}
 	}

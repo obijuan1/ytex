@@ -266,7 +266,7 @@
 		this can be overridden by eval.properties
 		-->
 		<echo>kernel.data.file ${kernel.data.file}</echo>
-		<property name="kernel.data.file" value="./label1_data.txt" />
+		<property name="kernel.data.file" value="./label9_data.txt" />
 		<!-- strip off the directory -->
 		<basename file="${kernel.data.file}" property="kernel.data.file.name" />
 		<!-- strip off the data.txt prefix - this is the prefix for the distance file -->
@@ -294,7 +294,7 @@
 		</for>
 	</target>
 	<target name="semil.processLabelFile" depends="init.dir" description="iterate over kernel.distFiles, call semil.iter.evalLines">
-		<property name="kernel.label.file" value="${kernel.data}/label1_run1_fold1_label.txt" />
+		<property name="kernel.label.file" value="${kernel.data}/label10_run1_fold1_label.txt" />
 		<basename file="${kernel.label.file}" property="kernel.label.filename" />
 		<basename file="${kernel.label.filename}" property="kernel.label.basename" suffix=".txt" />
 		<!-- load properties kernel.distFiles and kernel.evalLines defined -->
@@ -341,6 +341,7 @@
 	</target>
 
 	<target name="semil.eval.label" description="evaluate semil">
+		<echo>${kernel.line} ${kernel.dist.file} ${kernel.label.filename}</echo>
 		<exec executable="${semil.bin}/SemiL" dir="${kernel.label.dir}">
 			<arg line="${kernel.line} ${kernel.dist.file} ${kernel.label.filename}" />
 		</exec>
