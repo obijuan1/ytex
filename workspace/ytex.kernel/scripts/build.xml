@@ -256,7 +256,7 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="semil.createDistance" description="generate distance matrix by calling semil_dist.R script">
+	<target name="semil.createDistance" depends="init.dir" description="generate distance matrix by calling semil_dist.R script">
 		<!--
 		semil distance computation will not work on windows
 		requires interactive shell - otherwise fails
@@ -341,7 +341,7 @@
 	</target>
 
 	<target name="semil.eval.label" description="evaluate semil">
-		<exec executable="${semil.bin}/Semil" dir="${kernel.label.dir}">
+		<exec executable="${semil.bin}/SemiL" dir="${kernel.label.dir}">
 			<arg line="${kernel.line} ${kernel.dist.file} ${kernel.label.filename}" />
 		</exec>
 	</target>
