@@ -1,0 +1,10 @@
+kernel.experiment=@kernel.experiment@
+kernel.param1=@export.cutoff@
+kernel.algo=svmlin
+
+# svmlin -W option
+cv.svmlin.lambdaW=0.001,0.01,0.1,1
+# svmlin -U option
+cv.svmlin.lambdaU=0.1,1
+
+

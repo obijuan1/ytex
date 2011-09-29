@@ -121,6 +121,30 @@
 			<param name="export.type" value="${kernel.algo}" />
 			<param name="export.dir" value="${export.dir}" />
 		</antcall>
+		<!-- svmlin only - get positive class fractions -->
+		<if>
+			<equals arg1="${kernel.algo}" arg2="svmlin" />
+			<then>
+				<antcall target="export.classrel" />
+			</then>
+		</if>
+	</target>
+	<target name="export.classrel" depends="init.exp" description="export positive class fraction for svmlin">
+		<property name="export.cutoff" value="0.05" />
+		<property name="export.dir" value="${kernel.algo}/${kernel.experiment}/${export.cutoff}" />
+		<filterset id="export.filterset">
+			<filter token="export.cutoff" value="${export.cutoff}" />
+			<filterset refid="exp.filter" />
+		</filterset>
+		<copy file="${basedir}/data/svmlin_classrel.sql" todir="${export.dir}" overwrite="yes">
+			<filterset refid="export.filterset" />
+		</copy>
+		<exec executable="${mysql.home}/mysql" dir="${export.dir}" failonerror="yes" output="${export.dir}/kernel.properties" append="yes">
+			<arg line="${mysql.line}" />
+			<arg value="--skip-column-names"/>
+			<arg value="-e" />
+			<arg value="source svmlin_classrel.sql" />
+		</exec>
 	</target>
 
 	<target name="kernel.all" depends="kernel.eval.all,kernel.export.all,kernel.libsvm,insert_classifier_eval_irzv" description="evaluate kernel on corpus, run libsvm, update ir metrics w/ zero vectors" />
@@ -326,8 +350,9 @@
 	</target>
 
 	<target name="test.init.label" description="load properties for the specified label">
-		<property name="export.label" value="12" />
+		<property name="export.label" value="16" />
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
+		<property name="export.type" value="libsvm" />
 		<propertycopy property="cv.costs" from="label.${export.label}.cv.costs" />
 		<propertycopy property="kernel.param1" from="label.${export.label}.kernel.param1" />
 		<propertycopy property="kernel.param2" from="label.${export.label}.kernel.param2" silent="yes" />
@@ -341,7 +366,7 @@
 			</not>
 		</condition>
 		<property name="export.tree.srcdir" value="${basedir}/exp/tree-cuiword" />
-		<property name="export.dir" value="${basedir}/libsvm/${kernel.experiment}/${export.label}" />
+		<property name="export.dir" value="${basedir}/${export.type}/${kernel.experiment}/${export.label}" />
 		<property name="export.src.dir" value="${basedir}/exp/${kernel.experiment}" />
 		<filterset id="export.filterset">
 			<filter token="export.cutoff" value="${kernel.param1}" />
@@ -407,7 +432,7 @@
 		</copy>
 		<!-- export the data -->
 		<antcall target="SparseDataExporter">
-			<param name="export.type" value="libsvm" />
+			<param name="export.type" value="${export.type}" />
 			<param name="export.dir" value="${export.dir}" />
 		</antcall>
 	</target>
@@ -433,7 +458,7 @@
 	<target name="test">
 		<for list="${labels}" param="export.label">
 			<sequential>
-				<antcall target="test.zv">
+				<antcall target="test.export.label">
 					<param name="export.label" value="@{export.label}" />
 				</antcall>
 			</sequential>
