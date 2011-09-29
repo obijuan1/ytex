@@ -1,0 +1,9 @@
+kernel.experiment=@kernel.experiment@
+kernel.param1=@export.cutoff@
+kernel.algo=semil
+cv.semil.metrics=euclidean
+cv.semil.degrees=5,10
+#for some reason semil keeps crashing with gamma = 0.01
+cv.rbf.gammas=0.1,1,10
+
+

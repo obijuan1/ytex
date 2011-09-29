@@ -25,6 +25,7 @@
 	<target name="init.exp">
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
 		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
+		<property name="kernel.algo" value="libsvm" />
 		<filterset id="exp.filter">
 			<filter token="kernel.name" value="${kernel.name}" />
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
@@ -88,7 +89,7 @@
 	</target>
 	<target name="export.cutoff" depends="init.exp" description="export libsvm data for specified cutoff">
 		<property name="export.cutoff" value="0.05" />
-		<property name="export.dir" value="libsvm/${kernel.experiment}/${export.cutoff}" />
+		<property name="export.dir" value="${kernel.algo}/${kernel.experiment}/${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
 		<delete dir="${export.dir}" quiet="yes" />
 		<mkdir dir="${export.dir}" />
@@ -117,7 +118,7 @@
 		</if>
 		<!-- export the data -->
 		<antcall target="SparseDataExporter">
-			<param name="export.type" value="libsvm" />
+			<param name="export.type" value="${kernel.algo}" />
 			<param name="export.dir" value="${export.dir}" />
 		</antcall>
 	</target>
