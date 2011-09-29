@@ -63,75 +63,78 @@ public class ClassifierEvalUtil {
 			}
 		}
 	}
-	
+
 	private String getSvmlinDataFileForLabel(File labelFile, File kernelDataDir) {
 		String labelFileName = labelFile.getName();
 		String label = FileUtil.parseLabelFromFileName(labelFileName);
 		Integer run = FileUtil.parseRunFromFileName(labelFileName);
 		Integer fold = FileUtil.parseFoldFromFileName(labelFileName);
-		File[] distFiles = null;
+		File dataFile = null;
 		// check fold scope
-		if (fold != null) {
-			String filePrefix = FileUtil.getFoldFilePrefix(null, label, run,
-					fold) + "data.txt";
-			distFiles = kernelDataDir.listFiles(new FileUtil.PrefixFileFilter(
-					filePrefix));
+		if (fold != null && fold.intValue() != 0) {
+			dataFile = new File(FileUtil.getScopedFileName(
+					kernelDataDir.getPath(), label, run, fold, "data.txt"));
 		}
 		// no matches, check label scope
-		if ((distFiles == null || distFiles.length == 0) && label != null) {
-			String filePrefix = FileUtil.getFoldFilePrefix(null, label, null,
-					null) + "data.txt";
-			distFiles = kernelDataDir.listFiles(new FileUtil.PrefixFileFilter(
-					filePrefix));
+		if ((dataFile == null || !dataFile.exists()) && label != null
+				&& label.length() > 0) {
+			dataFile = new File(FileUtil.getScopedFileName(
+					kernelDataDir.getPath(), label, null, null, "data.txt"));
 		}
 		// no matches, check unscoped
-		if (distFiles == null || distFiles.length == 0) {
-			distFiles = kernelDataDir.listFiles(new FileUtil.PrefixFileFilter(
-					"data.txt"));
+		if (dataFile == null || !dataFile.exists()) {
+			dataFile = new File(FileUtil.getScopedFileName(
+					kernelDataDir.getPath(), null, null, null, "data.txt"));
 		}
-		if (distFiles != null && distFiles.length > 0) {
-			return distFiles[0].getName();
+		if (dataFile != null && dataFile.exists()) {
+			return dataFile.getName();
 		} else {
 			log.warn("no data files match label file: " + labelFile);
 			return null;
-		}		
+		}
 	}
 
-	private void writeSvmlinEvalFile(File labelFile, File kernelDataDir) throws IOException {
-		List<String> classFracs = new ArrayList<String>(1);
-		String posClassFrac = getClassFrac(labelFile);
-		if(posClassFrac != null) {
-			classFracs.add("-R " + posClassFrac);
-		} else {
-			classFracs.add("");
+	private void writeSvmlinEvalFile(File labelFile, File kernelDataDir)
+			throws IOException {
+		String dataFile = getSvmlinDataFileForLabel(labelFile, kernelDataDir);
+		if (dataFile != null) {
+			List<String> classFracs = new ArrayList<String>(1);
+			String posClassFrac = getClassFrac(labelFile);
+			if (posClassFrac != null) {
+				classFracs.add("-R " + posClassFrac);
+			} else {
+				classFracs.add("");
+			}
+			List<String> algos = Arrays.asList(addOptionPrefix(props
+					.getProperty("cv.svmlin.algo").split(","), "-A "));
+			List<String> lambdaU = Arrays.asList(addOptionPrefix(props
+					.getProperty("cv.svmlin.lambdaW").split(","), "-W "));
+			List<String> lambdaW = Arrays.asList(addOptionPrefix(props
+					.getProperty("cv.svmlin.lambdaU").split(","), "-U "));
+			List<String> evalLines = parameterGrid(classFracs, algos, lambdaU,
+					lambdaW);
+			Properties props = new Properties();
+			props.setProperty("kernel.dataFile", dataFile);
+			props.setProperty("kernel.evalLines", listToString(evalLines));
+			String evalFile = labelFile.getPath().substring(0,
+					labelFile.getPath().length() - 3)
+					+ "properties";
+			writeProps(evalFile, props);
 		}
-		List<String> algos = Arrays.asList(addOptionPrefix(props.getProperty("cv.svmlin.algo")
-				.split(","), "-A "));
-		List<String> lambdaU = Arrays.asList(addOptionPrefix(props.getProperty("cv.svmlin.lambdaW")
-				.split(","), "-W "));
-		List<String> lambdaW = Arrays.asList(addOptionPrefix(props.getProperty("cv.svmlin.lambdaU")
-				.split(","), "-U "));
-		List<String> evalLines = parameterGrid(classFracs, algos, lambdaU, lambdaW);
-		Properties props = new Properties();
-		props.setProperty("kernel.dataFile", getSvmlinDataFileForLabel(labelFile, kernelDataDir));
-		props.setProperty("kernel.evalLines", listToString(evalLines));
-		String evalFile = labelFile.getPath().substring(0,
-				labelFile.getPath().length() - 3)
-				+ "properties";		
-		writeProps(evalFile, props);		
 	}
 
 	/**
-	 * get the positive class fraction.
-	 * get this from the kernel.classrel.[label] or kernel.classrel property
+	 * get the positive class fraction. get this from the
+	 * kernel.classrel.[label] or kernel.classrel property
+	 * 
 	 * @param labelFile
 	 * @return class fraction if specified
 	 */
 	private String getClassFrac(File labelFile) {
 		String classFrac = null;
 		String label = FileUtil.parseLabelFromFileName(labelFile.getName());
-		if(label != null) {
-			classFrac = props.getProperty("kernel.classrel."+label);
+		if (label != null) {
+			classFrac = props.getProperty("kernel.classrel." + label);
 		} else {
 			classFrac = props.getProperty("kernel.classrel");
 		}
