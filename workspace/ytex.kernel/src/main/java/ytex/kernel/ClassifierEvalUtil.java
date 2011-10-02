@@ -50,9 +50,16 @@ public class ClassifierEvalUtil {
 
 	private void generateSvmLinParams(String lowerCase) throws IOException {
 		File kernelDataDir = new File(props.getProperty("kernel.data", "."));
-		Properties weightProps = FileUtil.loadProperties(
-				props.getProperty("kernel.classweights", kernelDataDir
-						+ "/classWeights.properties"), false);
+		String weightPropsFile = props.getProperty("kernel.svmlin.classweights",
+				kernelDataDir + "/classWeights.properties");
+		if (log.isDebugEnabled()) {
+			log.debug("loading weights from " + weightPropsFile);
+		}
+		Properties weightProps = FileUtil
+				.loadProperties(weightPropsFile, false);
+		if (weightProps == null) {
+			log.warn("could not load weights from file: " + weightPropsFile);
+		}
 		Properties props = new Properties();
 		File[] labelFiles = kernelDataDir.listFiles(new FilenameFilter() {
 			@Override
