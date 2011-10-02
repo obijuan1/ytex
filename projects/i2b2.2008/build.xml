@@ -142,6 +142,7 @@
 		<exec executable="${mysql.home}/mysql" dir="${export.dir}" failonerror="yes" output="${export.dir}/kernel.properties" append="yes">
 			<arg line="${mysql.line}" />
 			<arg value="--skip-column-names"/>
+			<arg value="--raw"/>
 			<arg value="-e" />
 			<arg value="source svmlin_classrel.sql" />
 		</exec>
