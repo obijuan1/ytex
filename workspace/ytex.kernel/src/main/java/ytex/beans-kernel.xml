@@ -211,6 +211,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				</entry>
 				<entry>
 					<key>
+						<value>sgt</value>
+					</key>
+					<ref bean="sgtFormatterFactory" />
+				</entry>
+				<entry>
+					<key>
 						<value>svmlin</value>
 					</key>
 					<ref bean="svmLinFormatterFactory" />
@@ -236,6 +242,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="svmLinFormatterFactory" class="ytex.kernel.SVMLinFormatterFactory">
 	</bean>
+	<bean id="sgtFormatterFactory" class="ytex.svmlight.SGTFormatterFactory">
+	</bean>
 	<bean id="sparseMatrixFormatterFactory" class="ytex.sparsematrix.SparseMatrixFormatterFactory">
 		<property name="instanceDataExporter" ref="instanceDataExporter" />
 	</bean>
@@ -245,7 +253,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<bean id="instanceDataExporter" class="ytex.sparsematrix.InstanceDataExporterImpl">
 	</bean>
-
 	<bean id="infogainAttributeEval" class="weka.attributeSelection.InfoGainAttributeEval">
 	</bean>
 	<bean id="rankerSearch" class="weka.attributeSelection.Ranker">

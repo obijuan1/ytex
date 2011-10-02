@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 
 import ytex.kernel.FileUtil;
 import ytex.kernel.InstanceData;
@@ -93,11 +94,8 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		}
 
 		@Override
-		public void initializeFold(
-				SparseData sparseData,
-				String label,
-				Integer run,
-				Integer fold,
+		public void initializeFold(SparseData sparseData, String label,
+				Integer run, Integer fold,
 				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 				throws IOException {
 			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {
@@ -107,11 +105,17 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 					run, fold, "label.txt");
 			String idFileName = FileUtil.getScopedFileName(outdir, label, run,
 					fold, "class.txt");
-			exportLabel(idFileName, labelFileName,
-					foldInstanceLabelMap.get(true),
+			SortedMap<Long, Integer> trainInstanceIdToClass = getTrainingClassMap(
+					idFileName, foldInstanceLabelMap.get(true),
 					foldInstanceLabelMap.get(false),
 					this.labelToClassIndexMap.get(label),
 					sparseData.getInstanceIds());
+			exportLabel(labelFileName, trainInstanceIdToClass);
+			// exportLabel(idFileName, labelFileName,
+			// foldInstanceLabelMap.get(true),
+			// foldInstanceLabelMap.get(false),
+			// this.labelToClassIndexMap.get(label),
+			// sparseData.getInstanceIds());
 		}
 
 		/**
@@ -168,27 +172,148 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		}
 
 		/**
-		 * export the data
+		 * Write the 'label' file. This contains the training labels (label !=
+		 * 0) and test labels (labeled as 0) and unlabeled data (labeled as 0).
+		 * The order of the label file corresponds to the order in the data
+		 * file.
 		 * 
-		 * @param filename
-		 * @param idFilename
 		 * @param lblFilename
-		 * @param bagOfWordsData
-		 * @param trainInstanceClassMap
-		 * @param testInstanceClassMap
-		 * @param classToIndexMap
+		 *            filename to write to
+		 * @param mapInstanceIdToClass
+		 *            sorted map of instance id to class. this must correspond
+		 *            to the order in the data file
 		 * @throws IOException
 		 */
-		private void exportLabel(String idFilename, String lblFilename,
+		protected void exportLabel(String lblFilename,
+				SortedMap<Long, Integer> mapInstanceIdToClass)
+				throws IOException {
+			BufferedWriter wLabel = null;
+			try {
+				wLabel = new BufferedWriter(new FileWriter(lblFilename));
+				for (Map.Entry<Long, Integer> entryInstanceIdToClass : mapInstanceIdToClass
+						.entrySet()) {
+					wLabel.write(Integer.toString(entryInstanceIdToClass
+							.getValue()));
+					wLabel.write("\n");
+				}
+			} finally {
+				if (wLabel != null)
+					try {
+						wLabel.close();
+					} catch (Exception ignore) {
+					}
+			}
+		}
+
+//		/**
+//		 * export the data
+//		 * 
+//		 * @param filename
+//		 * @param idFilename
+//		 * @param lblFilename
+//		 * @param bagOfWordsData
+//		 * @param trainInstanceClassMap
+//		 * @param testInstanceClassMap
+//		 * @param classToIndexMap
+//		 * @throws IOException
+//		 */
+//		private void exportLabel(String idFilename, String lblFilename,
+//				SortedMap<Long, String> trainInstanceClassMap,
+//				SortedMap<Long, String> testInstanceClassMap,
+//				Map<String, Integer> classToIndexMap,
+//				SortedSet<Long> instanceIds) throws IOException {
+//			// BufferedWriter wId = null;
+//			BufferedWriter wLabel = null;
+//			SortedMap<Long, Integer> mapInstanceIdToClass = this
+//					.getTrainingClassMap(idFilename, trainInstanceClassMap,
+//							testInstanceClassMap, classToIndexMap, instanceIds);
+//			try {
+//				// wId = new BufferedWriter(new FileWriter(idFilename));
+//				wLabel = new BufferedWriter(new FileWriter(lblFilename));
+//				for (Long instanceId : instanceIds) {
+//					// // for training default to unlabeled
+//					// int classIdTrain = 0;
+//					// if (trainInstanceClassMap.containsKey(instanceId)) {
+//					// // if the instance is in the training set, then use that
+//					// // label
+//					// classIdTrain = classToIndexMap
+//					// .get(trainInstanceClassMap.get(instanceId));
+//					// }
+//					// // check test set for gold class
+//					// int classIdGold = 0;
+//					// if (testInstanceClassMap != null
+//					// && testInstanceClassMap.containsKey(instanceId))
+//					// classIdGold = classToIndexMap.get(testInstanceClassMap
+//					// .get(instanceId));
+//					// else
+//					// classIdGold = classIdTrain;
+//					// // write instance id, if this is in the train set, and
+//					// it's
+//					// // class
+//					// wId.write(Long.toString(instanceId));
+//					// wId.write("\t");
+//					// wId.write(trainInstanceClassMap.containsKey(instanceId) ?
+//					// "1"
+//					// : "0");
+//					// wId.write("\t");
+//					// wId.write(Integer.toString(classIdGold));
+//					// wId.write("\n");
+//					// write label file for semiL
+//					int classIdTrain = mapInstanceIdToClass.get(instanceId);
+//					wLabel.write(Integer.toString(classIdTrain));
+//					wLabel.write("\n");
+//				}
+//			} finally {
+//				// if (wId != null)
+//				// try {
+//				// wId.close();
+//				// } catch (Exception ignore) {
+//				// }
+//				if (wLabel != null)
+//					try {
+//						wLabel.close();
+//					} catch (Exception ignore) {
+//					}
+//			}
+//		}
+
+		/**
+		 * pick through the training and test sets, figure out the class id for
+		 * all instance ids for training. If the instance is in the training set
+		 * and labeled it will get the appropriate class label. If the instance
+		 * is in the test set and labeled it will be unlabeled. If the instance
+		 * is in the training and test sets, it will use whatever label was
+		 * specified for the training set. Unlabeled instances are given the
+		 * class id 0.
+		 * <p/>
+		 * Write the [prefix]class.txt file
+		 * 
+		 * @param idFilename
+		 *            filename to write instance id\ttrain/test flag\ttarget
+		 *            class to
+		 * @param trainInstanceClassMap
+		 *            instances for training
+		 * @param testInstanceClassMap
+		 *            instance for testing
+		 * @param classToIndexMap
+		 *            map of class to class ids
+		 * @param instanceIds
+		 *            sorted set of instance ids; the order with which class.txt
+		 *            will be written, and the order with which instances will
+		 *            appear in the training data file.
+		 * @return map of instance id to class id for training
+		 * @throws IOException
+		 */
+		protected SortedMap<Long, Integer> getTrainingClassMap(
+				String idFilename,
 				SortedMap<Long, String> trainInstanceClassMap,
 				SortedMap<Long, String> testInstanceClassMap,
 				Map<String, Integer> classToIndexMap,
 				SortedSet<Long> instanceIds) throws IOException {
+			SortedMap<Long, Integer> mapInstanceIdToClass = new TreeMap<Long, Integer>();
 			BufferedWriter wId = null;
-			BufferedWriter wLabel = null;
 			try {
 				wId = new BufferedWriter(new FileWriter(idFilename));
-				wLabel = new BufferedWriter(new FileWriter(lblFilename));
 				for (Long instanceId : instanceIds) {
 					// for training default to unlabeled
 					int classIdTrain = 0;
@@ -198,9 +323,11 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 						classIdTrain = classToIndexMap
 								.get(trainInstanceClassMap.get(instanceId));
 					}
+					mapInstanceIdToClass.put(instanceId, classIdTrain);
 					// check test set for gold class
 					int classIdGold = 0;
-					if (testInstanceClassMap != null && testInstanceClassMap.containsKey(instanceId))
+					if (testInstanceClassMap != null
+							&& testInstanceClassMap.containsKey(instanceId))
 						classIdGold = classToIndexMap.get(testInstanceClassMap
 								.get(instanceId));
 					else
@@ -214,9 +341,6 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 					wId.write("\t");
 					wId.write(Integer.toString(classIdGold));
 					wId.write("\n");
-					// write label file for semiL
-					wLabel.write(Integer.toString(classIdTrain));
-					wLabel.write("\n");
 				}
 			} finally {
 				if (wId != null)
@@ -224,14 +348,9 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 						wId.close();
 					} catch (Exception ignore) {
 					}
-				if (wLabel != null)
-					try {
-						wLabel.close();
-					} catch (Exception ignore) {
-					}
 			}
+			return mapInstanceIdToClass;
 		}
-
 		/**
 		 * write distance up to 6 digit precision. only write distance if &lt;
 		 * 0.999. format: <tt>

@@ -50,18 +50,25 @@ public class ClassifierEvalUtil {
 
 	private void generateSvmLinParams(String lowerCase) throws IOException {
 		File kernelDataDir = new File(props.getProperty("kernel.data", "."));
+		Properties weightProps = FileUtil.loadProperties(
+				props.getProperty("kernel.classweights", kernelDataDir
+						+ "/classWeights.properties"), false);
+		Properties props = new Properties();
 		File[] labelFiles = kernelDataDir.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.endsWith("label.txt");
+				return name.endsWith("code.properties");
 			}
 		});
 		if (labelFiles != null && labelFiles.length > 0) {
 			// iterate over label files
 			for (File labelFile : labelFiles) {
-				writeSvmlinEvalFile(labelFile, kernelDataDir);
+				populateSvmlinParameters(labelFile, kernelDataDir, weightProps,
+						props);
+				// writeSvmlinEvalFile(labelFile, kernelDataDir);
 			}
 		}
+		writeProps(kernelDataDir + "/parameters.properties", props);
 	}
 
 	private String getSvmlinDataFileForLabel(File labelFile, File kernelDataDir) {
@@ -94,52 +101,118 @@ public class ClassifierEvalUtil {
 		}
 	}
 
-	private void writeSvmlinEvalFile(File labelFile, File kernelDataDir)
-			throws IOException {
-		String dataFile = getSvmlinDataFileForLabel(labelFile, kernelDataDir);
+	/**
+	 * set following properties in props
+	 * <ul>
+	 * <li>[codeFile basename].dataFile
+	 * <li>[codeFile basename].kernel.evalLines
+	 * <li>[labelFile basename].param.R
+	 * </ul>
+	 * 
+	 * @param codeFile
+	 * @param kernelDataDir
+	 * @param weightProps
+	 * @param props
+	 * @throws IOException
+	 */
+	private void populateSvmlinParameters(File codeFile, File kernelDataDir,
+			Properties weightProps, Properties paramProps) throws IOException {
+		// cut off the .properties from the file name - this is the prefix for
+		// the properties
+		String codeFileBasename = codeFile.getName();
+		codeFileBasename = codeFileBasename.substring(0,
+				codeFileBasename.length() - ".properties".length());
+		// determine the scoped data file name
+		String dataFile = getSvmlinDataFileForLabel(codeFile, kernelDataDir);
 		if (dataFile != null) {
-			List<String> classFracs = new ArrayList<String>(1);
-			String posClassFrac = getClassFrac(labelFile);
-			if (posClassFrac != null) {
-				classFracs.add("-R " + posClassFrac);
-			} else {
-				classFracs.add("");
-			}
+			// if the dataFile could be found, set the property
+			paramProps.setProperty(codeFileBasename + ".dataFile", dataFile);
+			// generate the parameter grid
 			List<String> algos = Arrays.asList(addOptionPrefix(props
 					.getProperty("cv.svmlin.algo").split(","), "-A "));
 			List<String> lambdaU = Arrays.asList(addOptionPrefix(props
 					.getProperty("cv.svmlin.lambdaW").split(","), "-W "));
 			List<String> lambdaW = Arrays.asList(addOptionPrefix(props
 					.getProperty("cv.svmlin.lambdaU").split(","), "-U "));
-			List<String> evalLines = parameterGrid(classFracs, algos, lambdaU,
-					lambdaW);
-			Properties props = new Properties();
-			props.setProperty("kernel.dataFile", dataFile);
-			props.setProperty("kernel.evalLines", listToString(evalLines));
-			String evalFile = labelFile.getPath().substring(0,
-					labelFile.getPath().length() - 3)
-					+ "properties";
-			writeProps(evalFile, props);
+			List<String> evalLines = parameterGrid(algos, lambdaU, lambdaW);
+			// set the parameter grid property
+			paramProps.setProperty(codeFileBasename + ".kernel.evalLines",
+					listToString(evalLines));
+			if (weightProps != null) {
+				// determine the positive class fraction for each label file
+				Properties codeProps = FileUtil.loadProperties(
+						codeFile.getAbsolutePath(), false);
+				// iterate through the label files
+				for (String labelfile : codeProps.getProperty("codes", "")
+						.split(",")) {
+					// get the class id for the given label file
+					String classId = codeProps
+							.getProperty(labelfile + ".class");
+					// figure out the key to look up the positive class fraction
+					// in the classWeights.properties file
+					// if a label is specified then the key is label.n.class.m,
+					// else just class.m
+					String label = FileUtil.parseLabelFromFileName(labelfile);
+					String key = label != null && label.length() > 0 ? "label."
+							+ label + "." : "";
+					key = key + "class." + classId;
+					String posClassFrac = weightProps.getProperty(key);
+					if (posClassFrac != null) {
+						// set the class fraction property
+						// use basename of label file as key prefix
+						paramProps.put(labelfile + ".param.R", posClassFrac);
+					}
+				}
+			}
 		}
 	}
 
-	/**
-	 * get the positive class fraction. get this from the
-	 * kernel.classrel.[label] or kernel.classrel property
-	 * 
-	 * @param labelFile
-	 * @return class fraction if specified
-	 */
-	private String getClassFrac(File labelFile) {
-		String classFrac = null;
-		String label = FileUtil.parseLabelFromFileName(labelFile.getName());
-		if (label != null) {
-			classFrac = props.getProperty("kernel.classrel." + label);
-		} else {
-			classFrac = props.getProperty("kernel.classrel");
-		}
-		return classFrac;
-	}
+	// private void writeSvmlinEvalFile(File labelFile, File kernelDataDir)
+	// throws IOException {
+	// String dataFile = getSvmlinDataFileForLabel(labelFile, kernelDataDir);
+	// if (dataFile != null) {
+	// List<String> classFracs = new ArrayList<String>(1);
+	// String posClassFrac = getClassFrac(labelFile);
+	// if (posClassFrac != null) {
+	// classFracs.add("-R " + posClassFrac);
+	// } else {
+	// classFracs.add("");
+	// }
+	// List<String> algos = Arrays.asList(addOptionPrefix(props
+	// .getProperty("cv.svmlin.algo").split(","), "-A "));
+	// List<String> lambdaU = Arrays.asList(addOptionPrefix(props
+	// .getProperty("cv.svmlin.lambdaW").split(","), "-W "));
+	// List<String> lambdaW = Arrays.asList(addOptionPrefix(props
+	// .getProperty("cv.svmlin.lambdaU").split(","), "-U "));
+	// List<String> evalLines = parameterGrid(classFracs, algos, lambdaU,
+	// lambdaW);
+	// Properties props = new Properties();
+	// props.setProperty("kernel.dataFile", dataFile);
+	// props.setProperty("kernel.evalLines", listToString(evalLines));
+	// String evalFile = labelFile.getPath().substring(0,
+	// labelFile.getPath().length() - 3)
+	// + "properties";
+	// writeProps(evalFile, props);
+	// }
+	// }
+
+	// /**
+	// * get the positive class fraction. get this from the
+	// * kernel.classrel.[label] or kernel.classrel property
+	// *
+	// * @param labelFile
+	// * @return class fraction if specified
+	// */
+	// private String getClassFrac(File labelFile) {
+	// String classFrac = null;
+	// String label = FileUtil.parseLabelFromFileName(labelFile.getName());
+	// if (label != null) {
+	// classFrac = props.getProperty("kernel.classrel." + label);
+	// } else {
+	// classFrac = props.getProperty("kernel.classrel");
+	// }
+	// return classFrac;
+	// }
 
 	private void generateSvmEvalParams(String svmType) throws IOException {
 		File kernelDataDir = new File(props.getProperty("kernel.data", "."));
