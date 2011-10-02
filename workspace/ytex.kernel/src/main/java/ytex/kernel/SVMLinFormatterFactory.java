@@ -20,7 +20,7 @@ import ytex.semil.SemiLFormatterFactory.SemiLDataFormatter;
  * for each train/test pair create the following files:
  * <ul>
  * <li>[prefix]class.txt - as in semil: instance id \t train/test flag \t target
- * class id</li>
+ * class id</li
  * <li>[prefix]code.properties - map of codes to classes. currently only do a
  * one-against-all coding
  * <li>[prefix]code[n]_label.txt - for each class

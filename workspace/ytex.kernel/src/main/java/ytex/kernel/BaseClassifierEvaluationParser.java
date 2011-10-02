@@ -208,13 +208,9 @@ public abstract class BaseClassifierEvaluationParser implements
 		}
 	}
 
-	protected List<List<Long>> loadClassInfo(File dataDir, String labelBase)
+	protected List<List<Long>> loadClassInfo(File dataDir, String classFileName)
 			throws IOException {
 		List<List<Long>> listClassInfo = null;
-		// construct the name of the class.txt file
-		String classFileName = dataDir + File.separator
-				+ labelBase.substring(0, labelBase.length() - "label".length())
-				+ "class.txt";
 		// load instance ids and their class ids
 		BufferedReader r = null;
 		try {

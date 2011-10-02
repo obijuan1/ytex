@@ -78,8 +78,12 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 		String labelBase = kernelProps.getProperty("kernel.label.basename");
 		if (labelBase != null && labelBase.length() > 0) {
 			// load instance ids and their class ids
+			// construct the name of the class.txt file
+			String classFileName = dataDir + File.separator
+					+ labelBase.substring(0, labelBase.length() - "label".length())
+					+ "class.txt";			
 			List<List<Long>> listClassInfo = super.loadClassInfo(dataDir,
-					labelBase);
+					classFileName);
 			// process .output files
 			if (listClassInfo != null) {
 				for (File output : outputDir.listFiles(new FilenameFilter() {
