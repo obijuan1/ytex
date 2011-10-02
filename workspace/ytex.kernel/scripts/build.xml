@@ -39,7 +39,7 @@
 			<isset property="semil" />
 		</condition>
 		<!-- set property to control which files to iterate over -->
-		<condition property="train.fileset.filter" value="*train_data.txt" else="*label.txt">
+		<condition property="train.fileset.filter" value="*train_data.txt" else="*code.properties">
 			<or>
 				<isset property="libsvm" />
 				<isset property="svmlight" />
@@ -360,25 +360,40 @@
 	</target>
 	-->
 	<target name="svmlin.processFile" depends="init.dir" description="for each label file, call svmlin.iter.evalLines">
-		<property name="kernel.train.data" value="${kernel.data}/label1_run1_fold1_label.txt" />
+		<property file="${kernel.data}/parameters.properties" />
+		<property name="kernel.train.data" value="${kernel.data}/label8_run1_fold1_code.properties" />
 		<basename file="${kernel.train.data}" property="kernel.label.filename" />
-		<basename file="${kernel.label.filename}" property="kernel.data.basename" suffix=".txt" />
-		<!-- load properties kernel.distFiles and kernel.evalLines defined -->
+		<basename file="${kernel.label.filename}" property="kernel.data.basename" suffix="code.properties" />
+		<!-- load properties kernel.distFiles and kernel.evalLines defined 
 		<echo>${kernel.data}/${kernel.data.basename}.properties</echo>
-		<property file="${kernel.data}/${kernel.data.basename}.properties" />
-		<fail unless="kernel.dataFile" />
+		-->
+		<!-- try to get the data file name from the parameter property file -->
+		<propertycopy property="kernel.dataFile" from="${kernel.data.basename}code.dataFile" silent="yes" />
+		<!-- default it to [kernel.data.basename]data.txt -->
+		<property name="kernel.dataFile" value="${kernel.data.basename}data.txt" />
+		<!-- get the parameters to iterate over -->
+		<propertycopy property="kernel.evalLines" from="${kernel.data.basename}code.kernel.evalLines" silent="yes" />
+		<!-- make sure the data file exists -->
+		<fail message="${kernel.dataFile} does not exist">
+			<condition>
+				<not>
+					<available file="${kernel.data}/${kernel.dataFile}" />
+				</not>
+			</condition>
+		</fail>
+		<fail unless="kernel.evalLines" message="kernel.evalLines not defined" />
 		<property name="kernel.label.dir" value="${kernel.tmpdir}-${kernel.data.basename}" />
 		<echo>kernel.label.dir ${kernel.label.dir}</echo>
 		<mkdir dir="${kernel.label.dir}" />
-		<!-- copy distance files to working directory -->
+		<!-- copy data file and label files to working directory -->
 		<copy todir="${kernel.label.dir}">
 			<fileset dir="${kernel.data}" includes="${kernel.dataFile}" />
-			<fileset dir="${kernel.data}" includes="${kernel.label.filename}" />
+			<fileset dir="${kernel.data}" includes="${kernel.data.basename}code*_label.txt" />
 		</copy>
 		<!-- iterate over parameter grid -->
 		<for list="${kernel.evalLines}" param="kernel.train.line">
 			<sequential>
-				<antcall target="svmlin.eval.label">
+				<antcall target="svmlin.eval.labels">
 					<param name="kernel.train.line" value="@{kernel.train.line}" />
 				</antcall>
 			</sequential>
@@ -386,25 +401,47 @@
 		<!-- delete unneeded files -->
 		<delete dir="${kernel.label.dir}" quiet="yes" />
 	</target>
-	<target name="svmlin.eval.label" description="evaluate semil, copy results to timestamped dir under eval">
-		<exec executable="${svmlin.bin}/svmlin" dir="${kernel.label.dir}" output="${kernel.label.dir}/svmlin.out">
-			<arg line="${kernel.train.line} ${kernel.dataFile} ${kernel.label.filename}" />
-		</exec>
+	<target name="svmlin.eval.labels" description="iterate over code*_label.txt files, call svmlin.eval.label">
 		<tstamp>
 			<format property="cv.tstamp" pattern="dd-hh-mm-s.S" />
 		</tstamp>
 		<!-- copy results -->
-		<property name="result.dir" value="${kernel.data}/eval/${kernel.data.basename}/${cv.tstamp}"/>
+		<property name="result.dir" value="${kernel.data}/eval/${kernel.data.basename}/${cv.tstamp}" />
 		<mkdir dir="${result.dir}" />
-		<move file="${kernel.label.dir}/${kernel.dataFile}.weights" tofile="${result.dir}/weights" failonerror="false"/>
-		<move file="${kernel.label.dir}/${kernel.dataFile}.outputs" tofile="${result.dir}/outputs" failonerror="false"/>
-		<move file="${kernel.label.dir}/svmlin.out" todir="${result.dir}" failonerror="false"/>
 		<!-- store svmlin options -->
 		<echoproperties destfile="${result.dir}/options.properties">
 			<propertyset>
 				<propertyref prefix="kernel." />
 			</propertyset>
 		</echoproperties>
+		<for param="kernel.code.file">
+			<fileset dir="${kernel.label.dir}" includes="${kernel.data.basename}code*_label.txt" />
+			<sequential>
+				<antcall target="svmlin.eval.label">
+					<param name="kernel.code.file" value="@{kernel.code.file}" />
+				</antcall>
+			</sequential>
+		</for>
 	</target>
-
+	<target name="svmlin.eval.label" description="evaluate svmlin, copy results to timestamped dir under eval">
+		<!-- read the code file -->
+		<property file="${kernel.data}/${kernel.data.basename}code.properties" />
+		<!-- chop off the directory -->
+		<basename property="kernel.code.name" file="${kernel.code.file}" />
+		<!-- chop off the suffix -->
+		<basename property="kernel.code.basename" file="${kernel.code.name}" suffix=".txt" />
+		<!-- get the positive class fraction -->
+		<propertycopy property="param.R" from="${kernel.code.basename}.param.R" silent="yes" />
+		<!-- default the positive class fraction -->
+		<property name="param.R" value="0.5" />
+		<!-- run svmlin -->
+		<property name="svmlin.line" value="-R ${param.R} ${kernel.train.line} ${kernel.dataFile} ${kernel.code.name}" />
+		<echo>svmlin.line ${svmlin.line}</echo>
+		<exec executable="${svmlin.bin}/svmlin" dir="${kernel.label.dir}" output="${kernel.label.dir}/svmlin.out">
+			<arg line="${svmlin.line}" />
+		</exec>
+		<move file="${kernel.label.dir}/${kernel.dataFile}.weights" tofile="${result.dir}/${kernel.code.basename}.weights" failonerror="false" />
+		<move file="${kernel.label.dir}/${kernel.dataFile}.outputs" tofile="${result.dir}/${kernel.code.basename}.outputs" failonerror="false" />
+		<move file="${kernel.label.dir}/svmlin.out" tofile="${result.dir}/${kernel.code.basename}.svmlin.out" failonerror="false" />
+	</target>
 </project>
