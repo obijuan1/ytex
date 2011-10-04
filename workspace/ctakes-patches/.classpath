@@ -6,5 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/maveric"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/libs.system"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/libs.ytex"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ytex.uima"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
