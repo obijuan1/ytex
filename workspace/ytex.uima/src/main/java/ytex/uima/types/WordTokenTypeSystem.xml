@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<typeSystemDescription xmlns="http://uima.apache.org/resourceSpecifier">
+  <name>WordTokenTypeSystem</name>
+  <description>Negatable Word Token</description>
+  <version>1.0</version>
+  <vendor/>
+  <imports>
+    <import name="tokenizer.WordToken"/>
+  </imports>
+  <types>
+    <typeDescription>
+      <name>ytex.uima.types.WordToken</name>
+      <description>Negatable Word Token</description>
+      <supertypeName>edu.mayo.bmi.uima.core.ae.type.WordToken</supertypeName>
+      <features>
+        <featureDescription>
+          <name>negated</name>
+          <description/>
+          <rangeTypeName>uima.cas.Boolean</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>possible</name>
+          <description/>
+          <rangeTypeName>uima.cas.Boolean</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+  </types>
+</typeSystemDescription>

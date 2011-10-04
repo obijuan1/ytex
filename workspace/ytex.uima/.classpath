@@ -5,7 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/libs.system"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/libs.ytex"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ctakes-patches"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/maveric"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ytex.model"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
