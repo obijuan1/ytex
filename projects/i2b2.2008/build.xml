@@ -78,9 +78,10 @@
 		</antcall>
 	</target>
 	<target name="export.cutoffs" depends="init.exp" description="export libsvm data">
+		<property name="export.cutoff.target" value="export.cutoff" />
 		<for list="${export.cutoffs}" param="export.cutoff">
 			<sequential>
-				<antcall target="export.cutoff">
+				<antcall target="${export.cutoff.target}">
 					<param name="export.cutoff" value="@{export.cutoff}" />
 					<param name="experiment.base" value="${kernel.experiment}" />
 				</antcall>
@@ -139,10 +140,10 @@
 		<copy file="${basedir}/data/svmlin_classrel.sql" todir="${export.dir}" overwrite="yes">
 			<filterset refid="export.filterset" />
 		</copy>
-		<exec executable="${mysql.home}/mysql" dir="${export.dir}" failonerror="yes" output="${export.dir}/kernel.properties" append="yes">
+		<exec executable="${mysql.home}/mysql" dir="${export.dir}" failonerror="yes" output="${export.dir}/classWeights.properties" append="no">
 			<arg line="${mysql.line}" />
-			<arg value="--skip-column-names"/>
-			<arg value="--raw"/>
+			<arg value="--skip-column-names" />
+			<arg value="--raw" />
 			<arg value="-e" />
 			<arg value="source svmlin_classrel.sql" />
 		</exec>
@@ -464,6 +465,14 @@
 				</antcall>
 			</sequential>
 		</for>
+	</target>
+	<target name="RunCPE">
+		<java classname="ytex.tools.RunCPE" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/desc">
+			<arg value="cpe.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
 	</target>
 
 </project>

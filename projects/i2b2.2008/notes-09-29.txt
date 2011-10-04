@@ -1,0 +1,145 @@
+\==semil cross validation==
+performed full cross validation across all zv cutoffs.
+worse than libsvm across the board - see semil/compare.xlsx
+
+Prior to running script to adjust for zero vectors, 
+need to modify semil class ids (we incremented by 1):
+
+update classifier_eval_ir ir
+inner join classifier_eval e on ir.classifier_eval_id = e.classifier_eval_id 
+set ir.ir_class_id = ir.ir_class_id-1
+where name = 'i2b2.2008' 
+and experiment = 'bag-word-semil'
+;
+
+==svmlin cross validation==
+take all labels, and use just the y/n classes, throw out the q's
+
+{{{
+# export data
+cd ${YTEX_HOME}/i2b2.2008
+ant -Dytex.home=${YTEX_HOME} -Dkernel.experiment=bag-word-svmlin export.cutoff
+
+# run on 0.05
+cd ${YTEX_HOME}/ytex.kernel/scripts
+nohup ant -Dytex.home=/vol/Users/vng2/ytexWorkspace -Dkernel.data=/vol/Users/vng2/ytexWorkspace/i2b2.2008/svmlin/bag-word-svmlin/0.05 process.dir > ant.out 2>&1
+
+# run on everything else
+# export data
+cd ${YTEX_HOME}/i2b2.2008
+ant -Dytex.home=${YTEX_HOME} -Dkernel.experiment=bag-word-svmlin export.cutoffs
+
+rm -fr /vol/Users/vng2/ytexWorkspace/i2b2.2008/svmlin/bag-word-svmlin/0.05
+
+cd ${YTEX_HOME}/ytex.kernel/scripts
+nohup ant -Dytex.home=/vol/Users/vng2/ytexWorkspace -Dkernel.exp.base=/vol/Users/vng2/ytexWorkspace/i2b2.2008/svmlin/bag-word-svmlin iter.dirs > ant.out 2>&1
+}}}
+
+next - update ir_class_id
+{{{
+update classifier_eval e
+inner join classifier_eval_ir i on e.classifier_eval_id = i.classifier_eval_id
+set i.ir_class_id = 0 
+where i.ir_class_id = -1
+and experiment = 'bag-word-svmlin'
+}}}
+
+insert zero vectors: data/insert_classifier_eval_irzv_svmlin.sql
+
+hurrah!!! better performance
+
+== svmlin multiclass ==
+get labels that have > 2 classes, and more than 1 training example for the Q class: 2,5,8,14
+{{{
+
+select group_concat(disease_id)
+from
+(
+    select disease_id
+    from
+    (
+        select dis.disease_id, a.judgement, count(*) dc
+        from i2b2_2008_doc d 
+        inner join i2b2_2008_anno a 
+            on a.docId = d.docId 
+            and a.source = 'intuitive' 
+            and a.judgement = 'Q'
+        inner join i2b2_2008_disease dis on dis.disease = a.disease
+        where d.documentSet = 'train'
+        group by dis.disease_id, a.judgement
+    ) s where dc > 1
+) s
+}}}
+
+export the data for one cutoff (0.35)
+{{{
+cd ${YTEX_HOME}/i2b2.2008
+ant -Dytex.home=$YTEX_HOME -Dkernel.experiment=bag-word-svmlinmc -Dexport.cutoff=0.35 export.cutoff
+
+# run on 0.35
+cd ${YTEX_HOME}/ytex.kernel/scripts
+nohup ant -Dytex.home=/vol/Users/vng2/ytexWorkspace -Dkernel.data=/vol/Users/vng2/ytexWorkspace/i2b2.2008/svmlin/bag-word-svmlinmc/0.35 process.dir > ant.out 2>&1
+}}}
+
+fix class ids:
+{{{
+update classifier_eval e
+inner join classifier_eval_ir ir on e.classifier_eval_id = ir.classifier_eval_id
+set ir.ir_class_id = 0
+where e.experiment = 'bag-word-svmlinmc' and ir_class_id = 1
+;
+
+update classifier_eval e
+inner join classifier_eval_ir ir on e.classifier_eval_id = ir.classifier_eval_id
+set ir.ir_class_id = 1
+where e.experiment = 'bag-word-svmlinmc' and ir_class_id = 2
+;
+
+update classifier_eval e
+inner join classifier_eval_ir ir on e.classifier_eval_id = ir.classifier_eval_id
+set ir.ir_class_id = 2
+where e.experiment = 'bag-word-svmlinmc' and ir_class_id = 3
+;
+}}}
+
+insert zero vectors: insert_classifier_eval_irzv_svmlinmc.sql
+
+Hurrah! on labels with multiple classes svmlin did better! 
+
+== svmlin test ==
+Bah Humbug: no better than bag-word on test data
+
+select optimal parameters: data/best_svmlin.sql
+generate parameters.properties: exp/bag-word-svmlin-test/parameters.sql
+export data: ant -Dexport.dir=svmlin/bag-word-svmlin-test -Dexport.type=svmlin SparseDataExporter
+train and test: nohup ant -Dytex.home=$YTEX_HOME -Dkernel.data=/vol/Users/vng2/ytexWorkspace/i2b2.2008/svmlin/bag-word-svmlin-test process.dir > ant.out 2>&1 &
+create merged truth tables: exp/bag-word-svmlin-test/insert_classifier_eval_irzv.sql
+
+next steps - try to reproduce ambert's results - add negex
+
+= review of lvg stemming =
+
+She had a catheterization on 6/12/05 ,
+which showed normal coronary arteries , no equalization of
+diastolic pressures , pulmonary capillary wedge pressure of 19 ,
+and 4+ mitral regurgitation
+
+stemmed words:
+catheterization
+show
+normal
+exam -> coronary!
+artery
+NO
+equalization
+plus -> diastolic
+pulmonary
+capillary
+wedge
+pressure
+mitral
+regurgitation
+
+missing 19 (number token), 4+ (number & symbol token)
+
+reran with new ytex - no problems with lvg.  Possibly due to running this with multiple threads way back when.
