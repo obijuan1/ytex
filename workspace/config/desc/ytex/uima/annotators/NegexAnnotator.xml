@@ -15,6 +15,12 @@
         <multiValued>false</multiValued>
         <mandatory>false</mandatory>
       </configurationParameter>
+      <configurationParameter>
+        <name>targetTypeName</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>false</mandatory>
+      </configurationParameter>
     </configurationParameters>
     <configurationParameterSettings>
       <nameValuePair>
@@ -23,12 +29,19 @@
           <boolean>true</boolean>
         </value>
       </nameValuePair>
+      <nameValuePair>
+        <name>targetTypeName</name>
+        <value>
+          <string>ytex.uima.types.WordToken</string>
+        </value>
+      </nameValuePair>
     </configurationParameterSettings>
     <typeSystemDescription>
       <imports>
         <import name="sentence.SentenceTypeSystem"/>
         <import name="tokenizer.NamedEntity"/>
         <import name="NE contexts.NEContextTypeSystem"/>
+        <import name="ytex.uima.types.WordTokenTypeSystem"/>
       </imports>
     </typeSystemDescription>
     <typePriorities/>
