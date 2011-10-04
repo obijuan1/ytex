@@ -16,9 +16,27 @@ public class WordToken extends BaseToken {
 	private Integer numPosition;
 	private Integer suggestion;
 	private String canonicalForm;
+	private boolean negated;
+	private boolean possible;
 	
 
 
+
+	public boolean isNegated() {
+		return negated;
+	}
+
+	public void setNegated(boolean negated) {
+		this.negated = negated;
+	}
+
+	public boolean isPossible() {
+		return possible;
+	}
+
+	public void setPossible(boolean possible) {
+		this.possible = possible;
+	}
 
 	public Integer getNumPosition() {
 		return numPosition;

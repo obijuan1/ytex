@@ -74,6 +74,8 @@
 				<property name="numPosition" column="num_position"/>
 				<property name="suggestion" column="suggestion"/>
 				<property name="canonicalForm" column="canonical_form"/>
+				<property name="negated" />
+				<property name="possible" />
 			</joined-subclass>
 		</joined-subclass>
 	</class>
