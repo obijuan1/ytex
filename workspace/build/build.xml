@@ -108,9 +108,13 @@
 		</antcall>
 	</target>
 	<target name="build.ctakes-patches">
-		<!-- todo: clean up generated properties files/templates -->
-		<antcall target="compile">
+		<path id="cp.ytex.patches">
+			<path refid="cp.all" />
+			<fileset dir="${ytex.dist.home}/libs.system" includes="ytex.model.jar,ytex.uima.jar" />
+		</path>
+		<antcall target="compile" inheritRefs="true">
 			<param name="project.name" value="ctakes-patches" />
+			<param name="project.classpathref" value="cp.ytex.patches" />
 		</antcall>
 	</target>
 	<target name="copy.config">
@@ -257,5 +261,5 @@
 			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*,${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
 		</zip>
 	</target>
-	<target name="build.all" depends="clean.dist,build.ctakes-patches,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />
+	<target name="build.all" depends="clean.dist,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,build.ctakes-patches,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />
 </project>
