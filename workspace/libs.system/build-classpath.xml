@@ -54,9 +54,9 @@
 	<property name="kernel.cp" value="kernel.cp.prod" />
 	<property name="java.log.arg" value="-Djava.util.logging.config.file=${ytex.home}/config/desc/Logger.properties" />
 	<makeurl property="log4j.url" file="${ytex.home}/config/desc/log4j.properties" />
-	<property name="log4j.configuration" value="log4j.url"/>
+	<property name="log4j.configuration" value="${log4j.url}"/>
 	<property name="log4j.arg" value="-Dlog4j.configuration=${log4j.configuration}"/>
-	<property name="java.util.logging.config.file" value="java.log.arg"/>
+	<property name="java.util.logging.config.file" value="${java.log.arg}"/>
 	<propertyset id="ytex.jvm.props">
 		<propertyref name="log4j.configuration" />
 		<propertyref name="java.util.logging.config.file" />
