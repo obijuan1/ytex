@@ -34,14 +34,15 @@
 	</target>
 
 	<target name="eval.infogain" description="run WekaAttributeEvaluator to evaluate infogain for specified dir and prop file">
-		<property name="eval.infogain.dir" value="${basedir}/exp/${kernel.experiment}" />
-		<property name="eval.infogain.prop" value="infogain-train.xml" />
-		<java classname="ytex.weka.WekaAttributeEvaluator" classpathref="${kernel.cp}" fork="yes" dir="${eval.infogain.dir}">
+		<property name="eval.infogain.dir" value="./data" />
+		<property name="eval.infogain.prop" value="infogain-word.xml" />
+		<java classname="ytex.weka.WekaAttributeEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${eval.infogain.dir}">
 			<arg value="-prop" />
 			<arg value="${eval.infogain.prop}" />
 			<jvmarg value="-Xmx1g" />
-			<jvmarg value="${log4j.arg}" />
-			<jvmarg value="${java.log.arg}" />
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
 		</java>
 	</target>
 	<target name="insert.hotspot" description="insert hotspots for experiment">
