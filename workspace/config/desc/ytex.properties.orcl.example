@@ -4,6 +4,7 @@ db.name=XE
 
 # jdbc url for database.  
 # Replace localhost:1521/XE with the host, port and service name/SID of your database
+# another format that works is e.g.: jdbc:oracle:thin:ytex/ytex@localhost:1521:XE
 db.url=jdbc:oracle:thin:@//localhost:1521/XE
 
 # oracle username and password
@@ -31,4 +32,4 @@ db.type=orcl
 db.driver=oracle.jdbc.driver.OracleDriver
 
 # transaction isolation level
-db.isolationLevel=READ_UNCOMMITTED
+db.isolationLevel=READ_COMMITTED
