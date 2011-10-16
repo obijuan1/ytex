@@ -19,10 +19,10 @@ inner join i2b2_2008_judgement j
 where a.source = 'intuitive'
 ]]></entry>
 	<entry key="nominalWordQuery"><![CDATA[
-select docId, lower(covered_text), 1
+select docId, covered_text, 1
 from
 (
-	select distinct d.docId, covered_text
+	select distinct d.docId, lower(covered_text) covered_text
 	from i2b2_2008_doc d 
 	inner join i2b2_2008_anno a 
 	      on a.docId = d.docId 
