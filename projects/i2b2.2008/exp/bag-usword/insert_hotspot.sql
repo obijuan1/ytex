@@ -39,7 +39,7 @@ where r.evaluation >= 0.008
 /* delete hotspot instances and sentences for this experiment */
 delete hi,s
 from hotspot_instance hi
-inner join hotspot_sentence s on s.hotspot_instance_id = hi.hotspot_instance_id
+left join hotspot_sentence s on s.hotspot_instance_id = hi.hotspot_instance_id
 where experiment = 'bag-usword'
 and corpus_name = 'i2b2.2008'
 ;
@@ -48,11 +48,9 @@ and corpus_name = 'i2b2.2008'
 * populate hotspot_instance
 */
 insert into hotspot_instance (instance_id, label, corpus_name, experiment)
-select d.docId, a.disease, 'i2b2.2008', 'bag-usword'
-from i2b2_2008_doc d
-inner join i2b2_2008_anno a 
-    on a.docId = d.docId 
-    and a.source = 'intuitive'
+select docId, disease, 'i2b2.2008', 'bag-usword'
+from i2b2_2008_anno a 
+where a.source = 'intuitive'
 ;
 
 /*
