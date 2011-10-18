@@ -1,4 +1,4 @@
-\==semil cross validation==
+==semil cross validation==
 performed full cross validation across all zv cutoffs.
 worse than libsvm across the board - see semil/compare.xlsx
 

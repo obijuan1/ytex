@@ -1,0 +1,27 @@
+= reproduce ambert =
+use unstemmed words
+200 character window
+{{{
+update i2b2_2008_doc d
+inner join document yd
+    on d.docId = yd.uid 
+    and yd.analysis_batch = 'i2b2.2008'
+inner join anno_base ab 
+    on ab.document_id = yd.document_id
+inner join ref_uima_type t 
+    on t.uima_type_id = ab.uima_type_id
+    and t.uima_type_name in ( 'ytex.uima.types.WordToken', 'edu.mayo.bmi.uima.core.ae.type.NumToken')
+set covered_text = substring(d.docText, ab.span_begin+1, ab.span_end-ab.span_begin)
+}}}
+
+cleanup infogain
+{{{
+delete r, e
+from feature_rank r
+inner join feature_eval e on e.feature_eval_id = r.feature_eval_id and e.featureset_name = 'usword'
+}}}
+
+Compute infogain:
+{{{
+nohup ant -Dytex.home=${YTEX_HOME} -Deval.infogain.prop=infogain-usword.xml eval.infogain > ant.out 2>&1 &
+}}}

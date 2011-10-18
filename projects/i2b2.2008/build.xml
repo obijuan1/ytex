@@ -130,6 +130,30 @@
 				<antcall target="export.classrel" />
 			</then>
 		</if>
+		<if>
+			<equals arg1="${kernel.algo}" arg2="libsvm" />
+			<then>
+				<antcall target="export.classWeights" />
+			</then>
+		</if>
+	</target>
+	<target name="export.classWeights" depends="init.exp" description="export class weights for libsvm">
+		<property name="export.cutoff" value="0.35" />
+		<property name="export.dir" value="${kernel.algo}/${kernel.experiment}/${export.cutoff}" />
+		<filterset id="export.filterset">
+			<filter token="export.cutoff" value="${export.cutoff}" />
+			<filterset refid="exp.filter" />
+		</filterset>
+		<copy file="${basedir}/data/classWeights.sql" todir="${export.dir}" overwrite="yes">
+			<filterset refid="export.filterset" />
+		</copy>
+		<exec executable="${mysql.home}/mysql" dir="${export.dir}" failonerror="yes" output="${export.dir}/kernel.properties" append="yes">
+			<arg line="${mysql.line}" />
+			<arg value="--skip-column-names" />
+			<arg value="--raw" />
+			<arg value="-e" />
+			<arg value="source classWeights.sql" />
+		</exec>
 	</target>
 	<target name="export.classrel" depends="init.exp" description="export positive class fraction for svmlin">
 		<property name="export.cutoff" value="0.05" />
