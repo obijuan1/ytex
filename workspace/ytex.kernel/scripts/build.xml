@@ -165,7 +165,9 @@
 		<basename file="${kernel.data.filename}" property="kernel.data.basename" suffix="train_data" />
 		<property name="kernel.workdir" value="${kernel.tmpdir}-${kernel.data.filename}" />
 		<!-- load parameter grid -->
-		<property file="${kernel.data}/${kernel.data.filename}.properties" />
+		<property file="${kernel.data}/parameters.properties" />
+		<echo>${kernel.data.filename}.kernel.evalLines</echo>
+		<propertycopy name="kernel.evalLines" from="${kernel.data.filename}.kernel.evalLines" />
 		<echo>kernel.data.filename ${kernel.data.filename}</echo>
 		<echo>kernel.data.basename ${kernel.data.basename}</echo>
 		<echo>kernel.evalLines ${kernel.evalLines}</echo>

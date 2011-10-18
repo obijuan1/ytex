@@ -41,6 +41,15 @@ public class KernelUtilImpl implements KernelUtil {
 
 	private KernelEvaluationDao kernelEvaluationDao = null;
 	private PlatformTransactionManager transactionManager;
+	private FoldGenerator foldGenerator = null;
+
+	public FoldGenerator getFoldGenerator() {
+		return foldGenerator;
+	}
+
+	public void setFoldGenerator(FoldGenerator foldGenerator) {
+		this.foldGenerator = foldGenerator;
+	}
 
 	private Map<Long, Integer> createInstanceIdToIndexMap(
 			SortedSet<Long> instanceIDs) {
@@ -264,5 +273,18 @@ public class KernelUtilImpl implements KernelUtil {
 	public void setTransactionManager(
 			PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
+	}
+
+	@Override
+	public void generateFolds(InstanceData instanceLabel, Properties props) {
+		int folds = Integer.parseInt(props.getProperty("folds"));
+		int runs = Integer.parseInt(props.getProperty("runs", "1"));
+		int minPerClass = Integer.parseInt(props
+				.getProperty("minPerClass", "0"));
+		Integer randomNumberSeed = props.containsKey("rand") ? Integer
+				.parseInt(props.getProperty("rand")) : null;
+		instanceLabel.setLabelToInstanceMap(foldGenerator.generateRuns(
+				instanceLabel.getLabelToInstanceMap(), folds, minPerClass,
+				randomNumberSeed, runs));
 	}
 }

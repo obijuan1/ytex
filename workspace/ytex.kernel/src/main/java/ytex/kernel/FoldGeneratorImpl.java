@@ -36,6 +36,7 @@ import ytex.kernel.model.CrossValidationFoldInstance;
  */
 public class FoldGeneratorImpl implements FoldGenerator {
 	private static final Log log = LogFactory.getLog(FoldGeneratorImpl.class);
+
 	/**
 	 * iterate through the labels, split instances into folds
 	 * 
@@ -43,7 +44,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 	 * @param nFolds
 	 * @param nMinPerClass
 	 * @param nSeed
-	 * @return list with nFolds sets of line numbers corresponding to the folds
+	 * @return list with nFolds sets of instance ids corresponding to the folds
 	 */
 	private static List<Set<Long>> createFolds(
 			Map<String, List<Long>> mapClassToInstanceId, int nFolds,
@@ -104,6 +105,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 		}
 		return folds;
 	}
+
 	@SuppressWarnings("static-access")
 	public static void main(String args[]) throws ParseException, IOException {
 		Options options = new Options();
@@ -164,15 +166,16 @@ public class FoldGeneratorImpl implements FoldGenerator {
 				String query = props.getProperty("instanceClassQuery");
 				int folds = Integer.parseInt(props.getProperty("folds", "2"));
 				int runs = Integer.parseInt(props.getProperty("runs", "5"));
-				int minPerClass = Integer.parseInt(props.getProperty("minPerClass", "1"));
+				int minPerClass = Integer.parseInt(props.getProperty(
+						"minPerClass", "1"));
 				Integer rand = props.containsKey("rand") ? Integer
 						.parseInt(props.getProperty("rand")) : null;
 				boolean argsOk = true;
-				if(corpusName == null) {
+				if (corpusName == null) {
 					log.error("missing parameter: ytex.corpusName");
 					argsOk = false;
 				}
-				if(query == null) {
+				if (query == null) {
 					log.error("missing parameter: instanceClassQuery");
 					argsOk = false;
 				}
@@ -231,26 +234,39 @@ public class FoldGeneratorImpl implements FoldGenerator {
 					.values().iterator().next();
 			SortedMap<Long, String> mapInstanceIdToClass = trainMap.values()
 					.iterator().next();
-			// invert the mapInstanceIdToClass
-			Map<String, List<Long>> mapClassToInstanceId = new TreeMap<String, List<Long>>();
-			for (Map.Entry<Long, String> instance : mapInstanceIdToClass
-					.entrySet()) {
-				String className = instance.getValue();
-				long instanceId = instance.getKey();
-				List<Long> classInstanceIds = mapClassToInstanceId
-						.get(className);
-				if (classInstanceIds == null) {
-					classInstanceIds = new ArrayList<Long>();
-					mapClassToInstanceId.put(className, classInstanceIds);
-				}
-				classInstanceIds.add(instanceId);
-			}
-			// stratified split into folds
-			List<Set<Long>> folds = createFolds(mapClassToInstanceId, nFolds,
-					nMinPerClass, r);
+			List<Set<Long>> folds = createFolds(nFolds, nMinPerClass, r,
+					mapInstanceIdToClass);
 			// insert the folds
 			insertFolds(folds, corpusName, splitName, label, run);
 		}
+	}
+
+	/**
+	 * inver the map of instance id to class, call createFolds
+	 * @param nFolds
+	 * @param nMinPerClass
+	 * @param r
+	 * @param mapInstanceIdToClass
+	 * @return
+	 */
+	private List<Set<Long>> createFolds(int nFolds, int nMinPerClass,
+			Random r, SortedMap<Long, String> mapInstanceIdToClass) {
+		// invert the mapInstanceIdToClass
+		Map<String, List<Long>> mapClassToInstanceId = new TreeMap<String, List<Long>>();
+		for (Map.Entry<Long, String> instance : mapInstanceIdToClass.entrySet()) {
+			String className = instance.getValue();
+			long instanceId = instance.getKey();
+			List<Long> classInstanceIds = mapClassToInstanceId.get(className);
+			if (classInstanceIds == null) {
+				classInstanceIds = new ArrayList<Long>();
+				mapClassToInstanceId.put(className, classInstanceIds);
+			}
+			classInstanceIds.add(instanceId);
+		}
+		// stratified split into folds
+		List<Set<Long>> folds = createFolds(mapClassToInstanceId, nFolds,
+				nMinPerClass, r);
+		return folds;
 	}
 
 	/*
@@ -273,7 +289,7 @@ public class FoldGeneratorImpl implements FoldGenerator {
 					nFolds, nMinPerClass, r);
 		}
 	}
-	
+
 	public ClassifierEvaluationDao getClassifierEvaluationDao() {
 		return classifierEvaluationDao;
 	}
@@ -327,4 +343,55 @@ public class FoldGeneratorImpl implements FoldGenerator {
 		this.kernelUtil = kernelUtil;
 	}
 
+	@Override
+	public SortedMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>> generateRuns(
+			SortedMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>> labelToInstanceMap,
+			int nFolds, int nMinPerClass, Integer nSeed, int nRuns) {
+		// allocate map to return
+		SortedMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>> labelToInstanceFoldMap = new TreeMap<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>>();
+		// initialize random seed
+		Random r = new Random(nSeed != null ? nSeed
+				: System.currentTimeMillis());
+		// iterate over labels
+		for (Map.Entry<String, SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>> labelRun : labelToInstanceMap
+				.entrySet()) {
+			String label = labelRun.getKey();
+			// extract the instance id - class map
+			SortedMap<Long, String> instanceClassMap = labelRun.getValue()
+					.get(0).get(0).get(true);
+			// allocate the run to fold map
+			SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> runMap = new TreeMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>();
+			labelToInstanceFoldMap.put(label, runMap);
+			// iterate over runs
+			for (int run = 1; run <= nRuns; run++) {
+				// generate folds for run
+				List<Set<Long>> folds = createFolds(nFolds, nMinPerClass, r,
+						instanceClassMap);
+				SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>> foldMap = new TreeMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>();
+				// add the fold map to the run map
+				runMap.put(run, foldMap);
+				// iterate over folds
+				for (int trainFoldNum = 1; trainFoldNum <= folds.size(); trainFoldNum++) {
+					// add train/test sets for the fold
+					SortedMap<Boolean, SortedMap<Long, String>> trainTestMap = new TreeMap<Boolean, SortedMap<Long, String>>();
+					foldMap.put(trainFoldNum, trainTestMap);
+					trainTestMap.put(true, new TreeMap<Long, String>());
+					trainTestMap.put(false, new TreeMap<Long, String>());
+					// populate the train/test sets
+					Set<Long> testIds = folds.get(trainFoldNum - 1);
+					// iterate over all instances
+					for (Map.Entry<Long, String> instanceClass : instanceClassMap
+							.entrySet()) {
+						long instanceId = instanceClass.getKey();
+						String clazz = instanceClass.getValue();
+						// add the instance to the test set if it is in testIds,
+						// else to the train set
+						trainTestMap.get(!testIds.contains(instanceId)).put(
+								instanceId, clazz);
+					}
+				}
+			}
+		}
+		return labelToInstanceFoldMap;
+	}
 }

@@ -141,6 +141,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="kernelEvaluationDao" ref="kernelEvaluationDao" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
+		<property name="foldGenerator" ref="foldGenerator" />
 	</bean>
 
 	<bean id="baseClassifierEvaluationParser" abstract="true">

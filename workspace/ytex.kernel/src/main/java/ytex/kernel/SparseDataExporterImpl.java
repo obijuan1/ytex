@@ -334,6 +334,9 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 			BagOfWordsDecorator bDecorator) throws IOException {
 		InstanceData instanceLabel = this.getKernelUtil().loadInstances(
 				props.getProperty("instanceClassQuery"));
+		if (props.containsKey("folds")) {
+			this.getKernelUtil().generateFolds(instanceLabel, props);
+		}
 		// load label - instance id maps
 		// sparseData.setLabelToInstanceMap(this.getKernelUtil().loadInstances(
 		// props.getProperty("instanceClassQuery"),

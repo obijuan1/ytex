@@ -50,8 +50,9 @@ public class ClassifierEvalUtil {
 
 	private void generateSvmLinParams(String lowerCase) throws IOException {
 		File kernelDataDir = new File(props.getProperty("kernel.data", "."));
-		String weightPropsFile = props.getProperty("kernel.svmlin.classweights",
-				kernelDataDir + "/classWeights.properties");
+		String weightPropsFile = props.getProperty(
+				"kernel.svmlin.classweights", kernelDataDir
+						+ "/classWeights.properties");
 		if (log.isDebugEnabled()) {
 			log.debug("loading weights from " + weightPropsFile);
 		}
@@ -229,24 +230,29 @@ public class ClassifierEvalUtil {
 				return name.endsWith("train_data.txt");
 			}
 		});
+		Properties params = new Properties();
 		if (trainFiles != null && trainFiles.length > 0) {
 			// iterate over label files
 			for (File trainFile : trainFiles) {
-				writeSvmEvalFile(trainFile, kernelDataDir, svmType);
+				writeSvmEvalFile(params, trainFile, kernelDataDir, svmType);
 			}
 		}
+		writeProps(kernelDataDir + "/parameters.properties", params);
 	}
 
 	/**
-	 * generate parameter grid for each training file
+	 * generate parameter grid for each training file. add a property [file base
+	 * name].kernel.evalLines=xxx to props.
 	 * 
+	 * @param props
+	 *            properties to populate
 	 * @param trainFile
 	 * @param kernelDataDir
 	 * @param svmType
 	 * @throws IOException
 	 */
-	private void writeSvmEvalFile(File trainFile, File kernelDataDir,
-			String svmType) throws IOException {
+	private void writeSvmEvalFile(Properties params, File trainFile,
+			File kernelDataDir, String svmType) throws IOException {
 		// list to hold the svm command lines
 		List<String> evalLines = new ArrayList<String>();
 		// label-specific weight parameters from a property file
@@ -284,12 +290,15 @@ public class ClassifierEvalUtil {
 			}
 		}
 		if (evalLines.size() > 0) {
-			String evalFile = trainFile.getPath().substring(0,
-					trainFile.getPath().length() - 3)
-					+ "properties";
-			Properties evalProps = new Properties();
-			evalProps.put("kernel.evalLines", listToString(evalLines));
-			writeProps(evalFile, evalProps);
+			String basename = trainFile.getName().substring(0,
+					trainFile.getName().length() - 4);
+			params.put(basename + ".kernel.evalLines", listToString(evalLines));
+			// String evalFile = trainFile.getPath().substring(0,
+			// trainFile.getPath().length() - 3)
+			// + "properties";
+			// Properties evalProps = new Properties();
+			// evalProps.put("kernel.evalLines", listToString(evalLines));
+			// writeProps(evalFile, evalProps);
 		}
 	}
 
@@ -299,17 +308,18 @@ public class ClassifierEvalUtil {
 			String label = FileUtil.parseLabelFromFileName(trainFile.getName());
 			// default label to 0
 			label = label != null && label.length() > 0 ? label : "0";
-			Properties weightProps = null;
+			Properties weightProps = new Properties();
+			weightProps.putAll(props);
 			if (props.getProperty("kernel.classweights") != null) {
-				weightProps = FileUtil.loadProperties(
+				Properties tmp = FileUtil.loadProperties(
 						props.getProperty("kernel.classweights"), false);
-				if (weightProps != null) {
-					String weights = weightProps.getProperty("class.weight."
-							+ label);
-					if (weights != null && weights.length() > 0) {
-						return Arrays.asList(weights.split(","));
-					}
-				}
+				if(tmp != null)
+					weightProps.putAll(tmp);
+			}
+			String weights = weightProps.getProperty("class.weight."
+					+ label);
+			if (weights != null && weights.length() > 0) {
+				return Arrays.asList(weights.split(","));
 			}
 		}
 		return new ArrayList<String>(0);

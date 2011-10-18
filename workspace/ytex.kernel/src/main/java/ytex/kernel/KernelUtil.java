@@ -42,9 +42,18 @@ public interface KernelUtil {
 			final SortedSet<Long> trainInstanceLabelMap,
 			final double[][] trainGramMatrix);
 
-	public abstract double[][] loadGramMatrix(SortedSet<Long> instanceIds, String name,
-			String splitName, String experiment, String label, int run, int fold,
-			double param1, String param2);
+	public abstract double[][] loadGramMatrix(SortedSet<Long> instanceIds,
+			String name, String splitName, String experiment, String label,
+			int run, int fold, double param1, String param2);
 
+	/**
+	 * generate folds from the label to instance map. use properties specified
+	 * in props to generate folds.
+	 * 
+	 * @param instanceLabel
+	 * @param props
+	 */
+	public abstract void generateFolds(InstanceData instanceLabel,
+			Properties props);
 
 }
