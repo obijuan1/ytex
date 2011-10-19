@@ -144,7 +144,7 @@
 			<filter token="export.cutoff" value="${export.cutoff}" />
 			<filterset refid="exp.filter" />
 		</filterset>
-		<copy file="${basedir}/data/classWeights.sql" todir="${export.dir}" overwrite="yes">
+		<copy file="exp/${kernel.experiment}/classWeights.sql" todir="${export.dir}" overwrite="yes">
 			<filterset refid="export.filterset" />
 		</copy>
 		<exec executable="${mysql.home}/mysql" dir="${export.dir}" failonerror="yes" output="${export.dir}/kernel.properties" append="yes">
