@@ -131,7 +131,10 @@
 			</then>
 		</if>
 		<if>
-			<equals arg1="${kernel.algo}" arg2="libsvm" />
+			<and>
+				<equals arg1="${kernel.algo}" arg2="libsvm" />
+				<available resource="${basedir}/exp/${kernel.experiment}/classWeights.sql" />
+			</and>
 			<then>
 				<antcall target="export.classWeights" />
 			</then>
