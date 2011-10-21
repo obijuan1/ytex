@@ -8,15 +8,15 @@ drop table if exists tmp_hotspot_zero_vector_tt
 ;  
 
 /**
- * per-fold truth table for zero vectors induced by specified cutoffs.
+ * per-label truth table for zero vectors induced by specified cutoffs.
  * we simply add this truth table to the truth table of the classifier.
  */
 create temporary table tmp_hotspot_zero_vector_tt as
-select disease_id label, ir_class_id, param1 cutoff, tp, tn, fp, fn
+select disease_id label, ir_class_id, cutoff, tp, tn, fp, fn
 from
 (
 	/* truth table */
-	select ir_class_id, disease_id, param1,
+	select ir_class_id, disease_id, cutoff,
 	  sum(case
 	    when ir_class_id = target_class_id and ir_class_id = pred_class_id then 1
 	    else 0
@@ -35,7 +35,7 @@ from
 	  end) fn
 	from
 	(
-		select a.docId, ds.disease_id, b.param1, ir_class_id, jauto.judgement_id pred_class_id, jgold.judgement_id target_class_id
+		select a.docId, ds.disease_id, hzv.cutoff, ja.judgement_id ir_class_id, jauto.judgement_id pred_class_id, jgold.judgement_id target_class_id
 		from i2b2_2008_doc d
 		/* join with gold class */
 		inner join i2b2_2008_anno a
@@ -50,12 +50,8 @@ from
 			and hi.corpus_name = 'i2b2.2008'
 			and hi.label = ds.disease
       and hi.experiment = 'bag-usword'
-    inner join i2b2_2008_cv_best b 
-        on b.experiment = hi.experiment
-        and b.label = ds.disease_id
 		inner join hotspot_zero_vector hzv
 			on hzv.hotspot_instance_id = hi.hotspot_instance_id 
-      and hzv.cutoff = b.param1
 		/* convert into class id */
 		inner join i2b2_2008_judgement jgold on jgold.judgement = a.judgement
 		/* get default class for zero vector */
@@ -63,19 +59,15 @@ from
 		  on hzvd.label = a.disease
 		/* convert into class id */
 		inner join i2b2_2008_judgement jauto on jauto.judgement = hzvd.class_name
-		inner join
-		/* create truth table - get all unique class ids */
-		(
-			select distinct d.disease_id, j.judgement_id ir_class_id
-			from i2b2_2008_judgement j
-			inner join i2b2_2008_anno a on a.judgement = j.judgement
-			inner join i2b2_2008_disease d on d.disease = a.disease
-			where a.source = 'intuitive'
-		) ja on ja.disease_id = ds.disease_id
+		/* get all possible classes for this disease */
+		inner join i2b2_2008_test_judgement ja on ja.disease = a.disease
+		/* limit to test instances */
 		where documentSet = 'test'
 	) s
-	group by ir_class_id, disease_id, param1
+	group by ir_class_id, disease_id, cutoff
 ) s;
+
+create index IX_hotspot_zero_vector_tt on  tmp_hotspot_zero_vector_tt(label, ir_class_id, cutoff);
 
 /*
 sanity check all - this should return 0
@@ -138,12 +130,22 @@ from
 			and e.name = 'i2b2.2008'
 			and e.run = 0
 			and e.fold = 0
+    /* 
+    limit to disease ids from test classes 
+    training set has Q's where the test set doesn't
+    */
+    inner join i2b2_2008_disease d 
+        on d.disease_id = e.label
+		inner join i2b2_2008_test_judgement ja 
+        on ja.disease = d.disease
+        and ja.judgement_id = ir.ir_class_id
 		left join tmp_hotspot_zero_vector_tt z
-			on (z.label, z.ir_class_id, z.cutoff) = (e.label, ir.ir_class_id, e.param1)
-	) s
+			on (z.label, z.ir_class_id, z.cutoff) = (e.label, ir.ir_class_id, e.param1)	) s
 ) s
 ;
 
+
+;
 /*
 sanity check all - this should return 0
 */
@@ -176,7 +178,7 @@ from
 	/*
 	 * best f1 score by experiment (hotspot cutoff) and svm parameters
 	 */
-	select label, kernel, cost, gamma, weight, param1, param2, avg(f1) f1
+	select label, kernel, cost, gamma, coalesce(weight, '') weight, param1, param2, avg(f1) f1
 	from classifier_eval_irzv t
 	inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
 	inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
@@ -184,7 +186,7 @@ from
 	and name = 'i2b2.2008'
 	and run = 0
 	and fold = 0
-	group by label, kernel, cost, gamma, weight, param1, param2
+	group by label, kernel, cost, gamma, coalesce(weight, ''), param1, param2
 ) s
 group by label
 order by cast(label as decimal(2,0))
