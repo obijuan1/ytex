@@ -316,7 +316,7 @@ public class ClassifierEvalUtil {
 				if(tmp != null)
 					weightProps.putAll(tmp);
 			}
-			String weights = weightProps.getProperty("class.weight."
+			String weights = weightProps.getProperty("kernel.weight."
 					+ label);
 			if (weights != null && weights.length() > 0) {
 				return Arrays.asList(weights.split(","));
