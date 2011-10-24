@@ -37,7 +37,7 @@ negex only on hotspots
 			from hotspot_instance hi
 			inner join hotspot_sentence hs 
 			    on hi.hotspot_instance_id = hs.hotspot_instance_id
-			    and hs.evaluation > @export.cutoff@
+			    and hs.evaluation >= @export.cutoff@
 			inner join i2b2_2008_anno a 
 			    on a.disease = hi.label 
 			    and a.docId = hi.instance_id 
