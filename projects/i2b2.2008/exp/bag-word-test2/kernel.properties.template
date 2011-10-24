@@ -1,0 +1,4 @@
+kernel.experiment=@kernel.experiment@
+kernel.param1=@export.cutoff@
+kernel.types=0
+cv.costs=0.00001,0.0001,0.001,0.01,0.1,1,10
