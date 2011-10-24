@@ -70,7 +70,7 @@ from
 create index IX_hotspot_zero_vector_tt on  tmp_hotspot_zero_vector_tt(label, ir_class_id, cutoff);
 
 /*
-sanity check all - this should return 0
+sanity check all - instances per class should be identical
 */
 select *
 from
@@ -144,10 +144,8 @@ from
 ) s
 ;
 
-
-;
 /*
-sanity check all - this should return 0
+sanity check all - # predictions per class should be identical
 */
 select *
 from
@@ -168,6 +166,53 @@ from
     group by label, run, fold, param1
 ) s where mt <> xt
 ;
+
+/* 
+ * sanity check - predictions per label should be identical to test
+ */
+select *
+from
+(
+	select label, tp+tn+fp+fn n
+	from classifier_eval e
+	inner join classifier_eval_irzv i on e.classifier_eval_id = i.classifier_eval_id and i.ir_class_id = 0
+	where e.experiment = 'bag-usword-test'
+	group by label
+) s
+inner join
+(
+	select disease_id, count(*) n
+	from i2b2_2008_doc d
+	inner join i2b2_2008_anno a on a.docId = d.docId and source = 'intuitive'
+	inner join i2b2_2008_disease ds on ds.disease = a.disease
+	where d.documentSet = 'test'
+	group by disease_id
+) i on s.label = i.disease_id
+where s.n <> i.n
+;
+
+/* 
+ * sanity check - classes per label should be identical to test
+ */
+select *
+from
+(
+	select label, count(distinct ir_class_id) nclass
+	from classifier_eval e
+	inner join classifier_eval_irzv i on e.classifier_eval_id = i.classifier_eval_id
+	where e.experiment = 'bag-usword-test'
+	group by label
+) s
+inner join
+(
+	select disease_id, count(distinct judgement) ngold
+	from i2b2_2008_doc d
+	inner join i2b2_2008_anno a on a.docId = d.docId and source = 'intuitive'
+	inner join i2b2_2008_disease ds on ds.disease = a.disease
+	where d.documentSet = 'test'
+	group by disease_id
+) i on s.label = i.disease_id
+where s.nclass <> i.ngold;
 
 /*
  * show the best f1 per label for the experiment
@@ -191,3 +236,22 @@ from
 group by label
 order by cast(label as decimal(2,0))
 ;
+
+/* get macro-averaged f1 across all labels */
+select avg(f1)
+from
+(
+    select *, if(ppv+sens > 0, 2*ppv*sens/(ppv+sens), 0) f1
+    from
+    (
+        select *, if(tp+fp > 0, tp/(tp+fp), 0) ppv, if(tp+fn >0, tp/(tp+fn), 0) sens
+        from
+        (
+            select ir_class_id, sum(tp) tp, sum(fp) fp, sum(tn) tn, sum(fn) fn
+            from classifier_eval e
+            inner join classifier_eval_irzv i on e.classifier_eval_id = i.classifier_eval_id
+            where e.experiment = 'bag-usword-test'
+            group by ir_class_id
+        ) s 
+    ) s
+) s;
