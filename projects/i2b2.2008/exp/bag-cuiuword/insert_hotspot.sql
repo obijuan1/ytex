@@ -4,8 +4,8 @@ inner join feature_rank r on r.feature_rank_id = ho.feature_rank_id
 inner join feature_eval e
 	on e.feature_eval_id = r.feature_eval_id
 	and e.corpus_name = 'i2b2.2008'
-	and e.type = 'infogain-imputed' 
-	and e.param1 = 'rbpar'
+	and e.type = 'InfoGainAttributeEval' 
+	and e.featureset_name = 'cui'
 	and e.cv_fold_id = 0
 ;
 
@@ -22,8 +22,8 @@ inner join feature_eval e
  	on e.corpus_name = 'i2b2.2008'
 	and e.cv_fold_id = 0
 	and e.label = a.disease
-	and e.type = 'infogain-imputed' 
-	and e.param1 = 'rbpar'
+	and e.type = 'InfoGainAttributeEval' 
+	and e.featureset_name = 'cui'
 /* feature rank */
 inner join feature_rank r on r.feature_eval_id = e.feature_eval_id
 /* join to concept token via document - anno base - concept token */
@@ -63,10 +63,12 @@ inner join i2b2_2008_anno a
 ;
 
 /*
- * get the sentences that contain hotspots
+ * get annotations within hotspot window.
+ * get named entities, words, and numbers in the window.
+ * use cui and usword hotspots.
  */
-insert into hotspot_sentence (hotspot_instance_id, anno_base_id, evaluation)
-select h.hotspot_instance_id, ac.parent_anno_base_id, max(r.evaluation)
+insert into hotspot_sentence (hotspot_instance_id, anno_base_id, evaluation, rank)
+select h.hotspot_instance_id, bctx.anno_base_id, max(r.evaluation), min(r.rank)
 from hotspot_instance h
 /* join hotspot_instance to hotspot via feature_eval and instance_id */
 inner join hotspot ho on h.instance_id = ho.instance_id
@@ -74,21 +76,23 @@ inner join feature_rank r on r.feature_rank_id = ho.feature_rank_id
 inner join feature_eval e 
     on e.feature_eval_id = r.feature_eval_id 
  	and e.corpus_name = 'i2b2.2008'
+	and e.type = 'InfoGainAttributeEval'
+	and e.featureset_name in ('cui',  'usword')
 	and e.cv_fold_id = 0    
-	and e.label = h.label
-    and
-	(
-		(e.type = 'InfoGainAttributeEval' and e.featureset_name = 'word')
-		or
-		(e.type = 'infogain-imputed' and e.featureset_name = 'rbpar')
-	)
-/* get sentence for hotspot */
-inner join anno_contain ac on ac.child_anno_base_id = ho.anno_base_id and ac.parent_uima_type_id = 9
+	and e.label = h.label /* must match label */
+/* get annotation for hotspot */
+inner join anno_base ab on ab.anno_base_id = ho.anno_base_id
+/* get words and number tokens and named entities +- 100 characters */
+inner join anno_base bctx
+  on bctx.document_id = ab.document_id
+  and bctx.uima_type_id in (8, 22, 25, 26)
+  and (bctx.span_end >= ab.span_begin - 100 and bctx.span_begin <= ab.span_end + 100)
+  and (bctx.uima_type_id = 8 or bctx.covered_text is not null)
 where h.experiment = 'bag-cuiuword'
 and h.corpus_name = 'i2b2.2008'
 /* testing
 and h.instance_id = 2
 and h.label = 'Asthma'
 */
-group by h.hotspot_instance_id, ac.parent_anno_base_id;
+group by h.hotspot_instance_id, bctx.anno_base_id;
 
