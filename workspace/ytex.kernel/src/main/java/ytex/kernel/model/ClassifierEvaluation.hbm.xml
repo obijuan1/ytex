@@ -32,7 +32,17 @@
 		<property name="evaluation" column="evaluation" />
 		<property name="rank" column="rank" />
 	</class>
-
+	<class name="FeatureParentChild" table="feature_parchd">
+		<id name="featureParentChildId" column="feature_parchd_id">
+			<generator class="native">
+				<param name="sequence">feature_parchd_sequence</param>
+			</generator>
+		</id>
+		<many-to-one name="featureRankChild" class="FeatureRank"
+			column="chd_feature_rank_id" />
+		<many-to-one name="featureRankParent" class="FeatureRank"
+			column="par_feature_rank_id" />
+	</class>
 	<class name="CrossValidationFold" table="cv_fold">
 		<id name="crossValidationFoldId" column="cv_fold_id">
 			<generator class="native">

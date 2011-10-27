@@ -17,6 +17,7 @@ import ytex.kernel.model.ClassifierEvaluationIRStat;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
 import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.FeatureEvaluation;
+import ytex.kernel.model.FeatureParentChild;
 import ytex.kernel.model.FeatureRank;
 
 public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
@@ -220,6 +221,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		return param1 == null ? "" : param1;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<FeatureRank> getThresholdFeatures(String corpusName,
 			String featureSetName, String label, String evaluationType,
@@ -227,7 +229,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
 				label, evaluationType, foldId, param1, "getThresholdFeatures");
 		q.setDouble("evaluation", evaluationThreshold);
-		return null;
+		return q.list();
 	}
 
 	@Override
@@ -296,5 +298,10 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		q.setString("evaluationType", evaluationType);
 		q.setString("param1", nullToEmptyString(param1));
 		return q.list();
+	}
+
+	@Override
+	public void saveFeatureParentChild(FeatureParentChild parchd) {
+		this.sessionFactory.getCurrentSession().save(parchd);
 	}
 }

@@ -50,7 +50,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * cache to hold lcs's
 	 */
 	private Cache lcsCache;
-	private String lcsImputedType = ImputedFeatureEvaluator.INFOGAIN;
+	private String lcsImputedType = ImputedFeatureEvaluator.MeasureType.INFOGAIN.getName();
 	private PlatformTransactionManager transactionManager;
 
 	private List<String> tuiList;

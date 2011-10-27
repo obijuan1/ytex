@@ -6,6 +6,7 @@ import java.util.Map;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.FeatureEvaluation;
+import ytex.kernel.model.FeatureParentChild;
 import ytex.kernel.model.FeatureRank;
 
 public interface ClassifierEvaluationDao {
@@ -69,5 +70,7 @@ public interface ClassifierEvaluationDao {
 	public abstract List<FeatureEvaluation> getFeatureEvaluations(
 			String corpusName, String featureSetName, String evaluationType,
 			String param1);
+
+	public abstract void saveFeatureParentChild(FeatureParentChild parchd);
 
 }

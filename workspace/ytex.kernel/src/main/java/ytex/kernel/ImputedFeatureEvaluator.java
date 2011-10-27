@@ -18,9 +18,6 @@ public interface ImputedFeatureEvaluator {
 		}
 	};
 
-	public static final String MUTUALINFO = "mutualinfo";
-	public static final String INFOGAIN = "infogain";
-
 	public static final String SUFFIX_PROP = "-propagated";
 	public static final String SUFFIX_IMPUTED = "-imputed";
 

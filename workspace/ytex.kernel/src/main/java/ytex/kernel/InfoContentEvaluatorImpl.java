@@ -163,6 +163,7 @@ public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 	 *            column - frequency (double)
 	 * @return
 	 */
+	@Override
 	public Map<String, Double> getFrequencies(String freqQuery) {
 		// get the raw frequency
 		final Map<String, Double> rawFreq = new HashMap<String, Double>();

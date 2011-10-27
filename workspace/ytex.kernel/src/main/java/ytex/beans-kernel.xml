@@ -279,6 +279,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="dataSource" ref="dataSource" />
 		<property name="kernelUtil" ref="kernelUtil" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
+		<property name="ytexProperties" ref="ytexProperties" />
+		<property name="infoContentEvaluator" ref="infoContentEvaluator" />
 	</bean>
 	<bean id="cytoscapeHalper" class="ytex.kernel.CytoscapeHelperImpl">
 		<property name="conceptDao" ref="conceptDao" />
