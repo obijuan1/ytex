@@ -11,7 +11,7 @@
 	]]></entry>
 	<entry key="ytex.corpusName">i2b2.2008</entry>
 	<entry key="ytex.conceptGraphName">rbpar</entry>
-	<entry key="ytex.parentConceptEvalThreshold">0.08</entry>
+	<entry key="ytex.parentConceptEvalThreshold">0.03</entry>
 	<entry key="ytex.conceptGraphQuery"><![CDATA[
 	select cui1, cui2 
 	from umls.MRREL 
