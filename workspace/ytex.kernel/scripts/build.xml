@@ -52,6 +52,12 @@
 				<isset property="svmlight" />
 			</or>
 		</condition>
+		<condition property="cluster" value="true">
+			<or>
+				<equals arg1="${kernel.cluster}" arg2="true" />
+				<equals arg1="${kernel.cluster}" arg2="yes" />
+			</or>
+		</condition>
 		<property name="kernel.eval.tmpdir" value="${java.io.tmpdir}" />
 		<property name="kernel.tmpdir" value="${kernel.eval.tmpdir}/${kernel.name}-${kernel.experiment}-${kernel.algo}${kernel.param1}${kernel.param2}" />
 	</target>
@@ -103,7 +109,7 @@
 		<antcall target="svm.iter.train.cluster" />
 		<antcall target="svm.iter.train.local" />
 	</target>
-	<target name="svm.iter.train.cluster" if="kernel.cluster" description="iterate over files, send to cluster for processing. will only run if kernel.cluster is set.">
+	<target name="svm.iter.train.cluster" if="cluster" description="iterate over files, send to cluster for processing. will only run if kernel.cluster is set.">
 		<fileset id="train.fileset" dir="${kernel.data}" includes="${train.fileset.filter}" />
 		<!--
 		this doesn't work - can't use newline as a separator.  
@@ -130,7 +136,7 @@
 			<arg line="-sync ${kernel.storeResults.sync} ${ant.pbs} kernel.storeResults -Dkernel.data=${kernel.data}" />
 		</exec>
 	</target>
-	<target name="svm.iter.train.local" unless="kernel.cluster" description="iterate over files, process locally. use multiple threads if parallel.folds.  will only run if kernel.cluster is not set.">
+	<target name="svm.iter.train.local" unless="cluster" description="iterate over files, process locally. use multiple threads if parallel.folds.  will only run if kernel.cluster is not set.">
 		<for param="training.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
 			<fileset dir="${kernel.data}" includes="${train.fileset.filter}" />
 			<sequential>
