@@ -80,7 +80,7 @@
 	<target name="build.ytex.uima">
 		<path id="cp.ytex.uima">
 			<path refid="cp.all" />
-			<fileset dir="${ytex.dist.home}/libs.system" includes="ytex.model.jar" />
+			<fileset dir="${ytex.dist.home}/libs.system" includes="ytex.model.jar,ytex.kernel.jar" />
 		</path>
 		<antcall target="compile" inheritRefs="true">
 			<param name="project.name" value="ytex.uima" />
