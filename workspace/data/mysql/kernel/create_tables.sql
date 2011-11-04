@@ -262,10 +262,10 @@ create table feature_rank (
   feature_rank_id int auto_increment not null primary key,
   feature_eval_id int not null comment 'fk feature_eval',
   feature_name varchar(50) not null comment 'name of feature',
-  evaluation double not null comment 'measurement of feature worth',
-  rank int not null comment 'rank among all features',
+  evaluation double not null default 0 comment 'measurement of feature worth',
+  rank int not null default 0 comment 'rank among all features',
   unique index nk_feature_name(feature_eval_id, feature_name),
-  unique index ix_feature_rank(feature_eval_id, rank),
+  index ix_feature_rank(feature_eval_id, rank),
   index fk_feature_eval(feature_eval_id)
 ) engine=myisam comment 'evaluation of a feature in a corpus';
 
