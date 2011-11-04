@@ -8,6 +8,5 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/libs.ytex"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/config.local"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/config"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -22,4 +22,10 @@ public interface UMLSDao {
 
 	public abstract Map<String, String> getNames(List<String> subList);
 
+	/**
+	 * Get the 'last' UmlsAuiFirstWord.  We insert them in ascending order of auis.
+	 * @return
+	 */
+	public abstract String getLastAui();
+
 }

@@ -116,4 +116,11 @@ public class UMLSDaoImpl implements UMLSDao {
 			names.put((String) cuiName[0], (String) cuiName[1]);
 		}
 	}
+	
+	@Override
+	public String getLastAui() {
+		Query q = sessionFactory.getCurrentSession().getNamedQuery("getLastAui");
+		String aui = (String)q.uniqueResult();
+		return aui;
+	}
 }

@@ -4,6 +4,25 @@
 	<class name="UmlsAuiFirstWord" table="umls_aui_fword">
 		<id name="aui" />
 		<property name="fword" />
+		<property name="fstem" />
+		<property name="stemmedStr" column="stem_str" />
+		<property name="tokenizedStr" column="tok_str" />
 	</class>
-
+	<query name="getFirstAuiStr"><![CDATA[
+		select aui,str
+		from MRCONSO
+		where length(aui) > 0
+		order by aui
+	]]></query>
+	<query name="getNextAuiStr"><![CDATA[
+		select aui,str
+		from MRCONSO
+		where aui > :aui
+		and length(aui) > 0
+		order by aui
+	]]></query>
+	<query name="getLastAui"><![CDATA[
+		select max(aui)
+		from UmlsAuiFirstWord
+	]]></query>	
 </hibernate-mapping>
