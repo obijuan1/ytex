@@ -62,8 +62,9 @@ Call with option -projecthelp for more info.
 		<property name="umls.schema" value="${db.schema}" />
 	</target>
 	<target name="templateToConfig.updateConfig" depends="templateToConfig.init" description="update config files">
+		<echo>config.local = ${config.local}</echo>
 		<copy todir="${config.local}" overwrite="yes">
-			<fileset dir="${ytex.home}/config/desc" includes="/**/*.template.xml" />
+			<fileset dir="${ytex.home}/config/desc" includes="**/*.template.xml" />
 			<globmapper from="*.template.xml" to="*.xml" />
 			<filterset>
 				<!-- with a filter set, the last token overrides previous tokens -->
