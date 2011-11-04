@@ -61,11 +61,14 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 	@Override
 	public void process(JCas aJCas) throws AnalysisEngineProcessException {
 		String strDocText = aJCas.getDocumentText();
-		if(strDocText == null)
+		if (strDocText == null)
 			return;
 		List<Segment> segmentsAdded = new ArrayList<Segment>();
 		// find all the segments, set begin and id, add to list
 		for (Map.Entry<SegmentRegex, Pattern> entry : regexMap.entrySet()) {
+			if (log.isDebugEnabled()) {
+				log.debug("applying regex:" + entry.getKey().getRegex());
+			}
 			Matcher matcher = entry.getValue().matcher(strDocText);
 			while (matcher.find()) {
 				Segment seg = new Segment(aJCas);
@@ -74,8 +77,15 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 					seg.setEnd(matcher.end());
 				}
 				seg.setId(entry.getKey().getSegmentID());
+				if (log.isDebugEnabled()) {
+					log.debug("found match: id=" + seg.getId() + ", begin="
+							+ seg.getBegin());
+				}
 				segmentsAdded.add(seg);
 			}
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("segmentsAdded: " + segmentsAdded.size());
 		}
 		if (segmentsAdded.size() > 0) {
 			// sort the segments by begin
@@ -92,21 +102,25 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 			for (int i = 0; i < segmentsAdded.size(); i++) {
 				Segment seg = segmentsAdded.get(i);
 				Segment segNext = (i + 1) < segmentsAdded.size() ? segmentsAdded
-						.get(i + 1)
-						: null;
+						.get(i + 1) : null;
 				if (seg.getEnd() <= 0) {
 					if (segNext != null) {
-						//set end to beginning of next segment
+						// set end to beginning of next segment
 						seg.setEnd(segNext.getBegin() - 1);
 					} else {
-						//set end to doc end
+						// set end to doc end
 						seg.setEnd(strDocText.length() - 1);
 					}
 				} else {
-					//segments shouldn't overlap
-					if (segNext!=null && segNext.getBegin() < seg.getEnd()) {
+					// segments shouldn't overlap
+					if (segNext != null && segNext.getBegin() < seg.getEnd()) {
 						seg.setEnd(segNext.getBegin() - 1);
 					}
+				}
+				if (log.isDebugEnabled()) {
+					log.debug("Adding Segment: segment id=" + seg.getId()
+							+ ", begin=" + seg.getBegin() + ", end="
+							+ seg.getEnd());
 				}
 				seg.addToIndexes();
 			}
