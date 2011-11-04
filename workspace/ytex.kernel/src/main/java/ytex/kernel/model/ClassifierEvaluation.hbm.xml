@@ -226,4 +226,17 @@
 		and fe.crossValidationFoldId = 0
 		and fe.evaluationType = :evaluationType
 	]]></query>	
+	<query name="getCuiMinStr"><![CDATA[
+		select cui, min(str)
+		from MRCONSO
+		where cui in (:cuis)
+		group by cui
+	]]></query>
+	<query name="getCuiPreferredName"><![CDATA[
+		select cui, min(str)
+		from MRCONSO
+		where cui in (:cuis)
+		and (tty = 'PN' or tty = 'PT')
+		group by cui
+	]]></query>
 </hibernate-mapping>
