@@ -7,13 +7,15 @@ drop view if exists v_snomed_fword_lookup;
 drop table if exists v_snomed_fword_lookup;
 
 create table v_snomed_fword_lookup (
-  fword varchar(100) not null,
   cui varchar(10) not null,
-  text text not null
+  fword varchar(100) not null,
+  fstem varchar(100) not null,
+  tok_str varchar(250) not null,
+  stem_str varchar(250) not null
 ) engine=myisam, comment 'umls lookup table, created from umls_aui_fword and mrconso' ;
 
 insert into v_snomed_fword_lookup
-select c.fword, mrc.cui, mrc.str text
+select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
 from umls_aui_fword c
 inner join @UMLS_SCHEMA@.MRCONSO mrc on c.aui = mrc.aui
 where  mrc.SAB in ( 'SNOMEDCT', 'RXNORM')
@@ -33,4 +35,5 @@ and exists
 ;
 
 create index idx_fword on v_snomed_fword_lookup (fword);
+create index idx_fstem on v_snomed_fword_lookup (fstem);
 create index idx_cui on v_snomed_fword_lookup (cui);

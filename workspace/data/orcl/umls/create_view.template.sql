@@ -1,6 +1,6 @@
 create view v_snomed_fword_lookup
 as
-select c.fword, mrc.cui, mrc.str text
+select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
 from umls_aui_fword c
 inner join @UMLS_SCHEMA@.MRCONSO mrc on c.aui = mrc.aui
 where mrc.SAB in ( 'SNOMEDCT','RXNORM' )

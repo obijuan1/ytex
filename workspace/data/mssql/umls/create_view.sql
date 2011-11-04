@@ -1,6 +1,6 @@
 create view $(db_schema).[v_snomed_fword_lookup]
 as
-select c.fword, mrc.cui, mrc.str text
+select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
 from $(db_schema).umls_aui_fword c
 inner join $(umls_catalog).$(umls_schema).MRCONSO mrc on c.aui = mrc.aui
 where mrc.SAB in ( 'SNOMEDCT','RXNORM' )
