@@ -1,5 +1,6 @@
 <project name="build-setup" default="help">
-	<description><![CDATA[
+	<description>
+		<![CDATA[
 Setup the ytex environment; does the following:
   * setup lvg
   * generate configuration files
@@ -20,7 +21,8 @@ Main target is 'all', which does the following:
 For setting up a development environment, you should execute setup.lvg 
 and templateToConfig
 		
-	]]></description>
+	]]>
+	</description>
 	<!-- override these variables using eclipse settings/command line -->
 	<property name="ytex.home" value=".." />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
@@ -42,7 +44,7 @@ Call with option -projecthelp for more info.
 	<target name="setupDatabase" description="setup ytex database tables">
 		<ant dir="${ytex.home}/data" target="all" />
 	</target>
-	<target name="templateToConfig" description="generate config files from templates using values specified in ytex.properties">
+	<target name="templateToConfig.init" description="setup variables for updating template">
 		<condition property="filter.umls.catalog" value="" else="catalog=&quot;${umls.catalog}&quot;">
 			<or>
 				<!-- for mysql/oracle, no catalog - assume umls in same catalog -->
@@ -50,7 +52,7 @@ Call with option -projecthelp for more info.
 				<equals arg1="oracle" arg2="${db.type}" />
 				<!-- if umls.catalog not set, assume in same catalog -->
 				<not>
-					<isset property="umls.catalog"/>
+					<isset property="umls.catalog" />
 				</not>
 				<!-- if umls catalog same as db, don't bother -->
 				<equals arg1="${umls.catalog}" arg2="${db.name}" />
@@ -58,8 +60,10 @@ Call with option -projecthelp for more info.
 		</condition>
 		<!-- default umls schema to ytex schema - this will only be set if umls.schema hasn't been defined -->
 		<property name="umls.schema" value="${db.schema}" />
-		<copy todir="${ytex.home}" overwrite="yes">
-			<fileset dir="${ytex.home}" includes="config/desc/**/*.template.xml,examples/**/*.template.xml" />
+	</target>
+	<target name="templateToConfig.updateConfig" depends="templateToConfig.init" description="update config files">
+		<copy todir="${config.local}" overwrite="yes">
+			<fileset dir="${ytex.home}/config/desc" includes="/**/*.template.xml" />
 			<globmapper from="*.template.xml" to="*.xml" />
 			<filterset>
 				<!-- with a filter set, the last token overrides previous tokens -->
@@ -68,6 +72,8 @@ Call with option -projecthelp for more info.
 				<filter token="filter.umls.catalog" value="${filter.umls.catalog}" />
 			</filterset>
 		</copy>
+	</target>
+	<target name="templateToConfig.updateExamples" depends="templateToConfig.init" description="update example config files">
 		<copy todir="${ytex.home}" overwrite="yes">
 			<fileset dir="${ytex.home}" includes="examples/**/*.template.props" />
 			<globmapper from="*.template.props" to="*.props" />
@@ -82,10 +88,14 @@ Call with option -projecthelp for more info.
 				<filtersfile file="${ytex.properties}" />
 			</filterset>
 		</copy>
+	</target>
+	<target name="templateToConfig.fixUnix" depends="templateToConfig.init" description="fix crlf, make shell scripts executable">
 		<fixcrlf srcDir="${ytex.home}" includes="**/*.sh" />
 		<chmod perm="u+x">
 			<fileset dir="${ytex.home}" includes="**/*.sh" />
 		</chmod>
+	</target>
+	<target name="templateToConfig" depends="templateToConfig.init,templateToConfig.fixUnix,templateToConfig.updateExamples,templateToConfig.updateConfig" description="generate config files from templates using values specified in ytex.properties">
 	</target>
 	<!--
 	<target name="setupMavericResources" description="copy resources from maveric to ytex">
@@ -111,7 +121,7 @@ Call with option -projecthelp for more info.
 		</copy>
 	</target>
 	<target name="setup.lvg" description="unpack lvg data directory to resources folder">
-		<available file="${lvg.tgz}" property="lvg.available"/>
+		<available file="${lvg.tgz}" property="lvg.available" />
 		<antcall target="setup.lvg.unzip" />
 		<antcall target="setup.lvg.warn" />
 	</target>
@@ -128,11 +138,11 @@ Call with option -projecthelp for more info.
 	<target name="setup.lvg.warn" unless="lvg.available">
 		<echo>${lvg.tgz} not available - please execute the setup.lvg.all target to download and setup lvg</echo>
 	</target>
-	
+
 	<target name="setup.lvg.all" description="download and unpack lvg" depends="download.lvg,setup.lvg">
 		<echo>LVG setup complete.  You can remove ${lvg.tgz}</echo>
 	</target>
-	
+
 	<target name="update.manifest" description="update the manifest">
 		<manifestclasspath property="ytex.classpath.man" jarfile="${ytex.home}/lib/ytex.model.jar">
 			<classpath>
