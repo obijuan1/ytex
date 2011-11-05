@@ -9,6 +9,7 @@
 		</id>
 		<property name="begin" column="span_begin" />
 		<property name="end" column="span_end" />
+		<property name="coveredText" column="covered_text" />
 		<many-to-one name="uimaType" class="UimaType" column="uima_type_id"
 			not-null="true" />
 		<many-to-one name="document" class="Document" column="document_id"
