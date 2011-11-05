@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Removed RXNorm and Orange Book lookups Modified to use a table/view that filters 
+<!-- Removed RXNorm and Orange Book lookups Modified to use a view that filters 
 	on snomed and desired tuis Modified to use NamedEntityLookupConsumerImpl 
-	to just store CUI - don't need snomed code -->
+	to just store CUI - don't need snomed code. For exact matching (default), 
+	use the tok_str and default JCasAdapter. For stemmed matching, use the stem_str 
+	and StemmedLookupAnnotationToJCasAdapter -->
 <lookupSpecification>
 	<!-- Defines what dictionaries will be used in terms of implementation specifics 
 		and metaField configuration. -->
@@ -13,10 +15,10 @@
 				<jdbcImpl tableName="@db.schema@.v_snomed_fword_lookup"
 					cacheSize="500" />
 			</implementation>
-			<lookupField fieldName="fword" />
+			<lookupField fieldName="fstem" />
 			<metaFields>
 				<metaField fieldName="cui" />
-				<metaField fieldName="tok_str" />
+				<metaField fieldName="stem_str" />
 			</metaFields>
 		</dictionary>
 	</dictionaries>
@@ -27,15 +29,22 @@
 		<lookupBinding>
 			<dictionaryRef idRef="DICT_UMLS_MS" />
 			<lookupInitializer
-				className="edu.mayo.bmi.uima.lookup.ae.FirstTokenPermLookupInitializerImpl">
+				className="ytex.uima.lookup.ae.FirstTokenPermLookupInitializerImpl">
 				<properties>
-					<property key="textMetaFields" value="tok_str" />
+					<!-- for exact matches, use the tok_str field -->
+					<!-- <property key="textMetaFields" value="tok_str" /> -->
+					<!-- for stemmed matches, use the stem_str field -->
+					<property key="textMetaFields" value="stem_str" />
 					<property key="maxPermutationLevel" value="5" />
 					<property key="windowAnnotations"
 						value="edu.mayo.bmi.uima.core.sentence.type.Sentence" />
 					<!-- <property key="windowAnnotations" value="edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation"/> -->
 					<property key="exclusionTags"
 						value="VB,VBD,VBG,VBN,VBP,VBZ,CC,CD,DT,EX,LS,MD,PDT,POS,PP,PP$,PRP,PRP$,RP,TO,WDT,WP,WPS,WRB" />
+					<!-- to enable lookups using stemmed words use the StemmedLookupAnnotationToJCasAdapter 
+						with the stem_str field -->
+					<property key="lookupTokenAdapter"
+						value="ytex.uima.lookup.ae.StemmedLookupAnnotationToJCasAdapter" />
 				</properties>
 			</lookupInitializer>
 			<lookupConsumer

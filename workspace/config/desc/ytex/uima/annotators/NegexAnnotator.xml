@@ -5,7 +5,7 @@
   <annotatorImplementationName>ytex.uima.annotators.NegexAnnotator</annotatorImplementationName>
   <analysisEngineMetaData>
     <name>NegexAnnotator</name>
-    <description/>
+    <description>NegexAnnotator based on the original negex java code.</description>
     <version>1.0</version>
     <vendor/>
     <configurationParameters>

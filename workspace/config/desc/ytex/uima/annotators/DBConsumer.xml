@@ -40,6 +40,20 @@
         <multiValued>true</multiValued>
         <mandatory>false</mandatory>
       </configurationParameter>
+      <configurationParameter>
+        <name>typesStoreCoveredText</name>
+        <description>uima types (fully qualified class names) for which the covered text should be stored in the database.  This is useful if you would like to index the covered text of a given uima type, e.g. words.</description>
+        <type>String</type>
+        <multiValued>true</multiValued>
+        <mandatory>false</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+        <name>coveredTextMaxLen</name>
+        <description>Maximum length of covered text to store in database.  This must match the length of the anno_base.covered_text column.</description>
+        <type>Integer</type>
+        <multiValued>false</multiValued>
+        <mandatory>false</mandatory>
+      </configurationParameter>
     </configurationParameters>
     <configurationParameterSettings>
       <nameValuePair>
@@ -64,6 +78,16 @@
         <name>storeCAS</name>
         <value>
           <boolean>true</boolean>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>typesStoreCoveredText</name>
+        <value>
+          <array>
+            <string>edu.mayo.bmi.uima.core.ae.type.WordToken</string>
+            <string>ytex.uima.types.WordToken</string>
+            <string>edu.mayo.bmi.uima.core.ae.type.NumToken</string>
+          </array>
         </value>
       </nameValuePair>
     </configurationParameterSettings>
