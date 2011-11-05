@@ -14,5 +14,7 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ytex.model"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ytex.negex"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ytex.uima"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/config"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/config.local"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
