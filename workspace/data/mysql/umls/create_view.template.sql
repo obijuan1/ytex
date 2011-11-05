@@ -9,10 +9,10 @@ drop table if exists v_snomed_fword_lookup;
 create table v_snomed_fword_lookup (
   cui varchar(10) not null,
   fword varchar(100) not null,
-  fstem varchar(100) not null,
+  fstem varchar(100) null,
   tok_str varchar(250) not null,
-  stem_str varchar(250) not null
-) engine=myisam, comment 'umls lookup table, created from umls_aui_fword and mrconso' ;
+  stem_str varchar(250) null
+ ) engine=myisam, comment 'umls lookup table, created from umls_aui_fword and mrconso' ;
 
 insert into v_snomed_fword_lookup
 select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str

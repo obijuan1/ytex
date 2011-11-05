@@ -50,6 +50,7 @@ create table anno_base (
 	span_begin int,
 	span_end int,
 	uima_type_id int not null,
+	covered_text varchar(100) null,
 	primary key (anno_base_id)
 	/*
 	,
@@ -64,6 +65,9 @@ ALTER TABLE `anno_base`
 	ADD INDEX `IX_type`(`document_id`, `uima_type_id`);
  
 CREATE INDEX IX_docanno_doc ON anno_base (document_id)
+;
+
+CREATE INDEX IX_covered_text ON anno_base (covered_text)
 ;
 
 create table anno_sentence (
@@ -221,6 +225,8 @@ create table anno_word_token (
 	num_position int,
 	suggestion int,
 	canonical_form varchar(256),
+	negated bit not null default 0,
+	possible bit not null default 0,
 	PRIMARY KEY
 	(
 		anno_base_id ASC
