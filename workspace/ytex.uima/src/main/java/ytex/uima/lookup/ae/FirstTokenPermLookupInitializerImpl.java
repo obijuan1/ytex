@@ -1,6 +1,7 @@
 package ytex.uima.lookup.ae;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +59,11 @@ public class FirstTokenPermLookupInitializerImpl implements LookupInitializer {
 	// set of exclusion POS tags (lower cased)
 	private Set iv_exclusionTagSet = null;
 
+	/*
+	 * vng - to support lookup using stemmed words
+	 */
+	protected Constructor lookupTokenAdapterCtor = null;
+
 	public FirstTokenPermLookupInitializerImpl(AnnotatorContext aCtx,
 			Properties props) throws ClassNotFoundException,
 			IllegalAccessException, NoSuchFieldException {
@@ -84,6 +90,20 @@ public class FirstTokenPermLookupInitializerImpl implements LookupInitializer {
 			}
 			iv_logger.info("Exclusion tagset loaded: " + iv_exclusionTagSet);
 		}
+		// vng change - get the lookupTokenAdapter class name from the
+		// configuration properties
+		// this is to support stemming
+		String lookupTokenAdapterClazz = this.iv_props.getProperty(
+				LOOKUP_TOKEN_ADAPTER,
+				LookupAnnotationToJCasAdapter.class.getName());
+		try {
+			this.lookupTokenAdapterCtor = Class
+					.forName(lookupTokenAdapterClazz).getConstructor(
+							Annotation.class);
+		} catch (NoSuchMethodException nsme) {
+			throw new ClassNotFoundException(lookupTokenAdapterClazz, nsme);
+		}
+
 	}
 
 	public LookupAlgorithm getLookupAlgorithm(DictionaryEngine dictEngine)
@@ -154,16 +174,25 @@ public class FirstTokenPermLookupInitializerImpl implements LookupInitializer {
 		return ltList.iterator();
 	}
 
+	/**
+	 * vng use the constructor identified during initialization to create the
+	 * lookup token
+	 * 
+	 * @param bta
+	 * @return
+	 * @throws AnnotatorInitializationException
+	 */
 	private LookupToken annoToLookupToken(Annotation bta)
 			throws AnnotatorInitializationException {
-		String lookupTokenAdapterClazz = this.iv_props.getProperty(
-				LOOKUP_TOKEN_ADAPTER,
-				LookupAnnotationToJCasAdapter.class.getName());
 		try {
-			Constructor clzCon = Class.forName(lookupTokenAdapterClazz)
-					.getConstructor(Annotation.class);
-			return (LookupToken) clzCon.newInstance(bta);
-		} catch (Exception e) {
+			return (LookupToken) lookupTokenAdapterCtor.newInstance(bta);
+		} catch (InvocationTargetException e) {
+			throw new AnnotatorInitializationException(e);
+		} catch (IllegalArgumentException e) {
+			throw new AnnotatorInitializationException(e);
+		} catch (InstantiationException e) {
+			throw new AnnotatorInitializationException(e);
+		} catch (IllegalAccessException e) {
 			throw new AnnotatorInitializationException(e);
 		}
 	}

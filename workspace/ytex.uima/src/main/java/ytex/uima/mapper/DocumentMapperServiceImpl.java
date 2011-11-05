@@ -165,22 +165,30 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 */
 	public Integer saveDocument(JCas jcas, String analysisBatch,
 			boolean bStoreDocText, boolean bStoreCAS,
-			Set<String> setTypesToIgnore) {
-		Document doc = createDocument(jcas, analysisBatch, bStoreDocText,
-				bStoreCAS);
-		this.sessionFactory.getCurrentSession().save(doc);
-		AnnotationIndex annoIdx = jcas
-				.getAnnotationIndex(Annotation.typeIndexID);
-		FSIterator annoIterator = annoIdx.iterator();
-		while (annoIterator.hasNext()) {
-			saveDocumentAnnotation((Annotation) annoIterator.next(), doc,
-					setTypesToIgnore);
+			Set<String> setTypesToIgnore, Set<String> typesStoreCoveredText,
+			int coveredTextMaxLen) {
+		try {
+			//communicate options to mappers using thread local variable
+			MapperConfig.setConfig(typesStoreCoveredText, coveredTextMaxLen);
+			Document doc = createDocument(jcas, analysisBatch, bStoreDocText,
+					bStoreCAS);
+			this.sessionFactory.getCurrentSession().save(doc);
+			AnnotationIndex annoIdx = jcas
+					.getAnnotationIndex(Annotation.typeIndexID);
+			FSIterator annoIterator = annoIdx.iterator();
+			while (annoIterator.hasNext()) {
+				saveDocumentAnnotation((Annotation) annoIterator.next(), doc,
+						setTypesToIgnore);
+			}
+			Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
+					"insertAnnotationContainmentLinks");
+			q.setInteger("documentID", doc.getDocumentID());
+			q.executeUpdate();
+
+			return doc.getDocumentID();
+		} finally {
+			MapperConfig.unsetConfig();
 		}
-		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
-				"insertAnnotationContainmentLinks");
-		q.setInteger("documentID", doc.getDocumentID());
-		q.executeUpdate();
-		return doc.getDocumentID();
 	}
 
 	/**

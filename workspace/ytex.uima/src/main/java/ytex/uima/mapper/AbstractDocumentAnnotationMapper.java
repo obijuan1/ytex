@@ -97,6 +97,7 @@ public class AbstractDocumentAnnotationMapper<D extends DocumentAnnotation, T ex
 	protected void mapAnnotationProperties(D anno, Annotation uimaAnno,
 			Document doc) {
 		BeanUtils.copyProperties(uimaAnno, anno);
+		storeCoveredText(uimaAnno, anno);
 	}
 
 	/**
@@ -116,4 +117,18 @@ public class AbstractDocumentAnnotationMapper<D extends DocumentAnnotation, T ex
 		return (UimaType) q.uniqueResult();
 	}
 
+	protected void storeCoveredText(Annotation uimaAnno, D anno) {
+		MapperConfig mc = MapperConfig.getConfig();
+		if (mc != null && mc.getTypesStoreCoveredText().contains(
+				classUIMAAnnotation.getName())) {
+			String coveredText = uimaAnno.getCoveredText();
+			if (coveredText.length() > mc.getCoveredTextMaxLen()) {
+				coveredText = coveredText.substring(0,
+						mc.getCoveredTextMaxLen() - 1);
+			}
+			anno.setCoveredText(coveredText);
+		} else {
+			anno.setCoveredText(null);
+		}
+	}
 }

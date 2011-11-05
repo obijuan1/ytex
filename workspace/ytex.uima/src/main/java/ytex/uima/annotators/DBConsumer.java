@@ -51,7 +51,12 @@ public class DBConsumer extends JCasAnnotator_ImplBase {
 	private boolean bStoreDocText;
 	private boolean bStoreCAS;
 	private Set<String> setTypesToIgnore = new HashSet<String>();
+	private Set<String> setTypesStoreCoveredText = new HashSet<String>();
+	private int coveredTextMaxLen = 100;
 
+	/**
+	 * read config parameters
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void initialize(UimaContext aContext)
@@ -69,6 +74,16 @@ public class DBConsumer extends JCasAnnotator_ImplBase {
 				.getConfigParameterValue("typesToIgnore");
 		if (typesToIgnore != null)
 			setTypesToIgnore.addAll(Arrays.asList(typesToIgnore));
+		String typesStoreCoveredText[] = (String[]) aContext
+				.getConfigParameterValue("typesStoreCoveredText");
+		if (typesStoreCoveredText != null)
+			this.setTypesStoreCoveredText.addAll(Arrays
+					.asList(typesStoreCoveredText));
+		Integer coveredTextMaxLenConf = (Integer) aContext
+				.getConfigParameterValue("coveredTextMaxLen");
+		if (coveredTextMaxLenConf != null)
+			this.coveredTextMaxLen = coveredTextMaxLenConf;
+
 		bStoreDocText = boolStoreDocText == null ? true : boolStoreDocText
 				.booleanValue();
 		bStoreCAS = boolStoreCAS == null ? true : boolStoreCAS.booleanValue();
@@ -84,7 +99,7 @@ public class DBConsumer extends JCasAnnotator_ImplBase {
 	@Override
 	public void process(JCas jcas) {
 		Integer documentID = documentMapperService.saveDocument(jcas,
-				analysisBatch, bStoreDocText, bStoreCAS, setTypesToIgnore);
+				analysisBatch, bStoreDocText, bStoreCAS, setTypesToIgnore, setTypesStoreCoveredText, coveredTextMaxLen);
 		if (documentID != null && xmiOutputDirectory != null
 				&& xmiOutputDirectory.length() > 0) {
 			File dirOut = new File(xmiOutputDirectory);

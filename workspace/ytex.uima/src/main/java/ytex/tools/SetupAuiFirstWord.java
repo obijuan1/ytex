@@ -1,15 +1,22 @@
 package ytex.tools;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,6 +53,41 @@ public class SetupAuiFirstWord {
 	private Set<String> exclusionSet = null;
 
 	/**
+	 * copied from CreateLuceneIndexFromDelimitedFile Loads hyphenated words and
+	 * a frequency value for each, from a file.
+	 * 
+	 * @param filename
+	 * @return
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public static Map loadHyphMap(String filename)
+			throws FileNotFoundException, IOException {
+		Map hyphMap = new HashMap();
+		File f = new File(filename);
+		BufferedReader br = new BufferedReader(new FileReader(f));
+		String line = br.readLine();
+		while (line != null) {
+			StringTokenizer st = new StringTokenizer(line, "|");
+			if (st.countTokens() == 2) {
+				String hyphWord = st.nextToken();
+				Integer freq = new Integer(st.nextToken());
+				hyphMap.put(hyphWord.toLowerCase(), freq);
+			} else {
+				System.out.println("Invalid hyphen file line: " + line);
+			}
+			line = br.readLine();
+		}
+		br.close();
+
+		return hyphMap;
+	}
+
+	/**
+	 * Initialize tokenizer using the hyphen map from "tokenizer/hyphenated.txt".
+	 * Use freqCutoff of 0.  If this is changed in the TokenizerAnnotator.xml uima config, then 
+	 * the tokenization here will not match the tokenization done during document processing.
+	 * <p/>
 	 * Initialize exclusionSet from LvgAnnotator.xml. The exclusion set should
 	 * be case insensitive, but it isn't that way in the LvgAnnotator so we
 	 * retain the same functionality.
@@ -56,7 +98,10 @@ public class SetupAuiFirstWord {
 	 * @throws Exception
 	 */
 	public SetupAuiFirstWord() throws Exception {
-		this.tokenizer = new Tokenizer();
+		URL uriTok = this.getClass().getClassLoader()
+				.getResource("tokenizer/hyphenated.txt");
+		Map hyphMap = loadHyphMap(uriTok.getPath());
+		this.tokenizer = new Tokenizer(hyphMap, 0);
 		// initialize exclusion set
 		this.exclusionSet = new HashSet<String>();
 		InputStream isLvgAnno = null;
@@ -147,8 +192,8 @@ public class SetupAuiFirstWord {
 						PlatformTransactionManager.class));
 		t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 		// delete all records
-//		umlsDao.deleteAuiFirstWord();
-		
+		// umlsDao.deleteAuiFirstWord();
+
 		// get all auis and their strings
 		// restart processing after the last aui we processed.
 		// if this is null, then just process everything
@@ -167,14 +212,17 @@ public class SetupAuiFirstWord {
 				if (str.length() < 200) {
 					try {
 						UmlsAuiFirstWord fw = this.tokenizeStr(aui, str);
-						if(fw == null)
-							log.error("Error tokenizing aui=" + aui + ", str=" + str);
-						else if(fw.getTokenizedStr().length() > 250)
-							log.warn("string too long: aui=" + aui + ", str=" + str);
+						if (fw == null)
+							log.error("Error tokenizing aui=" + aui + ", str="
+									+ str);
+						else if (fw.getTokenizedStr().length() > 250)
+							log.warn("string too long: aui=" + aui + ", str="
+									+ str);
 						else
 							listFword.add(fw);
 					} catch (Exception e) {
-						log.error("Error tokenizing aui=" + aui + ", str=" + str, e);
+						log.error("Error tokenizing aui=" + aui + ", str="
+								+ str, e);
 					}
 				} else {
 					log.warn("Skipping aui because str to long: aui=" + aui
