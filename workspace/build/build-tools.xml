@@ -31,6 +31,15 @@
 			</syspropertyset>
 		</java>
 	</target>
+	<target name="RunCPE" description="start uima collection processing engine via console app. requires cpe param">
+		<java classname="ytex.tools.RunCPE" classpathref="${kernel.cp}" fork="yes">
+			<jvmarg value="-Xmx${ytex.tools.Xmx}"/>
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+		</java>
+		<arg value="${cpe}" />
+	</target>
 	<target name="SparseDataExporter" description="ytex sparse data exporter.  Specify export property file and type with -Dprop=xxx and -Dtype options, e.g. -Dprop=fracture-word.xml -Dtype=weka">
 		<java classname="ytex.kernel.SparseDataExporterImpl" classpathref="${kernel.cp}" fork="yes">
 			<jvmarg value="-Xmx${ytex.tools.Xmx}"/>
