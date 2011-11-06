@@ -37,8 +37,8 @@
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
+			<arg value="${cpe}" />
 		</java>
-		<arg value="${cpe}" />
 	</target>
 	<target name="SparseDataExporter" description="ytex sparse data exporter.  Specify export property file and type with -Dprop=xxx and -Dtype options, e.g. -Dprop=fracture-word.xml -Dtype=weka">
 		<java classname="ytex.kernel.SparseDataExporterImpl" classpathref="${kernel.cp}" fork="yes">
