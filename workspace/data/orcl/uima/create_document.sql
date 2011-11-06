@@ -37,6 +37,7 @@ create table anno_base (
 	span_begin int,
 	span_end int,
 	uima_type_id int not null,
+	covered_text varchar2(100) null,
 	primary key (anno_base_id),
 	foreign key (document_id) references document (document_id) ON DELETE CASCADE,
 	foreign key (uima_type_id) references ref_uima_type (uima_type_id)
@@ -46,6 +47,8 @@ create table anno_base (
 CREATE INDEX IX_docanno_doc ON anno_base (document_id)
 ;
 
+CREATE INDEX IX_covered_text ON anno_base (covered_text)
+;
 
 create table anno_sentence (
 	anno_base_id int not null,
@@ -190,6 +193,8 @@ create table anno_word_token (
 	num_position int,
 	suggestion int,
 	canonical_form varchar2(256),
+	negated numeric(1) default 0 check (negated between 0 and 1),
+	possible bit numeric(1) default 0 check (possible between 0 and 1),
 	PRIMARY KEY
 	(
 		anno_base_id 

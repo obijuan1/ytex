@@ -49,6 +49,7 @@ create table $(db_schema).anno_base (
 	span_begin int,
 	span_end int,
 	uima_type_id int not null,
+	covered_text nvarchar(100) null,
 	primary key (anno_base_id),
 	foreign key (document_id) references $(db_schema).document (document_id) ON DELETE CASCADE,
 	foreign key (uima_type_id) references $(db_schema).ref_uima_type (uima_type_id)
@@ -56,6 +57,9 @@ create table $(db_schema).anno_base (
 ;
 
 CREATE INDEX IX_docanno_doc ON $(db_schema).anno_base (document_id)
+;
+
+CREATE INDEX IX_covered_text ON $(db_schema).anno_base (covered_text)
 ;
 
 create table $(db_schema).anno_sentence (
@@ -198,6 +202,8 @@ create table $(db_schema).anno_word_token (
 	num_position [int],
 	suggestion [int],
 	canonical_form varchar(256),
+	negated bit not null default 0,
+	possible bit not null default 0,
 	PRIMARY KEY CLUSTERED 
 	(
 		[anno_base_id] ASC
