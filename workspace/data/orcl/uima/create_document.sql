@@ -194,7 +194,7 @@ create table anno_word_token (
 	suggestion int,
 	canonical_form varchar2(256),
 	negated numeric(1) default 0 check (negated between 0 and 1),
-	possible bit numeric(1) default 0 check (possible between 0 and 1),
+	possible numeric(1) default 0 check (possible between 0 and 1),
 	PRIMARY KEY
 	(
 		anno_base_id 
@@ -203,6 +203,8 @@ create table anno_word_token (
 		references anno_base_token(anno_base_id)
 		ON DELETE CASCADE
 ) ;
+
+create index IX_canonical_form on anno_word_token(canonical_form);
 
 create table anno_date (
 	anno_base_id int not null,

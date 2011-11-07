@@ -46,6 +46,9 @@ These variables are set by setenv.cmd / ytex.profile script
 	<property name="sqlplus.line" value="${db.username}/${db.password}@${db.name}" />
 	<property name="umls.zip" value="${ytex.home}/../umls-${db.type}.zip" />
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
+	<property name="sqlplus.exe" value="sqlplus" />
+	<property name="sqlldr.exe" value="sqlldr" />
+	
 
 	<target name="all" depends="umls.all,uima.all" description="call umls.all and uima.all" />
 	<target name="init" description="initialize flags indicating which db is in use">
@@ -73,7 +76,7 @@ These variables are set by setenv.cmd / ytex.profile script
 			tofile="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" overwrite="yes" />
 		<echo file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" append="yes">
 quit</echo>
-		<exec executable="sqlplus" dir="${sql.dir}/${sqlcmd.dir}">
+		<exec executable="${sqlplus.exe}" dir="${sql.dir}/${sqlcmd.dir}">
 			<arg line="${sqlplus.line} @${sqlcmd.script}.tmp" />
 		</exec>
 		<delete file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" />
@@ -112,14 +115,14 @@ quit</echo>
 		<echo>${mrconso.exists}</echo>
 	</target>
 	<target name="umls.check.mrconso.orcl" if="orcl" description="see if mrconso table exists">
-		<exec executable="sqlplus" dir="${sql.dir}/umls">
+		<exec executable="${sqlplus.exe}" dir="${sql.dir}/umls">
 			<arg line="${sqlplus.line} @check_mrconso.sql ${umls.schema}" />
 		</exec>
 		<loadfile srcFile="${sql.dir}/umls/mrconso-check.txt" property="mrconso.out" />
 		<condition property="mrconso.exists">
 			<equals arg1="1" arg2="${mrconso.out}" casesensitive="false" trim="true" />
 		</condition>
-		<echo>${mrconso.exists}</echo>
+		<echo>mrconso.exists: ${mrconso.exists}</echo>
 	</target>
 	<target name="umls.all" depends="init" description="setup umls tables from dump or db, depending on existence of mrconso">
 		<!-- 
@@ -182,13 +185,13 @@ quit</echo>
 			<param name="sqlcmd.dir" value="umls" />
 			<param name="sqlcmd.script" value="import_umls.sql" />
 		</antcall>
-		<exec executable="sqlldr" dir="${sql.dir}/umls" failonerror="yes">
+		<exec executable="${sqlldr.exe}" dir="${sql.dir}/umls" failonerror="yes">
 			<arg line="${sqlplus.line} control=MRCONSO.ctl" />
 		</exec>
-		<exec executable="sqlldr" dir="${sql.dir}/umls" failonerror="yes">
+		<exec executable="${sqlldr.exe}" dir="${sql.dir}/umls" failonerror="yes">
 			<arg line="${sqlplus.line} control=MRSTY.ctl" />
 		</exec>
-		<exec executable="sqlldr" dir="${sql.dir}/umls" failonerror="yes">
+		<exec executable="${sqlldr.exe}" dir="${sql.dir}/umls" failonerror="yes">
 			<arg line="${sqlplus.line} control=umls_aui_fword.ctl" />
 		</exec>
 	</target>
@@ -275,7 +278,7 @@ quit</echo>
 		</antcall>
 	</target>
 	<target name="examples.load.orcl" depends="init" if="orcl" description="load example data with sqlldr">
-		<exec executable="sqlldr" dir="orcl/uima" failonerror="yes">
+		<exec executable="${sqlldr.exe}" dir="orcl/uima" failonerror="yes">
 			<arg line="${sqlplus.line} control=fracture_demo.ctl" />
 		</exec>
 	</target>

@@ -1,4 +1,4 @@
-create view v_snomed_fword_lookup
+create materialized view v_snomed_fword_lookup
 as
 select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
 from umls_aui_fword c
@@ -18,3 +18,6 @@ and exists
 	)
 )
 ;
+
+create index IX_vsfl_fword on v_snomed_fword_lookup(fword);
+create index IX_vsfl_fstem on v_snomed_fword_lookup(fstem);

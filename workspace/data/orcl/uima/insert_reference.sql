@@ -19,4 +19,5 @@ insert into ref_uima_type values(24, 'edu.mayo.bmi.uima.core.ae.type.SymbolToken
 insert into ref_uima_type values(25, 'edu.mayo.bmi.uima.core.ae.type.WordToken', 'ytex.uima.mapper.WordTokenMapper');
 
 /* ytex types */
+insert into ref_uima_type values(26, 'ytex.uima.types.WordToken', 'ytex.uima.mapper.YTEXWordTokenMapper');
 insert into ref_uima_type values(50, 'ytex.uima.types.Date', 'ytex.uima.mapper.DateMapper');

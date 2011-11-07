@@ -10,5 +10,8 @@ fields terminated by '\t'
 trailing nullcols
 (
 aui char(9),
-fword	char(100)
+fword	char(100),
+fstem char(100),
+tok_str char(250),
+stem_str char(250)
 )
