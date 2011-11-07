@@ -120,7 +120,7 @@ public class AbstractDocumentAnnotationMapper<D extends DocumentAnnotation, T ex
 	protected void storeCoveredText(Annotation uimaAnno, D anno) {
 		MapperConfig mc = MapperConfig.getConfig();
 		if (mc != null && mc.getTypesStoreCoveredText().contains(
-				classUIMAAnnotation.getName())) {
+				uimaAnno.getClass().getName())) {
 			String coveredText = uimaAnno.getCoveredText();
 			if (coveredText.length() > mc.getCoveredTextMaxLen()) {
 				coveredText = coveredText.substring(0,

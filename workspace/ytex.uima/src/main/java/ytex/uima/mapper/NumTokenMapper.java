@@ -1,12 +1,12 @@
 package ytex.uima.mapper;
 
-import edu.mayo.bmi.uima.core.ae.type.BaseToken;
+import edu.mayo.bmi.uima.core.ae.type.NumToken;
 
 public class NumTokenMapper extends
-		AbstractDocumentAnnotationMapper<ytex.model.BaseToken, BaseToken> {
+		AbstractDocumentAnnotationMapper<ytex.model.NumToken, NumToken> {
 
 	NumTokenMapper() {
-		super(ytex.model.BaseToken.class, BaseToken.class);
+		super(ytex.model.NumToken.class, NumToken.class);
 	}
 
 }
