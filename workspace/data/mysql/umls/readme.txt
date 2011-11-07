@@ -71,7 +71,7 @@ STR,
 SRL,
 SUPPRESS,
 coalesce(CVF,'')
-into outfile 'E:/projects/umls-new/mysql/MRCONSO.RRF'
+into outfile 'E:/projects/ytex-umls/mysql/MRCONSO.RRF'
 fields terminated by '|' ESCAPED BY '' lines terminated by '\r\n'
 from umls.MRCONSO mrc
 where SAB in ('SNOMEDCT', 'RXNORM', 'SRC')
@@ -85,7 +85,7 @@ STN,
 STY,
 ATUI,
 coalesce(CVF,'')
-into outfile 'E:/projects/umls-new/mysql/MRSTY.RRF'
+into outfile 'E:/projects/ytex-umls/mysql/MRSTY.RRF'
 fields terminated by '|' ESCAPED BY '' lines terminated by '\r\n'
 from umls.MRSTY sty
 inner join
@@ -97,7 +97,7 @@ inner join
 ;
 
 select fw.*
-into outfile 'E:/projects/umls-new/mysql/umls_aui_fword.txt'
+into outfile 'E:/projects/ytex-umls/mysql/umls_aui_fword.txt'
 from umls_aui_fword fw
 inner join umls.mrconso mrc on fw.aui = mrc.aui and mrc.sab in ('SNOMEDCT', 'RXNORM', 'SRC')
 ;
