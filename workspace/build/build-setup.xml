@@ -76,8 +76,8 @@ Call with option -projecthelp for more info.
 	</target>
 	<target name="templateToConfig.updateExamples" depends="templateToConfig.init" description="update example config files">
 		<copy todir="${ytex.home}" overwrite="yes">
-			<fileset dir="${ytex.home}" includes="examples/**/*.template.props" />
-			<globmapper from="*.template.props" to="*.props" />
+			<fileset dir="${ytex.home}" includes="examples/**/*.template.xml" />
+			<globmapper from="*.template.xml" to="*.xml" />
 			<filterset>
 				<filtersfile file="${ytex.properties}" />
 			</filterset>
