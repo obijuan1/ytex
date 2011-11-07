@@ -84,9 +84,10 @@ public class SetupAuiFirstWord {
 	}
 
 	/**
-	 * Initialize tokenizer using the hyphen map from "tokenizer/hyphenated.txt".
-	 * Use freqCutoff of 0.  If this is changed in the TokenizerAnnotator.xml uima config, then 
-	 * the tokenization here will not match the tokenization done during document processing.
+	 * Initialize tokenizer using the hyphen map from
+	 * "tokenizer/hyphenated.txt". Use freqCutoff of 0. If this is changed in
+	 * the TokenizerAnnotator.xml uima config, then the tokenization here will
+	 * not match the tokenization done during document processing.
 	 * <p/>
 	 * Initialize exclusionSet from LvgAnnotator.xml. The exclusion set should
 	 * be case insensitive, but it isn't that way in the LvgAnnotator so we
@@ -290,9 +291,10 @@ public class SetupAuiFirstWord {
 		}
 		UmlsAuiFirstWord fw = new UmlsAuiFirstWord();
 		fw.setAui(aui);
-		fw.setFword(firstTokenText);
+		fw.setFword(firstTokenText.toLowerCase(Locale.ENGLISH));
 		fw.setTokenizedStr(tokenizedDesc);
-		fw.setFstem(firstTokenStem);
+		fw.setFstem(firstTokenStem != null ? firstTokenStem
+				.toLowerCase(Locale.ENGLISH) : null);
 		fw.setStemmedStr(firstTokenStem != null ? stemmedDesc.toString() : null);
 		return fw;
 	}
