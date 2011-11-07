@@ -31,10 +31,16 @@
 	<li><a href="<%=url03mssql%>">Microsoft SQL Server</a></li>
 	<li><a href="<%=url03orcl%>">Oracle</a></li>
 </ul>
-<h1>YTEX v0.4 and greater</h1>
+<h1>YTEX v0.4</h1>
 <ul>
 	<li><a href="<%=url04mysql%>">MySQL</a></li>
 	<li><a href="<%=url04mssql%>">Microsoft SQL Server</a></li>
 	<li><a href="<%=url04orcl%>">Oracle</a></li>
+</ul>
+<h1>YTEX v0.5 or greater</h1>
+<ul>
+	<li><a href="<%=dg.getDownloadURL("0.5", "mysql")%>">MySQL</a></li>
+	<li><a href="<%=dg.getDownloadURL("0.5", "mssql")%>">Microsoft SQL Server</a></li>
+	<li><a href="<%=dg.getDownloadURL("0.5", "orcl")%>">Oracle</a></li>
 </ul>
 <jsp:include page="/bottom.jsp" />
