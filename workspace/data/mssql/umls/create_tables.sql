@@ -18,7 +18,7 @@ CREATE TABLE $(db_schema).umls_snomed_map (
 create table $(db_schema).umls_aui_fword (
 	aui nvarchar(9) not null primary key,
 	fword nvarchar(100) not null,
-	fstem nvarchar(100) null,
+	fstem nvarchar(100) not null,
 	tok_str nvarchar(250) not null,
-	stem_str nvarchar(250) null
+	stem_str nvarchar(250) not null
 );
