@@ -17,6 +17,7 @@ public class SetupAuiFirstWordTest extends TestCase {
 		SetupAuiFirstWord sa = new SetupAuiFirstWord();
 		UmlsAuiFirstWord fw = sa.tokenizeStr("A10773589", "Prostate-specific antigen");
 		System.out.println(fw.getTokenizedStr());
+		System.out.println(fw.getStemmedStr());
 		
 	}
 

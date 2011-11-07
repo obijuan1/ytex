@@ -17,8 +17,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -47,7 +45,7 @@ import gov.nih.nlm.nls.lvg.Api.LvgCmdApi;
  */
 public class SetupAuiFirstWord {
 	private static final Log log = LogFactory.getLog(SetupAuiFirstWord.class);
-	private static final Pattern nonWord = Pattern.compile("\\W");
+//	private static final Pattern nonWord = Pattern.compile("\\W");
 	private Tokenizer tokenizer;
 	private LvgCmdApi lvgCmd;
 	private Set<String> exclusionSet = null;
@@ -151,30 +149,30 @@ public class SetupAuiFirstWord {
 
 	}
 
-	/**
-	 * get the first word from the string. done to recreate first words as in
-	 * arc's umls_ms_2009 table. it doesn't really make sense for strings that
-	 * start with non-word characters, but whatever.
-	 * 
-	 * @param str
-	 *            full concept string
-	 * @return first word
-	 */
-	public String getFirstWord(String str) {
-		String firstWord = str;
-		Matcher firstNonWordMatcher = nonWord.matcher(str);
-		if (firstNonWordMatcher.find()) {
-			int firstNonWord = firstNonWordMatcher.start();
-			if (firstNonWord == 0) {
-				// non-word token at beginning of string - this is the first
-				// word
-				firstWord = str.substring(0, 1);
-			} else {
-				firstWord = str.substring(0, firstNonWord);
-			}
-		}
-		return firstWord.toLowerCase(Locale.ENGLISH);
-	}
+	// /**
+	// * get the first word from the string. done to recreate first words as in
+	// * arc's umls_ms_2009 table. it doesn't really make sense for strings that
+	// * start with non-word characters, but whatever.
+	// *
+	// * @param str
+	// * full concept string
+	// * @return first word
+	// */
+	// public String getFirstWord(String str) {
+	// String firstWord = str;
+	// Matcher firstNonWordMatcher = nonWord.matcher(str);
+	// if (firstNonWordMatcher.find()) {
+	// int firstNonWord = firstNonWordMatcher.start();
+	// if (firstNonWord == 0) {
+	// // non-word token at beginning of string - this is the first
+	// // word
+	// firstWord = str.substring(0, 1);
+	// } else {
+	// firstWord = str.substring(0, firstNonWord);
+	// }
+	// }
+	// return firstWord.toLowerCase(Locale.ENGLISH);
+	// }
 
 	/**
 	 * @param args
@@ -256,8 +254,8 @@ public class SetupAuiFirstWord {
 		Iterator<Token> tokenItr = list.iterator();
 		int tCount = 0;
 		String firstTokenText = "";
-		String tokenizedDesc = "";
-		String firstTokenStem = null;
+		StringBuilder tokenizedDesc = new StringBuilder();
+		String firstTokenStem = "";
 		StringBuilder stemmedDesc = new StringBuilder();
 
 		// get first word token and
@@ -266,25 +264,15 @@ public class SetupAuiFirstWord {
 			Token t = (Token) tokenItr.next();
 			if (tCount == 1) {
 				firstTokenText = t.getText(); // first token (aka "first word")
-				tokenizedDesc += t.getText();
-				if (Token.TYPE_WORD == t.getType()) {
-					firstTokenStem = this.getCanonicalForm(t.getText());
-					if (firstTokenStem != null && firstTokenStem.length() == 0)
-						firstTokenStem = null;
-					stemmedDesc.append(firstTokenStem);
-				}
+				tokenizedDesc.append(firstTokenText);
+				firstTokenStem = stemToken(t);
+				stemmedDesc.append(firstTokenStem);
 			} else { // use blank to separate tokens
-				tokenizedDesc = tokenizedDesc + " " + t.getText();
+				tokenizedDesc.append(" ").append(t.getText());
 				// stem the next token, add it to the stemmed desc only if there
 				// is a valid first word
 				if (firstTokenStem != null) {
-					String stemmedWord = t.getText();
-					if (Token.TYPE_WORD == t.getType()) {
-						stemmedWord = this.getCanonicalForm(t.getText());
-						if (stemmedWord == null || stemmedWord.length() == 0) {
-							stemmedWord = t.getText();
-						}
-					}
+					String stemmedWord = stemToken(t);
 					stemmedDesc.append(" ").append(stemmedWord);
 				}
 			}
@@ -292,11 +280,29 @@ public class SetupAuiFirstWord {
 		UmlsAuiFirstWord fw = new UmlsAuiFirstWord();
 		fw.setAui(aui);
 		fw.setFword(firstTokenText.toLowerCase(Locale.ENGLISH));
-		fw.setTokenizedStr(tokenizedDesc);
-		fw.setFstem(firstTokenStem != null ? firstTokenStem
-				.toLowerCase(Locale.ENGLISH) : null);
-		fw.setStemmedStr(firstTokenStem != null ? stemmedDesc.toString() : null);
+		fw.setTokenizedStr(tokenizedDesc.toString());
+		fw.setFstem(firstTokenStem.toLowerCase(Locale.ENGLISH));
+		fw.setStemmedStr(stemmedDesc.toString());
 		return fw;
+	}
+
+	/**
+	 * 
+	 * @param t
+	 *            token
+	 * @return stemmed text if token is a word and stemmed text is non-empty.
+	 *         else raw token text.
+	 * @throws Exception
+	 */
+	private String stemToken(Token t) throws Exception {
+		String stemmedWord = t.getText();
+		if (Token.TYPE_WORD == t.getType()) {
+			stemmedWord = this.getCanonicalForm(t.getText());
+			if (stemmedWord == null || stemmedWord.length() == 0) {
+				stemmedWord = t.getText();
+			}
+		}
+		return stemmedWord;
 	}
 
 	/**
