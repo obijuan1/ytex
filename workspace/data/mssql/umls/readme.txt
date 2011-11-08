@@ -1,7 +1,7 @@
 @rem export snomed, rxnorm subset using this:
-cd /d e:\projects\umls-new
-mkdir mssql
-cd mssql
+rmdir /s /q E:\projects\ytex-umls\mssql
+mkdir /p E:\projects\ytex-umls\mssql
+cd /d E:\projects\ytex-umls\mssql
 bcp "select * from umls..MRCONSO where SAB in ('SNOMEDCT', 'RXNORM', 'SRC')" queryout MRCONSO.bcp -S localhost -T -n
 bcp "select * from umls..MRSTY where CUI in (select distinct CUI from umls..MRCONSO where SAB in ('SNOMEDCT', 'RXNORM', 'SRC'))" queryout MRSTY.bcp -S localhost -T -n
 bcp "select * from YTEX_TEST.test.umls_aui_fword where aui in (select distinct AUI from umls..MRCONSO where SAB in ('SNOMEDCT', 'RXNORM', 'SRC'))" queryout umls_aui_fword.bcp -S localhost -T -n
