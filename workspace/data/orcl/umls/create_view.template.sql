@@ -1,5 +1,13 @@
-create materialized view v_snomed_fword_lookup
-as
+create table v_snomed_fword_lookup (
+  CUI char(8) NOT NULL,
+  fword varchar2(100) not null,
+  fstem varchar2(100) not null,
+  tok_str varchar2(250) not null,
+  stem_str varchar2(250) not null
+ );
+
+
+insert into v_snomed_fword_lookup
 select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
 from umls_aui_fword c
 inner join @UMLS_SCHEMA@.MRCONSO mrc on c.aui = mrc.aui
