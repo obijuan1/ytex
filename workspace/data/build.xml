@@ -71,13 +71,14 @@ These variables are set by setenv.cmd / ytex.profile script
 
 	<target name="sqlcmd.orcl" if="orcl" description="execute sql script for oracle server">
 		<echo>executing ${sqlcmd.dir}/${sqlcmd.script}</echo>
+		<property name="sqlplus.args" value=""/>
 		<!-- append quit to end of file -->
 		<copy file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}" 
 			tofile="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" overwrite="yes" />
 		<echo file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" append="yes">
 quit</echo>
 		<exec executable="${sqlplus.exe}" dir="${sql.dir}/${sqlcmd.dir}">
-			<arg line="${sqlplus.line} @${sqlcmd.script}.tmp" />
+			<arg line="${sqlplus.line} @${sqlcmd.script}.tmp ${sqlplus.args}" />
 		</exec>
 		<delete file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" />
 	</target>
@@ -184,6 +185,7 @@ quit</echo>
 		<antcall target="sqlcmd">
 			<param name="sqlcmd.dir" value="umls" />
 			<param name="sqlcmd.script" value="import_umls.sql" />
+			<param name="sqlplus.args" value="${umls.schema}" />
 		</antcall>
 		<exec executable="${sqlldr.exe}" dir="${sql.dir}/umls" failonerror="yes">
 			<arg line="${sqlplus.line} control=MRCONSO.ctl" />
