@@ -161,7 +161,7 @@
 				<include name="*.sh" />
 				<include name="*.profile" />
 				<include name="*.xml" />
-				<exclude name="build.xml"/>
+				<exclude name="build.xml" />
 			</fileset>
 			<!--
 			<fileset dir="../" includes="ytex.kernel/scripts/*.*" />
@@ -213,6 +213,65 @@
 			</fileset>
 		</copy>
 		<jar destfile="${ytex.dist.home}/libs.system/${project.name}.jar" basedir="${project.bin.home}" excludes="**/.svn/**/*.*" />
+	</target>
+	<target name="zip.types">
+		<zip destfile="../dist/YTEXTypes.zip">
+			<fileset dir="../config/desc">
+				<include name="ytex/uima/YTEXTypes.xml" />
+			</fileset>
+			<fileset dir="../maveric/dest">
+				<include name="chunker/ADJP.xml" />
+				<include name="chunker/ADVP.xml" />
+				<include name="chunker/Chunk.xml" />
+				<include name="chunker/ChunkerTypeSystem.xml" />
+				<include name="chunker/CONJP.xml" />
+				<include name="chunker/INTJ.xml" />
+				<include name="chunker/LST.xml" />
+				<include name="chunker/NP.xml" />
+				<include name="chunker/PP.xml" />
+				<include name="chunker/PRT.xml" />
+				<include name="chunker/SBAR.xml" />
+				<include name="chunker/UCP.xml" />
+				<include name="chunker/VP.xml" />
+				<include name="lookup/LookupWindowAnnotationTypeSystem.xml" />
+				<include name="context dependent tokenizer/CdtTypeSystem.xml" />
+				<include name="dictionary lookup/DictionaryLookupTypeSystem.xml" />
+				<include name="lymph nodes expression/LymphNodesExpressionTypeSystem.xml" />
+				<include name="NE contexts/NEContextTypeSystem.xml" />
+				<include name="paragraph/ParagraphTypeSystem.xml" />
+				<include name="section/SentenceNumberTypeSystem.xml" />
+				<include name="section/SentenceSectionCreationTypeSystem.xml" />
+				<include name="sentence/SentenceTypeSystem.xml" />
+				<include name="size location regex/LocationExpression.xml" />
+				<include name="size location regex/LymphLevelExpression.xml" />
+				<include name="size location regex/NumberExpression.xml" />
+				<include name="size location regex/SizeExpression.xml" />
+				<include name="size location regex/UnitExpression.xml" />
+				<include name="tokenizer/BaseToken.xml" />
+				<include name="tokenizer/ContractionToken.xml" />
+				<include name="tokenizer/DocumentID.xml" />
+				<include name="tokenizer/IdentifiedAnnotation.xml" />
+				<include name="tokenizer/Lemma.xml" />
+				<include name="tokenizer/NamedEntity.xml" />
+				<include name="tokenizer/NewlineToken.xml" />
+				<include name="tokenizer/NumToken.xml" />
+				<include name="tokenizer/OntologyConcept.xml" />
+				<include name="tokenizer/Properties.xml" />
+				<include name="tokenizer/Property.xml" />
+				<include name="tokenizer/PunctuationToken.xml" />
+				<include name="tokenizer/Segment.xml" />
+				<include name="tokenizer/SymbolToken.xml" />
+				<include name="tokenizer/TypeSystem.xml" />
+				<include name="tokenizer/UmlsConcept.xml" />
+				<include name="tokenizer/WordToken.xml" />
+			</fileset>
+			<fileset dir="../ytex.uima/src/main/java">
+				<include name="ytex/uima/types/DateTypeSystem.xml" />
+				<include name="ytex/uima/types/DocKeyTypeSystem.xml" />
+				<include name="ytex/uima/types/WordTokenTypeSystem.xml" />
+				<include name="ytex/vacs/uima/types/DocumentInfoTypeSystem.xml" />
+			</fileset>
+		</zip>
 	</target>
 	<target name="build.ytex.web">
 		<property name="ytex.web.dir" value="${ytex.dist.home}/web/webapps/ytex.web" />
