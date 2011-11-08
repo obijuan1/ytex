@@ -40,9 +40,9 @@ inner join anno_base bctx
   and bctx.uima_type_id in (9)
   and
   (
-    (bctx.span_begin <= ab.span_end + 100 and bctx.span_end >= ab.span_end)
+    (bctx.span_begin <= ab.span_end + 50 and bctx.span_end >= ab.span_end)
     or
-    (bctx.span_end >= ab.span_begin - 100 and bctx.span_begin <= ab.span_begin)
+    (bctx.span_end >= ab.span_begin - 50 and bctx.span_begin <= ab.span_begin)
   )
 where h.experiment = 'bag-uswordsent50'
 and h.corpus_name = 'i2b2.2008'
