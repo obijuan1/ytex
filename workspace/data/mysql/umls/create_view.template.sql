@@ -7,11 +7,11 @@ drop view if exists v_snomed_fword_lookup;
 drop table if exists v_snomed_fword_lookup;
 
 create table v_snomed_fword_lookup (
-  cui varchar(10) not null,
+  cui char(8) not null,
   fword varchar(100) not null,
-  fstem varchar(100) null,
+  fstem varchar(100) not null,
   tok_str varchar(250) not null,
-  stem_str varchar(250) null
+  stem_str varchar(250) not null
  ) engine=myisam, comment 'umls lookup table, created from umls_aui_fword and mrconso' ;
 
 insert into v_snomed_fword_lookup
