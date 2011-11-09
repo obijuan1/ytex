@@ -21,3 +21,7 @@ insert into ref_uima_type values(25, 'edu.mayo.bmi.uima.core.ae.type.WordToken',
 /* ytex types */
 insert into ref_uima_type values(26, 'ytex.uima.types.WordToken', 'ytex.uima.mapper.YTEXWordTokenMapper');
 insert into ref_uima_type values(50, 'ytex.uima.types.Date', 'ytex.uima.mapper.DateMapper');
+
+/* chunks */
+insert into ref_uima_type values(27, 'edu.mayo.bmi.uima.chunker.type.NP', 'ytex.uima.mapper.AnnotationMapper');
+insert into ref_uima_type values(28, 'edu.mayo.bmi.uima.chunker.type.VP', 'ytex.uima.mapper.AnnotationMapper');

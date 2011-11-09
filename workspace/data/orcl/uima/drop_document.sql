@@ -11,6 +11,10 @@ drop index IX_ontology_concept_code;
 drop index IX_umls_concept_cui;
 drop index IX_uid;
 drop index IX_document_analysis_batch;
+drop INDEX IX_docanno_doc;
+drop INDEX IX_covered_text;
+drop index IX_segment_anno_seg;
+
 
 -- drop 'operational' data
 drop table fracture_demo;
