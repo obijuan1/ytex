@@ -26,6 +26,7 @@
     and b.experiment = i.experiment
 	left join hotspot_zero_vector hzv
 		on hzv.hotspot_instance_id = i.hotspot_instance_id
+		and hzv.cutoff = b.param1
 	where hzv.hotspot_zero_vector_id is null
 	]]></entry>
 	<entry key="numericWordQuery"><![CDATA[
