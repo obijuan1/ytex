@@ -12,7 +12,6 @@ and exists
 	and sty.tui in
 	(
 	'T017' /* Anatomical Structure */,
-	'T082' /* Spatial Concept */,
 	'T021','T022','T023','T024','T025','T026','T029','T030','T031',
 	'T059','T060','T061',
 	'T019','T020','T037','T046','T047','T048','T049','T050','T190','T191',
