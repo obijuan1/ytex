@@ -39,10 +39,13 @@
         inner join i2b2_2008_disease ds 
             on hi.label = ds.disease
             and ds.disease_id = :label
+        inner join i2b2_2008_cv_best b
+		    on b.label = ds.disease_id
+		    and b.experiment = hi.experiment
         /* limit to sentence */
         inner join hotspot_sentence hs
             on hi.hotspot_instance_id = hs.hotspot_instance_id
-            and hs.evaluation >=  @export.cutoff@
+            and hs.evaluation >=  b.param1
         /* get words and numbers in sentence */
         inner join anno_contain ac 
             on ac.parent_anno_base_id = hs.anno_base_id
@@ -68,7 +71,7 @@
             and ds.disease_id = :label
 		inner join i2b2_2008_cv_best b
 		    on b.label = ds.disease_id
-		    and b.experiment = 'bag-usword'
+		    and b.experiment = 'bag-uswordsent100'
         inner join feature_rank r
             on r.feature_eval_id = e.feature_eval_id
             and r.evaluation >= b.param1
