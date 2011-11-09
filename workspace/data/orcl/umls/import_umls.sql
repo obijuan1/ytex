@@ -1,6 +1,3 @@
--- switch to the umls schema
-alter session set current_schema = &1;
-
 CREATE TABLE MRCONSO (
     CUI	char(8) NOT NULL,
     LAT	char(3) NOT NULL,
