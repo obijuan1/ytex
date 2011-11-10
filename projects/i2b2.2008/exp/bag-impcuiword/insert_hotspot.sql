@@ -67,8 +67,8 @@ inner join hotspot_instance hi
 	and hi.corpus_name = 'i2b2.2008'
 inner join hotspot_instance hi2
 	on hi2.instance_id = hi.instance_id
-	and hi.experiment = 'bag-uswordsent100'
-	and hi.corpus_name = 'i2b2.2008'
+	and hi2.experiment = 'bag-uswordsent100'
+	and hi2.corpus_name = hi.corpus_name
 	and hi2.label = hi.label
 inner join hotspot_sentence hs2
 	on hs2.anno_base_id = hs.anno_base_id
