@@ -47,7 +47,7 @@ inner join i2b2_2008_anno a
 inner join i2b2_2008_judgement j 
     on j.judgement = a.judgement
 inner join hotspot_instance i 
-    on i.experiment = '@kernel.experiment@' 
+    on i.experiment = '@kernel.hzv.experiment@' 
     and i.label = fc.disease 
     and i.instance_id = fi.instance_id
 /* filter out zero vectors */
