@@ -32,23 +32,20 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<property name="query">
 					<!-- map instances  -->
 					<value><![CDATA[
-	select instance_id, 
+	select distinct instance_id, 
         cast(concat(if(r.feature_name is null, '', if(negated > 0, 'neg_', 'pos_')), lower(covered_text)) as char(100)) word
 	from
 	(
-		select distinct hi.instance_id, covered_text, coalesce(wt.negated, 0) negated
+		select hi.instance_id, covered_text, coalesce(wt.negated, 0) negated
         from hotspot_instance hi
         /* limit to label */
         inner join i2b2_2008_disease ds 
             on hi.label = ds.disease
             and ds.disease_id = @export.label@
-        inner join i2b2_2008_cv_best b
-		    on b.label = ds.disease_id
-		    and b.experiment = hi.experiment
         /* limit to sentence */
         inner join hotspot_sentence hs
             on hi.hotspot_instance_id = hs.hotspot_instance_id
-            and hs.evaluation >=  b.param1
+            and hs.evaluation >=  @export.cutoff@
         /* get words and numbers in sentence */
         inner join anno_contain ac 
             on ac.parent_anno_base_id = hs.anno_base_id
@@ -66,24 +63,21 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
     ) s
     left join
     (
-    	/* see if the feature is a hotspot */
+        /* see if the feature is a hotspot */
         select r.feature_name
         from feature_eval e 
-  		inner join i2b2_2008_disease ds 
+            inner join i2b2_2008_disease ds 
             on e.label = ds.disease
             and ds.disease_id = @export.label@
-		inner join i2b2_2008_cv_best b
-		    on b.label = ds.disease_id
-		    and b.experiment = 'bag-impcuiword'
         inner join feature_rank r
             on r.feature_eval_id = e.feature_eval_id
-            and r.evaluation >= b.param1
+            and r.evaluation >= @export.cutoff@
         where e.corpus_name = 'i2b2.2008'
         and e.type = 'InfoGainAttributeEval'
         and e.featureset_name = 'usword'
         and e.cv_fold_id = 0
     ) r on r.feature_name = s.covered_text
-	order by instance_id
+    order by instance_id, word
 					]]></value>
 				</property>
 				<property name="nodeTypes">
