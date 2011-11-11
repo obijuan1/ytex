@@ -195,37 +195,37 @@
 		</for>
 	</target>
 	<target name="kernel.tree.all" depends="init.exp" description="export trees">
-		<property name="tree.name" value="tree-cuiword" />
+		<!-- property name="tree.name" value="tree-cuiword" / -->
 		<antcall target="kernel.iter.label">
 			<param name="kernel.iter.target" value="kernel.tree.label" />
 		</antcall>
 	</target>
 	<target name="kernel.eval.all" depends="init.exp" description="eval kernel on tree">
 		<property name="kernel.experiment" value="filteredlin" />
-		<property name="tree.name" value="vector" />
+		<!-- property name="tree.name" value="vector" / -->
 		<antcall target="kernel.iter.label">
 			<param name="kernel.iter.target" value="kernel.iter.eval.label" />
 		</antcall>
 	</target>
 	<target name="kernel.export.all" depends="init.exp" description="export libsvm gram matrices">
 		<property name="kernel.experiment" value="filteredlin" />
-		<property name="tree.name" value="vector" />
+		<!-- property name="tree.name" value="vector" / -->
 		<antcall target="kernel.iter.label">
 			<param name="kernel.iter.target" value="kernel.iter.export.label" />
 		</antcall>
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
-		<property name="tree.name" value="tree-cuiword" />
+		<property name="tree.name" value="tree-impcuiword" />
 		<property name="export.label" value="9" />
-		<property name="kernel.experiment" value="kern-cuiword-dot" />
+		<property name="kernel.experiment" value="kern-impcuiword-dot" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
 		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
 		<property name="export.libsvm.outdir" value="libsvm/${kernel.experiment}" />
 		<property file="${export.tree.srcdir}/label.properties" />
 		<property file="${basedir}/exp/labelNames.properties" />
-		<propertycopy property="export.label.name" from="label.${export.label}.name" />
-		<propertycopy property="export.cutoff" from="label.${export.label}.kernel.param1" />
+		<propertycopy property="export.label.name" from="label.${export.label}.name" silent="yes" />
+		<propertycopy property="export.cutoff" from="label.${export.label}.kernel.param1" silent="yes" />
 		<propertycopy property="export.param2.list" from="label.${export.label}.kernel.param2" silent="yes" />
 		<echo>export.param2.list ${export.param2.list}</echo>
 		<echo>export.cutoff ${export.cutoff}</echo>
