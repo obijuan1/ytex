@@ -36,7 +36,7 @@ public class NodeAttributeKernel implements Kernel {
 		if (n1 != null && n2 != null && n1.getType().equals(n2.getType())) {
 			Object attr1 = n1.getValue().get(attributeName);
 			Object attr2 = n2.getValue().get(attributeName);
-			if (n1 != null && n2 != null) {
+			if (attr1 != null && attr1 != null) {
 				return delegateKernel.evaluate(attr1, attr2);
 			}
 		}

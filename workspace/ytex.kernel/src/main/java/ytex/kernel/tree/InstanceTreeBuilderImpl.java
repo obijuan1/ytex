@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
@@ -83,6 +85,7 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 
 	public Map<Long, Node> loadInstanceTrees(TreeMappingInfo mappingInfo) {
 		Map<NodeKey, Node> nodeKeyMap = new HashMap<NodeKey, Node>();
+		this.prepare(mappingInfo.getPrepareScript(), mappingInfo.getPrepareScriptStatementDelimiter());
 		Map<Long, Node> instanceMap = loadInstanceTrees(
 				mappingInfo.getInstanceIDField(),
 				mappingInfo.getInstanceQueryMappingInfo(), nodeKeyMap);
@@ -94,6 +97,25 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 		}
 		return instanceMap;
 	}
+	
+
+	/**
+	 * run 'preparation' statements.  These may e.g. create temporary tables in the database.
+	 * @param prepareStatementList
+	 */
+	protected void prepare(String prepareScript, String prepareScriptDelimiter) {
+		if(prepareScript != null && prepareScript.length() > 0) {
+			String[] statements = prepareScript.split(prepareScriptDelimiter);
+			List<String> listStatements = new ArrayList<String>(statements.length);
+			// throw out empty lines
+			for(String sql : statements) {
+				if(sql != null && sql.trim().length() > 0)
+					listStatements.add(sql);
+			}
+			JdbcTemplate jt = new JdbcTemplate(this.getDataSource());
+			jt.batchUpdate(listStatements.toArray(new String[]{}));
+		}
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -102,7 +124,7 @@ public class InstanceTreeBuilderImpl implements InstanceTreeBuilder {
 	 * ytex.kernel.tree.InstanceTreeBuilder#loadInstanceTrees(java.util.List,
 	 * java.lang.String, java.lang.String, java.util.Map)
 	 */
-	public Map<Long, Node> loadInstanceTrees(String instanceIDField,
+	protected Map<Long, Node> loadInstanceTrees(String instanceIDField,
 			QueryMappingInfo qInfo, Map<NodeKey, Node> nodeKeyMap) {
 		Node[] currentPath = new Node[qInfo.getNodeTypes().size()];
 		Map<Long, Node> instanceMap = new HashMap<Long, Node>();
