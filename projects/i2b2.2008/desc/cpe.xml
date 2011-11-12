@@ -9,7 +9,7 @@
                 <nameValuePair>
                     <name>queryGetDocumentKeys</name>
                     <value>
-                        <string>select docId uid from i2b2_2008_doc id left join document d on d.uid = id.docId and d.analysis_batch = 'i2b2.2008-word' where d.document_id is null</string>
+                        <string>select docId uid from i2b2_2008_doc id left join document d on d.uid = id.docId and d.analysis_batch = 'i2b2.2008' where d.document_id is null</string>
                     </value>
                 </nameValuePair>
                 <nameValuePair>
