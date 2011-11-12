@@ -10,7 +10,6 @@ create table v_i2b2_fword_lookup (
 
 insert into v_i2b2_fword_lookup
 select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
-select c.fword, mrc.cui, mrc.str text
 from umls_aui_fword c
 inner join umls.MRCONSO mrc on c.aui = mrc.aui
 where  mrc.SAB in ('RXNORM', 'SNOMEDCT', 'SRC', 'MTH', 'MSH')
