@@ -9,7 +9,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<import resource="tree.xml" />
 	<!-- document kernel - norm of convolution on words/concepts. Only compare 
 		documents of same type -->
-	<bean id="instanceKernel" parent="ytex.kernel.evaluator.SumKernel">
+	<bean id="instanceKernel" class="ytex.kernel.evaluator.SumKernel">
 		<property name="delegateKernels">
 			<list>
 				<bean class="ytex.kernel.evaluator.ConvolutionKernel">
