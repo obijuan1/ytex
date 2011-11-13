@@ -6,25 +6,21 @@
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
-	<import resource="tree_@export.cutoff@.xml" />
+	<import resource="tree.xml" />
 	<!-- document kernel - norm of convolution on words/concepts. Only compare 
 		documents of same type -->
-	<bean id="instanceKernel" parent="abstractNormKernel">
-		<property name="delegateKernel">
-			<bean class="ytex.kernel.evaluator.SumKernel">
-				<property name="delegateKernels">
-					<list>
-						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
-							<property name="nodeType" value="ontology_concept" />
-							<property name="delegateKernel" ref="compositeConceptKernel" />
-						</bean>
-						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
-							<property name="nodeType" value="word" />
-							<property name="delegateKernel" ref="wordKernel" />
-						</bean>
-					</list>
-				</property>
-			</bean>
+	<bean id="instanceKernel" class="ytex.kernel.evaluator.SumKernel">
+		<property name="delegateKernels">
+			<list>
+				<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+					<property name="nodeType" value="ontology_concept" />
+					<property name="delegateKernel" ref="compositeConceptKernel" />
+				</bean>
+				<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+					<property name="nodeType" value="word" />
+					<property name="delegateKernel" ref="wordKernel" />
+				</bean>
+			</list>
 		</property>
 	</bean>
 	<bean id="linKernel" parent="abstractLinKernel">
@@ -50,7 +46,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	</bean>
 	<!-- wordKernel - simply compare words -->
 	<bean id="wordKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
-		<property name="attributeName" value="canonical_form" />
+		<property name="attributeName" value="word" />
 		<property name="delegateKernel" ref="equalityKernel" />
 	</bean>
 	<bean id="corpusKernelEvaluator" parent="abstractCorpusKernelEvaluator">
@@ -60,31 +56,36 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="name" value="i2b2.2008" />
 		<property name="experiment" value="kern-cuiword-filteredlin" />
 		<property name="label" value="@export.label@" />
-		<property name="param1" value="@export.cutoff@" />
+		<property name="param1" value="0" />
 		<property name="param2" value="@export.param2@" />
 		<property name="instanceIDQuery">
 			<value><![CDATA[
-select doc.docId, 
-	case
-		when documentSet = 'train' then 1
-		else 0
-	end
-from i2b2_2008_doc doc
-inner join i2b2_2008_anno a 
-	on a.docId = doc.docId
-	and a.source = 'intuitive'
-inner join i2b2_2008_disease d 
-	on d.disease = a.disease
-	and d.disease_id = @export.label@
-inner join hotspot_instance i
- 	on i.corpus_name = 'i2b2.2008'
-	and i.experiment = 'bag-cuiword'
-	and i.label = d.disease
-	and i.instance_id = doc.docId
-left join hotspot_zero_vector hzv
-	on hzv.hotspot_instance_id = i.hotspot_instance_id
-	and hzv.cutoff = @export.cutoff@
-where hzv.hotspot_zero_vector_id is null
+	select doc.docId, j.judgement_id, 
+		case
+			when documentSet = 'train' then 1
+			else 0
+		end,
+		d.disease_id
+	from i2b2_2008_doc doc
+	inner join i2b2_2008_anno a 
+		on a.docId = doc.docId
+		and a.source = 'intuitive'
+	inner join i2b2_2008_disease d 
+		on d.disease = a.disease
+		and d.disease_id = @export.label@
+	inner join i2b2_2008_judgement j on j.judgement = a.judgement
+	inner join hotspot_instance i
+    	on i.corpus_name = 'i2b2.2008'
+		and i.experiment = 'bag-impcuiword'
+		and i.label = d.disease
+    	and i.instance_id = doc.docId
+  	inner join i2b2_2008_cv_best b
+    	on b.label = d.disease_id
+    	and b.experiment = i.experiment
+	left join hotspot_zero_vector hzv
+		on hzv.hotspot_instance_id = i.hotspot_instance_id
+		and hzv.cutoff = b.param1
+	where hzv.hotspot_zero_vector_id is null
 			]]></value>
 		</property>
 	</bean>
