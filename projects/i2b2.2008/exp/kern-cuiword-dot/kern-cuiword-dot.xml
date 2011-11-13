@@ -42,7 +42,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="treeMappingInfo" ref="treeMappingInfo" />
 		<property name="name" value="i2b2.2008" />
 		<property name="experiment" value="kern-cuiword-dot" />
-		<property name="label" value="@export.label.name@" />
+		<property name="label" value="@export.label@" />
 		<property name="param1" value="0" />
 		<property name="param2" value="" />
 		<property name="instanceIDQuery">
