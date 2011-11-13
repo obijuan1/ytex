@@ -23,7 +23,7 @@
     	and b.experiment = hi.experiment
 	left join hotspot_zero_vector hzv
 		on hzv.hotspot_instance_id = hi.hotspot_instance_id
-		and hzv.cutoff >= b.param1
+		and hzv.cutoff = b.param1
 	where hzv.hotspot_zero_vector_id is null
 	and f.corpus_name = 'i2b2.2008'
 	]]></entry>
