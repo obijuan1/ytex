@@ -1,2 +1,4 @@
 kernel.experiment=kern-cuiword-dot
 kernel.types=4
+cv.costs=1e-6,1e-5,1e-4,0.001,0.01,0.1,1,10
+
