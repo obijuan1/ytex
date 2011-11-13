@@ -73,7 +73,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		on hzv.hotspot_instance_id = i.hotspot_instance_id
 		and hzv.cutoff = b.param1
 	where hzv.hotspot_zero_vector_id is null
-	and i.instance_id < 10
 			]]></value>
 		</property>
 	</bean>
