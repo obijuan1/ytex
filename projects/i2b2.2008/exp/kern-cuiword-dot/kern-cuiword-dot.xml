@@ -9,22 +9,18 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<import resource="tree.xml" />
 	<!-- document kernel - norm of convolution on words/concepts. Only compare 
 		documents of same type -->
-	<bean id="instanceKernel" parent="abstractNormKernel">
-		<property name="delegateKernel">
-			<bean class="ytex.kernel.evaluator.SumKernel">
-				<property name="delegateKernels">
-					<list>
-						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
-							<property name="nodeType" value="ontology_concept" />
-							<property name="delegateKernel" ref="compositeConceptKernel" />
-						</bean>
-						<bean class="ytex.kernel.evaluator.ConvolutionKernel">
-							<property name="nodeType" value="word" />
-							<property name="delegateKernel" ref="wordKernel" />
-						</bean>
-					</list>
-				</property>
-			</bean>
+	<bean id="instanceKernel" parent="ytex.kernel.evaluator.SumKernel">
+		<property name="delegateKernels">
+			<list>
+				<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+					<property name="nodeType" value="ontology_concept" />
+					<property name="delegateKernel" ref="compositeConceptKernel" />
+				</bean>
+				<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+					<property name="nodeType" value="word" />
+					<property name="delegateKernel" ref="wordKernel" />
+				</bean>
+			</list>
 		</property>
 	</bean>
 	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
