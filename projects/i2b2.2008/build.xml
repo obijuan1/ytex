@@ -23,6 +23,9 @@
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<target name="init.exp">
+		<!--
+		<property name="kernel.experiment" value="kern-cuiword-dot" />
+		-->
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
 		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
 		<property name="kernel.algo" value="libsvm" />
@@ -215,9 +218,9 @@
 		</antcall>
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
-		<property name="tree.name" value="tree-impcuiword" />
-		<property name="export.label" value="9" />
-		<property name="kernel.experiment" value="kern-impcuiword-dot" />
+		<property name="tree.name" value="tree-impcuiwordne" />
+		<property name="export.label" value="2" />
+		<property name="kernel.experiment" value="kern-impcuiwordne" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
 		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
@@ -230,7 +233,10 @@
 		<echo>export.param2.list ${export.param2.list}</echo>
 		<echo>export.cutoff ${export.cutoff}</echo>
 		<echo>export.label.name ${export.label.name}</echo>
+		<!--
 		<property name="label.tree" value="tree_${export.cutoff}" />
+		-->
+		<property name="label.tree" value="tree" />
 		<filterset id="export.filterset">
 			<filterset refid="exp.filter" />
 			<filter token="export.label" value="${export.label}" />
@@ -286,6 +292,7 @@
 	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
 		<property name="export.param2.suffix" value="" />
 		<property name="export.param2" value="" />
+		<echo>export.param2 ${export.param2}</echo>
 		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}${export.param2.suffix}.xml" />
 		<property name="kernel.evalTest" value="no" />
 		<copy file="exp/${kernel.experiment}/${kernel.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
@@ -514,7 +521,11 @@
 		</java>
 	</target>
 	<target name="RunCPE">
-		<java classname="ytex.tools.RunCPE" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/desc">
+		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
+			<classpath>
+				<dirset include="${basedir}/desc"/>
+				<path refid="${kernel.cp}" />
+			</classpath>
 			<arg value="cpe.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.arg}" />
