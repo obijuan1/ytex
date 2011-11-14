@@ -395,16 +395,8 @@
 		<propertycopy property="kernel.param2" from="label.${export.label}.kernel.param2" silent="yes" />
 		<property name="kernel.param1" value="" />
 		<property name="kernel.param2" value="" />
-		<condition property="eval.kernel">
-			<equals arg1="${kernel.types}" arg2="4" />
-		</condition>
-		<condition property="eval.bag">
-			<not>
-				<equals arg1="${kernel.types}" arg2="4" />
-			</not>
-		</condition>
 		<property name="export.tree.srcdir" value="${basedir}/exp/tree-cuiword" />
-		<property name="export.dir" value="${basedir}/${export.type}/${kernel.experiment}/${export.label}" />
+		<property name="export.dir" value="${basedir}/${export.type}/${kernel.experiment}" />
 		<property name="export.src.dir" value="${basedir}/exp/${kernel.experiment}" />
 		<filterset id="export.filterset">
 			<filter token="export.cutoff" value="${kernel.param1}" />
@@ -413,18 +405,23 @@
 			<filter token="kernel.name" value="${kernel.name}" />
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
 			<filter token="kernel.hzv.experiment" value="${kernel.hzv.experiment}" />
-			<filter token="cv.costs" value="${cv.costs}" />
 			<filter token="kernel.types" value="${kernel.types}" />
 		</filterset>
 	</target>
-	<target name="test.all">
+	<target name="test.all" depends="test.init.export">
+		<property name="test.all.target" value="test.label"/>
 		<for list="${labels}" param="export.label">
 			<sequential>
-				<antcall target="test.label">
+				<antcall target="${test.all.target}">
 					<param name="export.label" value="@{export.label}" />
 				</antcall>
 			</sequential>
 		</for>
+	</target>
+	<target name="test.init.export" description="copy props">
+		<copy todir="${export.dir}" overwrite="yes">
+			<fileset dir="${export.src.dir}" includes="parameters.properties,kernel.properties"/>
+		</copy>
 	</target>
 	<target name="test.label" depends="test.init.label" description="export libsvm data for the specified label, run libsvm">
 		<antcall target="test.kernel.eval.label" />
@@ -432,7 +429,7 @@
 		<antcall target="test.libsvm.label" />
 		<antcall target="test.zv" />
 	</target>
-	<target name="test.kernel.eval.label" unless="eval.bag" depends="test.init.label" if="eval.kernel" description="evaluate kernel on test instances">
+	<target name="test.kernel.eval.label" depends="test.init.label" if="eval.kernel" description="evaluate kernel on test instances">
 		<!-- export the tree -->
 		<antcall target="kernel.tree.label" />
 		<!-- evaluate the kernel -->
@@ -441,22 +438,15 @@
 			<param name="kernel.evalTest" value="yes" />
 		</antcall>
 	</target>
-	<target name="test.export.label" depends="test.init.label,test.init.export,test.kernel.export.label" />
-	<target name="test.init.export" depends="test.init.label" description="clean export dir, generate kernel.properties">
-		<delete dir="${export.dir}" quiet="yes" />
-		<mkdir dir="${export.dir}" />
-		<copy tofile="${export.dir}/kernel.properties" overwrite="yes" file="${export.src.dir}/kernel.properties.template">
-			<filterset refid="export.filterset" />
-		</copy>
-	</target>
+	<target name="test.export.label" depends="test.init.label,test.kernel.export.label" />
 	<target name="test.kernel.export.label" depends="test.init.label" unless="eval.bag" description="export gram matrix">
 		<!-- generate export property file -->
-		<copy tofile="${export.dir}/export-gram.xml" overwrite="yes" file="${export.src.dir}/export-gram.xml">
+		<copy tofile="${export.dir}/export-gram_${export.label}.xml" overwrite="yes" file="${export.src.dir}/export-gram.xml">
 			<filterset refid="export.filterset" />
 		</copy>
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
 			<arg value="-prop" />
-			<arg value="export-gram.xml" />
+			<arg value="export-gram_${export.label}.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />
