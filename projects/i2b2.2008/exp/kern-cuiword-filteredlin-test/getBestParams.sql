@@ -43,7 +43,7 @@ from
 * get the best hotspot cutoff (param1)
 */
 drop table if exists cv_param2;
-create temporary table cv_param2 (label varchar(50), param2 double)
+create temporary table cv_param2 (label varchar(50), param2 char(5))
 as
 select c.label, max(cast(s.param2 as decimal(4,3))) param2
 from tmp_param_f1 s 
@@ -53,8 +53,6 @@ inner join i2b2_2008_cv_best c
     and c.experiment = 'kern-cuiword-filteredlin'
 group by c.label
 ;
-
-select * from cv_param2;
 
 update i2b2_2008_cv_best b inner join cv_param2 p on b.label = p.label set b.param2 = p.param2
 where b.experiment = 'kern-cuiword-filteredlin'
@@ -104,6 +102,7 @@ from i2b2_2008_cv_best
 where experiment = 'kern-cuiword-filteredlin'
 order by cast(label as decimal(2,0))
 ;
+
 select cast(concat('label', label, '.kernel.param2=', param2) as char(200))
 from i2b2_2008_cv_best 
 where experiment = 'kern-cuiword-filteredlin'
