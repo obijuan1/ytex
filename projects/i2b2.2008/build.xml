@@ -253,7 +253,7 @@
 		</copy>
 		<java classname="ytex.KernelLauncher" fork="yes" classpathref="${kernel.cp}" dir="${export.tree.outdir}">
 			<arg line="-beans ${label.tree}.xml -storeInstanceMap ${label.tree}.obj" />
-			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xmx2g" />
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
@@ -442,7 +442,7 @@
 		</antcall>
 	</target>
 	<target name="test.export.label" depends="test.init.label,test.init.export,test.kernel.export.label" />
-	<target name="test.init.export" description="clean export dir, generate kernel.properties">
+	<target name="test.init.export" depends="test.init.label" description="clean export dir, generate kernel.properties">
 		<delete dir="${export.dir}" quiet="yes" />
 		<mkdir dir="${export.dir}" />
 		<copy tofile="${export.dir}/kernel.properties" overwrite="yes" file="${export.src.dir}/kernel.properties.template">
@@ -512,7 +512,9 @@
 	<target name="RunCPE">
 		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
 			<classpath>
-				<dirset include="${basedir}/desc"/>
+				<dirset dir="${basedir}">
+					<include name="${basedir}/desc"/>
+				</dirset>
 				<path refid="${kernel.cp}" />
 			</classpath>
 			<arg value="cpe.xml" />
