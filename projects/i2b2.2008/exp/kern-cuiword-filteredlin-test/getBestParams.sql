@@ -104,3 +104,8 @@ from i2b2_2008_cv_best
 where experiment = 'kern-cuiword-filteredlin'
 order by cast(label as decimal(2,0))
 ;
+select cast(concat('label', label, '.kernel.param2=', param2) as char(200))
+from i2b2_2008_cv_best 
+where experiment = 'kern-cuiword-filteredlin'
+order by cast(label as decimal(2,0))
+;
