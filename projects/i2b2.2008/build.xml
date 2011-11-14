@@ -388,13 +388,12 @@
 	</target>
 
 	<target name="test.init.exp" depends="init.exp" description="load prperties for the specified experiment">
-		<property name="export.dir" value="${basedir}/${export.type}/${kernel.experiment}" />
+		<property name="export.dir" value="${basedir}/${kernel.algo}/${kernel.experiment}" />
 		<property name="export.src.dir" value="${basedir}/exp/${kernel.experiment}" />
 	</target>
 	<target name="test.init.label" depends="test.init.exp" description="load properties for the specified label">
 		<property name="export.label" value="16" />
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
-		<property name="export.type" value="libsvm" />
 		<propertycopy property="kernel.param1" from="label.${export.label}.kernel.param1" silent="yes" />
 		<propertycopy property="kernel.param2" from="label.${export.label}.kernel.param2" silent="yes" />
 		<property name="kernel.param1" value="" />
