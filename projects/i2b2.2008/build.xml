@@ -387,7 +387,11 @@
 		</exec>
 	</target>
 
-	<target name="test.init.label" description="load properties for the specified label">
+	<target name="test.init.exp" depends="init.exp" description="load prperties for the specified experiment">
+		<property name="export.dir" value="${basedir}/${export.type}/${kernel.experiment}" />
+		<property name="export.src.dir" value="${basedir}/exp/${kernel.experiment}" />
+	</target>
+	<target name="test.init.label" depends="test.init.exp" description="load properties for the specified label">
 		<property name="export.label" value="16" />
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
 		<property name="export.type" value="libsvm" />
@@ -395,9 +399,6 @@
 		<propertycopy property="kernel.param2" from="label.${export.label}.kernel.param2" silent="yes" />
 		<property name="kernel.param1" value="" />
 		<property name="kernel.param2" value="" />
-		<property name="export.tree.srcdir" value="${basedir}/exp/tree-cuiword" />
-		<property name="export.dir" value="${basedir}/${export.type}/${kernel.experiment}" />
-		<property name="export.src.dir" value="${basedir}/exp/${kernel.experiment}" />
 		<filterset id="export.filterset">
 			<filter token="export.cutoff" value="${kernel.param1}" />
 			<filter token="export.label" value="${export.label}" />
@@ -408,7 +409,7 @@
 			<filter token="kernel.types" value="${kernel.types}" />
 		</filterset>
 	</target>
-	<target name="test.all" depends="test.init.export">
+	<target name="test.all" depends="test.init.exp,test.copy.props">
 		<property name="test.all.target" value="test.label"/>
 		<for list="${labels}" param="export.label">
 			<sequential>
@@ -418,9 +419,9 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="test.init.export" description="copy props">
+	<target name="test.copy.props" depends="test.init.exp" description="copy props">
 		<copy todir="${export.dir}" overwrite="yes">
-			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="parameters.properties,kernel.properties"/>
+			<fileset dir="${export.src.dir}" includes="parameters.properties,kernel.properties"/>
 		</copy>
 	</target>
 	<target name="test.label" depends="test.init.label" description="export libsvm data for the specified label, run libsvm">
@@ -438,7 +439,6 @@
 			<param name="kernel.evalTest" value="yes" />
 		</antcall>
 	</target>
-	<target name="test.export.label" depends="test.init.label,test.kernel.export.label" />
 	<target name="test.kernel.export.label" depends="test.init.label" unless="eval.bag" description="export gram matrix">
 		<!-- generate export property file -->
 		<copy tofile="${export.dir}/export-gram_${export.label}.xml" overwrite="yes" file="${export.src.dir}/export-gram.xml">
