@@ -420,7 +420,7 @@
 	</target>
 	<target name="test.init.export" description="copy props">
 		<copy todir="${export.dir}" overwrite="yes">
-			<fileset dir="${export.src.dir}" includes="parameters.properties,kernel.properties"/>
+			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="parameters.properties,kernel.properties"/>
 		</copy>
 	</target>
 	<target name="test.label" depends="test.init.label" description="export libsvm data for the specified label, run libsvm">
