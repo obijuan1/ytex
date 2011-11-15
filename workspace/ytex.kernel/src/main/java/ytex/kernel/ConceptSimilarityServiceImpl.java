@@ -336,7 +336,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		List<FeatureEvaluation> feList = this.classifierEvaluationDao
 				.getFeatureEvaluations(this.corpusName, this.conceptSetName,
 						this.lcsImputedType
-								+ ImputedFeatureEvaluator.SUFFIX_IMPUTED, /* should be suffix_prop */
+								+ ImputedFeatureEvaluator.SUFFIX_IMPUTED,
 						this.conceptGraphName);
 		this.validLCSCache = new HashMap<String, Map<String, FeatureRank>>();
 		for (FeatureEvaluation r : feList) {
