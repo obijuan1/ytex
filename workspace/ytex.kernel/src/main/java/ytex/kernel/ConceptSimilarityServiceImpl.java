@@ -50,7 +50,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * cache to hold lcs's
 	 */
 	private Cache lcsCache;
-	private String lcsImputedType = ImputedFeatureEvaluator.MeasureType.INFOGAIN.getName();
+	private String lcsImputedType = ImputedFeatureEvaluator.MeasureType.INFOGAIN
+			.getName();
 	private PlatformTransactionManager transactionManager;
 
 	private List<String> tuiList;
@@ -59,6 +60,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * valid lcs cache
 	 */
 	private Map<String, Map<String, FeatureRank>> validLCSCache;
+
 	private void addCuiTuiToMap(Map<String, Set<String>> cuiTuiMap,
 			Map<String, String> tuiMap, String cui, String tui) {
 		// get 'the' tui string
@@ -119,12 +121,14 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * get the information content for the concept with the highest evaluation
 	 * greater than a specified threshold.
 	 * 
+	 * If threshold 0, get the lowest IC of all the lcs's.
+	 * 
 	 * @param lcses
 	 *            the least common subsumers of a pair of concepts
 	 * @param label
 	 *            label against which feature was evaluated
 	 * @param lcsMinEvaluation
-	 *            threshold that the feature has to exceed
+	 *            threshold that the feature has to exceed. 0 for no filtering.
 	 * @return 0 if no lcs that makes the cut. else find the lcs(es) with the
 	 *         maximal evaluation, and return getIC on these lcses.
 	 * 
@@ -133,26 +137,33 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private double getBestIC(Set<ConcRel> lcses, String label,
 			double lcsMinEvaluation) {
 		Map<String, FeatureRank> featureRankMap = this.validLCSCache.get(label);
-		if (featureRankMap != null) {
-			double currentBest = -1;
-			Set<ConcRel> bestLcses = new HashSet<ConcRel>();
-			for (ConcRel lcs : lcses) {
-				FeatureRank r = featureRankMap.get(lcs.getConceptID());
-				if (r != null && r.getEvaluation() >= lcsMinEvaluation) {
-					if (currentBest == -1 || r.getEvaluation() > currentBest) {
-						bestLcses.clear();
-						bestLcses.add(lcs);
-						currentBest = r.getEvaluation();
-					} else if (currentBest == r.getEvaluation()) {
-						bestLcses.add(lcs);
+		if (lcsMinEvaluation > 0) {
+			// filtered - get the ic of the feature with the highest IG
+			if (featureRankMap != null) {
+				double currentBest = -1;
+				Set<ConcRel> bestLcses = new HashSet<ConcRel>();
+				for (ConcRel lcs : lcses) {
+					FeatureRank r = featureRankMap.get(lcs.getConceptID());
+					if (r != null && r.getEvaluation() >= lcsMinEvaluation) {
+						if (currentBest == -1
+								|| r.getEvaluation() > currentBest) {
+							bestLcses.clear();
+							bestLcses.add(lcs);
+							currentBest = r.getEvaluation();
+						} else if (currentBest == r.getEvaluation()) {
+							bestLcses.add(lcs);
+						}
 					}
 				}
-			}
-			if (bestLcses.size() > 0) {
-				return this.getIC(bestLcses);
+				if (bestLcses.size() > 0) {
+					return this.getIC(bestLcses);
+				}
+			} else {
+				log.warn("no features for label: " + label);
 			}
 		} else {
-			log.warn("no features for label: " + label);
+			// unfiltered - get the lowest ic
+			return this.getIC(lcses);
 		}
 		return 0;
 	}

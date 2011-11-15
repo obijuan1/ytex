@@ -282,7 +282,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="ytexProperties" ref="ytexProperties" />
 		<property name="infoContentEvaluator" ref="infoContentEvaluator" />
 	</bean>
-	<bean id="cytoscapeHalper" class="ytex.kernel.CytoscapeHelperImpl">
+	<bean id="cytoscapeHelper" class="ytex.kernel.CytoscapeHelperImpl">
 		<property name="conceptDao" ref="conceptDao" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="umlsDao" ref="umlsDao" />
