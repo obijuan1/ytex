@@ -1,3 +1,2 @@
 kernel.experiment=kern-cuiword-lin
-kernel.param1=@export.cutoff@
 kernel.types=4
