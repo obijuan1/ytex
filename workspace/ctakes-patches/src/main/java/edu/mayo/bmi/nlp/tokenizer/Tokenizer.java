@@ -11,7 +11,7 @@ import java.util.Map;
  * to the text and is not embedded like XML. Character offset location is used
  * to identify the boundaries of a token.
  * <p>
- * vng changes: modify to split tokens at all punctuation except ' and -.
+ * vng changes: modified to split at .,:;
  * 
  * @author Mayo Clinic
  */
@@ -61,7 +61,8 @@ public class Tokenizer {
 			}
 			if ((val instanceof Integer) == false) {
 				throw new Exception(
-						"Hyphen map has non java.lang.Integer frequency data for key=" + key);
+						"Hyphen map has non java.lang.Integer frequency data for key="
+								+ key);
 			}
 		}
 	}
@@ -90,7 +91,8 @@ public class Tokenizer {
 	 * Tokenizes a string of text and outputs a list of Token objects. The list
 	 * is not guaranteed to be sorted.
 	 * 
-	 * @param text The text to tokenize.
+	 * @param text
+	 *            The text to tokenize.
 	 * @return A list of Token objects.
 	 * @throws Exception
 	 */
@@ -106,8 +108,8 @@ public class Tokenizer {
 
 			for (int i = 0; i < tokens.size(); i++) {
 				Token token = tokens.get(i);
-				String tokenText = text.substring(token.getStartOffset(), token
-						.getEndOffset());
+				String tokenText = text.substring(token.getStartOffset(),
+						token.getEndOffset());
 				if (token.getType() != Token.TYPE_PUNCT) {
 					if (isNumber(tokenText)) {
 						token.setType(Token.TYPE_NUMBER);
@@ -135,7 +137,7 @@ public class Tokenizer {
 			}
 
 			return tokens;
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("Internal Error with Tokenizer.");
@@ -148,8 +150,10 @@ public class Tokenizer {
 	 * punctuation/symbols inside them are split into multiple tokens, one of
 	 * which is the inner punctuation/symbol token.
 	 * 
-	 * @param tokens List of tokens to apply rules to.
-	 * @param text The original text.
+	 * @param tokens
+	 *            List of tokens to apply rules to.
+	 * @param text
+	 *            The original text.
 	 */
 	private void applyPunctSymbolRules(List<Token> tokens, String text) {
 		List<Token> newTokenList = new ArrayList<Token>();
@@ -157,8 +161,8 @@ public class Tokenizer {
 
 		for (int tIndex = 0; tIndex < tokens.size(); tIndex++) {
 			Token token = tokens.get(tIndex);
-			String tokenText = text.substring(token.getStartOffset(), token
-					.getEndOffset());
+			String tokenText = text.substring(token.getStartOffset(),
+					token.getEndOffset());
 
 			if (tokenText.length() == 1) {
 				char currentChar = tokenText.charAt(0);
@@ -166,8 +170,7 @@ public class Tokenizer {
 				if (!isAlphabetLetterOrDigit(currentChar)) {
 					if (isPunctuation(currentChar)) {
 						token.setType(Token.TYPE_PUNCT);
-					} 
-					else {
+					} else {
 						token.setType(Token.TYPE_SYMBOL);
 					}
 				}
@@ -181,8 +184,8 @@ public class Tokenizer {
 			token.setStartOffset(token.getStartOffset() + startCnt);
 
 			// punctuation at end of token
-			tokenText = text.substring(token.getStartOffset(), token
-					.getEndOffset());
+			tokenText = text.substring(token.getStartOffset(),
+					token.getEndOffset());
 			int endCnt = processEndPunctSymbol(newTokenList, token, tokenText);
 			// adjust original token to no longer include the punctuation/symbol
 			token.setEndOffset(token.getEndOffset() - endCnt);
@@ -196,8 +199,8 @@ public class Tokenizer {
 			}
 
 			// contractions
-			tokenText = text.substring(token.getStartOffset(), token
-					.getEndOffset());
+			tokenText = text.substring(token.getStartOffset(),
+					token.getEndOffset());
 			int aposIndex = tokenText.indexOf('\'');
 			if (aposIndex != -1) {
 				Token cpToken = null;
@@ -243,8 +246,8 @@ public class Tokenizer {
 				}
 			} else if (tokenText.equalsIgnoreCase("cannot")) {
 				// special case where cannot needs to be split into can & not
-				Token notToken = new Token(token.getStartOffset() + 3, token
-						.getEndOffset());
+				Token notToken = new Token(token.getStartOffset() + 3,
+						token.getEndOffset());
 				notToken.setType(Token.TYPE_WORD);
 				newTokenList.add(notToken);
 				// adjust original token to no longer include "not"
@@ -252,8 +255,8 @@ public class Tokenizer {
 			}
 
 			// punctuation inside the token
-			tokenText = text.substring(token.getStartOffset(), token
-					.getEndOffset());
+			tokenText = text.substring(token.getStartOffset(),
+					token.getEndOffset());
 			boolean foundSomethingInside = findPunctSymbolInsideToken(tokens,
 					token, tokenText);
 			if (foundSomethingInside) {
@@ -273,9 +276,8 @@ public class Tokenizer {
 		for (int i = 0; i < tokenText.length(); i++) {
 			char currentChar = tokenText.charAt(i);
 			if (!isAlphabetLetterOrDigit(currentChar)) {
-				Token t = new Token(token.getStartOffset() + i, token
-						.getStartOffset()
-						+ i + 1);
+				Token t = new Token(token.getStartOffset() + i,
+						token.getStartOffset() + i + 1);
 
 				if (isPunctuation(currentChar)) {
 					t.setType(Token.TYPE_PUNCT);
@@ -297,9 +299,8 @@ public class Tokenizer {
 		for (int i = tokenText.length() - 1; i >= 0; i--) {
 			char currentChar = tokenText.charAt(i);
 			if (!isAlphabetLetterOrDigit(currentChar)) {
-				Token t = new Token(token.getStartOffset() + i, token
-						.getStartOffset()
-						+ i + 1);
+				Token t = new Token(token.getStartOffset() + i,
+						token.getStartOffset() + i + 1);
 
 				if (isPunctuation(currentChar)) {
 					t.setType(Token.TYPE_PUNCT);
@@ -317,36 +318,26 @@ public class Tokenizer {
 	}
 
 	/**
-	 * vng modified to split at all punctuation except hyphen (-) and apostrophe (') 
+	 * vng modified to split at .,:;
+	 * 
 	 * @param tokenText
 	 * @return
 	 */
 	private int getFirstInsidePunctSymbol(String tokenText) {
 		for (int i = 0; i < tokenText.length(); i++) {
 			char currentChar = tokenText.charAt(i);
-			if(this.isPunctuation(currentChar)) {
-				// ignore - and '
-				if(currentChar == '-' || currentChar == '\'')
-					continue;
-				// ignore , and . in numbers
-				if(isNumber(tokenText) && (currentChar == ',' || currentChar == '.'))
-					continue;
-				// else split the token
+			if (currentChar == ',' && !isNumber(tokenText)) {
 				return i;
 			}
-//			if (currentChar == ',' && !isNumber(tokenText)) {
-//				return i;
-//			}
-//			if (currentChar == '.' && !isNumber(tokenText)) {
-//				return i;
-//			}
-//			
-//
-//			if ((isAlphabetLetterOrDigit(currentChar) == false)
-//					&& (currentChar != '.') && (currentChar != ',')
-//					&& (currentChar != ':') && (currentChar != ';')) {
-//				return i;
-//			}
+			if (currentChar == '.' && !isNumber(tokenText)) {
+				return i;
+			}
+
+			if ((isAlphabetLetterOrDigit(currentChar) == false)) {
+				// && (currentChar != '.') && (currentChar != ',')
+				// && (currentChar != ':') && (currentChar != ';')) {
+				return i;
+			}
 		}
 		return -1;
 	}
