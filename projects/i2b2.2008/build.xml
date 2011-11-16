@@ -498,7 +498,24 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	<target name="RunCPE">
+	<target name="RunCPE.all" description="annotate i2b2 2008 corpus in parallel">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
+			<sequential>
+				<antcall target="RunCPE.slice">
+					<param name="kernel.slice" value="@{kernel.slice}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="RunCPE.slice">
+		<copy file="desc/cpe.xml" tofile="desc/cpe.xml.${kernel.slice}">
+			<filterset id="exp.filter">
+				<filter token="ytex.home" value="${ytex.home}" />
+				<filter token="kernel.slice" value="${kernel.slice}" />
+				<filter token="kernel.mod" value="${kernel.mod}" />
+			</filterset>
+		</copy>
+		<!--
 		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
 			<classpath>
 				<dirset dir="${basedir}">
@@ -506,10 +523,11 @@
 				</dirset>
 				<path refid="${kernel.cp}" />
 			</classpath>
-			<arg value="cpe.xml" />
+			<arg value="cpe.xml.${kernel.slice}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
+		-->
 	</target>
 </project>

@@ -3,13 +3,13 @@
     <collectionReader>
         <collectionIterator>
             <descriptor>
-                <import location="../../config/desc/ytex/uima/DBCollectionReader.xml"/>
+                <import location="@ytex.home@/config/desc/ytex/uima/DBCollectionReader.xml"/>
             </descriptor>
             <configurationParameterSettings>
                 <nameValuePair>
                     <name>queryGetDocumentKeys</name>
                     <value>
-                        <string>select docId uid from i2b2_2008_doc id left join document d on d.uid = id.docId and d.analysis_batch = 'i2b2.2008' where d.document_id is null</string>
+                        <string>select docId uid from i2b2_2008_doc id left join document d on d.uid = id.docId and d.analysis_batch = 'i2b2.2008-word' where d.document_id is null and ((docId % @kernel.mod@ + 1) = @kernel.slice@</string>
                     </value>
                 </nameValuePair>
                 <nameValuePair>
@@ -24,7 +24,7 @@
     <casProcessors casPoolSize="3" processingUnitThreadCount="1">
         <casProcessor deployment="integrated" name="AggregateAllAnnotation">
             <descriptor>
-                <import location="../../config/desc/ytex/uima/YTEXPipeline.xml"/>
+                <import location="@ytex.home@/config/desc/ytex/uima/YTEXPipeline.xml"/>
             </descriptor>
             <deploymentParameters/>
             <errorHandling>
