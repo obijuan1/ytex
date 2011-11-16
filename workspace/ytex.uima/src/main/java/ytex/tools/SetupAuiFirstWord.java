@@ -45,7 +45,7 @@ import gov.nih.nlm.nls.lvg.Api.LvgCmdApi;
  */
 public class SetupAuiFirstWord {
 	private static final Log log = LogFactory.getLog(SetupAuiFirstWord.class);
-//	private static final Pattern nonWord = Pattern.compile("\\W");
+	// private static final Pattern nonWord = Pattern.compile("\\W");
 	private Tokenizer tokenizer;
 	private LvgCmdApi lvgCmd;
 	private Set<String> exclusionSet = null;
@@ -99,12 +99,18 @@ public class SetupAuiFirstWord {
 	public SetupAuiFirstWord() throws Exception {
 		URL uriTok = this.getClass().getClassLoader()
 				.getResource("tokenizer/hyphenated.txt");
+		if (log.isInfoEnabled())
+			log.info("loading hyphMap from:" + uriTok.getPath());
 		Map hyphMap = loadHyphMap(uriTok.getPath());
 		this.tokenizer = new Tokenizer(hyphMap, 0);
 		// initialize exclusion set
 		this.exclusionSet = new HashSet<String>();
 		InputStream isLvgAnno = null;
 		try {
+			if (log.isInfoEnabled())
+				log.info("loading LvgAnnotator.xml from:"
+						+ this.getClass().getClassLoader()
+								.getResource("LVG/LvgAnnotator.xml").getPath());
 			isLvgAnno = this.getClass().getClassLoader()
 					.getResourceAsStream("LVG/LvgAnnotator.xml");
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
@@ -131,6 +137,8 @@ public class SetupAuiFirstWord {
 
 		URL uri = this.getClass().getClassLoader()
 				.getResource("lvg/data/config/lvg.properties");
+		if (log.isInfoEnabled())
+			log.info("loading lvg.properties from:" + uri.getPath());
 		File f = new File(uri.getPath());
 		String configDir = f.getParentFile().getAbsolutePath();
 		String lvgDir = configDir.substring(0, configDir.length()
@@ -218,7 +226,7 @@ public class SetupAuiFirstWord {
 							log.warn("string too long: aui=" + aui + ", str="
 									+ str);
 						else {
-							if(log.isDebugEnabled())
+							if (log.isDebugEnabled())
 								log.debug("aui=" + aui + ", fw=" + fw);
 							listFword.add(fw);
 						}
