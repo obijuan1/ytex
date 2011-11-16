@@ -217,8 +217,11 @@ public class SetupAuiFirstWord {
 						else if (fw.getTokenizedStr().length() > 250)
 							log.warn("string too long: aui=" + aui + ", str="
 									+ str);
-						else
+						else {
+							if(log.isDebugEnabled())
+								log.debug("aui=" + aui + ", fw=" + fw);
 							listFword.add(fw);
+						}
 					} catch (Exception e) {
 						log.error("Error tokenizing aui=" + aui + ", str="
 								+ str, e);
