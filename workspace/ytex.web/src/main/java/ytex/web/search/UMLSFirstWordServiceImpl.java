@@ -28,6 +28,7 @@ public class UMLSFirstWordServiceImpl implements UMLSFirstWordService,
 		}
 
 	}
+
 	private DataSource dataSource;
 	private SimpleJdbcTemplate jdbcTemplate;
 	private String query;
@@ -37,9 +38,17 @@ public class UMLSFirstWordServiceImpl implements UMLSFirstWordService,
 	private Properties ytexProperties;
 
 	public void afterPropertiesSet() throws Exception {
+		String dbName = this.getYtexProperties().getProperty("db.name");
+		String dbSchema = this.getYtexProperties().getProperty("db.schema");
+		String umlsSchema = this.getYtexProperties().getProperty("umls.schema",
+				dbSchema);
+		String umlsCatalog = this.getYtexProperties().getProperty(
+				"umls.catalog", dbName);
 		this.query = searchProperties.getProperty("retrieveCUIByFword")
 				.replaceAll("@db\\.schema@",
 						this.getYtexProperties().getProperty("db.schema"));
+		this.query = this.query.replaceAll("@umls\\.schema@", umlsSchema);
+		this.query = this.query.replaceAll("@umls\\.catalog@", umlsCatalog);
 	}
 
 	public DataSource getDataSource() {
