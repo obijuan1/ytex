@@ -609,7 +609,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<java classname="ytex.kernel.ImputedFeatureEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
 			<arg value="-prop" />
 			<arg value="corpus.properties.xml" />
-			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xmx2g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
