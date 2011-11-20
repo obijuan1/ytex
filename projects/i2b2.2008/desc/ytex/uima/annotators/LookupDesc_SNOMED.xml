@@ -39,7 +39,7 @@
 				</properties>
 			</lookupInitializer>
 			<lookupConsumer
-				className="edu.mayo.bmi.uima.lookup.ae.NamedEntityLookupConsumerImpl">
+				className="ytex.uima.lookup.ae.NamedEntityLookupConsumerImpl">
 				<properties>
 					<property key="codingScheme" value="UMLS" />
 					<property key="codeMetaField" value="cui" />
