@@ -10,6 +10,7 @@
 	group by code
 	]]></entry>
 	<entry key="ytex.corpusName">i2b2.2008</entry>
+	<entry key="ytex.conceptSetName">ctakes</entry>
 	<entry key="ytex.conceptGraphName">rbpar</entry>
 	<entry key="ytex.parentConceptEvalThreshold">0.03</entry>
 	<entry key="ytex.conceptGraphQuery"><![CDATA[

@@ -1,20 +1,62 @@
 <!--
-* annotate documents
-* evaluate features
-	** evaluate word features - InfogainEvaluator
-	** evaluate concepts + words outside concepts - InfogainEvaluator
-	** evaluate concepts w/ ontology + words outside concepts - CorpusEvaluator + CorpusLabelEvaluator
-	** bin w/ binary (0/1), and w/ negation detection (-1/0/1)
-* identify hotspots for each feature set
-* evaluate bag-of-words
-	** export bag of words for range of hotspot cutoffs
-		*** identify zero vectors
-		*** export data - binary indicator vs. tfidf
-		*** run libsvm
-		*** construct combined truth table - zv + classifier results
-* evaluate kernel
-	** semantic kernel
-	** context-sensitive semantic kernel
+== prerequisites ==
+  * umls 2010AB or higher installed in your db and used during ytex setup
+  * libsvm 3.1 installed
+  * [https://www.i2b2.org/NLP/Obesity/ I2B2 2008 Challenge] data downloaded
+  [https://www.i2b2.org/NLP/Obesity/ Download] and extract all I2B2 2008 data files to some directory, referred to as i2b2.dir
+  The following files are required:
+     * obesity_patient_records_training2.xml
+     * obesity_patient_records_test.xml
+     * obesity_standoff_annotations_training.xml
+     * obesity_standoff_annotations_test.xml
+     * obesity_standoff_annotations_training_addendum.xml
+     * obesity_standoff_annotations_training_addendum2.xml
+     * obesity_standoff_annotations_training_addendum3.xml
+  
+== Configure ytex.properties ==
+Add the following to your `ytex.properties` file:
+{{{
+# where challenge data was extracted
+i2b2.dir=E:/downloads/text mining/i2b2 2008 challenge
+# where libsvm binaries are located
+libsvm.bin=C:/java/libsvm-3.1/windows
+# where ytex is installed  
+ytex.home=E:/projects/ytex
+# we generate a file that contains the umls concept graph 
+# this is where we store it, adjust to match your environment
+ytex.conceptGraphDir=E:/projects/ytex/conceptGraph
+# how many cores does your system have? 
+# should have atleast 4, or this will take more than a weekend
+kernel.threads=4
+kernel.mod=4
+# the slices should go from 1 ... kernel.mod
+kernel.slices=1,2,3,4
+# where to place temporary files
+kernel.eval.tmpdir=E:/temp
+# copy the rest as is
+parallel.folds=yes
+kernel.name=i2b2.2008
+ytex.conceptGraphName=rbpar
+ytex.corpusName=i2b2.2008
+ytex.conceptSetName=ctakes
+}}}
+
+== Reproducing results ==
+To load and annotate the corpus, compute hotspots, run the following (this will take 5-7 hours):
+{{{
+ant -Dytex.home=%YTEX_HOME% setup.all
+}}} 
+
+To run the cross validation and test, run the following (will run an entire weekend):
+{{{
+ant -Dytex.home=%YTEX_HOME% cv.all test.all
+}}}
+
+To run just the test using the optimal parameters we found (will run a overnight):
+{{{
+ant -Dytex.home=%YTEX_HOME% test.load.best test.all
+}}}
+
 -->
 <project name="i2b2">
 	<property environment="env" />
@@ -22,23 +64,102 @@
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
+
+	<target name="setup.all" description="annotate corpus, compute infogain, compute hotspots" depends="setup.build.i2b2,setup.load.i2b2,setup.v_i2b2_fword_lookup,RunCPE.all,setup.tfidf,eval.infogain,setup.generateConceptGraph,InfoContentEvaluator,ImputedFeatureEvaluator,setup.generateFolds">
+		<antcall target="insert.hotspot">
+			<param name="kernel.experiment" value="word" />
+		</antcall>
+		<antcall target="insert.hotspot">
+			<param name="kernel.experiment" value="imputed" />
+		</antcall>
+	</target>
+	<target name="cv.all" depends="word.cv.all" />
+
+	<target name="word.cv.all">
+		<fail if="kernel.experiment" />
+		<property name="kernel.experiment" value="word" />
+		<antcall target="export.cutoffs" />
+		<antcall target="libsvm.iter.dirs" />
+		<antcall target="cv.insert_classifier_eval_irzv" />
+		<antcall target="cv.getBestParams" />
+	</target>
+
+	<target name="setup.build.i2b2">
+		<mkdir dir="${basedir}/bin" />
+		<javac srcdir="${basedir}/src/main/java" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
+	</target>
+
+	<target name="setup.load.i2b2" description="load i2b2 docs and annotations">
+		<fail unless="i2b2.dir" message="i2b2.dir not set" />
+		<java classname="ytex.i2b2.DocumentLoaderImpl" fork="yes" dir="${basedir}/desc">
+			<classpath>
+				<dirset dir="${basedir}">
+					<include name="bin" />
+				</dirset>
+				<path refid="${kernel.cp}" />
+			</classpath>
+			<arg value="${i2b2.dir}" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	<target name="setup.v_i2b2_fword_lookup" description="load i2b2 docs and annotations">
+		<antcall target="mysql">
+			<param name="mysql.dir" value="${basedir}/data" />
+			<param name="mysql.script" value="v_i2b2_fword_lookup.sql" />
+		</antcall>
+	</target>
+	<target name="setup.tfidf" description="calculate tfidf stats">
+		<antcall target="mysql">
+			<param name="mysql.dir" value="${basedir}/data" />
+			<param name="mysql.script" value="tfidf-cui.sql" />
+		</antcall>
+	</target>
+
+	<target name="setup.generateConceptGraph" description="generate concept graph used to impute infogain">
+		<mkdir dir="${ytex.conceptGraphDir}" />
+		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+			<arg value="-prop" />
+			<arg value="corpus.properties.xml" />
+			<jvmarg value="-Xmx1g" />
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+		</java>
+	</target>
+
+	<target name="setup.generateFolds" description="generate folds, store in cv_fold">
+		<java classname="ytex.kernel.FoldGeneratorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+			<arg value="-prop" />
+			<arg value="infogain-usword.xml" />
+			<jvmarg value="-Xmx1g" />
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+		</java>
+	</target>
+
 	<target name="init.exp">
 		<!--
 		<property name="kernel.experiment" value="kern-cuiword-dot" />
 		-->
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
 		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
+		<property name="kernel.cv.experiment" value="${kernel.hzv.experiment}" />
+
 		<property name="kernel.algo" value="libsvm" />
 		<filterset id="exp.filter">
 			<filter token="kernel.name" value="${kernel.name}" />
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
 			<filter token="kernel.hzv.experiment" value="${kernel.hzv.experiment}" />
+			<filter token="kernel.cv.experiment" value="${kernel.cv.experiment}" />
 		</filterset>
 	</target>
 
+
 	<target name="eval.infogain" description="run WekaAttributeEvaluator to evaluate infogain for specified dir and prop file">
 		<property name="eval.infogain.dir" value="./data" />
-		<property name="eval.infogain.prop" value="infogain-word.xml" />
+		<property name="eval.infogain.prop" value="infogain-usword.xml" />
 		<java classname="ytex.weka.WekaAttributeEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${eval.infogain.dir}">
 			<arg value="-prop" />
 			<arg value="${eval.infogain.prop}" />
@@ -48,6 +169,7 @@
 			</syspropertyset>
 		</java>
 	</target>
+
 	<target name="insert.hotspot" description="insert hotspots for experiment">
 		<property name="insert.hotspot.dir" value="${basedir}/exp/${kernel.experiment}" />
 		<property name="insert.hotspot.sql" value="insert_hotspot.sql" />
@@ -56,10 +178,19 @@
 			<param name="mysql.script" value="${insert.hotspot.sql}" />
 		</antcall>
 	</target>
-
-	<target name="insert_hotspot_zero_vector_tt" depends="init.exp" description="setup truth table for ontocuis">
-		<property name="mysql.script" value="insert_hotspot_zero_vector_tt.sql" />
-		<copy file="data/${mysql.script}" todir="libsvm/${kernel.experiment}" overwrite="yes">
+	<target name="cv.irzv" depends="init.exp" description="adjust truth tables with zero vectors">
+		<antcall target="mysql.template">
+			<param name="mysql.script" value="cv_irzv.sql" />
+		</antcall>
+	</target>
+	<target name="cv.getBestParams" depends="init.exp" description="adjust truth tables with zero vectors">
+		<antcall target="mysql.template">
+			<param name="mysql.script" value="getBestParams.sql" />
+		</antcall>
+	</target>
+	<target name="mysql.template" depends="init.exp" description="setup truth table for ontocuis">
+		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
+		<copy file="data/${mysql.script}" tofile="libsvm/${kernel.experiment}/${mysql.script}" overwrite="yes">
 			<filterset>
 				<filterset refid="exp.filter" />
 			</filterset>
@@ -69,21 +200,9 @@
 			<param name="mysql.script" value="${mysql.script}" />
 		</antcall>
 	</target>
-	<target name="insert_classifier_eval_irzv" depends="init.exp" description="setup truth table for ontocuis">
-		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
-		<copy file="data/insert_classifier_eval_irzv.sql" tofile="libsvm/${kernel.experiment}/insert_classifier_eval_irzv.sql" overwrite="yes">
-			<filterset>
-				<filterset refid="exp.filter" />
-			</filterset>
-		</copy>
-		<antcall target="mysql">
-			<param name="mysql.dir" value="libsvm/${kernel.experiment}" />
-			<param name="mysql.script" value="insert_classifier_eval_irzv.sql" />
-		</antcall>
-	</target>
 	<target name="export.cutoffs" depends="init.exp" description="export libsvm data">
 		<property name="export.cutoff.target" value="export.cutoff" />
-		<for list="${export.cutoffs}" param="export.cutoff">
+		<for list="${export.cutoffs}" param="export.cutoff" parallel="yes" threadCount="2">
 			<sequential>
 				<antcall target="${export.cutoff.target}">
 					<param name="export.cutoff" value="@{export.cutoff}" />
@@ -93,7 +212,7 @@
 		</for>
 	</target>
 	<target name="export.cutoff" depends="init.exp" description="export libsvm data for specified cutoff">
-		<property name="export.cutoff" value="0.05" />
+		<property name="export.cutoff" value="10" />
 		<property name="export.dir" value="${kernel.algo}/${kernel.experiment}/${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
 		<delete dir="${export.dir}" quiet="yes" />
@@ -108,19 +227,6 @@
 			<globmapper from="*.template" to="*" />
 			<filterset refid="export.filterset" />
 		</copy>
-		<!-- run script to insert zero vectors for the cutoff if available -->
-		<if>
-			<equals arg1="${kernel.experiment}" arg2="${kernel.hzv.experiment}" />
-			<then>
-				<copy file="${basedir}/data/insert_hotspot_zv.sql" tofile="${export.dir}/insert_hotspot_zv.sql" overwrite="yes">
-					<filterset refid="export.filterset" />
-				</copy>
-				<antcall target="mysql">
-					<param name="mysql.dir" value="${export.dir}" />
-					<param name="mysql.script" value="insert_hotspot_zv.sql" />
-				</antcall>
-			</then>
-		</if>
 		<!-- export the data -->
 		<antcall target="SparseDataExporter">
 			<param name="export.type" value="${kernel.algo}" />
@@ -133,33 +239,6 @@
 				<antcall target="export.classrel" />
 			</then>
 		</if>
-		<if>
-			<and>
-				<equals arg1="${kernel.algo}" arg2="libsvm" />
-				<available resource="${basedir}/exp/${kernel.experiment}/classWeights.sql" />
-			</and>
-			<then>
-				<antcall target="export.classWeights" />
-			</then>
-		</if>
-	</target>
-	<target name="export.classWeights" depends="init.exp" description="export class weights for libsvm">
-		<property name="export.cutoff" value="0.35" />
-		<property name="export.dir" value="${kernel.algo}/${kernel.experiment}/${export.cutoff}" />
-		<filterset id="export.filterset">
-			<filter token="export.cutoff" value="${export.cutoff}" />
-			<filterset refid="exp.filter" />
-		</filterset>
-		<copy file="exp/${kernel.experiment}/classWeights.sql" todir="${export.dir}" overwrite="yes">
-			<filterset refid="export.filterset" />
-		</copy>
-		<exec executable="${mysql.home}/mysql" dir="${export.dir}" failonerror="yes" output="${export.dir}/kernel.properties" append="yes">
-			<arg line="${mysql.line}" />
-			<arg value="--skip-column-names" />
-			<arg value="--raw" />
-			<arg value="-e" />
-			<arg value="source classWeights.sql" />
-		</exec>
 	</target>
 	<target name="export.classrel" depends="init.exp" description="export positive class fraction for svmlin">
 		<property name="export.cutoff" value="0.05" />
@@ -179,14 +258,51 @@
 			<arg value="source svmlin_classrel.sql" />
 		</exec>
 	</target>
-
-	<target name="kernel.all" depends="kernel.eval.all,kernel.export.all,kernel.libsvm,insert_classifier_eval_irzv" description="evaluate kernel on corpus, run libsvm, update ir metrics w/ zero vectors" />
-	<target name="kernel.libsvm" depends="init.exp" description="launch libsvm">
+	<target name="test.bag.all" depends="init.exp">
+		<!-- cleanup libsvm dir -->
+		<property name="export.dir" value="${basedir}/${kernel.algo}/${kernel.experiment}" />
+		<delete dir="${export.dir}" quiet="yes" />
+		<mkdir dir="${export.dir}" />
+		<!-- copy files -->
+		<copy todir="${export.dir}">
+			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="export-bow.xml,kernel.properties" />
+		</copy>
+		<!-- libsvm export -->
+		<antcall target="SparseDataExporter" />
+		<!-- export optimal params -->
+		<copy todir="${export.dir}" file="${basedir}/data/genLibsvmParams.sql">
+			<filterset refid="exp.filter" />
+		</copy>
+		<exec executable="${mysql.home}/mysql" dir="${export.dir}" failonerror="yes" output="${export.dir}/parameters.properties" append="no">
+			<arg line="${mysql.line}" />
+			<arg value="--skip-column-names" />
+			<arg value="--raw" />
+			<arg value="-e" />
+			<arg value="source genLibsvmParams.sql" />
+		</exec>
+		<echo>run libsvm on directory ${export.dir}</echo>
+		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
+			<property name="ytex.home" value="${ytex.home}" />
+			<property name="kernel.data" value="${export.dir}" />
+		</ant>
+		<antcall target="mysql.template">
+			<param name="mysql.script" value="test_irzv.sql" />
+		</antcall>
+	</target>
+	<target name="test.irzv" depends="init.exp">
+		<property name="export.dir" value="${basedir}/${kernel.algo}/${kernel.experiment}" />
+		<antcall target="mysql.template">
+			<param name="mysql.script" value="test_irzv.sql" />
+			<param name="mysql.outfile" value="${export.dir}/results.txt" />
+		</antcall>
+	</target>
+	<target name="libsvm.iter.dirs" depends="init.exp" description="launch libsvm">
 		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="iter.dirs" inheritall="true">
 			<property name="ytex.home" value="${ytex.home}" />
 			<property name="kernel.exp.base" value="${ytex.home}/i2b2.2008/libsvm/${kernel.experiment}" />
 		</ant>
 	</target>
+	<target name="kernel.all" depends="kernel.eval.all,kernel.export.all,libsvm.iter.dirs,cv.irzv,cv.getBestParams" description="evaluate kernel on corpus, run libsvm, update ir metrics w/ zero vectors" />
 	<target name="kernel.iter.label" description="execute kernel.iter.target for each label in label.properties">
 		<property file="./tree/${tree.name}/label.properties" />
 		<for list="${labels}" param="export.label">
@@ -379,9 +495,19 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	<target name="mysql" description="run specified script">
+	<target name="mysql" depends="mysql.nooutput,mysql.output" />
+	<target name="mysql.nooutput" unless="mysql.outfile" description="run specified script">
 		<exec executable="${mysql.home}/mysql" dir="${mysql.dir}" failonerror="yes">
 			<arg line="${mysql.line}" />
+			<arg value="-e" />
+			<arg value="source ${mysql.script}" />
+		</exec>
+	</target>
+	<target name="mysql.output" if="mysql.outfile" description="run specified script, output to file">
+		<exec executable="${mysql.home}/mysql" dir="${mysql.dir}" failonerror="yes" output="${mysql.outfile}" append="no">
+			<arg line="${mysql.line}" />
+			<arg value="--skip-column-names" />
+			<arg value="--raw" />
 			<arg value="-e" />
 			<arg value="source ${mysql.script}" />
 		</exec>
@@ -409,7 +535,7 @@
 		</filterset>
 	</target>
 	<target name="test.all" depends="test.init.exp,test.copy.props">
-		<property name="test.all.target" value="test.label"/>
+		<property name="test.all.target" value="test.label" />
 		<for list="${labels}" param="export.label">
 			<sequential>
 				<antcall target="${test.all.target}">
@@ -420,14 +546,13 @@
 	</target>
 	<target name="test.copy.props" depends="test.init.exp" description="copy props">
 		<copy todir="${export.dir}" overwrite="yes">
-			<fileset dir="${export.src.dir}" includes="parameters.properties,kernel.properties"/>
+			<fileset dir="${export.src.dir}" includes="parameters.properties,kernel.properties" />
 		</copy>
 	</target>
 	<target name="test.label" depends="test.init.label" description="export libsvm data for the specified label, run libsvm">
 		<antcall target="test.kernel.eval.label" />
 		<antcall target="test.export.label" />
 		<antcall target="test.libsvm.label" />
-		<antcall target="test.zv" />
 	</target>
 	<target name="test.kernel.eval.label" depends="test.init.label" if="eval.kernel" description="evaluate kernel on test instances">
 		<!-- export the tree -->
@@ -460,17 +585,6 @@
 			<property name="kernel.data" value="${export.dir}" />
 		</ant>
 	</target>
-	<target name="test.zv" depends="test.init.label">
-		<mkdir dir="${export.dir}" />
-		<!-- generate export property file -->
-		<copy tofile="${export.dir}/insert_classifier_eval_irzv.sql" overwrite="yes" file="${export.src.dir}/insert_classifier_eval_irzv.template.sql">
-			<filterset refid="export.filterset" />
-		</copy>
-		<antcall target="mysql">
-			<param name="mysql.dir" value="${export.dir}" />
-			<param name="mysql.script" value="insert_classifier_eval_irzv.sql" />
-		</antcall>
-	</target>
 	<target name="test">
 		<for list="${labels}" param="export.label">
 			<sequential>
@@ -493,7 +607,29 @@
 		<java classname="ytex.kernel.ImputedFeatureEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
 			<arg value="-prop" />
 			<arg value="corpus.properties.xml" />
-			<jvmarg value="-Xmx2g" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	<target name="RunCPE">
+		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
+		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
+		<copy file="desc/cpe.template.xml" tofile="desc/cpe.xml" overwrite="yes">
+			<filterset id="exp.filter">
+				<filter token="collectionreader.url" value="${collectionreader.url}" />
+				<filter token="pipeline.url" value="${pipeline.url}" />
+			</filterset>
+		</copy>
+		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
+			<classpath>
+				<dirset dir="${basedir}">
+					<include name="${basedir}/desc" />
+				</dirset>
+				<path refid="${kernel.cp}" />
+			</classpath>
+			<arg value="cpe.xml" />
+			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
@@ -508,18 +644,21 @@
 		</for>
 	</target>
 	<target name="RunCPE.slice">
-		<copy file="desc/cpe.xml" tofile="desc/cpe.xml.${kernel.slice}">
+		<property name="kernel.slice" value="1" />
+		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
+		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
+		<copy file="desc/cpe.template.xml" tofile="desc/cpe.xml.${kernel.slice}" overwrite="yes">
 			<filterset id="exp.filter">
-				<filter token="ytex.home" value="${ytex.home}" />
+				<filter token="collectionreader.url" value="${collectionreader.url}" />
+				<filter token="pipeline.url" value="${pipeline.url}" />
 				<filter token="kernel.slice" value="${kernel.slice}" />
 				<filter token="kernel.mod" value="${kernel.mod}" />
 			</filterset>
 		</copy>
-		<!--
 		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
 			<classpath>
 				<dirset dir="${basedir}">
-					<include name="${basedir}/desc"/>
+					<include name="${basedir}/desc" />
 				</dirset>
 				<path refid="${kernel.cp}" />
 			</classpath>
@@ -528,6 +667,5 @@
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
-		-->
 	</target>
 </project>
