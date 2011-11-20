@@ -25,6 +25,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.uima.ApplicationContextHolder;
 import ytex.uima.types.DocKey;
@@ -66,6 +69,7 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 	protected DataSource dataSource;
 	protected SimpleJdbcTemplate simpleJdbcTemplate;
 	protected NamedParameterJdbcTemplate namedJdbcTemplate;
+	protected TransactionTemplate txTemplate;
 	List<Map<String, Object>> listDocumentIds;
 	int i = 0;
 
@@ -90,12 +94,22 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 				.getApplicationContext().getBean("collectionReaderDataSource");
 		simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
 		namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+		txTemplate = (TransactionTemplate) ApplicationContextHolder
+				.getApplicationContext().getBean("txTemplate");
 	}
 
 	protected void loadDocumentIds() {
 		if (listDocumentIds == null) {
-			listDocumentIds = simpleJdbcTemplate
-					.queryForList(queryGetDocumentKeys);
+			listDocumentIds = txTemplate
+					.execute(new TransactionCallback<List<Map<String, Object>>>() {
+
+						@Override
+						public List<Map<String, Object>> doInTransaction(
+								TransactionStatus arg0) {
+							return simpleJdbcTemplate
+									.queryForList(queryGetDocumentKeys);
+						}
+					});
 			i = 0;
 		}
 	}
@@ -119,8 +133,8 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 	private void addDocKey(CAS aCAS, Map<String, Object> id)
 			throws CollectionException {
 		try {
-//			DocKey docKey = (DocKey) ConstructorUtils.invokeConstructor(
-//					DocKey.class, aCAS.getJCas());
+			// DocKey docKey = (DocKey) ConstructorUtils.invokeConstructor(
+			// DocKey.class, aCAS.getJCas());
 			DocKey docKey = new DocKey(aCAS.getJCas());
 			FSArray keyValuePairs = new FSArray(aCAS.getJCas(), id.size());
 			int i = 0;
@@ -145,33 +159,44 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 			docKey.addToIndexes();
 		} catch (CASException ce) {
 			throw new CollectionException(ce);
-//		} catch (InvocationTargetException ce) {
-//			throw new CollectionException(ce);
-//		} catch (IllegalAccessException ce) {
-//			throw new CollectionException(ce);
-//		} catch (NoSuchMethodException ce) {
-//			throw new CollectionException(ce);
-//		} catch (InstantiationException ce) {
-//			throw new CollectionException(ce);
-//		} catch (ClassNotFoundException ce) {
-//			throw new CollectionException(ce);
+			// } catch (InvocationTargetException ce) {
+			// throw new CollectionException(ce);
+			// } catch (IllegalAccessException ce) {
+			// throw new CollectionException(ce);
+			// } catch (NoSuchMethodException ce) {
+			// throw new CollectionException(ce);
+			// } catch (InstantiationException ce) {
+			// throw new CollectionException(ce);
+			// } catch (ClassNotFoundException ce) {
+			// throw new CollectionException(ce);
 		}
 	}
 
 	protected void getDocumentById(final CAS aCAS, final Map<String, Object> id) {
-		namedJdbcTemplate.query(queryGetDocument, id, new RowCallbackHandler() {
-			boolean bFirstRowRead = false;
+		this.txTemplate.execute(new TransactionCallback<Object>() {
 
 			@Override
-			public void processRow(ResultSet rs) throws SQLException {
-				if (!bFirstRowRead) {
-					LobHandler lobHandler = new DefaultLobHandler();
-					String clobText = lobHandler.getClobAsString(rs, 1);
-					aCAS.setDocumentText(clobText);
-					bFirstRowRead = true;
-				} else {
-					log.error("Multiple documents for document key: " + id);
-				}
+			public Object doInTransaction(TransactionStatus arg0) {
+				namedJdbcTemplate.query(queryGetDocument, id,
+						new RowCallbackHandler() {
+							boolean bFirstRowRead = false;
+
+							@Override
+							public void processRow(ResultSet rs)
+									throws SQLException {
+								if (!bFirstRowRead) {
+									LobHandler lobHandler = new DefaultLobHandler();
+									String clobText = lobHandler
+											.getClobAsString(rs, 1);
+									aCAS.setDocumentText(clobText);
+									bFirstRowRead = true;
+								} else {
+									log.error("Multiple documents for document key: "
+											+ id);
+								}
+							}
+						});
+				return null;
 			}
 		});
 	}
