@@ -93,7 +93,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 
 	<target name="setup.load.i2b2" description="load i2b2 docs and annotations">
 		<fail unless="i2b2.dir" message="i2b2.dir not set" />
-		<java classname="ytex.i2b2.DocumentLoaderImpl" fork="yes" dir="${basedir}/desc">
+		<java classname="ytex.i2b2.DocumentLoaderImpl" fork="yes" dir="${basedir}/desc" failonerror="yes">
 			<classpath>
 				<dirset dir="${basedir}">
 					<include name="bin" />
@@ -120,7 +120,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 
 	<target name="setup.generateConceptGraph" description="generate concept graph used to impute infogain">
 		<mkdir dir="${ytex.conceptGraphDir}" />
-		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="corpus.properties.xml" />
 			<jvmarg value="-Xmx1g" />
@@ -131,7 +131,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	</target>
 
 	<target name="setup.generateFolds" description="generate folds, store in cv_fold">
-		<java classname="ytex.kernel.FoldGeneratorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+		<java classname="ytex.kernel.FoldGeneratorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="infogain-usword.xml" />
 			<jvmarg value="-Xmx1g" />
@@ -162,7 +162,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	<target name="eval.infogain" description="run WekaAttributeEvaluator to evaluate infogain for specified dir and prop file">
 		<property name="eval.infogain.dir" value="./data" />
 		<property name="eval.infogain.prop" value="infogain-usword.xml" />
-		<java classname="ytex.weka.WekaAttributeEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${eval.infogain.dir}">
+		<java classname="ytex.weka.WekaAttributeEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${eval.infogain.dir}" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="${eval.infogain.prop}" />
 			<jvmarg value="-Xmx1g" />
