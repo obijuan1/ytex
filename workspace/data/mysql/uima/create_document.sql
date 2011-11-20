@@ -1,5 +1,5 @@
 CREATE TABLE document(
-	document_id int AUTO_INCREMENT NOT NULL,
+	document_id int  AUTO_INCREMENT  NOT NULL,
 	uid bigint not null default 0,
 	analysis_batch varchar(50) NOT NULL,
 	cas longblob NULL,
@@ -248,16 +248,13 @@ create table anno_date (
 ) engine=myisam;
 
 create table anno_contain (
-  anno_contain_id int auto_increment not null primary key,
   parent_anno_base_id int not null comment 'parent anno fk anno_base',
   parent_uima_type_id int not null comment 'parent type',
   child_anno_base_id int not null comment 'child anno fk anno_base',
   child_uima_type_id int not null comment 'child type',
-  key ix_child_id (child_anno_base_id),
-  key ix_parent_id (parent_anno_base_id),
+  primary key (parent_anno_base_id, child_anno_base_id),
   key IX_parent_id_child_type (parent_anno_base_id, child_uima_type_id),
-  key IX_child_id_parent_type (child_anno_base_id, parent_uima_type_id),
-  unique key nk_anno_contain (parent_anno_base_id, child_anno_base_id)
+  key IX_child_id_parent_type (child_anno_base_id, parent_uima_type_id)
 ) engine=myisam, comment 'containment relationships between annotations';
 
 
