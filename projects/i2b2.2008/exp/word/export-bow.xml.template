@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="scope">label</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+	select i.instance_id, a.class, i.train, a.label, f.fold, f.run
+	from cv_fold f
+	inner join cv_fold_instance i on f.cv_fold_id = i.cv_fold_id
+	inner join corpus_label a 
+		on a.label = f.label 
+		and a.corpus_name = f.corpus_name
+		and a.instance_id = i.instance_id 
+    inner join hotspot_instance hi 
+    	on hi.instance_id = i.instance_id
+    	and hi.label = f.label
+		and hi.corpus_name = f.corpus_name
+		and hi.experiment = 'word'	
+	/* 
+	limit to labels that have meaningful training data at this cutoff 
+	this means more than one class
+	*/
+	inner join (
+		select label
+		from
+		(
+			select a.label, count(distinct a.class) jc
+			from corpus_doc doc
+			inner join corpus_label a 
+				on doc.instance_id = a.instance_id 
+				and doc.corpus_name = a.corpus_name
+		    inner join hotspot_instance hi 
+		    	on hi.instance_id = doc.instance_id
+		    	and hi.label = a.label
+				and hi.corpus_name = doc.corpus_name
+				and hi.experiment = 'word'
+			where hi.min_rank <= @export.cutoff@
+			and  doc.doc_group = 'train'
+		  group by a.label
+		) s where jc > 1	
+	) dsf on dsf.label = a.label    
+	where hi.min_rank <= @export.cutoff@
+	and f.corpus_name = 'i2b2.2008'
+]]></entry>
+	<entry key="numericWordQuery"><![CDATA[
+	select instance_id, 
+        cast(concat(if(r.feature_name is null, '', if(negated > 0, 'neg_', 'pos_')), lower(covered_text)) as char(100)) word, 1
+	from
+	(
+		select distinct hi.instance_id, covered_text, coalesce(wt.negated, 0) negated
+        from corpus_doc doc
+		inner join corpus_label a 
+			on doc.instance_id = a.instance_id 
+			and doc.corpus_name = a.corpus_name
+			and a.label = :label
+		inner join hotspot_instance hi 
+			on hi.instance_id = doc.instance_id
+		    and hi.label = a.label
+			and hi.corpus_name = doc.corpus_name
+			and hi.experiment = 'word'
+        /* limit to sentence */
+        inner join hotspot_sentence hs
+            on hi.hotspot_instance_id = hs.hotspot_instance_id
+            and hs.rank <=  @export.cutoff@
+        /* get words and numbers in sentence */
+        inner join anno_contain ac 
+            on ac.parent_anno_base_id = hs.anno_base_id
+            and ac.child_uima_type_id in (22,25,26)
+        /* get covered text */
+        inner join anno_base ab
+        	on ab.anno_base_id = ac.child_anno_base_id
+        	and covered_text is not null
+        	and length(covered_text) > 0
+        /* get negation status */
+        left join anno_word_token wt
+            on wt.anno_base_id = ac.child_anno_base_id
+        where doc.corpus_name = 'i2b2.2008'
+        and doc.doc_group = 'train'
+    ) s
+    left join
+    (
+        /* see if the feature is a hotspot */
+        select r.feature_name
+        from feature_eval e 
+        inner join feature_rank r
+            on r.feature_eval_id = e.feature_eval_id
+            and r.rank <= @export.cutoff@
+        where e.corpus_name = 'i2b2.2008'
+        and e.type = 'InfoGainAttributeEval'
+        and e.featureset_name = 'usword'
+        and e.cv_fold_id = 0
+        and e.label = :label
+    ) r on r.feature_name = s.covered_text
+    ]]></entry>
+</properties>
