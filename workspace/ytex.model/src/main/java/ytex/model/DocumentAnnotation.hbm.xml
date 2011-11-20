@@ -35,70 +35,69 @@
 			<key column="anno_base_id" />
 			<property name="segmentID" column="segment_id" />
 		</joined-subclass>
-		<joined-subclass name="ytex.model.DateAnnotation" table="anno_date">
+		<joined-subclass name="ytex.model.DateAnnotation"
+			table="anno_date">
 			<key column="anno_base_id" />
 			<property name="date" column="tstamp" type="timestamp" />
 		</joined-subclass>
-		<joined-subclass name="ytex.vacs.model.DocumentDateAnnotation" table="anno_docdate">
+		<joined-subclass name="ytex.vacs.model.DocumentDateAnnotation"
+			table="anno_docdate">
 			<key column="anno_base_id" />
 			<property name="documentDate" column="doc_date" type="timestamp" />
 		</joined-subclass>
-		<!-- 
-		TODO: maybe create mapping for ref_document_type and use that here?
-		 -->
-		<joined-subclass name="ytex.vacs.model.DocumentKeyAnnotation" table="anno_dockey">
+		<!-- TODO: maybe create mapping for ref_document_type and use that here? -->
+		<joined-subclass name="ytex.vacs.model.DocumentKeyAnnotation"
+			table="anno_dockey">
 			<key column="anno_base_id" />
 			<property name="studyID" column="study_id" />
 			<property name="uid" column="uid" />
 			<property name="documentTypeID" column="document_type_id" />
 			<property name="siteID" column="site_id" />
 		</joined-subclass>
-		<joined-subclass name="SourceDocumentInformation" table="anno_source_doc_info">
+		<joined-subclass name="SourceDocumentInformation"
+			table="anno_source_doc_info">
 			<key column="anno_base_id" />
-			<property name="uri" column="uri"/>
-			<property name="offsetInSource" column="offset_in_source"/>
-			<property name="documentSize" column="document_size"/>
-			<property name="lastSegment" column="last_segment"/>
+			<property name="uri" column="uri" />
+			<property name="offsetInSource" column="offset_in_source" />
+			<property name="documentSize" column="document_size" />
+			<property name="lastSegment" column="last_segment" />
 		</joined-subclass>
 		<joined-subclass name="BaseToken" table="anno_base_token">
 			<key column="anno_base_id" />
-			<property name="tokenNumber" column="token_number"/>
-			<property name="normalizedForm" column="normalized_form"/>
-			<property name="partOfSpeech" column="part_of_speech"/>
+			<property name="tokenNumber" column="token_number" />
+			<property name="normalizedForm" column="normalized_form" />
+			<property name="partOfSpeech" column="part_of_speech" />
 			<joined-subclass name="NumToken" table="anno_num_token">
 				<key column="anno_base_id" />
-				<property name="numType" column="num_type"/>
+				<property name="numType" column="num_type" />
 			</joined-subclass>
 			<joined-subclass name="WordToken" table="anno_word_token">
 				<key column="anno_base_id" />
-				<property name="capitalization" column="capitalization"/>
-				<property name="numPosition" column="num_position"/>
-				<property name="suggestion" column="suggestion"/>
-				<property name="canonicalForm" column="canonical_form"/>
+				<property name="capitalization" column="capitalization" />
+				<property name="numPosition" column="num_position" />
+				<property name="suggestion" column="suggestion" />
+				<property name="canonicalForm" column="canonical_form" />
 				<property name="negated" />
 				<property name="possible" />
 			</joined-subclass>
 		</joined-subclass>
 	</class>
-	
+
 	<class name="AnnotationContainmentLink" table="anno_contain">
-		<id name="annotationContainmentLinkId" column="anno_contain_id">
-			<generator class="native">
-				<param name="sequence">anno_contain_id_sequence</param>
-			</generator>
-		</id>
-		<property name="parentAnnotationId" column="parent_anno_base_id"/>
-		<property name="childAnnotationId" column="child_anno_base_id"/>
-		<property name="parentUimaTypeId" column="parent_uima_type_id"/>
-		<property name="childUimaTypeId" column="child_uima_type_id"/>
+		<!-- <id name="annotationContainmentLinkId" column="anno_contain_id"> <generator 
+			class="native"> <param name="sequence">anno_contain_id_sequence</param> </generator> 
+			</id> -->
+		<composite-id>
+			<key-property name="parentAnnotationId" column="parent_anno_base_id" />
+			<key-property name="childAnnotationId" column="child_anno_base_id" />
+		</composite-id>
+		<property name="parentUimaTypeId" column="parent_uima_type_id" />
+		<property name="childUimaTypeId" column="child_uima_type_id" />
 	</class>
-	
-	<!-- 
-	insert anno_contain for a document
-	annotations must pertain to the same document
-	parent annotation spans a range that contains the child annotation
-	if annotations span the exact same range, they must be of different types
-	-->
+
+	<!-- insert anno_contain for a document annotations must pertain to the 
+		same document parent annotation spans a range that contains the child annotation 
+		if annotations span the exact same range, they must be of different types -->
 	<query name="insertAnnotationContainmentLinks"><![CDATA[
 		insert into AnnotationContainmentLink (parentAnnotationId, parentUimaTypeId, childAnnotationId, childUimaTypeId)
 		select p.documentAnnotationID, p.uimaType.uimaTypeID, c.documentAnnotationID, c.uimaType.uimaTypeID
@@ -109,5 +108,5 @@
 		and p.documentAnnotationID <> c.documentAnnotationID
 		and not (p.begin = c.begin and p.end = c.end and p.uimaType.uimaTypeID = c.uimaType.uimaTypeID)
 		and p.document.documentID = :documentID
-	]]></query>	
+	]]></query>
 </hibernate-mapping>

@@ -7,25 +7,6 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
 
-	<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
-		below) we use read uncommitted because when we annotate documents in parallel, 
-		we read and write to the document table. However, the txs don't interfere 
-		with eachother - they don't touch the same rows - so there is no need to 
-		serialize the transactions. serializing the transactions will actually cause 
-		deadlocks -->
-	<!-- we have to use the old-fashioned transaction aspect configuration because 
-		no variable substitution in tx:method element <tx:advice id="txAdvice" transaction-manager="transactionManager"> 
-		<tx:attributes> <tx:method name="*" propagation="REQUIRED" isolation="${db.isolationLevel}" 
-		/> </tx:attributes> </tx:advice> -->
-	<bean id="txAdvice"
-		class="org.springframework.transaction.interceptor.TransactionInterceptor">
-		<property name="transactionManager" ref="transactionManager" />
-		<property name="transactionAttributes">
-			<props>
-				<prop key="*">PROPAGATION_REQUIRED,ISOLATION_${db.isolationLevel}</prop>
-			</props>
-		</property>
-	</bean>
 	<!-- ensure that the above transactional advice runs for any execution of 
 		an operation defined by the FooService interface -->
 	<aop:config>
@@ -33,10 +14,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="ytexDaoOperation" />
 	</aop:config>
 
-	<bean id="transactionManager"
-		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
 	<bean id="documentDao" class="ytex.dao.DocumentDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>

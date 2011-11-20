@@ -15,19 +15,19 @@ public class AnnotationContainmentLink implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	int annotationContainmentLinkId;
+//	int annotationContainmentLinkId;
 	int parentAnnotationId;
 	int parentUimaTypeId;
 	int childAnnotationId;
 	int childUimaTypeId;
 	
 	
-	public int getAnnotationContainmentLinkId() {
-		return annotationContainmentLinkId;
-	}
-	public void setAnnotationContainmentLinkId(int annotationContainmentLinkId) {
-		this.annotationContainmentLinkId = annotationContainmentLinkId;
-	}
+//	public int getAnnotationContainmentLinkId() {
+//		return annotationContainmentLinkId;
+//	}
+//	public void setAnnotationContainmentLinkId(int annotationContainmentLinkId) {
+//		this.annotationContainmentLinkId = annotationContainmentLinkId;
+//	}
 	public int getParentAnnotationId() {
 		return parentAnnotationId;
 	}
