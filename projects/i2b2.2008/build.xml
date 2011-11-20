@@ -65,25 +65,27 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 
-	<target name="setup.all" description="annotate corpus, compute infogain, compute hotspots" depends="setup.build.i2b2,setup.load.i2b2,setup.v_i2b2_fword_lookup,RunCPE.all,setup.tfidf,eval.infogain,setup.generateConceptGraph,InfoContentEvaluator,ImputedFeatureEvaluator,setup.generateFolds">
-		<antcall target="insert.hotspot">
-			<param name="kernel.experiment" value="word" />
-		</antcall>
-		<antcall target="insert.hotspot">
-			<param name="kernel.experiment" value="imputed" />
-		</antcall>
+	<target name="setup.all" description="annotate corpus, compute infogain" depends="setup.build.i2b2,setup.load.i2b2,setup.v_i2b2_fword_lookup,RunCPE.all,setup.tfidf,eval.infogain,setup.generateConceptGraph,InfoContentEvaluator,ImputedFeatureEvaluator,setup.generateFolds"/>
+	<target name="cv.all">
+		<antcall target="cv.word.all" /> 
+		<antcall target="cv.imputed.all" /> 
 	</target>
-	<target name="cv.all" depends="word.cv.all" />
-
-	<target name="word.cv.all">
-		<fail if="kernel.experiment" />
+	<target name="cv.word.all">
 		<property name="kernel.experiment" value="word" />
+		<antcall target="insert.hotspot"/>
+		<antcall target="cv.exp.all"/>
+	</target>
+	<target name="cv.imputed.all">
+		<property name="kernel.experiment" value="imputed" />
+		<antcall target="insert.hotspot"/>
+		<antcall target="cv.exp.all"/>
+	</target>
+	<target name="cv.exp.all">
 		<antcall target="export.cutoffs" />
 		<antcall target="libsvm.iter.dirs" />
-		<antcall target="cv.insert_classifier_eval_irzv" />
+		<antcall target="cv.irzv" />
 		<antcall target="cv.getBestParams" />
 	</target>
-
 	<target name="setup.build.i2b2">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/src/main/java" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
@@ -212,7 +214,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</for>
 	</target>
 	<target name="export.cutoff" depends="init.exp" description="export libsvm data for specified cutoff">
-		<property name="export.cutoff" value="10" />
+		<property name="export.cutoff" value="1" />
 		<property name="export.dir" value="${kernel.algo}/${kernel.experiment}/${export.cutoff}" />
 		<!-- generate script to find zero vectors for cutoff -->
 		<delete dir="${export.dir}" quiet="yes" />
