@@ -348,6 +348,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				.getFeatureEvaluations(this.corpusName, this.conceptSetName,
 						this.lcsImputedType
 								+ ImputedFeatureEvaluator.SUFFIX_IMPUTED,
+								0d,
 						this.conceptGraphName);
 		this.validLCSCache = new HashMap<String, Map<String, FeatureRank>>();
 		for (FeatureEvaluation r : feList) {

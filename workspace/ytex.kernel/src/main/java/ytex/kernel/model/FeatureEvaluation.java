@@ -19,7 +19,8 @@ public class FeatureEvaluation implements Serializable {
 	private List<FeatureRank> features;
 	private String featureSetName = DBUtil.getEmptyString();
 	private String label = DBUtil.getEmptyString();
-	private String param1 = DBUtil.getEmptyString();
+	private double param1 = 0;
+	private String param2 = DBUtil.getEmptyString();
 
 	public FeatureEvaluation() {
 		super();
@@ -64,8 +65,8 @@ public class FeatureEvaluation implements Serializable {
 		return label;
 	}
 
-	public String getParam1() {
-		return param1;
+	public String getParam2() {
+		return param2;
 	}
 
 	public void setCorpusName(String name) {
@@ -96,8 +97,16 @@ public class FeatureEvaluation implements Serializable {
 		this.label = DBUtil.nullToEmptyString(label);
 	}
 
-	public void setParam1(String param1) {
-		this.param1 = DBUtil.nullToEmptyString(param1);
+	public void setParam2(String param2) {
+		this.param2 = DBUtil.nullToEmptyString(param2);
+	}
+
+	public double getParam1() {
+		return param1;
+	}
+
+	public void setParam1(double param1) {
+		this.param1 = param1;
 	}
 
 }

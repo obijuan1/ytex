@@ -13,13 +13,13 @@ public class ClassifierEvaluationDaoTest extends TestCase {
 
 	public void testGetTopFeatures() {
 		System.out.println(this.classifierEvaluationDao.getTopFeatures(
-				"i2b2.2008", null, "Asthma", "infogain-propagated", 0, "rbpar",
+				"i2b2.2008", null, "Asthma", "infogain-propagated", 0, 0, "rbpar",
 				25));
 	}
 
 	public void testGetThresholdFeatures() {
 		System.out.println(this.classifierEvaluationDao.getThresholdFeatures(
-				"i2b2.2008", null, "Asthma", "infogain-propagated", 0, "rbpar",
+				"i2b2.2008", null, "Asthma", "infogain-propagated", 0, 0, "rbpar",
 				0.09));
 	}
 

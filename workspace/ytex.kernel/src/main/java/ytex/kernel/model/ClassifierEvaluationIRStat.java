@@ -1,34 +1,46 @@
 package ytex.kernel.model;
 
+import java.io.Serializable;
+
+import ytex.dao.DBUtil;
+
 /**
  * summary IR statistics. useful especially for lame databases like mysql.
  * 
  * @author vijay
  * 
  */
-public class ClassifierEvaluationIRStat {
+public class ClassifierEvaluationIRStat implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	ClassifierEvaluation classifierEvaluation;
 	int classifierEvaluationIRStatId;
 	double f1;
 	int fn;
 	int fp;
+	String irClass;
 	int irClassId;
 	double npv;
+
 	double ppv;
+
 	double sensitivity;
 	double specificity;
 	int tn;
 	int tp;
-
+	String type = DBUtil.getEmptyString();
 	public ClassifierEvaluationIRStat() {
 		super();
 	}
-
 	public ClassifierEvaluationIRStat(
-			ClassifierEvaluation classifierEvaluation, Integer irClassId,
+			ClassifierEvaluation classifierEvaluation, String type, String irClass, Integer irClassId,
 			int tp, int tn, int fp, int fn) {
 		super();
 		this.classifierEvaluation = classifierEvaluation;
+		this.type = DBUtil.nullToEmptyString(type);
+		this.irClass = irClass;
 		this.irClassId = irClassId;
 		this.tp = tp;
 		this.tn = tn;
@@ -62,6 +74,10 @@ public class ClassifierEvaluationIRStat {
 		return fp;
 	}
 
+	public String getIrClass() {
+		return irClass;
+	}
+
 	public int getIrClassId() {
 		return irClassId;
 	}
@@ -90,11 +106,13 @@ public class ClassifierEvaluationIRStat {
 		return tp;
 	}
 
+	public String getType() {
+		return type;
+	}
 	public void setClassifierEvaluation(
 			ClassifierEvaluation classifierEvaluation) {
 		this.classifierEvaluation = classifierEvaluation;
 	}
-
 	public void setClassifierEvaluationIRStatId(int classifierEvaluationIRStatId) {
 		this.classifierEvaluationIRStatId = classifierEvaluationIRStatId;
 	}
@@ -109,6 +127,10 @@ public class ClassifierEvaluationIRStat {
 
 	public void setFp(int fp) {
 		this.fp = fp;
+	}
+
+	public void setIrClass(String irClass) {
+		this.irClass = irClass;
 	}
 
 	public void setIrClassId(int ir_classId) {
@@ -137,5 +159,9 @@ public class ClassifierEvaluationIRStat {
 
 	public void setTp(int tp) {
 		this.tp = tp;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 }

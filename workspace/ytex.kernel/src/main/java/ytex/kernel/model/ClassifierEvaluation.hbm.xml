@@ -10,6 +10,7 @@
 		<property name="corpusName" column="corpus_name" />
 		<property name="featureSetName" column="featureset_name" />
 		<property name="param1" column="param1" />
+		<property name="param2" column="param2" />
 		<property name="label" />
 		<property name="crossValidationFoldId" column="cv_fold_id" />
 		<property name="evaluationType" column="type" />
@@ -79,11 +80,6 @@
 		<property name="param1" />
 		<property name="param2" />
 		<property name="model" column="model" type="binary" />
-		<map name="classifierIRStats" inverse="true" table="classifier_eval_ir">
-			<key column="classifier_eval_id" />
-			<map-key column="ir_class_id" type="int" />
-			<one-to-many class="ClassifierEvaluationIRStat" />
-		</map>
 		<map name="classifierInstanceEvaluations" inverse="true"
 			table="classifier_instance_eval">
 			<key column="classifier_eval_id" />
@@ -121,6 +117,8 @@
 		</id>
 		<many-to-one name="classifierEvaluation" class="ClassifierEvaluation"
 			column="classifier_eval_id" not-null="true" />
+		<property name="type" column="ir_type"  />
+		<property name="irClass" column="ir_class" />
 		<property name="irClassId" column="ir_class_id" />
 		<property name="tp" />
 		<property name="fp" />
@@ -167,6 +165,7 @@
 		where corpusName = :corpusName
 		and featureSetName = :featureSetName
 		and param1 = :param1
+		and param2 = :param2
 		and evaluationType = :evaluationType
 	]]></query>
 	<query name="getFeatureEvaluationByNK"><![CDATA[
@@ -174,6 +173,7 @@
 		where corpusName = :corpusName
 		and featureSetName = :featureSetName
 		and param1 = :param1
+		and param2 = :param2
 		and crossValidationFoldId = :crossValidationFoldId
 		and evaluationType = :evaluationType
 		and label = :label
@@ -183,6 +183,7 @@
 		where featureEval.corpusName = :corpusName
 		and featureEval.featureSetName = :featureSetName
 		and featureEval.param1 = :param1
+		and featureEval.param2 = :param2
 		and featureEval.crossValidationFoldId = :crossValidationFoldId
 		and featureEval.evaluationType = :evaluationType
 		and featureEval.label = :label
@@ -193,6 +194,7 @@
 		where featureEval.corpusName = :corpusName
 		and featureEval.featureSetName = :featureSetName
 		and featureEval.param1 = :param1
+		and featureEval.param2 = :param2
 		and featureEval.crossValidationFoldId = :crossValidationFoldId
 		and featureEval.evaluationType = :evaluationType
 		and featureEval.label = :label
@@ -212,6 +214,7 @@
 		where r.featureEval.corpusName = :corpusName
 		and r.featureEval.featureSetName = :featureSetName
 		and r.featureEval.param1 = :param1
+		and r.featureEval.param2 = :param2
 		and r.featureEval.crossValidationFoldId = :crossValidationFoldId
 		and r.featureEval.evaluationType = :evaluationType
 		and r.featureEval.label = :label
@@ -223,6 +226,7 @@
 		where fe.corpusName = :corpusName
 		and fe.featureSetName = :featureSetName
 		and fe.param1 = :param1
+		and fe.param2 = :param2
 		and fe.crossValidationFoldId = 0
 		and fe.evaluationType = :evaluationType
 	]]></query>	

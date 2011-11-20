@@ -2,11 +2,15 @@ package ytex.kernel;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -166,7 +170,7 @@ public abstract class BaseClassifierEvaluationParser implements
 				ParseOption.STORE_IRSTATS.getOptionKey(),
 				ParseOption.STORE_IRSTATS.getDefaultValue()));
 		// save the classifier evaluation
-		this.getClassifierEvaluationDao().saveClassifierEvaluation(ce,
+		this.getClassifierEvaluationDao().saveClassifierEvaluation(ce, null,
 				storeInstanceEval || storeUnlabeled, storeIR, 0);
 	}
 
@@ -206,6 +210,41 @@ public abstract class BaseClassifierEvaluationParser implements
 				ce.getClassifierInstanceEvaluations().put(instanceId, cie);
 			}
 		}
+	}
+
+	protected Map<String, Map<Integer, String>> loadLabelToIndexClassMap(
+			File dataDir) throws IOException {
+		Map<String, Map<Integer, String>> labelToIndexClassMap = new HashMap<String, Map<Integer, String>>();
+		File f = new File(FileUtil.addFilenameToDir(dataDir.getPath(),
+				"labelToClassIndexMap.obj"));
+		if (f.exists()) {
+			ObjectInputStream is = null;
+			try {
+				is = new ObjectInputStream(new FileInputStream(f));
+				@SuppressWarnings("unchecked")
+				Map<String, Map<String, Integer>> labelMapInverted = (Map<String, Map<String, Integer>>) is
+						.readObject();
+				for (Map.Entry<String, Map<String, Integer>> labelEntry : labelMapInverted
+						.entrySet()) {
+					Map<Integer, String> indexToClassMap = new HashMap<Integer, String>();
+					for (Map.Entry<String, Integer> classEntry : labelEntry
+							.getValue().entrySet()) {
+						indexToClassMap.put(classEntry.getValue(),
+								classEntry.getKey());
+					}
+					labelToIndexClassMap.put(labelEntry.getKey(),
+							indexToClassMap);
+				}
+			} catch (ClassNotFoundException cnfe) {
+				throw new IOException(cnfe);
+			} finally {
+				try {
+					is.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		return labelToIndexClassMap;
 	}
 
 	protected List<List<Long>> loadClassInfo(File dataDir, String classFileName)

@@ -20,6 +20,7 @@ public interface ImputedFeatureEvaluator {
 
 	public static final String SUFFIX_PROP = "-propagated";
 	public static final String SUFFIX_IMPUTED = "-imputed";
+	public static final String SUFFIX_IMPUTED_FILTERED = "-imputed-filt";
 
 	public abstract boolean evaluateCorpus(String propFile) throws IOException;
 

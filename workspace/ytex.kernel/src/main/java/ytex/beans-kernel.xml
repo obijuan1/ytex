@@ -7,14 +7,6 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
 
-	<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
-		below) -->
-	<tx:advice id="txAdvice" transaction-manager="transactionManager">
-		<!-- the transactional semantics... -->
-		<tx:attributes>
-			<tx:method name="*" propagation="REQUIRED" />
-		</tx:attributes>
-	</tx:advice>
 	<!-- ensure that the above transactional advice runs for any execution of 
 		an operation defined by the FooService interface -->
 	<aop:config>
@@ -30,7 +22,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:pointcut id="utilOperation"
 			expression="execution(* ytex.kernel.KernelUtil*.*(..))" />
 		<aop:pointcut id="corpusEvaluatorOperation"
-			expression="execution(* ytex.kernel.CorpusEvaluator*.*(..))" />
+			expression="execution(* ytex.kernel.*EvaluatorImpl.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="exporterOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="mapperOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="wekaImporter" />
@@ -40,12 +32,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="utilOperation" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="corpusEvaluatorOperation" />
 	</aop:config>
-
-
-	<bean id="transactionManager"
-		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
 	<bean id="kernelEvaluationDao" class="ytex.kernel.dao.KernelEvaluationDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
 		<property name="transactionManager" ref="transactionManager" />
@@ -188,7 +174,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 
 	<bean id="sparseDataExporter" class="ytex.kernel.SparseDataExporterImpl">
 		<property name="dataSource" ref="dataSource" />
-		<property name="transactionManager" ref="transactionManager" />
+		<property name="txTemplateNew" ref="txTemplateNew" />
 		<property name="kernelUtil" ref="kernelUtil" />
 		<property name="nameToFormatterMap">
 			<map>

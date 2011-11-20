@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -314,7 +315,7 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 			// parse results
 			parseResults(dataDir, outputDir, model, predict, eval, props);
 			// store results
-			storeResults(props, eval);
+			storeResults(dataDir, props, eval);
 		}
 	}
 
@@ -323,15 +324,28 @@ public class LibSVMParser extends BaseClassifierEvaluationParser {
 	 * 
 	 * @param props
 	 * @param eval
+	 * @throws IOException 
 	 */
-	protected void storeResults(Properties props, SVMClassifierEvaluation eval) {
+	protected void storeResults(File dataDir, Properties props, SVMClassifierEvaluation eval) throws IOException {
+		// get the index to class map
+		Map<String, Map<Integer, String>> labelToIndexClassMap = this.loadLabelToIndexClassMap(dataDir);
+		Map<Integer, String> indexToClassMap = null;
+		// if the label is defined, get the corresponding class map
+		if(eval.getLabel() != null) {
+			indexToClassMap = labelToIndexClassMap.get(eval.getLabel());
+		} else if(!labelToIndexClassMap.values().isEmpty()) {
+			// if there is no label (just a multi-class evaluation) get the first (and only) 
+			indexToClassMap = labelToIndexClassMap.values().iterator().next();
+		}
 		// store the classifier evaluation
 		getClassifierEvaluationDao().saveClassifierEvaluation(
 				eval,
+				indexToClassMap,
 				YES.equalsIgnoreCase(props.getProperty(
 						ParseOption.STORE_INSTANCE_EVAL.getOptionKey(),
 						ParseOption.STORE_INSTANCE_EVAL.getDefaultValue())));
 	}
+	
 
 	/**
 	 * parse the results in the specified output dir. use reference data from

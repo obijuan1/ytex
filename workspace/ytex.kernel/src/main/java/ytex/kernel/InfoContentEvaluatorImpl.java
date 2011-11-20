@@ -44,54 +44,71 @@ import ytex.kernel.model.FeatureRank;
  * used for evaluation, or both (-D overrides properties file).
  * <p>
  * The information content of each concept is stored in the feature_rank table.
- * The related record in the feature_eval table has 
+ * The related record in the feature_eval table has
  * <ul>
- * 	<li>type = infocontent
- * 	<li>feature_set_name = conceptSetName
- * 	<li>param1 = conceptGraphName
+ * <li>type = infocontent
+ * <li>feature_set_name = conceptSetName
+ * <li>param1 = conceptGraphName
  * </ul>
  * 
  * @author vijay
  * 
  */
 public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
+	/**
+	 * @param args
+	 * @throws IOException
+	 */
+	@SuppressWarnings("static-access")
+	public static void main(String[] args) throws IOException {
+		Options options = new Options();
+		options.addOption(OptionBuilder
+				.withArgName("property file")
+				.hasArg()
+				.isRequired()
+				.withDescription(
+						"property file with queries and other parameters. todo desc")
+				.create("prop"));
+		try {
+			CommandLineParser parser = new GnuParser();
+			CommandLine line = parser.parse(options, args);
+
+			Properties props = FileUtil.loadProperties(
+					line.getOptionValue("prop"), true);
+			if (!props.containsKey("ytex.conceptGraphName")
+					|| !props.containsKey("ytex.corpusName")
+					|| !props.containsKey("ytex.freqQuery")) {
+				System.err.println("error: required parameter not specified");
+				System.exit(1);
+			} else {
+				InfoContentEvaluator corpusEvaluator = KernelContextHolder
+						.getApplicationContext().getBean(
+								InfoContentEvaluator.class);
+				corpusEvaluator.evaluateCorpusInfoContent(
+						props.getProperty("ytex.freqQuery"),
+						props.getProperty("ytex.corpusName"),
+						props.getProperty("ytex.conceptGraphName"),
+						props.getProperty("ytex.conceptSetName"));
+				System.exit(0);
+			}
+		} catch (ParseException pe) {
+			printHelp(options);
+			System.exit(1);
+		}
+	}
+
+	private static void printHelp(Options options) {
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp("java " + InfoContentEvaluatorImpl.class.getName()
+				+ " calculate information content of corpus wrt concept graph",
+				options);
+	}
+
+	private ClassifierEvaluationDao classifierEvaluationDao;
 	private ConceptDao conceptDao;
+
 	// private CorpusDao corpusDao;
 	private JdbcTemplate jdbcTemplate;
-	private ClassifierEvaluationDao classifierEvaluationDao;
-
-	public ClassifierEvaluationDao getClassifierEvaluationDao() {
-		return classifierEvaluationDao;
-	}
-
-	public void setClassifierEvaluationDao(
-			ClassifierEvaluationDao classifierEvaluationDao) {
-		this.classifierEvaluationDao = classifierEvaluationDao;
-	}
-
-	public ConceptDao getConceptDao() {
-		return conceptDao;
-	}
-
-	public void setConceptDao(ConceptDao conceptDao) {
-		this.conceptDao = conceptDao;
-	}
-
-	// public CorpusDao getCorpusDao() {
-	// return corpusDao;
-	// }
-	//
-	// public void setCorpusDao(CorpusDao corpusDao) {
-	// this.corpusDao = corpusDao;
-	// }
-
-	public void setDataSource(DataSource ds) {
-		this.jdbcTemplate = new JdbcTemplate(ds);
-	}
-
-	public DataSource getDataSource(DataSource ds) {
-		return this.jdbcTemplate.getDataSource();
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -101,17 +118,18 @@ public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 	 * java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void evaluateCorpusInfoContent(String freqQuery, String corpusName,
-			String conceptGraphName, String conceptSetName) {
-		ConceptGraph cg = this.conceptDao.getConceptGraph(conceptGraphName);
+	public void evaluateCorpusInfoContent(final String freqQuery,
+			final String corpusName, final String conceptGraphName,
+			final String conceptSetName) {
+		ConceptGraph cg = conceptDao.getConceptGraph(conceptGraphName);
 		classifierEvaluationDao.deleteFeatureEvaluation(corpusName,
-				conceptSetName, null, INFOCONTENT, 0, conceptGraphName);
+				conceptSetName, null, INFOCONTENT, 0, 0, conceptGraphName);
 		FeatureEvaluation eval = new FeatureEvaluation();
 		eval.setCorpusName(corpusName);
 		if (conceptSetName != null)
 			eval.setFeatureSetName(conceptSetName);
 		eval.setEvaluationType(INFOCONTENT);
-		eval.setParam1(conceptGraphName);
+		eval.setParam2(conceptGraphName);
 		// CorpusEvaluation eval = corpusDao.getCorpus(corpusName,
 		// conceptGraphName, conceptSetName);
 		// if (eval == null) {
@@ -136,24 +154,37 @@ public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 		// update information content
 		double log2inv = -1d / Math.log(2);
 		for (Map.Entry<String, Double> cfreq : conceptFreq.entrySet()) {
-			// ConceptInformationContent ic = new ConceptInformationContent();
 			if (cfreq.getValue() > 0) {
 				FeatureRank featureRank = new FeatureRank(eval, cfreq.getKey(),
 						log2inv * Math.log(cfreq.getValue() / totalFreq));
 				featureRankList.add(featureRank);
-				// ic.setCorpus(eval);
-				// ic.setConceptId(cfreq.getKey());
-				// ic.setFrequency(cfreq.getValue());
-				// ic.setInformationContent(-Math.log(cfreq.getValue() /
-				// totalFreq));
-				// corpusDao.addInfoContent(ic);
 			}
 		}
 		// the rank is irrelevant, but rank the features anyways
 		eval.setFeatures(FeatureRank.sortFeatureRankList(featureRankList,
 				new FeatureRank.FeatureRankDesc()));
-		this.classifierEvaluationDao.saveFeatureEvaluation(eval);
+		classifierEvaluationDao.saveFeatureEvaluation(eval);
 	}
+
+	public ClassifierEvaluationDao getClassifierEvaluationDao() {
+		return classifierEvaluationDao;
+	}
+
+	public ConceptDao getConceptDao() {
+		return conceptDao;
+	}
+
+	public DataSource getDataSource(DataSource ds) {
+		return this.jdbcTemplate.getDataSource();
+	}
+
+	// public CorpusDao getCorpusDao() {
+	// return corpusDao;
+	// }
+	//
+	// public void setCorpusDao(CorpusDao corpusDao) {
+	// this.corpusDao = corpusDao;
+	// }
 
 	/**
 	 * get the frequency of each term in the corpus.
@@ -207,51 +238,16 @@ public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 		return dFreq;
 	}
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	@SuppressWarnings("static-access")
-	public static void main(String[] args) throws IOException {
-		Options options = new Options();
-		options.addOption(OptionBuilder
-				.withArgName("property file")
-				.hasArg()
-				.isRequired()
-				.withDescription(
-						"property file with queries and other parameters. todo desc")
-				.create("prop"));
-		try {
-			CommandLineParser parser = new GnuParser();
-			CommandLine line = parser.parse(options, args);
-
-			Properties props = FileUtil.loadProperties(
-					line.getOptionValue("prop"), true);
-			if (!props.containsKey("ytex.conceptGraphName")
-					|| !props.containsKey("ytex.corpusName")
-					|| !props.containsKey("ytex.freqQuery")) {
-				System.err.println("error: required parameter not specified");
-				System.exit(1);
-			} else {
-				InfoContentEvaluator corpusEvaluator = KernelContextHolder
-						.getApplicationContext().getBean(InfoContentEvaluator.class);
-				corpusEvaluator.evaluateCorpusInfoContent(
-						props.getProperty("ytex.freqQuery"),
-						props.getProperty("ytex.corpusName"),
-						props.getProperty("ytex.conceptGraphName"),
-						props.getProperty("ytex.conceptSetName"));
-				System.exit(0);
-			}
-		} catch (ParseException pe) {
-			printHelp(options);
-			System.exit(1);
-		}
+	public void setClassifierEvaluationDao(
+			ClassifierEvaluationDao classifierEvaluationDao) {
+		this.classifierEvaluationDao = classifierEvaluationDao;
 	}
 
-	private static void printHelp(Options options) {
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java " + InfoContentEvaluatorImpl.class.getName()
-				+ " calculate information content of corpus wrt concept graph",
-				options);
+	public void setConceptDao(ConceptDao conceptDao) {
+		this.conceptDao = conceptDao;
+	}
+
+	public void setDataSource(DataSource ds) {
+		this.jdbcTemplate = new JdbcTemplate(ds);
 	}
 }

@@ -35,15 +35,7 @@ public class ClassifierEvaluation implements Serializable {
 		this.param2 = param2;
 	}
 	Map<Long, ClassifierInstanceEvaluation> classifierInstanceEvaluations = new HashMap<Long, ClassifierInstanceEvaluation>();
-	Map<Integer, ClassifierEvaluationIRStat> classifierIRStats = new HashMap<Integer, ClassifierEvaluationIRStat>();
-	
-	public Map<Integer, ClassifierEvaluationIRStat> getClassifierIRStats() {
-		return classifierIRStats;
-	}
-	public void setClassifierIRStats(
-			Map<Integer, ClassifierEvaluationIRStat> classifierIRStats) {
-		this.classifierIRStats = classifierIRStats;
-	}
+
 	public String getExperiment() {
 		return experiment;
 	}

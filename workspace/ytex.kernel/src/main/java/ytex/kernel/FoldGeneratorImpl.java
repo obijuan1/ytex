@@ -30,7 +30,25 @@ import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.CrossValidationFoldInstance;
 
 /**
- * utility generates cv fold splits, stores in db.
+ * utility generates cv fold splits, stores in db. Takes as a command line
+ * parameter -prop [property file]. Also reads properties from ytex.properties.
+ * Required properties:
+ * <ul>
+ * <li>ytex.corpusName
+ * <li>instanceClassQuery
+ * </ul>
+ * 
+ * Optional properties:
+ * <ul>
+ * <li>minPerClass default 1 minimum number of instances per class/fold. if not
+ * enough instances of a specific class, the instance will be repeated across
+ * folds. E.g. if you have only one example of one class, and 2 folds, that one
+ * example will be duplicated in both folds.
+ * <li>rand random number seed, defaults to current time millis
+ * <li>ytex.splitName default null cv_fold.split_name
+ * <li>folds default 2
+ * <li>runs default 5
+ * </ul>
  * 
  * @author vijay
  */
@@ -243,14 +261,15 @@ public class FoldGeneratorImpl implements FoldGenerator {
 
 	/**
 	 * inver the map of instance id to class, call createFolds
+	 * 
 	 * @param nFolds
 	 * @param nMinPerClass
 	 * @param r
 	 * @param mapInstanceIdToClass
 	 * @return
 	 */
-	private List<Set<Long>> createFolds(int nFolds, int nMinPerClass,
-			Random r, SortedMap<Long, String> mapInstanceIdToClass) {
+	private List<Set<Long>> createFolds(int nFolds, int nMinPerClass, Random r,
+			SortedMap<Long, String> mapInstanceIdToClass) {
 		// invert the mapInstanceIdToClass
 		Map<String, List<Long>> mapClassToInstanceId = new TreeMap<String, List<Long>>();
 		for (Map.Entry<Long, String> instance : mapInstanceIdToClass.entrySet()) {

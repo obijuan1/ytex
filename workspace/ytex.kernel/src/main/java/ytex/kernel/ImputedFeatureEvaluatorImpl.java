@@ -31,7 +31,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import weka.core.ContingencyTables;
 import ytex.kernel.dao.ClassifierEvaluationDao;
@@ -498,13 +497,13 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 			xMerge = props.getProperty("ytex.xMerge", "1");
 			this.measure = MeasureType.valueOf(props.getProperty(
 					"ytex.measure", "INFOGAIN"));
-			parentConceptEvalThreshold = FileUtil.getDoubleProperty(
-					props, "ytex.parentConceptEvalThreshold", null);
+			parentConceptEvalThreshold = FileUtil.getDoubleProperty(props,
+					"ytex.parentConceptEvalThreshold", null);
 			parentConceptTopThreshold = parentConceptEvalThreshold == null ? FileUtil
 					.getIntegerProperty(props,
 							"ytex.parentConceptTopThreshold", 25) : null;
 			imputeWeight = FileUtil.getDoubleProperty(props,
-					"ytex.imputeWeight", 0.5);
+					"ytex.imputeWeight", 1d);
 		}
 
 		public String getClassFeatureQuery() {
@@ -681,8 +680,6 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 
 	protected PlatformTransactionManager transactionManager;
 
-	protected TransactionTemplate txNew;
-	
 	private Properties ytexProperties = null;
 
 	/**
@@ -819,10 +816,11 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 
 		for (String type : new String[] { params.getMeasure().getName(),
 				params.getMeasure().getName() + SUFFIX_PROP,
-				params.getMeasure().getName() + SUFFIX_IMPUTED })
+				params.getMeasure().getName() + SUFFIX_IMPUTED,
+				params.getMeasure().getName() + SUFFIX_IMPUTED_FILTERED  })
 			this.classifierEvaluationDao.deleteFeatureEvaluation(
 					params.getCorpusName(), params.getConceptSetName(), label,
-					type, foldId, params.getConceptGraphName());
+					type, foldId, 0, params.getConceptGraphName());
 	}
 
 	/*
@@ -833,7 +831,7 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 	 * java.lang.Double, java.util.Set, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public boolean evaluateCorpus(Parameters params) {
+	public boolean evaluateCorpus(final Parameters params) {
 		if (!(params.getCorpusName() != null
 				&& params.getConceptGraphName() != null
 				&& params.getLabelQuery() != null && params
@@ -841,7 +839,7 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 			return false;
 		ConceptGraph cg = conceptDao.getConceptGraph(params
 				.getConceptGraphName());
-		InstanceData instanceData = this.kernelUtil.loadInstances(params
+		InstanceData instanceData = kernelUtil.loadInstances(params
 				.getLabelQuery());
 		for (String label : instanceData.getLabelToInstanceMap().keySet()) {
 			evaluateCorpusLabel(params, cg, instanceData, label);
@@ -878,17 +876,12 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 								.getxLeftover());
 		FeatureEvaluation feRaw = saveFeatureEvaluation(rawJointDistro, params,
 				label, foldId, yEntropy, "");
-		// initialize the object we'll be saving all this in
-		// CorpusLabelEvaluation labelEval = this.initCorpusLabelEval(eval,
-		// label,
-		// run, fold);
 		// propagate across graph and save
-		// propagateJointDistribution(rawJointDistro, labelEval, cg, yMargin,
-		FeatureEvaluation feProp = propagateJointDistribution(rawJointDistro,
+		propagateJointDistribution(rawJointDistro,
 				params, label, foldId, cg, yMargin);
 		// store children of top concepts
-		// storeChildConcepts(labelEval, parentConceptTopThreshold,
-		storeChildConcepts(feRaw, params, label, foldId, cg);
+		storeChildConcepts(feRaw, params, label, foldId, cg, true);
+		storeChildConcepts(feRaw, params, label, foldId, cg, false);
 	}
 
 	/**
@@ -982,10 +975,6 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 		return kernelUtil;
 	}
 
-	public PlatformTransactionManager getTransactionManager() {
-		return transactionManager;
-	}
-
 	public Properties getYtexProperties() {
 		return ytexProperties;
 	}
@@ -996,7 +985,7 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 		feval.setCorpusName(params.getCorpusName());
 		feval.setLabel(label);
 		feval.setCrossValidationFoldId(foldId);
-		feval.setParam1(params.getConceptGraphName());
+		feval.setParam2(params.getConceptGraphName());
 		feval.setEvaluationType(type);
 		feval.setFeatureSetName(params.getConceptSetName());
 		return feval;
@@ -1101,6 +1090,11 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 		this.conceptDao = conceptDao;
 	}
 
+	public void setDataSource(DataSource ds) {
+		this.jdbcTemplate = new JdbcTemplate(ds);
+		this.namedParamJdbcTemplate = new NamedParameterJdbcTemplate(ds);
+	}
+
 	// private CorpusLabelEvaluation initCorpusLabelEval(CorpusEvaluation eval,
 	// String label, String splitName, int run, int fold) {
 	// Integer foldId = getFoldId(eval, label, splitName, run, fold);
@@ -1119,9 +1113,9 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 	// return labelEval;
 	// }
 
-	public void setDataSource(DataSource ds) {
-		this.jdbcTemplate = new JdbcTemplate(ds);
-		this.namedParamJdbcTemplate = new NamedParameterJdbcTemplate(ds);
+	public void setInfoContentEvaluator(
+			InfoContentEvaluator infoContentEvaluator) {
+		this.infoContentEvaluator = infoContentEvaluator;
 	}
 
 	// /**
@@ -1146,9 +1140,8 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 	// return eval;
 	// }
 
-	public void setInfoContentEvaluator(
-			InfoContentEvaluator infoContentEvaluator) {
-		this.infoContentEvaluator = infoContentEvaluator;
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
 	}
 
 	//
@@ -1171,17 +1164,6 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 	// }
 	// }
 
-	public void setKernelUtil(KernelUtil kernelUtil) {
-		this.kernelUtil = kernelUtil;
-	}
-
-	public void setTransactionManager(
-			PlatformTransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
-		txNew = new TransactionTemplate(transactionManager);
-		txNew.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
-	}
-
 	public void setYtexProperties(Properties ytexProperties) {
 		this.ytexProperties = ytexProperties;
 	}
@@ -1193,11 +1175,19 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 	 * @param parentConceptTopThreshold
 	 * @param parentConceptEvalThreshold
 	 * @param cg
+	 * @param bAll
+	 *            impute to all concepts/concepts actually in corpus. if we are
+	 *            imputing to all concepts, filter by infocontent (this includes
+	 *            hypernyms of concepts in the corpus). else only impute to
+	 *            conrete concepts in the corpus
 	 */
 	public void storeChildConcepts(FeatureEvaluation feRaw, Parameters params,
-			String label, int foldId, ConceptGraph cg) {
+			String label, int foldId, ConceptGraph cg, boolean bAll) {
 		// only include concepts that actually occur in the corpus
-		Map<String, Double> conceptICMap = this.infoContentEvaluator
+		Map<String, Double> conceptICMap = bAll ? classifierEvaluationDao
+				.getInfoContent(params.getCorpusName(),
+						params.getConceptGraphName(),
+						params.getConceptSetName()) : this.infoContentEvaluator
 				.getFrequencies(params.getFreqQuery());
 		// get the raw feature evaluations. The imputed feature evaluation is a
 		// mixture of the parent feature eval and the raw feature eval.
@@ -1208,7 +1198,8 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 		}
 		// this map will get filled with the links between parent and child
 		// concepts for imputation
-		Map<FeatureRank, Set<FeatureRank>> childParentMap = new HashMap<FeatureRank, Set<FeatureRank>>();
+		Map<FeatureRank, Set<FeatureRank>> childParentMap = bAll ? null
+				: new HashMap<FeatureRank, Set<FeatureRank>>();
 		// .getFeatureRankEvaluations(params.getCorpusName(),
 		// params.getConceptSetName(), null,
 		// InfoContentEvaluator.INFOCONTENT, 0,
@@ -1225,15 +1216,15 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 				.getParentConceptTopThreshold() != null ? this.classifierEvaluationDao
 				.getTopFeatures(params.getCorpusName(),
 						params.getConceptSetName(), label, propagatedType,
-						foldId, params.getConceptGraphName(),
+						foldId, 0, params.getConceptGraphName(),
 						params.getParentConceptTopThreshold())
 				: this.classifierEvaluationDao.getThresholdFeatures(
 						params.getCorpusName(), params.getConceptSetName(),
-						label, propagatedType, foldId,
+						label, propagatedType, foldId, 0,
 						params.getConceptGraphName(),
 						params.getParentConceptEvalThreshold());
 		FeatureEvaluation fe = this.initFeatureEval(params, label, foldId,
-				params.getMeasure().getName() + SUFFIX_IMPUTED);
+				params.getMeasure().getName() + (bAll ? SUFFIX_IMPUTED : SUFFIX_IMPUTED_FILTERED));
 		// map of concept id to children and the 'best' statistic
 		Map<String, FeatureRank> mapChildConcept = new HashMap<String, FeatureRank>();
 		// get all the children of the parent concepts
@@ -1248,15 +1239,17 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 		fe.setFeatures(FeatureRank.sortFeatureRankList(features,
 				new FeatureRank.FeatureRankDesc()));
 		this.classifierEvaluationDao.saveFeatureEvaluation(fe);
-		// save the parent-child links
-		for (Map.Entry<FeatureRank, Set<FeatureRank>> childParentEntry : childParentMap
-				.entrySet()) {
-			FeatureRank child = childParentEntry.getKey();
-			for (FeatureRank parent : childParentEntry.getValue()) {
-				FeatureParentChild parchd = new FeatureParentChild();
-				parchd.setFeatureRankParent(parent);
-				parchd.setFeatureRankChild(child);
-				this.classifierEvaluationDao.saveFeatureParentChild(parchd);
+		if (!bAll) {
+			// save the parent-child links
+			for (Map.Entry<FeatureRank, Set<FeatureRank>> childParentEntry : childParentMap
+					.entrySet()) {
+				FeatureRank child = childParentEntry.getKey();
+				for (FeatureRank parent : childParentEntry.getValue()) {
+					FeatureParentChild parchd = new FeatureParentChild();
+					parchd.setFeatureRankParent(parent);
+					parchd.setFeatureRankChild(child);
+					this.classifierEvaluationDao.saveFeatureParentChild(parchd);
+				}
 			}
 		}
 	}
@@ -1302,12 +1295,15 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 					chd.setEvaluation(imputedEvaluation);
 				}
 				// add the relationship to the parentChildMap
-				Set<FeatureRank> parents = childParentMap.get(chd);
-				if (parents == null) {
-					parents = new HashSet<FeatureRank>(10);
-					childParentMap.put(chd, parents);
+				// do this only if the childParentMap is not null
+				if (childParentMap != null) {
+					Set<FeatureRank> parents = childParentMap.get(chd);
+					if (parents == null) {
+						parents = new HashSet<FeatureRank>(10);
+						childParentMap.put(chd, parents);
+					}
+					parents.add(parentConcept);
 				}
-				parents.add(parentConcept);
 			}
 		}
 	}

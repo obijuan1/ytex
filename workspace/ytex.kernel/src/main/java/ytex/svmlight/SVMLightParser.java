@@ -158,7 +158,7 @@ public class SVMLightParser extends LibSVMParser {
 	 * store semi supervised results.
 	 */
 	@Override
-	protected void storeResults(Properties props, SVMClassifierEvaluation eval) {
+	protected void storeResults(File dataDir, Properties props, SVMClassifierEvaluation eval) {
 		this.storeSemiSupervised(props, eval);
 	}
 

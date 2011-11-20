@@ -1,17 +1,17 @@
 package ytex.kernel;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 
@@ -41,6 +41,29 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 	 * export
 	 */
 	protected Properties exportProperties;
+
+	/**
+	 * export the label to class index map so that we can map class ids to class
+	 * labels later on
+	 * 
+	 * @throws IOException
+	 */
+	protected void exportLabelToClassIndexMap() throws IOException {
+		String filename = FileUtil.addFilenameToDir(outdir,
+				"labelToClassIndexMap.obj");
+		ObjectOutputStream os = null;
+		try {
+			os = new ObjectOutputStream(new FileOutputStream(filename));
+			os.writeObject(labelToClassIndexMap);
+		} finally {
+			if (os != null) {
+				try {
+					os.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
 
 	protected void exportAttributeNames(SparseData sparseData, String label,
 			Integer run, Integer fold) throws IOException {
@@ -193,29 +216,32 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 		}
 	}
 
-//	protected List<Integer> getInstanceIdsForScope(InstanceData instanceLabel,
-//			String label, Integer run, Integer fold) {
-//		List<Integer> instanceIds = new ArrayList<Integer>();
-//		SortedSet<Long> sortedInstanceIds = new TreeSet<Long>();
-//		if (label == null || label.length() == 0) {
-//			// add all instance ids
-//			for (SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> runMap : instanceLabel.labelToInstanceMap
-//					.values()) {
-//				for (SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>> foldMap : runMap
-//						.values()) {
-//					for (SortedMap<Boolean, SortedMap<Long, String>> trainTestFold : foldMap
-//							.values()) {
-//						for (SortedMap<Long, String> trainMap : trainTestFold
-//								.values())
-//							sortedInstanceIds.addAll(trainMap.keySet());
-//					}
-//				}
-//			}
-//		} else if (label != null && label.length() > 0 && run == null) {
-//			// label scope
-//		}
-//		return instanceIds;
-//	}
+	// protected List<Integer> getInstanceIdsForScope(InstanceData
+	// instanceLabel,
+	// String label, Integer run, Integer fold) {
+	// List<Integer> instanceIds = new ArrayList<Integer>();
+	// SortedSet<Long> sortedInstanceIds = new TreeSet<Long>();
+	// if (label == null || label.length() == 0) {
+	// // add all instance ids
+	// for (SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean,
+	// SortedMap<Long, String>>>> runMap : instanceLabel.labelToInstanceMap
+	// .values()) {
+	// for (SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>
+	// foldMap : runMap
+	// .values()) {
+	// for (SortedMap<Boolean, SortedMap<Long, String>> trainTestFold : foldMap
+	// .values()) {
+	// for (SortedMap<Long, String> trainMap : trainTestFold
+	// .values())
+	// sortedInstanceIds.addAll(trainMap.keySet());
+	// }
+	// }
+	// }
+	// } else if (label != null && label.length() > 0 && run == null) {
+	// // label scope
+	// }
+	// return instanceIds;
+	// }
 
 	/**
 	 * get needed properties out of outdir. convert class names into integers
@@ -249,6 +275,7 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 				}
 			}
 		}
+		this.exportLabelToClassIndexMap();
 	}
 
 	/**

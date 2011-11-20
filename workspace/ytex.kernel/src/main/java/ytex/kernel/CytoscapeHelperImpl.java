@@ -150,7 +150,7 @@ public class CytoscapeHelperImpl implements CytoscapeHelper {
 			BufferedWriter nodeData) throws IOException {
 		Map<String, Double> ic = this.classifierEvaluationDao
 				.getFeatureRankEvaluations(corpusName, conceptSetName, null,
-						InfoContentEvaluator.INFOCONTENT, 0, conceptGraphName);
+						InfoContentEvaluator.INFOCONTENT, 0, 0, conceptGraphName);
 		Set<String> nodesToInclude = new HashSet<String>();
 		Set<String> leaves = new HashSet<String>();
 		// candidate leaves

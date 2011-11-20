@@ -66,17 +66,17 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	 * ytex.kernel.dao.ClassifierEvaluationDao#saveClassifierEvaluation(ytex
 	 * .kernel.model.ClassifierEvaluation)
 	 */
-	public void saveClassifierEvaluation(ClassifierEvaluation eval,
+	public void saveClassifierEvaluation(ClassifierEvaluation eval, Map<Integer, String> irClassMap,
 			boolean saveInstanceEval) {
-		saveClassifierEvaluation(eval, saveInstanceEval, true, null);
+		saveClassifierEvaluation(eval, irClassMap, saveInstanceEval, true, null);
 	}
 
 	public void saveClassifierEvaluation(ClassifierEvaluation eval,
-			boolean saveInstanceEval, boolean saveIRStats,
-			Integer excludeTargetClassId) {
+			Map<Integer, String> irClassMap, boolean saveInstanceEval,
+			boolean saveIRStats, Integer excludeTargetClassId) {
 		this.getSessionFactory().getCurrentSession().save(eval);
 		if (saveIRStats)
-			this.saveIRStats(eval, excludeTargetClassId);
+			this.saveIRStats(eval, irClassMap, excludeTargetClassId);
 		if (saveInstanceEval) {
 			for (ClassifierInstanceEvaluation instanceEval : eval
 					.getClassifierInstanceEvaluations().values()) {
@@ -85,14 +85,19 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		}
 	}
 
-	void saveIRStats(ClassifierEvaluation eval, Integer excludeTargetClassId) {
+	void saveIRStats(ClassifierEvaluation eval,
+			Map<Integer, String> irClassMap, Integer excludeTargetClassId) {
 		Set<Integer> classIds = this.getClassIds(eval, excludeTargetClassId);
 		// setup stats
 		for (Integer irClassId : classIds) {
-			ClassifierEvaluationIRStat irStat = calcIRStats(irClassId, eval,
-					excludeTargetClassId);
+			String irClass = null;
+			if (irClassMap != null)
+				irClass = irClassMap.get(irClassId);
+			if (irClass == null)
+				irClass = Integer.toString(irClassId);
+			ClassifierEvaluationIRStat irStat = calcIRStats(irClass, irClassId,
+					eval, excludeTargetClassId);
 			this.getSessionFactory().getCurrentSession().save(irStat);
-			eval.getClassifierIRStats().put(irClassId, irStat);
 		}
 	}
 
@@ -107,8 +112,9 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	 *            class id to be excluded from computation of ir stats.
 	 * @return
 	 */
-	private ClassifierEvaluationIRStat calcIRStats(Integer irClassId,
-			ClassifierEvaluation eval, Integer excludeTargetClassId) {
+	private ClassifierEvaluationIRStat calcIRStats(String irClass,
+			Integer irClassId, ClassifierEvaluation eval,
+			Integer excludeTargetClassId) {
 		int tp = 0;
 		int tn = 0;
 		int fp = 0;
@@ -136,7 +142,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 				}
 			}
 		}
-		return new ClassifierEvaluationIRStat(eval, irClassId, tp, tn, fp, fn);
+		return new ClassifierEvaluationIRStat(eval, null, irClass, irClassId,
+				tp, tn, fp, fn);
 	}
 
 	private Set<Integer> getClassIds(ClassifierEvaluation eval,
@@ -190,23 +197,24 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public List<FeatureRank> getTopFeatures(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			Integer foldId, String param1, Integer parentConceptTopThreshold) {
+			Integer foldId, double param1, String param2, Integer parentConceptTopThreshold) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
-				label, evaluationType, foldId, param1, "getTopFeatures");
+				label, evaluationType, foldId, param1, param2, "getTopFeatures");
 		q.setMaxResults(parentConceptTopThreshold);
 		return q.list();
 	}
 
 	private Query prepareUniqueFeatureEvalQuery(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			int foldId, String param1, String queryName) {
+			int foldId, double param1, String param2, String queryName) {
 		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
 				queryName);
 		q.setString("corpusName", corpusName);
 		q.setString("featureSetName", nullToEmptyString(featureSetName));
 		q.setString("label", nullToEmptyString(label));
 		q.setString("evaluationType", evaluationType);
-		q.setString("param1", nullToEmptyString(param1));
+		q.setDouble("param1", 0);
+		q.setString("param2", nullToEmptyString(param2));
 		q.setInteger("crossValidationFoldId", foldId);
 		return q;
 	}
@@ -225,9 +233,9 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public List<FeatureRank> getThresholdFeatures(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			Integer foldId, String param1, double evaluationThreshold) {
+			Integer foldId, double param1, String param2, double evaluationThreshold) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
-				label, evaluationType, foldId, param1, "getThresholdFeatures");
+				label, evaluationType, foldId, param1, param2, "getThresholdFeatures");
 		q.setDouble("evaluation", evaluationThreshold);
 		return q.list();
 	}
@@ -235,9 +243,9 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public void deleteFeatureEvaluation(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			Integer foldId, String param1) {
+			Integer foldId, double param1, String param2) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
-				label, evaluationType, foldId, param1,
+				label, evaluationType, foldId, param1, param2,
 				"getFeatureEvaluationByNK");
 		FeatureEvaluation fe = (FeatureEvaluation) q.uniqueResult();
 		if (fe != null) {
@@ -257,9 +265,9 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public Map<String, Double> getFeatureRankEvaluations(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			Integer foldId, String param1) {
+			Integer foldId, double param1, String param2) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
-				label, evaluationType, foldId, param1, "getTopFeatures");
+				label, evaluationType, foldId, param1, param2, "getTopFeatures");
 		@SuppressWarnings("unchecked")
 		List<FeatureRank> listFeatureRank = q.list();
 		Map<String, Double> mapFeatureEval = new HashMap<String, Double>(
@@ -275,7 +283,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	public List<Object[]> getCorpusCuiTuis(String corpusName,
 			String conceptGraphName, String conceptSetName) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, conceptSetName,
-				null, InfoContentEvaluator.INFOCONTENT, 0, conceptGraphName,
+				null, InfoContentEvaluator.INFOCONTENT, 0, 0, conceptGraphName,
 				"getCorpusCuiTuis");
 		return q.list();
 	}
@@ -284,19 +292,20 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	public Map<String, Double> getInfoContent(String corpusName,
 			String conceptGraphName, String conceptSet) {
 		return getFeatureRankEvaluations(corpusName, conceptSet, null,
-				InfoContentEvaluator.INFOCONTENT, 0, conceptGraphName);
+				InfoContentEvaluator.INFOCONTENT, 0, 0, conceptGraphName);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<FeatureEvaluation> getFeatureEvaluations(String corpusName,
-			String conceptSetName, String evaluationType, String param1) {
+			String conceptSetName, String evaluationType, double param1, String param2) {
 		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
 				"getFeatureEvaluations");
 		q.setString("corpusName", corpusName);
 		q.setString("featureSetName", nullToEmptyString(conceptSetName));
 		q.setString("evaluationType", evaluationType);
-		q.setString("param1", nullToEmptyString(param1));
+		q.setDouble("param1", param1);
+		q.setString("param2", nullToEmptyString(param2));
 		return q.list();
 	}
 

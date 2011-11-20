@@ -12,7 +12,7 @@ import ytex.kernel.model.FeatureRank;
 public interface ClassifierEvaluationDao {
 
 	public abstract void saveClassifierEvaluation(ClassifierEvaluation eval,
-			boolean saveInstanceEval);
+			Map<Integer, String> irClassMap, boolean saveInstanceEval);
 
 	public abstract void saveFold(CrossValidationFold fold);
 
@@ -39,27 +39,28 @@ public interface ClassifierEvaluationDao {
 	 *            specifies the class id of the unlabeled instances (default 0)
 	 */
 	public void saveClassifierEvaluation(ClassifierEvaluation eval,
-			boolean saveInstanceEval, boolean saveIRStats,
-			Integer excludeTargetClassId);
+			Map<Integer, String> irClassMap, boolean saveInstanceEval,
+			boolean saveIRStats, Integer excludeTargetClassId);
 
 	public abstract CrossValidationFold getCrossValidationFold(
 			String corpusName, String splitName, String label, int run, int fold);
 
 	public List<FeatureRank> getTopFeatures(String corpusName,
 			String featureSetName, String label, String type, Integer foldId,
-			String param1, Integer parentConceptTopThreshold);
+			double param1, String param2, Integer parentConceptTopThreshold);
 
 	public List<FeatureRank> getThresholdFeatures(String corpusName,
 			String featureSetName, String label, String type, Integer foldId,
-			String param1, double parentConceptEvaluationThreshold);
+			double param1, String param2,
+			double parentConceptEvaluationThreshold);
 
 	public abstract void deleteFeatureEvaluation(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			Integer foldId, String param1);
+			Integer foldId, double param1, String param2);
 
 	public abstract Map<String, Double> getFeatureRankEvaluations(
 			String corpusName, String featureSetName, String label,
-			String evaluationType, Integer foldId, String param1);
+			String evaluationType, Integer foldId, double param1, String param2);
 
 	public abstract List<Object[]> getCorpusCuiTuis(String corpusName,
 			String conceptGraphName, String conceptSetName);
@@ -69,7 +70,7 @@ public interface ClassifierEvaluationDao {
 
 	public abstract List<FeatureEvaluation> getFeatureEvaluations(
 			String corpusName, String featureSetName, String evaluationType,
-			String param1);
+			double param1, String param2);
 
 	public abstract void saveFeatureParentChild(FeatureParentChild parchd);
 
