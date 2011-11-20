@@ -286,7 +286,7 @@ quit</echo>
 	</target>
 
 	<target name="kernel.drop" description="create tables for data mining">
-		<for list="drop_view.sql,drop_table.sql" param="sqlcmd.script">
+		<for list="drop_tables.sql" param="sqlcmd.script">
 			<sequential>
 				<antcall target="sqlcmd">
 					<param name="sqlcmd.dir" value="kernel" />
@@ -296,7 +296,7 @@ quit</echo>
 		</for>
 	</target>
 	<target name="kernel.create" description="create tables for data mining">
-		<for list="create_table.sql,create_view.sql" param="sqlcmd.script">
+		<for list="create_tables.sql" param="sqlcmd.script">
 			<sequential>
 				<antcall target="sqlcmd">
 					<param name="sqlcmd.dir" value="kernel" />
