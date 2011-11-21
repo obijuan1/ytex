@@ -535,7 +535,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	<target name="SparseDataExporter" description="run the SparseDataExporter from export.dir, property file export.prop, type export.type">
 		<property name="export.prop" value="export-bow.xml" />
 		<property name="export.type" value="libsvm" />
-		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="${export.dir}">
+		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="${export.dir}" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="${export.prop}" />
 			<arg value="-type" />
