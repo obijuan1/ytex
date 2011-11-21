@@ -79,7 +79,7 @@ from
 			on l.instance_id = hi.instance_id
 			and l.corpus_name = hi.corpus_name
 			and l.label = hi.label
-			and hi.experiment = '@kernel.cv.experiment@'
+			and hi.experiment = '@kernel.hzv.experiment@'
 			and hi.min_rank > e.param1
 		where d.corpus_name = '@kernel.name@'
         and d.doc_group = 'test'
