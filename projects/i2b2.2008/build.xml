@@ -69,7 +69,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	<target name="cv.all" description="cross validate all experiments on training set">
 		<antcall target="cv.word.all" />
 		<antcall target="cv.imputed.all" />
-		<antcall target="cv.exp.all" >
+		<antcall target="cv.exp.all">
 			<param name="kernel.experiment" value="cui" />
 		</antcall>
 	</target>
@@ -328,7 +328,9 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="export-bow.xml,kernel.properties" />
 		</copy>
 		<!-- libsvm export -->
-		<antcall target="SparseDataExporter" />
+		<antcall target="SparseDataExporter">
+			<param name="export.dir" value="${kernel.export.dir}" />
+		</antcall>
 		<!-- export optimal params -->
 		<copy todir="${kernel.export.dir}" file="${basedir}/data/genLibsvmParams.sql">
 			<filterset refid="exp.filter" />
@@ -390,21 +392,14 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
-		<property name="tree.name" value="tree-impcuiwordne" />
-		<property name="export.label" value="2" />
-		<property name="kernel.experiment" value="kern-impcuiwordne" />
+		<property name="tree.name" value="tree-cui" />
+		<property name="export.label" value="Asthma" />
+		<property name="kernel.experiment" value="superlin" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
 		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
 		<property name="export.libsvm.outdir" value="libsvm/${kernel.experiment}" />
-		<property file="${export.tree.srcdir}/label.properties" />
-		<property file="${basedir}/exp/labelNames.properties" />
-		<propertycopy property="export.label.name" from="label.${export.label}.name" silent="yes" />
-		<propertycopy property="export.cutoff" from="label.${export.label}.kernel.param1" silent="yes" />
-		<propertycopy property="export.param2.list" from="label.${export.label}.kernel.param2" silent="yes" />
 		<echo>export.param2.list ${export.param2.list}</echo>
-		<echo>export.cutoff ${export.cutoff}</echo>
-		<echo>export.label.name ${export.label.name}</echo>
 		<!--
 		<property name="label.tree" value="tree_${export.cutoff}" />
 		-->
@@ -413,7 +408,6 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<filterset refid="exp.filter" />
 			<filter token="export.label" value="${export.label}" />
 			<filter token="export.cutoff" value="${export.cutoff}" />
-			<filter token="export.label.name" value="${export.label.name}" />
 		</filterset>
 	</target>
 	<target name="kernel.tree.label" depends="kernel.init.label" description="export the tree for the given label">
@@ -425,7 +419,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</copy>
 		<java classname="ytex.KernelLauncher" fork="yes" classpathref="${kernel.cp}" dir="${export.tree.outdir}">
 			<arg line="-beans ${label.tree}.xml -storeInstanceMap ${label.tree}.obj" />
-			<jvmarg value="-Xmx2g" />
+			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
@@ -643,5 +637,13 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	</target>
 	<target name="echo.exp">
 		<echo>${kernel.experiment}</echo>
+	</target>
+	<target name="temp">
+		<antcall target="cv.exp.all">
+			<param name="kernel.experiment" value="imputed" />
+		</antcall>
+		<antcall target="cv.exp.all">
+			<param name="kernel.experiment" value="cui" />
+		</antcall>
 	</target>
 </project>
