@@ -85,7 +85,7 @@ where b.experiment = '@kernel.experiment@' and corpus_name = '@kernel.name@'
 drop table if exists cv_param2;
 create temporary table cv_param2 (label varchar(50), param2 char(5))
 as
-select c.label, max(cast(s.param2 as decimal(4,3))) param2
+select c.label, max(cast(s.param2 as decimal(2,0))) param2
 from tmp_param_f1 s 
 inner join cv_best_svm c 
     on c.label = s.label 

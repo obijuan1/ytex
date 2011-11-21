@@ -228,7 +228,7 @@ where s.nclass <> i.ngold;
 /*
 * show the best f1 per label for the experiment
 */
-select label, truncate(max(f1),3) f1
+select label, round(max(f1),3) f1
 from
 (
 	/*
@@ -248,7 +248,7 @@ order by label
 ;
 
 /* get macro-averaged f1 across all labels */
-select 'macro f1', avg(f1) f1
+select 'macro f1', round(avg(f1),6) f1
 from
 (
     select *, if(ppv+sens > 0, 2*ppv*sens/(ppv+sens), 0) f1
@@ -269,7 +269,7 @@ from
 ) s;
 
 /* get micro-averaged f1 across all labels */
-select 'micro f1', avg(f1) f1
+select 'micro f1', round(f1, 6) f1
 from
 (
     select *, if(ppv+sens > 0, 2*ppv*sens/(ppv+sens), 0) f1
