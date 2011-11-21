@@ -194,3 +194,35 @@ hi.min_rank = coalesce(rank, 100000)
 where hi.experiment = 'imputed'
 	and hi.corpus_name = 'i2b2.2008'
 ;
+
+/*
+ * the hotspot_sentences have the rank from infogain-imputed.
+ * modify rank of the hotspot_instance to have the corresponding rank from infogain-propagated.
+ * when we iterate over cutoffs, we use the top n infogain-propagated ranks.
+ */
+drop table if exists tmp_hirank;
+create temporary table tmp_hirank
+as
+select hi.hotspot_instance_id, min(r.rank) min_rank
+from hotspot_instance hi 
+inner join feature_eval e
+	on e.corpus_name = hi.corpus_name
+	and e.label = hi.label
+	and e.type = 'infogain-propagated' 
+	and e.featureset_name = 'ctakes'
+	and e.param2 = 'rbpar'
+inner join feature_rank r
+	on r.feature_eval_id = e.feature_eval_id
+	and r.rank <= 10
+	and hi.max_evaluation >= r.evaluation
+where hi.min_rank <> 0
+	and hi.experiment = 'imputed'
+group by hi.hotspot_instance_id
+;
+create unique index NK_hir on tmp_hirank(hotspot_instance_id);
+
+update hotspot_instance hi 
+inner join tmp_hirank hir 
+	on hi.hotspot_instance_id = hir.hotspot_instance_id
+set hi.min_rank = hir.min_rank
+;
