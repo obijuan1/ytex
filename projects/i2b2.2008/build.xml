@@ -69,6 +69,9 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	<target name="cv.all" description="cross validate all experiments on training set">
 		<antcall target="cv.word.all" />
 		<antcall target="cv.imputed.all" />
+		<antcall target="cv.exp.all" >
+			<param name="kernel.experiment" value="cui" />
+		</antcall>
 	</target>
 	<target name="test.all" description="run all experiments on test set">
 		<antcall target="test.exp.all">
@@ -76,6 +79,9 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 		<antcall target="test.exp.all">
 			<param name="kernel.experiment" value="imputed-test" />
+		</antcall>
+		<antcall target="test.exp.all">
+			<param name="kernel.experiment" value="cui-test" />
 		</antcall>
 	</target>
 	<!-- setup targets -->
