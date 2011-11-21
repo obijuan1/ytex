@@ -223,6 +223,13 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<filter token="kernel.cv.experiment" value="${kernel.cv.experiment}" />
 		</filterset>
 	</target>
+	<target name="clean.exp" depends="init.exp" description="delete all classifier_eval records for the experiment">
+		<delete dir="${kernel.export.dir}" quiet="yes" />
+		<mkdir dir="${kernel.export.dir}" />
+		<antcall target="mysql.template">
+			<param name="mysql.script" value="clean_ce_experiment.sql" />
+		</antcall>
+	</target>
 	<target name="cv.word.all">
 		<property name="kernel.experiment" value="word" />
 		<antcall target="insert.hotspot" />
@@ -234,6 +241,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<antcall target="cv.exp.all" />
 	</target>
 	<target name="cv.exp.all">
+		<antcall target="clean.exp" />
 		<antcall target="export.cutoffs" />
 		<antcall target="libsvm.iter.dirs" />
 		<antcall target="cv.irzv" />
@@ -321,9 +329,8 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</exec>
 	</target>
 	<target name="test.exp.all" depends="init.exp" description="train model on training set using optimal params, test on test set">
-		<!-- cleanup libsvm dir -->
-		<delete dir="${kernel.export.dir}" quiet="yes" />
-		<mkdir dir="${kernel.export.dir}" />
+		<!-- cleanup libsvm dir, cleanup database -->
+		<antcall target="clean.exp" />
 		<!-- copy files -->
 		<copy todir="${kernel.export.dir}">
 			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="export-bow.xml,kernel.properties" />
