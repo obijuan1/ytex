@@ -64,6 +64,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
+	<property name="maxMemory" value="1500m" />
 
 	<target name="setup.all" description="annotate corpus, compute infogain" depends="setup.build.i2b2,setup.load.i2b2,setup.v_i2b2_fword_lookup,RunCPE.all,setup.tfidf,eval.infogain,setup.generateConceptGraph,InfoContentEvaluator,ImputedFeatureEvaluator,setup.generateFolds" />
 	<target name="cv.all" description="cross validate all experiments on training set">
@@ -122,7 +123,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<java classname="ytex.kernel.ImputedFeatureEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="corpus.properties.xml" />
-			<jvmarg value="-Xmx1500m" />
+			<jvmarg value="-Xmx${maxMemory}" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
