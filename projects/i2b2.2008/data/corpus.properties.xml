@@ -12,7 +12,7 @@
 	<entry key="ytex.corpusName">i2b2.2008</entry>
 	<entry key="ytex.conceptSetName">ctakes</entry>
 	<entry key="ytex.conceptGraphName">rbpar</entry>
-	<entry key="ytex.parentConceptEvalThreshold">0.03</entry>
+	<entry key="ytex.parentConceptTopThreshold">50</entry>
 	<entry key="ytex.conceptGraphQuery"><![CDATA[
 	select cui1, cui2 
 	from umls.MRREL 
@@ -46,7 +46,7 @@ from
         on ac.anno_base_id = c.anno_base_id
 	where d.doc_group = 'train'
     and d.corpus_name = 'i2b2.2008'
-    and a.label = 'Asthma'
+    and a.label = :label
 ) s
 	]]></entry>
 </properties>

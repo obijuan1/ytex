@@ -122,7 +122,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<java classname="ytex.kernel.ImputedFeatureEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="corpus.properties.xml" />
-			<jvmarg value="-Xmx2g" />
+			<jvmarg value="-Xmx1500m" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
@@ -211,8 +211,8 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	<!-- cross validation targets -->
 	<target name="init.exp">
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
+		<property name="kernel.cv.experiment" value="${kernel.experiment}" />
 		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
-		<property name="kernel.cv.experiment" value="${kernel.hzv.experiment}" />
 		<property name="kernel.algo" value="libsvm" />
 		<property name="kernel.export.dir" value="${basedir}/${kernel.algo}/${kernel.experiment}" />
 		<filterset id="exp.filter">
@@ -378,8 +378,6 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 	</target>
 	<target name="kernel.eval.all" depends="init.exp" description="eval kernel on tree">
-		<property name="kernel.experiment" value="filteredlin" />
-		<!-- property name="tree.name" value="vector" / -->
 		<antcall target="kernel.iter.label">
 			<param name="kernel.iter.target" value="kernel.iter.eval.label" />
 		</antcall>
@@ -393,7 +391,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="tree-cui" />
-		<property name="export.label" value="Asthma" />
+		<property name="export.label" value="Hypertriglyceridemia" />
 		<property name="kernel.experiment" value="superlin" />
 		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
 		<property name="export.tree.basedir" value="./tree/${tree.name}" />
@@ -457,7 +455,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	</target>
 	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
 		<property name="export.param2.suffix" value="" />
-		<property name="export.param2" value="" />
+		<property name="export.param2" value="1" />
 		<echo>export.param2 ${export.param2}</echo>
 		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}${export.param2.suffix}.xml" />
 		<property name="kernel.evalTest" value="no" />
