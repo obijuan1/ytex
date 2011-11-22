@@ -46,7 +46,7 @@ public abstract class CacheKernel implements Kernel, InitializingBean {
 
 	public abstract double innerEvaluate(Object o1, Object o2);
 
-	final public double evaluate(Object o1, Object o2) {
+	public double evaluate(Object o1, Object o2) {
 		double dEval;
 		if (cache == null) {
 			dEval = innerEvaluate(o1, o2);

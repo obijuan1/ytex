@@ -3,6 +3,7 @@ package ytex.kernel;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
+import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 
@@ -55,5 +56,10 @@ public interface KernelUtil {
 	 */
 	public abstract void generateFolds(InstanceData instanceLabel,
 			Properties props);
+
+	public abstract void exportLabelToClassIndexMap(String outdir, Map<String, Map<String, Integer>> labelToClassIndexMap)
+			throws IOException;
+
+	public abstract void fillLabelToClassToIndexMap(Map<String, SortedSet<String>> labelToClasMap, Map<String, Map<String, Integer>> labelToClassIndexMap);
 
 }

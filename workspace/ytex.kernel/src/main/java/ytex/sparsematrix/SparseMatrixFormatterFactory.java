@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import ytex.kernel.BaseSparseDataFormatter;
 import ytex.kernel.FileUtil;
 import ytex.kernel.InstanceData;
+import ytex.kernel.KernelUtil;
 import ytex.kernel.SparseData;
 import ytex.kernel.SparseDataFormatter;
 import ytex.kernel.SparseDataFormatterFactory;
@@ -26,6 +27,15 @@ import ytex.libsvm.LibSVMFormatterFactory.LibSVMFormatter;
 public class SparseMatrixFormatterFactory implements SparseDataFormatterFactory {
 
 	InstanceDataExporter instanceDataExporter;
+	KernelUtil kernelUtil;
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
+	}
 
 	public InstanceDataExporter getInstanceDataExporter() {
 		return instanceDataExporter;
@@ -38,7 +48,7 @@ public class SparseMatrixFormatterFactory implements SparseDataFormatterFactory 
 
 	@Override
 	public SparseDataFormatter getFormatter() {
-		return new SparseMatrixDataFormatter(getInstanceDataExporter());
+		return new SparseMatrixDataFormatter(getInstanceDataExporter(), getKernelUtil());
 	}
 
 	public static class SparseMatrixDataFormatter extends LibSVMFormatter {
@@ -46,7 +56,8 @@ public class SparseMatrixFormatterFactory implements SparseDataFormatterFactory 
 		InstanceDataExporter instanceDataExporter;
 
 		public SparseMatrixDataFormatter(
-				InstanceDataExporter instanceDataExporter) {
+				InstanceDataExporter instanceDataExporter, KernelUtil kernelUtil) {
+			super(kernelUtil);
 			this.instanceDataExporter = instanceDataExporter;
 		}
 

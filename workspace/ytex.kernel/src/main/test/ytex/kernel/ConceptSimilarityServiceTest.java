@@ -62,6 +62,9 @@ public class ConceptSimilarityServiceTest extends TestCase {
 			System.out.print("\t");
 			System.out.println(cg.getConceptMap().get(line[1]));
 		}
+		Map<String, Double> conceptFilter = new HashMap<String, Double>();
+		conceptSimilarityService.loadConceptFilter("Hypertriglyceridemia",
+				10, conceptFilter);			
 
 		for (String[] line : conceptsToTest) {
 			Map<String, List<List<String>>> lcsPath = new HashMap<String, List<List<String>>>();
@@ -89,7 +92,14 @@ public class ConceptSimilarityServiceTest extends TestCase {
 			System.out.print(label);
 			System.out.print("\t");
 			System.out.println(conceptSimilarityService.filteredLin(cui1, cui2,
-					label, cutoff));
+					conceptFilter));
 		}
+	}
+
+	public void testLoadConceptFilterSet() {
+		Map<String, Double> conceptFilter = new HashMap<String, Double>();
+		conceptSimilarityService.loadConceptFilter("Hypertriglyceridemia",
+				10, conceptFilter);
+		System.out.println(conceptFilter.keySet());
 	}
 }

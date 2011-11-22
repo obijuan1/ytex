@@ -2,8 +2,10 @@ package ytex.kernel;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -286,5 +288,62 @@ public class KernelUtilImpl implements KernelUtil {
 		instanceLabel.setLabelToInstanceMap(foldGenerator.generateRuns(
 				instanceLabel.getLabelToInstanceMap(), folds, minPerClass,
 				randomNumberSeed, runs));
+	}
+
+	/**
+	 * assign numeric indices to string class names
+	 * 
+	 * @param labelToClasMap
+	 * @param labelToClassIndexMap
+	 */
+	@Override
+	public void fillLabelToClassToIndexMap(
+			Map<String, SortedSet<String>> labelToClasMap,
+			Map<String, Map<String, Integer>> labelToClassIndexMap) {
+		for (Map.Entry<String, SortedSet<String>> labelToClass : labelToClasMap
+				.entrySet()) {
+			Map<String, Integer> classToIndexMap = new HashMap<String, Integer>(
+					labelToClass.getValue().size());
+			labelToClassIndexMap.put(labelToClass.getKey(), classToIndexMap);
+			int nIndex = 1;
+			for (String className : labelToClass.getValue()) {
+				Integer classNumber = null;
+				try {
+					classNumber = Integer.parseInt(className);
+				} catch (NumberFormatException fe) {
+				}
+				if (classNumber == null) {
+					classToIndexMap.put(className, nIndex++);
+				} else {
+					classToIndexMap.put(className, classNumber);
+				}
+			}
+		}
+	}
+
+	/**
+	 * export the label to class index map so that we can map class ids to class
+	 * labels later on
+	 * 
+	 * @throws IOException
+	 */
+	@Override
+	public void exportLabelToClassIndexMap(String outdir,
+			Map<String, Map<String, Integer>> labelToClassIndexMap)
+			throws IOException {
+		String filename = FileUtil.addFilenameToDir(outdir,
+				"labelToClassIndexMap.obj");
+		ObjectOutputStream os = null;
+		try {
+			os = new ObjectOutputStream(new FileOutputStream(filename));
+			os.writeObject(labelToClassIndexMap);
+		} finally {
+			if (os != null) {
+				try {
+					os.close();
+				} catch (IOException e) {
+				}
+			}
+		}
 	}
 }

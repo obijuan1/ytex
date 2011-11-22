@@ -178,6 +178,30 @@
 		and evaluationType = :evaluationType
 		and label = :label
 	]]></query>
+	<query name="getImputedFeaturesByPropagatedCutoff"><![CDATA[
+		select r
+		from FeatureRank r
+		where r.featureEval.corpusName = :corpusName
+		and r.featureEval.featureSetName = :featureSetName
+		and r.featureEval.param1 = :param1
+		and r.featureEval.param2 = :param2
+		and r.featureEval.crossValidationFoldId = :crossValidationFoldId
+		and r.featureEval.evaluationType = :evaluationType
+		and r.featureEval.label = :label
+		and r.evaluation >=  
+		(
+			select min(evaluation)
+			from FeatureRank rp
+			where rp.featureEval.corpusName = :corpusName
+			and rp.featureEval.featureSetName = :featureSetName
+			and rp.featureEval.param1 = :param1
+			and rp.featureEval.param2 = :param2
+			and rp.featureEval.crossValidationFoldId = :crossValidationFoldId
+			and rp.featureEval.evaluationType = :propEvaluationType
+			and rp.featureEval.label = :label
+			and rp.rank <= :propRankCutoff
+		)
+	]]></query>
 	<query name="getThresholdFeatures"><![CDATA[
 		from FeatureRank
 		where featureEval.corpusName = :corpusName

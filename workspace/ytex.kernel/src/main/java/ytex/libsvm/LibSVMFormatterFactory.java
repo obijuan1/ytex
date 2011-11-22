@@ -11,11 +11,22 @@ import java.util.SortedMap;
 
 import ytex.kernel.BaseSparseDataFormatter;
 import ytex.kernel.FileUtil;
+import ytex.kernel.InstanceData;
+import ytex.kernel.KernelUtil;
 import ytex.kernel.SparseData;
 import ytex.kernel.SparseDataFormatter;
 import ytex.kernel.SparseDataFormatterFactory;
 
 public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
+	KernelUtil kernelUtil;
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -24,10 +35,22 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 	 */
 	@Override
 	public SparseDataFormatter getFormatter() {
-		return new LibSVMFormatter();
+		return new LibSVMFormatter(getKernelUtil());
 	}
 
 	public static class LibSVMFormatter extends BaseSparseDataFormatter {
+		@Override
+		public void initializeExport(InstanceData instanceLabel,
+				Properties properties, SparseData sparseData)
+				throws IOException {
+			super.initializeExport(instanceLabel, properties, sparseData);
+			kernelUtil.exportLabelToClassIndexMap(outdir, labelToClassIndexMap);
+		}
+
+		public LibSVMFormatter(KernelUtil kernelUtil) {
+			super(kernelUtil);
+		}
+		
 		@Override
 		public void initializeLabel(
 				String label,
@@ -43,11 +66,8 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 * the libsvm data file
 		 */
 		@Override
-		public void initializeFold(
-				SparseData sparseData,
-				String label,
-				Integer run,
-				Integer fold,
+		public void initializeFold(SparseData sparseData, String label,
+				Integer run, Integer fold,
 				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 				throws IOException {
 			exportAttributeNames(sparseData, label, run, fold);
@@ -115,8 +135,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 *         were exported
 		 * @throws IOException
 		 */
-		protected List<Long> exportDataForInstances(
-				SparseData bagOfWordsData,
+		protected List<Long> exportDataForInstances(SparseData bagOfWordsData,
 				SortedMap<Long, String> instanceClassMap,
 				Map<String, Integer> classToIndexMap, BufferedWriter wData,
 				BufferedWriter wId) throws IOException {

@@ -22,8 +22,10 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import ytex.kernel.FileUtil;
 import ytex.kernel.KernelContextHolder;
+import ytex.kernel.KernelUtil;
 import ytex.kernel.SparseData;
 import ytex.kernel.SparseDataExporter;
+import ytex.kernel.SparseDataFormatter;
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.CrossValidationFold;
@@ -32,154 +34,19 @@ import ytex.kernel.model.FeatureRank;
 import ytex.weka.WekaFormatterFactory.WekaFormatter;
 
 public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
-	private static final Log log = LogFactory
-			.getLog(WekaAttributeEvaluatorImpl.class);
-	private ClassifierEvaluationDao classifierEvaluationDao;
-	private ASEvaluation asEvaluation;
-	private AttributeSelection attributeSelection;
-	private SparseDataExporter sparseDataExporter;
-
-	public SparseDataExporter getSparseDataExporter() {
-		return sparseDataExporter;
-	}
-
-	public void setSparseDataExporter(SparseDataExporter sparseDataExporter) {
-		this.sparseDataExporter = sparseDataExporter;
-	}
-
-	public ClassifierEvaluationDao getClassifierEvaluationDao() {
-		return classifierEvaluationDao;
-	}
-
-	public void setClassifierEvaluationDao(
-			ClassifierEvaluationDao classifierEvaluationDao) {
-		this.classifierEvaluationDao = classifierEvaluationDao;
-	}
-
-	public ASEvaluation getAsEvaluation() {
-		return asEvaluation;
-	}
-
-	public void setAsEvaluation(ASEvaluation asEvaluation) {
-		this.asEvaluation = asEvaluation;
-	}
-
-	public AttributeSelection getAttributeSelection() {
-		return attributeSelection;
-	}
-
-	public void setAttributeSelection(AttributeSelection attributeSelection) {
-		this.attributeSelection = attributeSelection;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * ytex.weka.WekaAttributeEvaluator#evaluateAttributesFromFile(java.lang
-	 * .String, java.lang.String)
-	 */
-	@Override
-	public void evaluateAttributesFromFile(String corpusName,
-			String featureSetName, String splitName, String file)
-			throws Exception {
-		DataSource ds = new DataSource(file);
-		Instances inst = ds.getDataSet();
-		String label = FileUtil.parseLabelFromFileName(inst.relationName());
-		Integer run = FileUtil.parseRunFromFileName(inst.relationName());
-		Integer fold = FileUtil.parseFoldFromFileName(inst.relationName());
-		evaluateAttributes(corpusName, featureSetName, splitName, inst, label,
-				run, fold);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * ytex.weka.WekaAttributeEvaluator#evaluateAttributesFromProps(java.lang
-	 * .String, java.lang.String)
-	 */
-	@Override
-	public void evaluateAttributesFromProps(String corpusName,
-			String splitName, String featureSetName, Properties props)
-			throws Exception {
-		sparseDataExporter.exportData(props,
-				new WekaAttributeEvaluatorFormatter(corpusName, featureSetName,
-						splitName), null);
-	}
-
-	/**
-	 * evaluate attributes, store in db
-	 * 
-	 * @param inst
-	 *            instances
-	 * @param label
-	 *            {@link FeatureEvaluation#getLabel()}
-	 * @param run
-	 *            {@link ClassifierEvaluation#getRun()} to map to fold
-	 * @param fold
-	 *            {@link ClassifierEvaluation#getFold()} to map to fold
-	 * @throws Exception
-	 */
-	public void evaluateAttributes(String corpusName, String featureSetName,
-			String splitName, Instances inst, String label, Integer run,
-			Integer fold) throws Exception {
-		AttributeSelection ae = this.getAttributeSelection();
-		ae.SelectAttributes(inst);
-		double rankedAttributes[][] = ae.rankedAttributes();
-		FeatureEvaluation fe = initializeFeatureEvaluation(corpusName,
-				featureSetName, splitName, label, run, fold);
-		List<FeatureRank> featureRanks = new ArrayList<FeatureRank>(
-				rankedAttributes.length);
-		for (int i = 0; i < rankedAttributes.length; i++) {
-			int index = (int) rankedAttributes[i][0];
-			double eval = rankedAttributes[i][1];
-			FeatureRank r = new FeatureRank();
-			r.setFeatureEval(fe);
-			r.setFeatureName(inst.attribute(index).name());
-			r.setRank(i + 1);
-			r.setEvaluation(eval);
-			featureRanks.add(r);
-		}
-		fe.setFeatures(featureRanks);
-		classifierEvaluationDao.saveFeatureEvaluation(fe);
-	}
-
-	public FeatureEvaluation initializeFeatureEvaluation(String corpusName,
-			String featureSetName, String splitName, String label, Integer run,
-			Integer fold) {
-		FeatureEvaluation fe = new FeatureEvaluation();
-		fe.setCorpusName(corpusName);
-		fe.setFeatureSetName(featureSetName);
-		fe.setEvaluationType(this.getAsEvaluation().getClass().getSimpleName());
-		fe.setLabel(label);
-		if (run != null && fold != null) {
-			CrossValidationFold cvFold = this.classifierEvaluationDao
-					.getCrossValidationFold(corpusName, splitName, label, run,
-							fold);
-			if (cvFold != null)
-				fe.setCrossValidationFoldId(cvFold.getCrossValidationFoldId());
-			else {
-				log.warn("could not obtain cv_fold_id. label=" + label
-						+ ", run=" + run + ", fold=" + fold);
-			}
-		}
-		return fe;
-	}
-
 	public class WekaAttributeEvaluatorFormatter extends WekaFormatter {
+		String corpusName;
+
 		String featureSetName;
 
+		String splitName;
 		public WekaAttributeEvaluatorFormatter(String corpusName,
 				String featureSetName, String splitName) {
-			super();
+			super(getKernelUtil());
 			this.featureSetName = featureSetName;
 			this.corpusName = corpusName;
 			this.splitName = splitName;
 		}
-
-		String corpusName;
-		String splitName;
 
 		@Override
 		public void exportFold(SparseData sparseData,
@@ -198,7 +65,8 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 		}
 
 	}
-
+	private static final Log log = LogFactory
+			.getLog(WekaAttributeEvaluatorImpl.class);
 	/**
 	 * @param args
 	 * @throws Exception
@@ -240,7 +108,6 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 			printHelp(options);
 		}
 	}
-
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
 		formatter
@@ -249,6 +116,150 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 								+ WekaAttributeEvaluatorImpl.class.getName()
 								+ " evaluate attributes using a weka AttributeEvaluator",
 						options);
+	}
+	private ASEvaluation asEvaluation;
+	private AttributeSelection attributeSelection;
+
+	private ClassifierEvaluationDao classifierEvaluationDao;
+
+	private KernelUtil kernelUtil;
+
+	private SparseDataExporter sparseDataExporter;
+
+	/**
+	 * evaluate attributes, store in db
+	 * 
+	 * @param inst
+	 *            instances
+	 * @param label
+	 *            {@link FeatureEvaluation#getLabel()}
+	 * @param run
+	 *            {@link ClassifierEvaluation#getRun()} to map to fold
+	 * @param fold
+	 *            {@link ClassifierEvaluation#getFold()} to map to fold
+	 * @throws Exception
+	 */
+	public void evaluateAttributes(String corpusName, String featureSetName,
+			String splitName, Instances inst, String label, Integer run,
+			Integer fold) throws Exception {
+		AttributeSelection ae = this.getAttributeSelection();
+		ae.SelectAttributes(inst);
+		double rankedAttributes[][] = ae.rankedAttributes();
+		FeatureEvaluation fe = initializeFeatureEvaluation(corpusName,
+				featureSetName, splitName, label, run, fold);
+		List<FeatureRank> featureRanks = new ArrayList<FeatureRank>(
+				rankedAttributes.length);
+		for (int i = 0; i < rankedAttributes.length; i++) {
+			int index = (int) rankedAttributes[i][0];
+			double eval = rankedAttributes[i][1];
+			FeatureRank r = new FeatureRank();
+			r.setFeatureEval(fe);
+			r.setFeatureName(inst.attribute(index).name());
+			r.setRank(i + 1);
+			r.setEvaluation(eval);
+			featureRanks.add(r);
+		}
+		fe.setFeatures(featureRanks);
+		classifierEvaluationDao.saveFeatureEvaluation(fe);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * ytex.weka.WekaAttributeEvaluator#evaluateAttributesFromFile(java.lang
+	 * .String, java.lang.String)
+	 */
+	@Override
+	public void evaluateAttributesFromFile(String corpusName,
+			String featureSetName, String splitName, String file)
+			throws Exception {
+		DataSource ds = new DataSource(file);
+		Instances inst = ds.getDataSet();
+		String label = FileUtil.parseLabelFromFileName(inst.relationName());
+		Integer run = FileUtil.parseRunFromFileName(inst.relationName());
+		Integer fold = FileUtil.parseFoldFromFileName(inst.relationName());
+		evaluateAttributes(corpusName, featureSetName, splitName, inst, label,
+				run, fold);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * ytex.weka.WekaAttributeEvaluator#evaluateAttributesFromProps(java.lang
+	 * .String, java.lang.String)
+	 */
+	@Override
+	public void evaluateAttributesFromProps(String corpusName,
+			String splitName, String featureSetName, Properties props)
+			throws Exception {
+		sparseDataExporter.exportData(props,
+				new WekaAttributeEvaluatorFormatter(corpusName, featureSetName,
+						splitName), null);
+	}
+
+	public ASEvaluation getAsEvaluation() {
+		return asEvaluation;
+	}
+
+	public AttributeSelection getAttributeSelection() {
+		return attributeSelection;
+	}
+
+	public ClassifierEvaluationDao getClassifierEvaluationDao() {
+		return classifierEvaluationDao;
+	}
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	public SparseDataExporter getSparseDataExporter() {
+		return sparseDataExporter;
+	}
+
+	public FeatureEvaluation initializeFeatureEvaluation(String corpusName,
+			String featureSetName, String splitName, String label, Integer run,
+			Integer fold) {
+		FeatureEvaluation fe = new FeatureEvaluation();
+		fe.setCorpusName(corpusName);
+		fe.setFeatureSetName(featureSetName);
+		fe.setEvaluationType(this.getAsEvaluation().getClass().getSimpleName());
+		fe.setLabel(label);
+		if (run != null && fold != null) {
+			CrossValidationFold cvFold = this.classifierEvaluationDao
+					.getCrossValidationFold(corpusName, splitName, label, run,
+							fold);
+			if (cvFold != null)
+				fe.setCrossValidationFoldId(cvFold.getCrossValidationFoldId());
+			else {
+				log.warn("could not obtain cv_fold_id. label=" + label
+						+ ", run=" + run + ", fold=" + fold);
+			}
+		}
+		return fe;
+	}
+
+	public void setAsEvaluation(ASEvaluation asEvaluation) {
+		this.asEvaluation = asEvaluation;
+	}
+
+	public void setAttributeSelection(AttributeSelection attributeSelection) {
+		this.attributeSelection = attributeSelection;
+	}
+
+	public void setClassifierEvaluationDao(
+			ClassifierEvaluationDao classifierEvaluationDao) {
+		this.classifierEvaluationDao = classifierEvaluationDao;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
+	}
+
+	public void setSparseDataExporter(SparseDataExporter sparseDataExporter) {
+		this.sparseDataExporter = sparseDataExporter;
 	}
 
 }

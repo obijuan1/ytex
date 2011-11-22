@@ -1,46 +1,70 @@
 package ytex.kernel.evaluator;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import ytex.kernel.ConceptSimilarityService;
 
-public class LinKernel extends CacheKernel {
+public class LinKernel extends CacheKernel implements InitializingBean {
+	private static final Log log = LogFactory.getLog(LinKernel.class);
+	private Map<String, Double> conceptFilter = null;
 	private ConceptSimilarityService conceptSimilarityService;
-//	private CacheManager cacheManager;
-//	private Cache conceptSimCache;
-	private String label = null;
 	private double cutoff = 0;
+	private String label = null;
+	private Integer rankCutoff = null;
 
-	public String getLabel() {
-		return label;
-	}
-
-	public void setLabel(String label) {
-		this.label = label;
-	}
-
-	public double getCutoff() {
-		return cutoff;
-	}
-
-	public void setCutoff(double cutoff) {
-		this.cutoff = cutoff;
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		super.afterPropertiesSet();
+		this.initializeConceptFilter();
 	}
 
 	public ConceptSimilarityService getConceptSimilarityService() {
 		return conceptSimilarityService;
 	}
 
-	public void setConceptSimilarityService(
-			ConceptSimilarityService conceptSimilarityService) {
-		this.conceptSimilarityService = conceptSimilarityService;
+	public double getCutoff() {
+		return cutoff;
 	}
-//
-//	public CacheManager getCacheManager() {
-//		return cacheManager;
-//	}
-//
-//	public void setCacheManager(CacheManager cacheManager) {
-//		this.cacheManager = cacheManager;
-//	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public Integer getRankCutoff() {
+		return rankCutoff;
+	}
+
+	protected void initializeConceptFilter() {
+		if (rankCutoff != null) {
+			conceptFilter = new HashMap<String, Double>();
+			cutoff = conceptSimilarityService.loadConceptFilter(label,
+					rankCutoff, conceptFilter);
+			if (conceptFilter.isEmpty()) {
+				log.warn("no concepts that matched the threshold for supervised semantic similarity. label="
+						+ label + ", rankCutoff=" + rankCutoff);
+			}
+		}
+	}
+
+	/**
+	 * override CacheKernel - don't bother caching evaluation if the concepts
+	 * are not in the conceptFilter.
+	 */
+	@Override
+	public double evaluate(Object o1, Object o2) {
+		if (this.conceptFilter != null
+				&& !(conceptFilter.containsKey((String) o1) || conceptFilter
+						.containsKey((String) o2))) {
+			return 0d;
+		} else {
+			return super.evaluate(o1, o2);
+		}
+	}
 
 	@Override
 	public double innerEvaluate(Object o1, Object o2) {
@@ -51,32 +75,27 @@ public class LinKernel extends CacheKernel {
 			if (c1.equals(c2)) {
 				d = 1;
 			} else {
-				// look in cache
-				// String key = createKey(c1, c2);
-				// OrderedPair<String> key = new OrderedPair<String>(c1, c2);
-				// Element e = conceptSimCache.get(key);
-				// if (e != null) {
-				// // it's there
-				// d = (Double) e.getObjectValue();
-				// } else {
-				// it's not there - put it there
-				d = conceptSimilarityService.filteredLin(c1, c2, label, cutoff);
-				// conceptSimCache.put(new Element(key, d));
-				// }
+				d = conceptSimilarityService.filteredLin(c1, c2, conceptFilter);
 			}
 		}
 		return d;
 	}
 
-	// private String createKey(String c1, String c2) {
-	// if (c1.compareTo(c2) < 0) {
-	// return new StringBuilder(c1).append("-").append(c2).toString();
-	// } else {
-	// return new StringBuilder(c2).append("-").append(c1).toString();
-	// }
-	// }
-//
-//	public void init() {
-//		conceptSimCache = cacheManager.getCache("linSimCache");
-//	}
+	public void setConceptSimilarityService(
+			ConceptSimilarityService conceptSimilarityService) {
+		this.conceptSimilarityService = conceptSimilarityService;
+	}
+
+	public void setCutoff(double cutoff) {
+		this.cutoff = cutoff;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public void setRankCutoff(Integer rankCutoff) {
+		this.rankCutoff = rankCutoff;
+	}
+
 }

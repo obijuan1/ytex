@@ -40,14 +40,12 @@ import ytex.kernel.dao.KernelEvaluationDao;
  * directory
  * <p/>
  * Output to outdir following files:
- * <li>train_data.txt - for each class label, a symmetric gram matrix
- * for training instances
- * <li>train_id.txt - instance ids corresponding to rows of
- * training gram matrix
- * <li>test_data.txt - for each class label, a rectangular matrix of the
- * test instances kernel evaluations wrt training instances
- * <li>test_id.txt - instance ids corresponding to rows of test gram
- * matrix
+ * <li>train_data.txt - for each class label, a symmetric gram matrix for
+ * training instances
+ * <li>train_id.txt - instance ids corresponding to rows of training gram matrix
+ * <li>test_data.txt - for each class label, a rectangular matrix of the test
+ * instances kernel evaluations wrt training instances
+ * <li>test_id.txt - instance ids corresponding to rows of test gram matrix
  * 
  * @author vijay
  */
@@ -77,6 +75,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 							+ " export gram matrix in libsvm format", options);
 		}
 	}
+
 	private JdbcTemplate jdbcTemplate = null;
 	private KernelEvaluationDao kernelEvaluationDao = null;
 	private KernelUtil kernelUtil;
@@ -99,12 +98,13 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	 *            map of instance id to index in gramMatrix
 	 * @param filePrefix
 	 *            - prefix to which we add train_data.txt
+	 * @param mapClassToIndex 
 	 * @throws IOException
 	 */
 	private void exportFold(double[][] gramMatrix,
 			Map<Boolean, SortedMap<Long, String>> instanceIdToClassMap,
 			boolean train, Map<Long, Integer> mapInstanceIdToIndex,
-			String filePrefix) throws IOException {
+			String filePrefix, Map<String, Integer> mapClassToIndex) throws IOException {
 		String fileName = new StringBuilder(filePrefix).append("_data.txt")
 				.toString();
 		String idFileName = new StringBuilder(filePrefix).append("_id.txt")
@@ -115,8 +115,8 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 		// are the training instance ids. This is already sorted,
 		// but we stuff it in a list, so make sure it is sorted
 		// the order has to be the same in both the train and test files
-		List<Long> colInstanceIds = new ArrayList<Long>(
-				instanceIdToClassMap.get(true).keySet());
+		List<Long> colInstanceIds = new ArrayList<Long>(instanceIdToClassMap
+				.get(true).keySet());
 		Collections.sort(colInstanceIds);
 		// the rows - train or test instance ids and their class labels
 		SortedMap<Long, String> rowInstanceToClassMap = instanceIdToClassMap
@@ -138,7 +138,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 				// the index to gramMatrix corresponding to this instance
 				int rowInstanceIndex = mapInstanceIdToIndex.get(rowInstanceId);
 				// write class Id
-				w.write(classId);
+				w.write(mapClassToIndex.get(classId).toString());
 				w.write("\t");
 				// write row number - libsvm uses 1-based indexing
 				w.write("0:");
@@ -184,7 +184,10 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	 */
 	private void exportGramMatrices(String name, String experiment,
 			double param1, String param2, String scope, String splitName,
-			String outdir, InstanceData instanceData) throws IOException {
+			String outdir, InstanceData instanceData,
+			Map<String, Map<String, Integer>> labelToClassIndexMap)
+			throws IOException {
+		kernelUtil.exportLabelToClassIndexMap(outdir, labelToClassIndexMap);
 		// the full, symmetric gram matrix
 		double[][] gramMatrix = null;
 		// the set of all instance ids
@@ -227,12 +230,12 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 						exportFold(gramMatrix, foldMap, true,
 								mapInstanceIdToIndex,
 								FileUtil.getDataFilePrefix(outdir, label, run,
-										fold, true));
+										fold, true), labelToClassIndexMap.get(label));
 						// export test fold
 						exportFold(gramMatrix, foldMap, false,
 								mapInstanceIdToIndex,
 								FileUtil.getDataFilePrefix(outdir, label, run,
-										fold, false));
+										fold, false), labelToClassIndexMap.get(label));
 					}
 				}
 			}
@@ -257,8 +260,11 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 				props.getProperty("instanceClassQuery"));
 		String splitName = props.getProperty("ytex.splitName");
 		String outdir = props.getProperty("outdir");
+		Map<String, Map<String, Integer>> labelToClassIndexMap = new HashMap<String, Map<String, Integer>>();
+		kernelUtil.fillLabelToClassToIndexMap(
+				instanceData.getLabelToClassMap(), labelToClassIndexMap);
 		exportGramMatrices(name, experiment, param1, param2, scope, splitName,
-				outdir, instanceData);
+				outdir, instanceData, labelToClassIndexMap);
 	}
 
 	public DataSource getDataSource() {
@@ -284,8 +290,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	private double[][] loadGramMatrix(String name, String experiment,
 			double param1, String param2, String splitName, String label,
 			int run, int fold, InstanceData instanceData,
-			SortedSet<Long> instanceIds,
-			Map<Long, Integer> mapInstanceIdToIndex) {
+			SortedSet<Long> instanceIds, Map<Long, Integer> mapInstanceIdToIndex) {
 		double[][] gramMatrix;
 		instanceIds.clear();
 		mapInstanceIdToIndex.clear();

@@ -66,8 +66,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	 * ytex.kernel.dao.ClassifierEvaluationDao#saveClassifierEvaluation(ytex
 	 * .kernel.model.ClassifierEvaluation)
 	 */
-	public void saveClassifierEvaluation(ClassifierEvaluation eval, Map<Integer, String> irClassMap,
-			boolean saveInstanceEval) {
+	public void saveClassifierEvaluation(ClassifierEvaluation eval,
+			Map<Integer, String> irClassMap, boolean saveInstanceEval) {
 		saveClassifierEvaluation(eval, irClassMap, saveInstanceEval, true, null);
 	}
 
@@ -197,7 +197,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public List<FeatureRank> getTopFeatures(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			Integer foldId, double param1, String param2, Integer parentConceptTopThreshold) {
+			Integer foldId, double param1, String param2,
+			Integer parentConceptTopThreshold) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
 				label, evaluationType, foldId, param1, param2, "getTopFeatures");
 		q.setMaxResults(parentConceptTopThreshold);
@@ -233,9 +234,11 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public List<FeatureRank> getThresholdFeatures(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			Integer foldId, double param1, String param2, double evaluationThreshold) {
+			Integer foldId, double param1, String param2,
+			double evaluationThreshold) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
-				label, evaluationType, foldId, param1, param2, "getThresholdFeatures");
+				label, evaluationType, foldId, param1, param2,
+				"getThresholdFeatures");
 		q.setDouble("evaluation", evaluationThreshold);
 		return q.list();
 	}
@@ -298,7 +301,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<FeatureEvaluation> getFeatureEvaluations(String corpusName,
-			String conceptSetName, String evaluationType, double param1, String param2) {
+			String conceptSetName, String evaluationType, double param1,
+			String param2) {
 		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
 				"getFeatureEvaluations");
 		q.setString("corpusName", corpusName);
@@ -312,5 +316,18 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public void saveFeatureParentChild(FeatureParentChild parchd) {
 		this.sessionFactory.getCurrentSession().save(parchd);
+	}
+
+	@Override
+	public List<FeatureRank> getImputedFeaturesByPropagatedCutoff(
+			String corpusName, String conceptSetName, String label, String evaluationType,
+			String conceptGraphName, String propEvaluationType,
+			int propRankCutoff) {
+		Query q = prepareUniqueFeatureEvalQuery(corpusName, conceptSetName,
+				label, evaluationType, 0, 0, conceptGraphName,
+				"getImputedFeaturesByPropagatedCutoff");
+		q.setInteger("propRankCutoff", propRankCutoff);
+		q.setString("propEvaluationType", propEvaluationType);
+		return q.list();
 	}
 }

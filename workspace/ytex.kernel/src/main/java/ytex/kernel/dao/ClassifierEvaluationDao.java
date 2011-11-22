@@ -74,4 +74,9 @@ public interface ClassifierEvaluationDao {
 
 	public abstract void saveFeatureParentChild(FeatureParentChild parchd);
 
+	public abstract List<FeatureRank> getImputedFeaturesByPropagatedCutoff(
+			String corpusName, String conceptSetName, String label,
+			String evaluationType, String conceptGraphName,
+			String propEvaluationType, int propRankCutoff);
+
 }

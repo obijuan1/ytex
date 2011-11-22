@@ -47,13 +47,13 @@ import ytex.kernel.model.FeatureRank;
  * graph and classification task (label) and possibly a fold. We calculate the
  * following:
  * <ul>
- * <li>raw mutual information of each concept (mutualinfo). We calculate the
+ * <li>raw mutual information of each concept (infogain). We calculate the
  * joint distribution of concepts (X) and document classes (Y), and compute the
  * mutual information for each concept.
- * <li>mutual information inherited by parents (mutualinfo-parent). For each
+ * <li>mutual information inherited by parents (infogain-parent). For each
  * concept in the concept graph, we merge the joint distribution of child
  * concepts. This is done recursively.
- * <li>mutual information inherited by children from parents (mutualinfo-child).
+ * <li>mutual information inherited by children from parents (infogain-child).
  * We take the top n concepts and assign their children (entire subgraph) the
  * mutual info of the parent.
  * </ul>
@@ -61,7 +61,7 @@ import ytex.kernel.model.FeatureRank;
  * The mutual information of each concept is stored in the feature_rank table.
  * The related records in the feature_eval table have the following values:
  * <ul>
- * <li>type = mutualinfo, mutualinfo-parent, mutualinfo-child
+ * <li>type = infogain, infogain-parent, infogain-imputed, infogain-imputed-filt
  * <li>feature_set_name = conceptSetName
  * <li>param1 = conceptGraphName
  * </ul>
@@ -90,8 +90,6 @@ import ytex.kernel.model.FeatureRank;
  * computing the infocontent of concepts with CorpusEvaluator)
  * </ul>
  * 
- * TODO: use tfidf instead of infocontent to figure out which concepts are in
- * the corpus
  * 
  * @author vijay
  * 

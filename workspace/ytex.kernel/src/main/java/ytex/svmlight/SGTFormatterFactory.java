@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.SortedMap;
 
 import ytex.kernel.FileUtil;
+import ytex.kernel.KernelUtil;
 import ytex.kernel.SparseData;
 import ytex.kernel.SparseDataFormatter;
 import ytex.kernel.SparseDataFormatterFactory;
@@ -21,13 +22,26 @@ import ytex.semil.SemiLFormatterFactory.SemiLDataFormatter;
  * 
  */
 public class SGTFormatterFactory implements SparseDataFormatterFactory {
+	private KernelUtil kernelUtil;
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
+	}
 
 	@Override
 	public SparseDataFormatter getFormatter() {
-		return new SGTFormatter();
+		return new SGTFormatter(kernelUtil);
 	}
 
 	public static class SGTFormatter extends SemiLDataFormatter {
+		public SGTFormatter(KernelUtil kernelUtil) {
+			super(kernelUtil);
+		}
+
 		@Override
 		protected void exportData(SparseData sparseData, String label,
 				Integer run, Integer fold) throws IOException {

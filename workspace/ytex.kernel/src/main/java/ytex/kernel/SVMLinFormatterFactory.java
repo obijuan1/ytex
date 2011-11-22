@@ -30,15 +30,13 @@ import ytex.semil.SemiLFormatterFactory.SemiLDataFormatter;
  * 
  */
 public class SVMLinFormatterFactory implements SparseDataFormatterFactory {
-
-	@Override
-	public SparseDataFormatter getFormatter() {
-		return new SVMLinDataFormatter();
-	}
-
 	public static class SVMLinDataFormatter extends SemiLDataFormatter {
 		private static final Log log = LogFactory
 				.getLog(SVMLinDataFormatter.class);
+
+		public SVMLinDataFormatter(KernelUtil kernelUtil) {
+			super(kernelUtil);
+		}
 
 		@Override
 		protected void exportData(SparseData sparseData, String label,
@@ -62,25 +60,6 @@ public class SVMLinFormatterFactory implements SparseDataFormatterFactory {
 					wData.close();
 				}
 			}
-		}
-
-		@Override
-		public void initializeFold(SparseData sparseData, String label,
-				Integer run, Integer fold,
-				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
-				throws IOException {
-			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {
-				exportData(sparseData, label, run, fold);
-			}
-			String idFileName = FileUtil.getScopedFileName(outdir, label, run,
-					fold, "class.txt");
-			SortedMap<Long, Integer> trainInstanceIdToClass = super
-					.getTrainingClassMap(idFileName,
-							foldInstanceLabelMap.get(true),
-							foldInstanceLabelMap.get(false),
-							this.labelToClassIndexMap.get(label),
-							sparseData.getInstanceIds());
-			exportOneAgainstAllCodes(label, run, fold, trainInstanceIdToClass);
 		}
 
 		/**
@@ -165,6 +144,41 @@ public class SVMLinFormatterFactory implements SparseDataFormatterFactory {
 			}
 			// return mapCodeToInstanceClass;
 		}
+
+		@Override
+		public void initializeFold(SparseData sparseData, String label,
+				Integer run, Integer fold,
+				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
+				throws IOException {
+			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {
+				exportData(sparseData, label, run, fold);
+			}
+			String idFileName = FileUtil.getScopedFileName(outdir, label, run,
+					fold, "class.txt");
+			SortedMap<Long, Integer> trainInstanceIdToClass = super
+					.getTrainingClassMap(idFileName,
+							foldInstanceLabelMap.get(true),
+							foldInstanceLabelMap.get(false),
+							this.labelToClassIndexMap.get(label),
+							sparseData.getInstanceIds());
+			exportOneAgainstAllCodes(label, run, fold, trainInstanceIdToClass);
+		}
+	}
+
+
+
+	private KernelUtil kernelUtil;
+
+	@Override
+	public SparseDataFormatter getFormatter() {
+		return new SVMLinDataFormatter(kernelUtil);
+	}
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
 	}
 
 }

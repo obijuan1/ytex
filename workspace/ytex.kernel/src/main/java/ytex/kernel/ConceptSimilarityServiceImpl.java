@@ -93,8 +93,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * @return 0 - no lcs, or no lcs that meets the threshold.
 	 */
 	@Override
-	public double filteredLin(String concept1, String concept2, String label,
-			double lcsMinEvaluation) {
+	public double filteredLin(String concept1, String concept2,
+			Map<String, Double> conceptFilter) {
 		double ic1 = getIC(concept1);
 		double ic2 = getIC(concept2);
 		// lin not defined if one of the concepts doesn't exist in the corpus
@@ -108,8 +108,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				Set<ConcRel> lcses = new HashSet<ConcRel>();
 				int dist = getLCSFromCache(cr1, cr2, lcses);
 				if (dist > 0) {
-					double ic = lcsMinEvaluation > 0 && label != null ? getBestIC(
-							lcses, label, lcsMinEvaluation) : getIC(lcses);
+					double ic = getBestIC(lcses, conceptFilter);
 					return 2 * ic / denom;
 				}
 			}
@@ -134,32 +133,25 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * 
 	 * @see #getIC(Iterable)
 	 */
-	private double getBestIC(Set<ConcRel> lcses, String label,
-			double lcsMinEvaluation) {
-		Map<String, FeatureRank> featureRankMap = this.validLCSCache.get(label);
-		if (lcsMinEvaluation > 0) {
-			// filtered - get the ic of the feature with the highest IG
-			if (featureRankMap != null) {
-				double currentBest = -1;
-				Set<ConcRel> bestLcses = new HashSet<ConcRel>();
-				for (ConcRel lcs : lcses) {
-					FeatureRank r = featureRankMap.get(lcs.getConceptID());
-					if (r != null && r.getEvaluation() >= lcsMinEvaluation) {
-						if (currentBest == -1
-								|| r.getEvaluation() > currentBest) {
-							bestLcses.clear();
-							bestLcses.add(lcs);
-							currentBest = r.getEvaluation();
-						} else if (currentBest == r.getEvaluation()) {
-							bestLcses.add(lcs);
-						}
+	private double getBestIC(Set<ConcRel> lcses,
+			Map<String, Double> conceptFilter) {
+		if (conceptFilter != null) {
+			double currentBest = -1;
+			Set<ConcRel> bestLcses = new HashSet<ConcRel>();
+			for (ConcRel lcs : lcses) {
+				if (conceptFilter.containsKey(lcs.getConceptID())) {
+					double lcsEval = conceptFilter.get(lcs.getConceptID());
+					if (currentBest == -1 || lcsEval > currentBest) {
+						bestLcses.clear();
+						bestLcses.add(lcs);
+						currentBest = lcsEval;
+					} else if (currentBest == lcsEval) {
+						bestLcses.add(lcs);
 					}
 				}
-				if (bestLcses.size() > 0) {
-					return this.getIC(bestLcses);
-				}
-			} else {
-				log.warn("no features for label: " + label);
+			}
+			if (bestLcses.size() > 0) {
+				return this.getIC(bestLcses);
 			}
 		} else {
 			// unfiltered - get the lowest ic
@@ -344,20 +336,20 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	public void initValidLCSCache() {
-		List<FeatureEvaluation> feList = this.classifierEvaluationDao
-				.getFeatureEvaluations(this.corpusName, this.conceptSetName,
-						this.lcsImputedType
-								+ ImputedFeatureEvaluator.SUFFIX_IMPUTED,
-								0d,
-						this.conceptGraphName);
+		// List<FeatureEvaluation> feList = this.classifierEvaluationDao
+		// .getFeatureEvaluations(this.corpusName, this.conceptSetName,
+		// this.lcsImputedType
+		// + ImputedFeatureEvaluator.SUFFIX_IMPUTED, 0d,
+		// this.conceptGraphName);
 		this.validLCSCache = new HashMap<String, Map<String, FeatureRank>>();
-		for (FeatureEvaluation r : feList) {
-			Map<String, FeatureRank> featureMap = new HashMap<String, FeatureRank>();
-			this.validLCSCache.put(r.getLabel(), featureMap);
-			for (FeatureRank rank : r.getFeatures()) {
-				featureMap.put(rank.getFeatureName(), rank);
-			}
-		}
+		// for (FeatureEvaluation r : feList) {
+		// Map<String, FeatureRank> featureMap = new HashMap<String,
+		// FeatureRank>();
+		// this.validLCSCache.put(r.getLabel(), featureMap);
+		// for (FeatureRank rank : r.getFeatures()) {
+		// featureMap.put(rank.getFeatureName(), rank);
+		// }
+		// }
 	}
 
 	/*
@@ -414,7 +406,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	public double lin(String concept1, String concept2) {
-		return filteredLin(concept1, concept2, null, 0);
+		return filteredLin(concept1, concept2, null);
 	}
 
 	public void setCacheManager(CacheManager cacheManager) {
@@ -466,4 +458,73 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		}
 		return bs;
 	}
+
+	/**
+	 * For the given label and cutoff, get the corresponding concepts whose
+	 * propagated ig meets the threshold. Used by lin kernel to find concepts
+	 * that actually have a non-trivial similarity
+	 * 
+	 * @param label
+	 *            label
+	 * @param rankCutoff
+	 *            cutoff
+	 * @param conceptFilter
+	 *            set to fill with concepts
+	 * @return double minimum evaluation
+	 */
+	@Override
+	public double loadConceptFilter(String label, int rankCutoff,
+			Map<String, Double> conceptFilter) {
+		List<FeatureRank> imputedConcepts = this.classifierEvaluationDao
+				.getImputedFeaturesByPropagatedCutoff(corpusName,
+						conceptSetName, label, lcsImputedType
+								+ ImputedFeatureEvaluator.SUFFIX_IMPUTED,
+						conceptGraphName, lcsImputedType
+								+ ImputedFeatureEvaluator.SUFFIX_PROP,
+						rankCutoff);
+		double minEval = 1d;
+		for (FeatureRank r : imputedConcepts) {
+			conceptFilter.put(r.getFeatureName(), r.getEvaluation());
+			if (minEval >= r.getEvaluation())
+				minEval = r.getEvaluation();
+		}
+		return minEval;
+	}
+	// double minEval = 1d;
+	// List<FeatureRank> listPropagatedConcepts = classifierEvaluationDao
+	// .getTopFeatures(corpusName, conceptSetName, label,
+	// ImputedFeatureEvaluator.MeasureType.INFOGAIN.toString()
+	// + ImputedFeatureEvaluator.SUFFIX_PROP, 0, 0,
+	// conceptGraphName, rankCutoff);
+	// for (FeatureRank r : listPropagatedConcepts) {
+	// ConcRel cr = cg.getConceptMap().get(r.getFeatureName());
+	// if (cr != null) {
+	// addSubtree(conceptFilterSet, cr);
+	// }
+	// if (r.getEvaluation() < minEval)
+	// minEval = r.getEvaluation();
+	// }
+	// return minEval;
+	// }
+	//
+	// /**
+	// * add all children of parent to conceptSet. Limit only to children that
+	// * actually appear in the corpus
+	// *
+	// * @param conceptSet
+	// * set of concepts to add ids to
+	// * @param parent
+	// * parent which will be added to the conceptSet
+	// * @param corpusICSet
+	// * set of concepts and hypernyms contained in corpus
+	// */
+	// private void addSubtree(Map<String, Double> conceptSet, ConcRel parent) {
+	// if (!conceptSet.containsKey(parent.getConceptID())
+	// && conceptFreq.containsKey(parent.getConceptID())) {
+	// conceptSet.put(parent.getConceptID(), 0d);
+	// for (ConcRel child : parent.getChildren()) {
+	// addSubtree(conceptSet, child);
+	// }
+	// }
+	// }
 }

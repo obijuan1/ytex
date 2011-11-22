@@ -13,6 +13,7 @@ import java.util.TreeMap;
 
 import ytex.kernel.FileUtil;
 import ytex.kernel.InstanceData;
+import ytex.kernel.KernelUtil;
 import ytex.kernel.SparseData;
 import ytex.kernel.SparseDataFormatter;
 import ytex.kernel.SparseDataFormatterFactory;
@@ -29,7 +30,15 @@ import ytex.libsvm.LibSVMFormatterFactory.LibSVMFormatter;
  * If a test set is available, will use transductive svm format.
  */
 public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
+	KernelUtil kernelUtil;
 
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -37,11 +46,15 @@ public class SVMLightFormatterFactory implements SparseDataFormatterFactory {
 	 */
 	@Override
 	public SparseDataFormatter getFormatter() {
-		return new SVMLightFormatter();
+		return new SVMLightFormatter(this.getKernelUtil());
 	}
 
 	public static class SVMLightFormatter extends LibSVMFormatter {
 		protected SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap;
+
+		public SVMLightFormatter(KernelUtil kernelUtil) {
+			super(kernelUtil);
+		}
 
 		/**
 		 * export the given train/test set

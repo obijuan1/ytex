@@ -1,7 +1,6 @@
 package ytex.kernel;
 
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,6 +13,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 
 public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
+	protected KernelUtil kernelUtil;
 
 	/**
 	 * directory to export files to, with trailing separator added on if
@@ -42,27 +42,8 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 	 */
 	protected Properties exportProperties;
 
-	/**
-	 * export the label to class index map so that we can map class ids to class
-	 * labels later on
-	 * 
-	 * @throws IOException
-	 */
-	protected void exportLabelToClassIndexMap() throws IOException {
-		String filename = FileUtil.addFilenameToDir(outdir,
-				"labelToClassIndexMap.obj");
-		ObjectOutputStream os = null;
-		try {
-			os = new ObjectOutputStream(new FileOutputStream(filename));
-			os.writeObject(labelToClassIndexMap);
-		} finally {
-			if (os != null) {
-				try {
-					os.close();
-				} catch (IOException e) {
-				}
-			}
-		}
+	public BaseSparseDataFormatter(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
 	}
 
 	protected void exportAttributeNames(SparseData sparseData, String label,
@@ -255,27 +236,8 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 		this.exportProperties = properties;
 		this.outdir = properties.getProperty("outdir");
 		FileUtil.createOutdir(outdir);
-		for (Map.Entry<String, SortedSet<String>> labelToClass : instanceLabel
-				.getLabelToClassMap().entrySet()) {
-			Map<String, Integer> classToIndexMap = new HashMap<String, Integer>(
-					labelToClass.getValue().size());
-			this.labelToClassIndexMap.put(labelToClass.getKey(),
-					classToIndexMap);
-			int nIndex = 1;
-			for (String className : labelToClass.getValue()) {
-				Integer classNumber = null;
-				try {
-					classNumber = Integer.parseInt(className);
-				} catch (NumberFormatException fe) {
-				}
-				if (classNumber == null) {
-					classToIndexMap.put(className, nIndex++);
-				} else {
-					classToIndexMap.put(className, classNumber);
-				}
-			}
-		}
-		this.exportLabelToClassIndexMap();
+		kernelUtil.fillLabelToClassToIndexMap(
+				instanceLabel.getLabelToClassMap(), this.labelToClassIndexMap);
 	}
 
 	/**

@@ -13,10 +13,12 @@ import java.util.TreeMap;
 
 import ytex.kernel.FileUtil;
 import ytex.kernel.InstanceData;
+import ytex.kernel.KernelUtil;
 import ytex.kernel.SparseData;
 import ytex.kernel.SparseDataFormatter;
 import ytex.kernel.SparseDataFormatterFactory;
 import ytex.svmlight.SVMLightFormatterFactory.SVMLightFormatter;
+import ytex.weka.WekaFormatterFactory.WekaFormatter;
 
 /**
  * Export data for use with SemiL. I would have liked to have computed the
@@ -41,15 +43,14 @@ import ytex.svmlight.SVMLightFormatterFactory.SVMLightFormatter;
  * 
  */
 public class SemiLFormatterFactory implements SparseDataFormatterFactory {
-
-	@Override
-	public SparseDataFormatter getFormatter() {
-		return new SemiLDataFormatter();
-	}
-
+	
 	public static class SemiLDataFormatter extends SVMLightFormatter {
-		NumberFormat semilNumberFormat = new DecimalFormat("#.######");
 		protected InstanceData instanceLabel = null;
+
+		NumberFormat semilNumberFormat = new DecimalFormat("#.######");
+		public SemiLDataFormatter(KernelUtil kernelUtil) {
+			super(kernelUtil);
+		}
 
 		// /**
 		// * cosine distance: <tt>1-aa'/sqrt(aa' * bb')</tt>
@@ -69,55 +70,6 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		// }
 		// };
 
-		@Override
-		public void initializeExport(InstanceData instanceLabel,
-				Properties properties, SparseData sparseData)
-				throws IOException {
-			super.initializeExport(instanceLabel, properties, sparseData);
-			this.instanceLabel = instanceLabel;
-			if (properties.getProperty(SCOPE) == null
-					|| properties.getProperty(SCOPE).length() == 0) {
-				exportData(sparseData, null, null, null);
-			}
-		}
-
-		@Override
-		public void initializeLabel(
-				String label,
-				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
-				Properties properties, SparseData sparseData)
-				throws IOException {
-			super.initializeLabel(label, labelInstances, properties, sparseData);
-			if (SCOPE_LABEL.equals(this.exportProperties.getProperty(SCOPE))) {
-				exportData(sparseData, label, null, null);
-			}
-		}
-
-		@Override
-		public void initializeFold(SparseData sparseData, String label,
-				Integer run, Integer fold,
-				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
-				throws IOException {
-			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {
-				exportData(sparseData, label, run, fold);
-			}
-			String labelFileName = FileUtil.getScopedFileName(outdir, label,
-					run, fold, "label.txt");
-			String idFileName = FileUtil.getScopedFileName(outdir, label, run,
-					fold, "class.txt");
-			SortedMap<Long, Integer> trainInstanceIdToClass = getTrainingClassMap(
-					idFileName, foldInstanceLabelMap.get(true),
-					foldInstanceLabelMap.get(false),
-					this.labelToClassIndexMap.get(label),
-					sparseData.getInstanceIds());
-			exportLabel(labelFileName, trainInstanceIdToClass);
-			// exportLabel(idFileName, labelFileName,
-			// foldInstanceLabelMap.get(true),
-			// foldInstanceLabelMap.get(false),
-			// this.labelToClassIndexMap.get(label),
-			// sparseData.getInstanceIds());
-		}
-
 		/**
 		 * 
 		 * @param foldInstanceLabelMap
@@ -135,34 +87,6 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 			exportSparseMatrix(filename, sparseData);
 
 		}
-
-		// private void exportDistance(SparseData sparseData, String label,
-		// Integer run, Integer fold) throws IOException {
-		// SparseDoubleMatrix2D data = new SparseDoubleMatrix2D(
-		// this.instanceIds.size(), maxAttributeIndex);
-		// int row = 0;
-		// for (Integer instanceId : this.instanceIds) {
-		// // write row to sparse data matrix
-		// // get 'vector'
-		// SortedMap<Integer, Double> instanceValues = getSparseLineValues(
-		// sparseData, numericAttributeMap, nominalAttributeMap,
-		// instanceId);
-		// // write it to the matrix
-		// for (SortedMap.Entry<Integer, Double> instanceValue : instanceValues
-		// .entrySet()) {
-		// // row = instance number
-		// // column = attribute index
-		// // value = value
-		// data.set(row, instanceValue.getKey() - 1,
-		// instanceValue.getValue());
-		// }
-		// // increment row index
-		// row++;
-		// }
-		// String filename = FileUtil.getFoldFilePrefix(outdir, label, run,
-		// fold) + "dist.txt";
-		// this.writeDistanceMatrix(data, filename);
-		// }
 
 		@Override
 		public void exportFold(SparseData sparseData,
@@ -204,78 +128,6 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 					}
 			}
 		}
-
-//		/**
-//		 * export the data
-//		 * 
-//		 * @param filename
-//		 * @param idFilename
-//		 * @param lblFilename
-//		 * @param bagOfWordsData
-//		 * @param trainInstanceClassMap
-//		 * @param testInstanceClassMap
-//		 * @param classToIndexMap
-//		 * @throws IOException
-//		 */
-//		private void exportLabel(String idFilename, String lblFilename,
-//				SortedMap<Long, String> trainInstanceClassMap,
-//				SortedMap<Long, String> testInstanceClassMap,
-//				Map<String, Integer> classToIndexMap,
-//				SortedSet<Long> instanceIds) throws IOException {
-//			// BufferedWriter wId = null;
-//			BufferedWriter wLabel = null;
-//			SortedMap<Long, Integer> mapInstanceIdToClass = this
-//					.getTrainingClassMap(idFilename, trainInstanceClassMap,
-//							testInstanceClassMap, classToIndexMap, instanceIds);
-//			try {
-//				// wId = new BufferedWriter(new FileWriter(idFilename));
-//				wLabel = new BufferedWriter(new FileWriter(lblFilename));
-//				for (Long instanceId : instanceIds) {
-//					// // for training default to unlabeled
-//					// int classIdTrain = 0;
-//					// if (trainInstanceClassMap.containsKey(instanceId)) {
-//					// // if the instance is in the training set, then use that
-//					// // label
-//					// classIdTrain = classToIndexMap
-//					// .get(trainInstanceClassMap.get(instanceId));
-//					// }
-//					// // check test set for gold class
-//					// int classIdGold = 0;
-//					// if (testInstanceClassMap != null
-//					// && testInstanceClassMap.containsKey(instanceId))
-//					// classIdGold = classToIndexMap.get(testInstanceClassMap
-//					// .get(instanceId));
-//					// else
-//					// classIdGold = classIdTrain;
-//					// // write instance id, if this is in the train set, and
-//					// it's
-//					// // class
-//					// wId.write(Long.toString(instanceId));
-//					// wId.write("\t");
-//					// wId.write(trainInstanceClassMap.containsKey(instanceId) ?
-//					// "1"
-//					// : "0");
-//					// wId.write("\t");
-//					// wId.write(Integer.toString(classIdGold));
-//					// wId.write("\n");
-//					// write label file for semiL
-//					int classIdTrain = mapInstanceIdToClass.get(instanceId);
-//					wLabel.write(Integer.toString(classIdTrain));
-//					wLabel.write("\n");
-//				}
-//			} finally {
-//				// if (wId != null)
-//				// try {
-//				// wId.close();
-//				// } catch (Exception ignore) {
-//				// }
-//				if (wLabel != null)
-//					try {
-//						wLabel.close();
-//					} catch (Exception ignore) {
-//					}
-//			}
-//		}
 
 		/**
 		 * pick through the training and test sets, figure out the class id for
@@ -397,6 +249,155 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		// }
 		// }
 
+		// private void exportDistance(SparseData sparseData, String label,
+		// Integer run, Integer fold) throws IOException {
+		// SparseDoubleMatrix2D data = new SparseDoubleMatrix2D(
+		// this.instanceIds.size(), maxAttributeIndex);
+		// int row = 0;
+		// for (Integer instanceId : this.instanceIds) {
+		// // write row to sparse data matrix
+		// // get 'vector'
+		// SortedMap<Integer, Double> instanceValues = getSparseLineValues(
+		// sparseData, numericAttributeMap, nominalAttributeMap,
+		// instanceId);
+		// // write it to the matrix
+		// for (SortedMap.Entry<Integer, Double> instanceValue : instanceValues
+		// .entrySet()) {
+		// // row = instance number
+		// // column = attribute index
+		// // value = value
+		// data.set(row, instanceValue.getKey() - 1,
+		// instanceValue.getValue());
+		// }
+		// // increment row index
+		// row++;
+		// }
+		// String filename = FileUtil.getFoldFilePrefix(outdir, label, run,
+		// fold) + "dist.txt";
+		// this.writeDistanceMatrix(data, filename);
+		// }
+
+		@Override
+		public void initializeExport(InstanceData instanceLabel,
+				Properties properties, SparseData sparseData)
+				throws IOException {
+			super.initializeExport(instanceLabel, properties, sparseData);
+			this.instanceLabel = instanceLabel;
+			if (properties.getProperty(SCOPE) == null
+					|| properties.getProperty(SCOPE).length() == 0) {
+				exportData(sparseData, null, null, null);
+			}
+		}
+
+		@Override
+		public void initializeFold(SparseData sparseData, String label,
+				Integer run, Integer fold,
+				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
+				throws IOException {
+			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {
+				exportData(sparseData, label, run, fold);
+			}
+			String labelFileName = FileUtil.getScopedFileName(outdir, label,
+					run, fold, "label.txt");
+			String idFileName = FileUtil.getScopedFileName(outdir, label, run,
+					fold, "class.txt");
+			SortedMap<Long, Integer> trainInstanceIdToClass = getTrainingClassMap(
+					idFileName, foldInstanceLabelMap.get(true),
+					foldInstanceLabelMap.get(false),
+					this.labelToClassIndexMap.get(label),
+					sparseData.getInstanceIds());
+			exportLabel(labelFileName, trainInstanceIdToClass);
+			// exportLabel(idFileName, labelFileName,
+			// foldInstanceLabelMap.get(true),
+			// foldInstanceLabelMap.get(false),
+			// this.labelToClassIndexMap.get(label),
+			// sparseData.getInstanceIds());
+		}
+
+//		/**
+//		 * export the data
+//		 * 
+//		 * @param filename
+//		 * @param idFilename
+//		 * @param lblFilename
+//		 * @param bagOfWordsData
+//		 * @param trainInstanceClassMap
+//		 * @param testInstanceClassMap
+//		 * @param classToIndexMap
+//		 * @throws IOException
+//		 */
+//		private void exportLabel(String idFilename, String lblFilename,
+//				SortedMap<Long, String> trainInstanceClassMap,
+//				SortedMap<Long, String> testInstanceClassMap,
+//				Map<String, Integer> classToIndexMap,
+//				SortedSet<Long> instanceIds) throws IOException {
+//			// BufferedWriter wId = null;
+//			BufferedWriter wLabel = null;
+//			SortedMap<Long, Integer> mapInstanceIdToClass = this
+//					.getTrainingClassMap(idFilename, trainInstanceClassMap,
+//							testInstanceClassMap, classToIndexMap, instanceIds);
+//			try {
+//				// wId = new BufferedWriter(new FileWriter(idFilename));
+//				wLabel = new BufferedWriter(new FileWriter(lblFilename));
+//				for (Long instanceId : instanceIds) {
+//					// // for training default to unlabeled
+//					// int classIdTrain = 0;
+//					// if (trainInstanceClassMap.containsKey(instanceId)) {
+//					// // if the instance is in the training set, then use that
+//					// // label
+//					// classIdTrain = classToIndexMap
+//					// .get(trainInstanceClassMap.get(instanceId));
+//					// }
+//					// // check test set for gold class
+//					// int classIdGold = 0;
+//					// if (testInstanceClassMap != null
+//					// && testInstanceClassMap.containsKey(instanceId))
+//					// classIdGold = classToIndexMap.get(testInstanceClassMap
+//					// .get(instanceId));
+//					// else
+//					// classIdGold = classIdTrain;
+//					// // write instance id, if this is in the train set, and
+//					// it's
+//					// // class
+//					// wId.write(Long.toString(instanceId));
+//					// wId.write("\t");
+//					// wId.write(trainInstanceClassMap.containsKey(instanceId) ?
+//					// "1"
+//					// : "0");
+//					// wId.write("\t");
+//					// wId.write(Integer.toString(classIdGold));
+//					// wId.write("\n");
+//					// write label file for semiL
+//					int classIdTrain = mapInstanceIdToClass.get(instanceId);
+//					wLabel.write(Integer.toString(classIdTrain));
+//					wLabel.write("\n");
+//				}
+//			} finally {
+//				// if (wId != null)
+//				// try {
+//				// wId.close();
+//				// } catch (Exception ignore) {
+//				// }
+//				if (wLabel != null)
+//					try {
+//						wLabel.close();
+//					} catch (Exception ignore) {
+//					}
+//			}
+//		}
+
+		@Override
+		public void initializeLabel(
+				String label,
+				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
+				Properties properties, SparseData sparseData)
+				throws IOException {
+			super.initializeLabel(label, labelInstances, properties, sparseData);
+			if (SCOPE_LABEL.equals(this.exportProperties.getProperty(SCOPE))) {
+				exportData(sparseData, label, null, null);
+			}
+		}
+
 		// /**
 		// * round double to specified precision
 		// *
@@ -411,6 +412,21 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 		// return (double) tmp / p;
 		// }
 
+	}
+
+	private KernelUtil kernelUtil;
+
+	@Override
+	public SparseDataFormatter getFormatter() {
+		return new SemiLDataFormatter(this.getKernelUtil());
+	}	
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
 	}
 
 }

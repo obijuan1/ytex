@@ -16,113 +16,21 @@ import weka.core.converters.ArffSaver;
 import ytex.kernel.BaseSparseDataFormatter;
 import ytex.kernel.FileUtil;
 import ytex.kernel.InstanceData;
+import ytex.kernel.KernelUtil;
 import ytex.kernel.SparseData;
 import ytex.kernel.SparseDataFormatter;
 import ytex.kernel.SparseDataFormatterFactory;
 
 public class WekaFormatterFactory implements SparseDataFormatterFactory {
 
-	public SparseDataFormatter getFormatter() {
-		return new WekaFormatter();
-	}
-
 	public static class WekaFormatter extends BaseSparseDataFormatter {
-		public static final String INSTANCE_ID = "instance_id";
 		public static final String CLASS = "ytex_class";
-		FastVector wekaAttributes = null;
+
+		public static final String INSTANCE_ID = "instance_id";
 		InstanceData instanceLabel = null;
-
-		@Override
-		public void initializeFold(
-				SparseData sparseData,
-				String label,
-				Integer run,
-				Integer fold,
-				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
-				throws IOException {
-			if (SCOPE_FOLD.equals(exportProperties.getProperty(SCOPE))) {
-				this.initializeAttributes(sparseData, instanceLabel
-						.getLabelToClassMap().get(label));
-			}
-		}
-
-		@Override
-		public void exportFold(SparseData sparseData,
-				SortedMap<Long, String> sortedMap, boolean train,
-				String label, Integer run, Integer fold) throws IOException {
-			Instances inst = initializeInstances(sparseData, sortedMap, train,
-					label, run, fold);
-			String filename = FileUtil.getDataFilePrefix(outdir, label, run,
-					fold, train) + ".arff";
-			ArffSaver saver = new ArffSaver();
-			saver.setDestination(new File(filename));
-			saver.setFile(new File(filename));
-			saver.setInstances(inst);
-			saver.writeBatch();
-		}
-
-		@Override
-		public void initializeExport(InstanceData instanceLabel,
-				Properties properties, SparseData sparseData)
-				throws IOException {
-			super.initializeExport(instanceLabel, properties, sparseData);
-			this.instanceLabel = instanceLabel;
-		}
-
-		@Override
-		public void clearFold() {
-		}
-
-		/**
-		 * initialize attributes on a per-label basis even if the data is the
-		 * same across all labels. The class ids might be different for
-		 * different labels.
-		 */
-		@Override
-		public void initializeLabel(
-				String label,
-				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
-				Properties properties, SparseData sparseData)
-				throws IOException {
-			if (SCOPE_LABEL.equals(properties.getProperty(SCOPE))
-					|| properties.getProperty(SCOPE) == null
-					|| properties.getProperty(SCOPE).length() == 0) {
-				this.initializeAttributes(sparseData, instanceLabel
-						.getLabelToClassMap().get(label));
-			}
-		}
-
-		@Override
-		public void clearLabel() {
-		}
-
-		/**
-		 * initialize attributes
-		 * 
-		 * @param bagOfWordsData
-		 * @param classNames
-		 */
-		protected void initializeAttributes(SparseData bagOfWordsData,
-				SortedSet<String> classNames) {
-			wekaAttributes = new FastVector(bagOfWordsData.getNumericWords()
-					.size()
-					+ bagOfWordsData.getNominalWordValueMap().size()
-					+ 2);
-			// add instance id attribute
-			wekaAttributes.addElement(new Attribute(INSTANCE_ID));
-			// add numeric word attributes
-			for (String word : bagOfWordsData.getNumericWords()) {
-				Attribute attribute = new Attribute(word);
-				wekaAttributes.addElement(attribute);
-			}
-			// add nominal word attributes
-			for (Map.Entry<String, SortedSet<String>> nominalWordEntry : bagOfWordsData
-					.getNominalWordValueMap().entrySet()) {
-				addNominalAttribute(nominalWordEntry.getKey(),
-						nominalWordEntry.getValue(), true);
-			}
-			// add class attribute
-			addNominalAttribute(CLASS, classNames, false);
+		FastVector wekaAttributes = null;
+		public WekaFormatter(KernelUtil kernelUtil) {
+			super(kernelUtil);
 		}
 
 		/**
@@ -153,32 +61,6 @@ public class WekaFormatterFactory implements SparseDataFormatterFactory {
 			}
 			Attribute attribute = new Attribute(attributeName, wordValues);
 			wekaAttributes.addElement(attribute);
-		}
-
-		/**
-		 * initialize the weka Instances
-		 * 
-		 * @param arffRelation
-		 * @param sql
-		 * @param classLabels
-		 * @param idfMap
-		 * @param docLengthMap
-		 * @return
-		 * @throws IOException
-		 */
-		public Instances initializeInstances(SparseData sparseData,
-				SortedMap<Long, String> instanceClasses, boolean train,
-				String label, Integer run, Integer fold) throws IOException {
-			// add label, run, fold, train/test to relation
-			String arffRelation = this.exportProperties.getProperty(
-					"arffRelation", "ytex");
-			String relation = arffRelation + "_"
-					+ FileUtil.getDataFilePrefix(null, label, run, fold, train);
-			Instances instances = new Instances(relation, wekaAttributes, 0);
-			instances.setClassIndex(instances.numAttributes() - 1);
-			// add instances
-			addWordsToInstances(instances, sparseData, instanceClasses);
-			return instances;
 		}
 
 		/**
@@ -235,5 +117,135 @@ public class WekaFormatterFactory implements SparseDataFormatterFactory {
 			}
 		}
 
+		@Override
+		public void clearFold() {
+		}
+
+		@Override
+		public void clearLabel() {
+		}
+
+		@Override
+		public void exportFold(SparseData sparseData,
+				SortedMap<Long, String> sortedMap, boolean train, String label,
+				Integer run, Integer fold) throws IOException {
+			Instances inst = initializeInstances(sparseData, sortedMap, train,
+					label, run, fold);
+			String filename = FileUtil.getDataFilePrefix(outdir, label, run,
+					fold, train) + ".arff";
+			ArffSaver saver = new ArffSaver();
+			saver.setDestination(new File(filename));
+			saver.setFile(new File(filename));
+			saver.setInstances(inst);
+			saver.writeBatch();
+		}
+
+		/**
+		 * initialize attributes
+		 * 
+		 * @param bagOfWordsData
+		 * @param classNames
+		 */
+		protected void initializeAttributes(SparseData bagOfWordsData,
+				SortedSet<String> classNames) {
+			wekaAttributes = new FastVector(bagOfWordsData.getNumericWords()
+					.size()
+					+ bagOfWordsData.getNominalWordValueMap().size()
+					+ 2);
+			// add instance id attribute
+			wekaAttributes.addElement(new Attribute(INSTANCE_ID));
+			// add numeric word attributes
+			for (String word : bagOfWordsData.getNumericWords()) {
+				Attribute attribute = new Attribute(word);
+				wekaAttributes.addElement(attribute);
+			}
+			// add nominal word attributes
+			for (Map.Entry<String, SortedSet<String>> nominalWordEntry : bagOfWordsData
+					.getNominalWordValueMap().entrySet()) {
+				addNominalAttribute(nominalWordEntry.getKey(),
+						nominalWordEntry.getValue(), true);
+			}
+			// add class attribute
+			addNominalAttribute(CLASS, classNames, false);
+		}
+
+		@Override
+		public void initializeExport(InstanceData instanceLabel,
+				Properties properties, SparseData sparseData)
+				throws IOException {
+			super.initializeExport(instanceLabel, properties, sparseData);
+			this.instanceLabel = instanceLabel;
+		}
+
+		@Override
+		public void initializeFold(SparseData sparseData, String label,
+				Integer run, Integer fold,
+				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
+				throws IOException {
+			if (SCOPE_FOLD.equals(exportProperties.getProperty(SCOPE))) {
+				this.initializeAttributes(sparseData, instanceLabel
+						.getLabelToClassMap().get(label));
+			}
+		}
+
+		/**
+		 * initialize the weka Instances
+		 * 
+		 * @param arffRelation
+		 * @param sql
+		 * @param classLabels
+		 * @param idfMap
+		 * @param docLengthMap
+		 * @return
+		 * @throws IOException
+		 */
+		public Instances initializeInstances(SparseData sparseData,
+				SortedMap<Long, String> instanceClasses, boolean train,
+				String label, Integer run, Integer fold) throws IOException {
+			// add label, run, fold, train/test to relation
+			String arffRelation = this.exportProperties.getProperty(
+					"arffRelation", "ytex");
+			String relation = arffRelation + "_"
+					+ FileUtil.getDataFilePrefix(null, label, run, fold, train);
+			Instances instances = new Instances(relation, wekaAttributes, 0);
+			instances.setClassIndex(instances.numAttributes() - 1);
+			// add instances
+			addWordsToInstances(instances, sparseData, instanceClasses);
+			return instances;
+		}
+
+		/**
+		 * initialize attributes on a per-label basis even if the data is the
+		 * same across all labels. The class ids might be different for
+		 * different labels.
+		 */
+		@Override
+		public void initializeLabel(
+				String label,
+				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
+				Properties properties, SparseData sparseData)
+				throws IOException {
+			if (SCOPE_LABEL.equals(properties.getProperty(SCOPE))
+					|| properties.getProperty(SCOPE) == null
+					|| properties.getProperty(SCOPE).length() == 0) {
+				this.initializeAttributes(sparseData, instanceLabel
+						.getLabelToClassMap().get(label));
+			}
+		}
+
+	}
+
+	private KernelUtil kernelUtil;
+
+	public SparseDataFormatter getFormatter() {
+		return new WekaFormatter(this.getKernelUtil());
+	}
+
+	public KernelUtil getKernelUtil() {
+		return kernelUtil;
+	}
+
+	public void setKernelUtil(KernelUtil kernelUtil) {
+		this.kernelUtil = kernelUtil;
 	}
 }
