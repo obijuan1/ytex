@@ -53,17 +53,23 @@ public class LinKernel extends CacheKernel implements InitializingBean {
 
 	/**
 	 * override CacheKernel - don't bother caching evaluation if the concepts
-	 * are not in the conceptFilter.
+	 * are not in the conceptFilter, or if they are identical.
 	 */
 	@Override
 	public double evaluate(Object o1, Object o2) {
-		if (this.conceptFilter != null
-				&& !(conceptFilter.containsKey((String) o1) || conceptFilter
-						.containsKey((String) o2))) {
-			return 0d;
-		} else {
-			return super.evaluate(o1, o2);
+		String c1 = (String) o1;
+		String c2 = (String) o2;
+		double d = 0;
+		if (c1 != null && c2 != null) {
+			if (c1.equals(c2)) {
+				d = 1d;
+			} else if (this.conceptFilter == null
+					|| (conceptFilter.containsKey((String) o1) && conceptFilter
+							.containsKey((String) o2))) {
+				d = super.evaluate(o1, o2);
+			}
 		}
+		return d;
 	}
 
 	@Override
