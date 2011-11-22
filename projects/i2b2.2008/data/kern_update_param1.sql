@@ -9,6 +9,6 @@ inner join cv_best_svm s
 	and e.name = s.corpus_name
 set e.param1 = s.param1
 where e.name = '@kernel.name@'
-and e.experiment = '@kernel.param1.experiment@'
-and s.experiment = '@kernel.hzv.experiment@'
+and e.experiment = '@kernel.experiment@'
+and s.experiment = '@kernel.param1.experiment@'
 ;
