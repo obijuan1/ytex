@@ -471,7 +471,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			</else>
 		</if>
 	</target>
-	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
+	<target name="kernel.eval.label.prepare" depends="kernel.init.label" description="copy kernel xml to tree directory">
 		<property name="export.param2.suffix" value="" />
 		<property name="export.param2" value="" />
 		<echo>export.param2 ${export.param2}</echo>
@@ -483,9 +483,8 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 				<filter token="export.param2" value="${export.param2}" />
 			</filterset>
 		</copy>
-		<antcall target="kernel.eval.label.local" />
-		<antcall target="kernel.eval.label.cluster" />
 	</target>
+	<target name="kernel.eval.label" depends="kernel.eval.label.prepare,kernel.eval.label.local,kernel.eval.label.cluster" description="evaluate kernel on instance tree map" />
 	<target name="kernel.eval.label.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
 		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
 			<sequential>
