@@ -1,5 +1,6 @@
 <!--
 == prerequisites ==
+  * Quad Core workstation at the minimum; 8 cores would be better
   * umls 2010AB or higher installed in your db and used during ytex setup
   * libsvm 3.1 installed
   * [https://www.i2b2.org/NLP/Obesity/ I2B2 2008 Challenge] data downloaded
@@ -72,6 +73,15 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<antcall target="cv.imputed.all" />
 		<antcall target="cv.exp.all">
 			<param name="kernel.experiment" value="cui" />
+		</antcall>
+		<antcall target="kernel.tree.all">
+			<param name="kernel.experiment" value="superlin" />
+		</antcall>
+		<antcall target="cv.kern.all">
+			<param name="kernel.experiment" value="lin" />
+		</antcall>
+		<antcall target="cv.kern.all">
+			<param name="kernel.experiment" value="superlin" />
 		</antcall>
 	</target>
 	<target name="test.all" description="run all experiments on test set">
@@ -214,6 +224,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
 		<property name="kernel.cv.experiment" value="${kernel.experiment}" />
 		<property name="kernel.hzv.experiment" value="${kernel.experiment}" />
+		<property name="kernel.param1.experiment" value="${kernel.experiment}" />
 		<property name="kernel.algo" value="libsvm" />
 		<property name="kernel.export.dir" value="${basedir}/${kernel.algo}/${kernel.experiment}" />
 		<filterset id="exp.filter">
@@ -221,6 +232,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
 			<filter token="kernel.hzv.experiment" value="${kernel.hzv.experiment}" />
 			<filter token="kernel.cv.experiment" value="${kernel.cv.experiment}" />
+			<filter token="kernel.param1.experiment" value="${kernel.param1.experiment}" />
 		</filterset>
 	</target>
 	<target name="clean.exp" depends="init.exp" description="delete all classifier_eval records for the experiment">
@@ -247,6 +259,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<antcall target="cv.irzv" />
 		<antcall target="cv.getBestParams" />
 	</target>
+	<target name="cv.kern.all" depends="clean.exp,kernel.eval.all,kernel.export.all,libsvm.iter.dirs,kern.update.param1,cv.irzv,cv.getBestParams" description="evaluate kernel on corpus, run libsvm, update ir metrics w/ zero vectors" />
 	<target name="cv.irzv" depends="init.exp" description="adjust truth tables with zero vectors">
 		<antcall target="mysql.template">
 			<param name="mysql.script" value="cv_irzv.sql" />
@@ -328,10 +341,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<arg value="source svmlin_classrel.sql" />
 		</exec>
 	</target>
-	<target name="test.exp.all" depends="init.exp" description="train model on training set using optimal params, test on test set">
-		<!-- cleanup libsvm dir, cleanup database -->
-		<antcall target="clean.exp" />
-		<!-- copy files -->
+	<target name="test.exp.all" depends="init.exp,clean.exp" description="train model on training set using optimal params, test on test set">
 		<copy todir="${kernel.export.dir}">
 			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="export-bow.xml,kernel.properties" />
 		</copy>
@@ -339,7 +349,16 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<antcall target="SparseDataExporter">
 			<param name="export.dir" value="${kernel.export.dir}" />
 		</antcall>
-		<!-- export optimal params -->
+		<antcall target="test.genLibsvmParams" />
+		<echo>run libsvm on directory ${export.dir}</echo>
+		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
+			<property name="ytex.home" value="${ytex.home}" />
+			<property name="kernel.data" value="${kernel.export.dir}" />
+		</ant>
+		<antcall target="test.irzv" />
+	</target>
+	<target name="test.genLibsvmParams" depends="init.exp" description="generate libsvm parameters.properties for test">
+		<echo>export optimal params</echo>
 		<copy todir="${kernel.export.dir}" file="${basedir}/data/genLibsvmParams.sql">
 			<filterset refid="exp.filter" />
 		</copy>
@@ -348,13 +367,8 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<param name="mysql.script" value="genLibsvmParams.sql" />
 			<param name="mysql.outfile" value="${kernel.export.dir}/parameters.properties" />
 		</antcall>
-		<echo>run libsvm on directory ${export.dir}</echo>
-		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
-			<property name="ytex.home" value="${ytex.home}" />
-			<property name="kernel.data" value="${kernel.export.dir}" />
-		</ant>
-		<antcall target="test.irzv" />
 	</target>
+	<target name="test.kern.all" depends="clean.exp,kern.test.genKernParams,test.genLibsvmParams,kern.test.eval.all,kern.test.export.all,libsvm.iter.dirs,test.irzv" description="evaluate kernel on test set using optimal parameters" />
 	<target name="test.irzv" depends="init.exp">
 		<echo>computing f1 scores, writing results to ${kernel.export.dir}/results.txt</echo>
 		<antcall target="mysql.template">
@@ -368,10 +382,8 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<property name="kernel.exp.base" value="${basedir}/libsvm/${kernel.experiment}" />
 		</ant>
 	</target>
-	<target name="kernel.all" depends="kernel.eval.all,kernel.export.all,libsvm.iter.dirs,cv.irzv,cv.getBestParams" description="evaluate kernel on corpus, run libsvm, update ir metrics w/ zero vectors" />
-	<target name="kernel.iter.label" description="execute kernel.iter.target for each label in label.properties">
-		<property file="./tree/${tree.name}/label.properties" />
-		<for list="${labels}" param="export.label">
+	<target name="kernel.iter.label" depends="init.exp" description="execute kernel.iter.target for each label in label.properties">
+		<for list="${labels}" param="export.label" parallel="${iter.label.parallel}">
 			<sequential>
 				<antcall target="${kernel.iter.target}">
 					<param name="export.label" value="@{export.label}" />
@@ -391,8 +403,6 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 	</target>
 	<target name="kernel.export.all" depends="init.exp" description="export libsvm gram matrices">
-		<property name="kernel.experiment" value="filteredlin" />
-		<!-- property name="tree.name" value="vector" / -->
 		<antcall target="kernel.iter.label">
 			<param name="kernel.iter.target" value="kernel.iter.export.label" />
 		</antcall>
@@ -401,10 +411,10 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<property name="tree.name" value="tree-cui" />
 		<property name="export.label" value="Hypertriglyceridemia" />
 		<property name="kernel.experiment" value="superlin" />
-		<property name="export.tree.srcdir" value="./exp/${tree.name}" />
-		<property name="export.tree.basedir" value="./tree/${tree.name}" />
-		<property name="export.tree.outdir" value="./tree/${tree.name}/${export.label}" />
-		<property name="export.libsvm.outdir" value="libsvm/${kernel.experiment}" />
+		<property name="export.tree.srcdir" value="${basedir}/exp/${tree.name}" />
+		<property name="export.tree.basedir" value="${basedir}/tree/${tree.name}" />
+		<property name="export.tree.outdir" value="${basedir}/tree/${tree.name}/${export.label}" />
+		<property name="export.libsvm.outdir" value="${kernel.export.dir}" />
 		<echo>export.param2.list ${export.param2.list}</echo>
 		<!--
 		<property name="label.tree" value="tree_${export.cutoff}" />
@@ -463,11 +473,11 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	</target>
 	<target name="kernel.eval.label" depends="kernel.init.label" description="evaluate kernel on instance tree map">
 		<property name="export.param2.suffix" value="" />
-		<property name="export.param2" value="1" />
+		<property name="export.param2" value="" />
 		<echo>export.param2 ${export.param2}</echo>
-		<property name="kernel.xml" value="${kernel.experiment}_${export.cutoff}${export.param2.suffix}.xml" />
+		<property name="kernel.xml" value="${kernel.cv.experiment}_${export.cutoff}${export.param2.suffix}.xml" />
 		<property name="kernel.evalTest" value="no" />
-		<copy file="exp/${kernel.experiment}/${kernel.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
+		<copy file="exp/${kernel.cv.experiment}/${kernel.cv.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
 			<filterset>
 				<filterset refid="export.filterset" />
 				<filter token="export.param2" value="${export.param2}" />
@@ -487,12 +497,32 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	</target>
 	<target name="kernel.eval.label.cluster" if="kernel.cluster" description="send slices to slaves for processing">
 		<!-- pass the properties to the slave that aren't in ytex.properties -->
-		<exec executable="qsub">
-			<arg line="-sync y -t 1-${kernel.mod} ${i2b2ant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest}" />
-		</exec>
+		<if>
+			<equals arg1="${kernel.cluster}" arg2="torque" />
+			<then>
+				<exec executable="qsub">
+					<arg value="-t" />
+					<arg value="1-${kernel.mod}" />
+					<arg value="-v" />
+					<arg value="ANT_PARAMS=kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest} -Dkernel.mod=${kernel.mod}" />
+					<arg value="${i2b2ant.pbs}" />
+				</exec>
+			</then>
+			<else>
+				<exec executable="qsub">
+					<arg line="-sync y -t 1-${kernel.mod} ${i2b2ant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest} -Dkernel.mod=${kernel.mod}" />
+				</exec>
+			</else>
+		</if>
 	</target>
 	<target name="kernel.eval.slice.cluster" if="kernel.cluster" description="eval slice on cluster slave">
-		<property name="kernel.slice" value="${env.SGE_TASK_ID}" />
+		<condition property="kernel.slice" value="${env.SGE_TASK_ID}">
+			<isset property="${env.SGE_TASK_ID}" />
+		</condition>
+		<condition property="kernel.slice" value="${env.PBS_ARRAYID}">
+			<isset property="${env.PBS_ARRAYID}" />
+		</condition>
+		<fail unless="kernel.slice" message="kernel.slice not defined" />
 		<property file="${export.tree.outdir}/kernel.properties" />
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<antcall target="kernel.eval.slice" />
@@ -513,7 +543,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	<target name="kernel.export.label" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
 		<property name="export.param2.suffix" value="" />
 		<property name="export.param2" value="" />
-		<property name="export.dir" value="${export.libsvm.outdir}/${export.cutoff}${export.param2.suffix}" />
+		<property name="export.dir" value="${export.libsvm.outdir}/${export.label}${export.cutoff}${export.param2.suffix}" />
 		<property name="export.xml" value="export_${export.label}.xml" />
 		<echo>export.dir/export.xml ${export.dir}/${export.xml}</echo>
 		<mkdir dir="${export.dir}" />
@@ -538,6 +568,72 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
+	<target name="kern.update.param1" depends="init.exp" description="update classifier_eval.param1">
+		<antcall target="mysql.template">
+			<param name="mysql.script" value="kern_update_param1.sql" />
+		</antcall>
+	</target>
+	<target name="kern.test.genKernParams" depends="init.exp" description="generate optimal parameters for kernel from cv_best_svm">
+		<antcall target="mysql.template">
+			<param name="mysql.script" value="genKernParams.sql" />
+			<param name="mysql.outfile" value="${kernel.export.dir}/kernParams.properties" />
+		</antcall>
+	</target>
+	<target name="kern.test.init.exp" depends="init.exp" description="load kernParams.properties for the specified experiment">
+		<property file="${kernel.export.dir}/kernParams.properties" />
+	</target>
+	<target name="kern.test.init.label" depends="kernel.init.label,kern.test.init.exp" description="load properties for the specified label">
+		<propertycopy property="kernel.param1" from="label.${export.label}.kernel.param1" silent="yes" />
+		<propertycopy property="kernel.param2" from="label.${export.label}.kernel.param2" silent="yes" />
+		<property name="kernel.param1" value="" />
+		<property name="kernel.param2" value="" />
+		<echo>kernel.param1 ${kernel.param1}</echo>
+		<echo>kernel.param2 ${kernel.param2}</echo>
+		<filterset id="export.filterset">
+			<filterset refid="exp.filter" />
+			<filter token="export.cutoff" value="${kernel.param1}" />
+			<filter token="export.label" value="${export.label}" />
+			<filter token="export.param2" value="${kernel.param2}" />
+		</filterset>
+	</target>
+	<target name="kern.test.eval.all" depends="kern.test.init.exp" description="evaluate kernel on test instances. call kern.test.eval.label">
+		<antcall target="kernel.iter.label">
+			<param name="kernel.iter.target" value="kern.test.eval.label" />
+		</antcall>
+	</target>
+	<target name="kern.test.eval.label" depends="kern.test.init.label" description="evaluate kernel on test instances">
+		<!-- evaluate the kernel -->
+		<antcall target="kernel.iter.eval.label">
+			<param name="export.param2.list" value="${kernel.param2}" />
+			<param name="kernel.evalTest" value="yes" />
+			<param name="kernel.experiment" value="${kernel.cv.experiment}" />
+		</antcall>
+	</target>
+	<target name="kern.test.export.all" depends="kern.test.init.exp" description="export kernel evaluations for libsvm.  calls kern.test.export.label">
+		<antcall target="kernel.iter.label">
+			<param name="kernel.iter.target" value="kern.test.export.label" />
+		</antcall>
+	</target>
+	<target name="kern.test.export.label" depends="kern.test.init.label" description="export gram matrix">
+		<!-- generate export property file -->
+		<copy tofile="${kernel.export.dir}/${export.label}/export-test.xml" overwrite="yes" file="${export.tree.srcdir}/export-test.xml">
+			<filterset refid="export.filterset" />
+		</copy>
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${kernel.export.dir}/${export.label}">
+			<arg value="-prop" />
+			<arg value="export-test.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+		<!-- copy kernel properties -->
+		<copy todir="${kernel.export.dir}/${export.label}" file="${basedir}/exp/${kernel.experiment}/kernel.properties" overwrite="yes" />
+		<!-- copy libsvm parameter properties -->
+		<copy todir="${kernel.export.dir}/${export.label}" file="${kernel.export.dir}/parameters.properties" overwrite="yes" />
+	</target>
+
+	<!-- common utility targets -->
 	<target name="SparseDataExporter" description="run the SparseDataExporter from export.dir, property file export.prop, type export.type">
 		<property name="export.prop" value="export-bow.xml" />
 		<property name="export.type" value="libsvm" />
@@ -569,87 +665,4 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</exec>
 	</target>
 
-	<target name="test.init.exp" depends="init.exp" description="load prperties for the specified experiment">
-		<property name="export.dir" value="${basedir}/${kernel.algo}/${kernel.experiment}" />
-		<property name="export.src.dir" value="${basedir}/exp/${kernel.experiment}" />
-	</target>
-	<target name="test.init.label" depends="test.init.exp" description="load properties for the specified label">
-		<property name="export.label" value="16" />
-		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
-		<propertycopy property="kernel.param1" from="label.${export.label}.kernel.param1" silent="yes" />
-		<propertycopy property="kernel.param2" from="label.${export.label}.kernel.param2" silent="yes" />
-		<property name="kernel.param1" value="" />
-		<property name="kernel.param2" value="" />
-		<filterset id="export.filterset">
-			<filter token="export.cutoff" value="${kernel.param1}" />
-			<filter token="export.label" value="${export.label}" />
-			<filter token="export.param2" value="${kernel.param2}" />
-			<filter token="kernel.name" value="${kernel.name}" />
-			<filter token="kernel.experiment" value="${kernel.experiment}" />
-			<filter token="kernel.hzv.experiment" value="${kernel.hzv.experiment}" />
-			<filter token="kernel.types" value="${kernel.types}" />
-		</filterset>
-	</target>
-	<target name="kern.test.all" depends="test.init.exp,test.copy.props">
-		<property name="test.all.target" value="test.label" />
-		<for list="${labels}" param="export.label">
-			<sequential>
-				<antcall target="${test.all.target}">
-					<param name="export.label" value="@{export.label}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="test.copy.props" depends="test.init.exp" description="copy props">
-		<copy todir="${export.dir}" overwrite="yes">
-			<fileset dir="${export.src.dir}" includes="parameters.properties,kernel.properties" />
-		</copy>
-	</target>
-	<target name="test.label" depends="test.init.label" description="export libsvm data for the specified label, run libsvm">
-		<antcall target="test.kernel.eval.label" />
-		<antcall target="test.kernel.export.label" />
-		<antcall target="test.libsvm.label" />
-	</target>
-	<target name="test.kernel.eval.label" depends="test.init.label" if="eval.kernel" description="evaluate kernel on test instances">
-		<!-- export the tree -->
-		<antcall target="kernel.tree.label" />
-		<!-- evaluate the kernel -->
-		<antcall target="kernel.iter.eval.label">
-			<param name="export.param2.list" value="${kernel.param2}" />
-			<param name="kernel.evalTest" value="yes" />
-		</antcall>
-	</target>
-	<target name="test.kernel.export.label" depends="test.init.label" unless="eval.bag" description="export gram matrix">
-		<!-- generate export property file -->
-		<copy tofile="${export.dir}/export-gram_${export.label}.xml" overwrite="yes" file="${export.src.dir}/export-gram.xml">
-			<filterset refid="export.filterset" />
-		</copy>
-		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
-			<arg value="-prop" />
-			<arg value="export-gram_${export.label}.xml" />
-			<jvmarg value="-Xmx1g" />
-			<jvmarg value="-Xms1g" />
-			<jvmarg value="${log4j.arg}" />
-			<jvmarg value="${java.log.arg}" />
-		</java>
-	</target>
-	<target name="test.libsvm.label" depends="test.init.label" description="run libsvm">
-		<echo>run libsvm on directory export.dir</echo>
-		<echo>export.dir ${export.dir}</echo>
-		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
-			<property name="ytex.home" value="${ytex.home}" />
-			<property name="kernel.data" value="${export.dir}" />
-		</ant>
-	</target>
-	<target name="echo.exp">
-		<echo>${kernel.experiment}</echo>
-	</target>
-	<target name="temp">
-		<antcall target="cv.exp.all">
-			<param name="kernel.experiment" value="imputed" />
-		</antcall>
-		<antcall target="cv.exp.all">
-			<param name="kernel.experiment" value="cui" />
-		</antcall>
-	</target>
 </project>
