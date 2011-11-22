@@ -90,7 +90,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		and hi.max_evaluation >= r.evaluation
 	where a.corpus_name = 'i2b2.2008'
 	and a.label = '@export.label@'
-	and i.instance_id < 100
 			]]></value>
 		</property>
 	</bean>
