@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="scope">label</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+	/* increment class by 1 */
+	select doc.docId, 
+		j.judgement_id + 1 class, 
+		case when doc.documentSet = 'train' then 1 else 0 end train, 
+		d.disease_id label
+	from i2b2_2008_anno a
+	inner join i2b2_2008_doc doc on doc.docId = a.docId 
+	inner join i2b2_2008_disease d 
+		on d.disease = a.disease 
+	inner join i2b2_2008_judgement j on j.judgement = a.judgement
+	inner join best_svmlin b on b.label = d.disease_id
+    inner join hotspot_instance hi 
+    	on hi.instance_id = doc.docId
+    	and hi.label = a.disease
+		and hi.corpus_name = 'i2b2.2008'
+		and hi.experiment = 'bag-word'
+	left join hotspot_zero_vector hzv
+		on hzv.hotspot_instance_id = hi.hotspot_instance_id
+		and hzv.cutoff = b.cutoff
+	where hzv.hotspot_zero_vector_id is null
+	and a.source = 'intuitive'
+]]></entry>
+	<entry key="numericWordQuery"><![CDATA[
+	select instance_id, lower(canonical_form), 1
+	from
+	(
+		select distinct hi.instance_id, canonical_form
+		from hotspot_instance hi
+		/* limit to label */
+		inner join i2b2_2008_disease ds 
+		    on hi.label = ds.disease
+		    and ds.disease_id = :label
+		inner join best_svmlin b 
+			on b.label = ds.disease_id
+		/* limit to sentence */
+		inner join hotspot_sentence hs
+		    on hi.hotspot_instance_id = hs.hotspot_instance_id
+		    and hs.evaluation >= b.cutoff
+		/* get words in sentence */
+		inner join anno_contain ac 
+		    on ac.parent_anno_base_id = hs.anno_base_id
+		inner join anno_word_token w
+		    on w.anno_base_id = ac.child_anno_base_id
+		    and canonical_form is not null
+		/* exclude stopwords */
+		left join stopword sw on sw.stopword = canonical_form
+		where hi.corpus_name = 'i2b2.2008'
+		and hi.experiment = 'bag-word'
+		and sw.stopword is null
+    ) s	
+]]></entry>
+</properties>

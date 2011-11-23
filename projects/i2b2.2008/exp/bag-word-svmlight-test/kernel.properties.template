@@ -1,0 +1,5 @@
+kernel.experiment=@kernel.experiment@
+kernel.param1=@export.cutoff@
+kernel.types=0
+kernel.algo=svmlight
+cv.costs=@cv.costs@

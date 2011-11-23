@@ -1,0 +1,5 @@
+kernel.experiment=@kernel.experiment@
+kernel.param1=@export.cutoff@
+cv.semil.metrics=euclidean
+cv.semil.degrees=5
+kernel.algo=semil
