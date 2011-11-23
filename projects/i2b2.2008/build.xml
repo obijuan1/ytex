@@ -452,8 +452,14 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 	</target>
 	<target name="kernel.iter.param2" depends="kernel.init.label" description="iterate over export.param2.list, call kernel.param2.target">
+		<!-- iterate over export.param2 if it has been set -->
 		<if>
-			<isset property="export.param2.list" />
+			<and>
+				<isset property="export.param2.list" />
+				<not>
+					<equals arg1="${export.param2.list}" arg2="" trim="yes"/>
+				</not>
+			</and>
 			<then>
 				<for list="${export.param2.list}" param="export.param2">
 					<sequential>
