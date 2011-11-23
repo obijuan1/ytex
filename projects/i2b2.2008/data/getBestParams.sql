@@ -22,7 +22,7 @@ from
     and experiment = '@kernel.experiment@'
     and t.ir_type = 'zv'
     and t.ir_class <> 'Q'
-    group by label, cost, param1, run, fold
+    group by label, cost, param1, param2, run, fold
 ) s group by label, cost, param1;
 
 create unique index IX_paramf1 on tmp_param_f1(label, cost, param1, param2);
