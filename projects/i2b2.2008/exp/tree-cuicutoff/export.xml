@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.corpusName">i2b2.2008</entry>
+	<entry key="ytex.experiment">@kernel.experiment@</entry>
+	<entry key="ytex.param1">@export.cutoff@</entry>
+	<entry key="ytex.param2">@export.param2@</entry>
+	<entry key="scope">label</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+	select i.instance_id, a.class, i.train, a.label, f.fold, f.run
+	from cv_fold f
+	inner join cv_fold_instance i on f.cv_fold_id = i.cv_fold_id
+	inner join corpus_label a 
+		on a.label = f.label 
+		and a.corpus_name = f.corpus_name
+		and a.instance_id = i.instance_id
+	/* 
+	limit to non-zero vectors 
+	get the minimum evaluation via the propagated IG
+	*/
+    inner join hotspot_instance hi 
+    	on hi.instance_id = i.instance_id
+    	and hi.label = f.label
+		and hi.corpus_name = f.corpus_name
+		and hi.experiment = 'imputed'
+	inner join feature_eval e
+		on e.corpus_name = a.corpus_name
+		and e.label = a.label
+		and e.type = 'infogain-propagated' 
+		and e.featureset_name = 'ctakes'
+		and e.param2 = 'rbpar'
+	inner join feature_rank r
+		on r.feature_eval_id = e.feature_eval_id
+		and r.rank = @export.cutoff@
+		and hi.max_evaluation >= r.evaluation
+	where f.corpus_name = 'i2b2.2008'
+	and a.label = '@export.label@'
+	]]></entry>
+</properties>

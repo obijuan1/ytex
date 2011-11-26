@@ -408,9 +408,6 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 	</target>
 	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
-		<property name="tree.name" value="tree-cui" />
-		<property name="export.label" value="Hypertriglyceridemia" />
-		<property name="kernel.experiment" value="superlin" />
 		<property name="export.tree.srcdir" value="${basedir}/exp/${tree.name}" />
 		<property name="export.tree.basedir" value="${basedir}/tree/${tree.name}" />
 		<property name="export.tree.outdir" value="${basedir}/tree/${tree.name}/${export.label}" />
@@ -457,7 +454,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<and>
 				<isset property="export.param2.list" />
 				<not>
-					<equals arg1="${export.param2.list}" arg2="" trim="yes"/>
+					<equals arg1="${export.param2.list}" arg2="" trim="yes" />
 				</not>
 			</and>
 			<then>
@@ -480,12 +477,13 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	<target name="kernel.eval.label.prepare" depends="kernel.init.label" description="copy kernel xml to tree directory">
 		<property name="export.param2.suffix" value="" />
 		<property name="export.param2" value="" />
+		<property name="export.filterset" value="export.filterset" />
 		<echo>export.param2 ${export.param2}</echo>
 		<property name="kernel.xml" value="${kernel.cv.experiment}_${export.cutoff}${export.param2.suffix}.xml" />
 		<property name="kernel.evalTest" value="no" />
 		<copy file="exp/${kernel.cv.experiment}/${kernel.cv.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
 			<filterset>
-				<filterset refid="export.filterset" />
+				<filterset refid="${export.filterset}" />
 				<filter token="export.param2" value="${export.param2}" />
 			</filterset>
 		</copy>
@@ -670,4 +668,65 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</exec>
 	</target>
 
+
+	<target name="cutoff.init.label" depends="kernel.init.label">
+		<propertycopy property="export.cutoffs" from="label.${export.label}.export.cutoff" silent="yes" />
+	</target>
+	<target name="cutoff.prepare.all">
+		<antcall target="kernel.iter.label">
+			<param name="kernel.iter.target" value="cutoff.iter" />
+		</antcall>
+	</target>
+	<target name="cutoff.iter" depends="cutoff.init.label" description="export all trees for cutoffs">
+		<property name="cutoff.iter.target" value="cutoff.tree.label" />
+		<for list="${export.cutoffs}" param="export.cutoff" parallel="yes" threadCount="${kernel.threads}">
+			<sequential>
+				<echo>export.param2  @{export.param2}</echo>
+				<antcall target="${cutoff.iter.target}">
+					<param name="export.cutoff" value="@{export.cutoff}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cutoff.tree.label" depends="cutoff.init.label" description="export the tree for the given label">
+		<property name="export.cutoff" value="2" />
+		<echo>${kernel.experiment}</echo>
+		<echo>${export.tree.outdir}/${export.cutoff}</echo>
+		<mkdir dir="${export.tree.outdir}/${export.cutoff}" />
+		<copy file="${export.tree.srcdir}/tree.xml" tofile="${export.tree.outdir}/${export.cutoff}/${label.tree}.xml" overwrite="yes">
+			<filterset>
+				<filterset refid="export.filterset" />
+				<filter token="export.cutoff" value="${export.cutoff}" />
+			</filterset>
+		</copy>
+		<java classname="ytex.KernelLauncher" fork="yes" classpathref="${kernel.cp}" dir="${export.tree.outdir}/${export.cutoff}" failonerror="yes">
+			<arg line="-beans ${label.tree}.xml -storeInstanceMap ${label.tree}.obj" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+		<antcall target="cutoff.eval.prepare.label"/>
+	</target>
+	<target name="cutoff.eval.prepare.label" depends="cutoff.init.label" description="export the tree for the given label">
+		<propertycopy property="export.param2.list" from="label.${export.label}.${export.cutoff}.export.param2.list" silent="no" />
+		<echo>export.param2.list ${export.param2.list}</echo>
+		<for list="${export.param2.list}" param="export.param2">
+			<sequential>
+				<echo>export.param2  @{export.param2}</echo>
+				<antcall target="cutoff.eval.prepare">
+					<param name="export.param2" value="@{export.param2}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cutoff.eval.prepare">
+		<copy file="exp/${kernel.cv.experiment}/${kernel.cv.experiment}.xml" tofile="${export.tree.outdir}/${export.cutoff}/${kernel.cv.experiment}_${export.param2}.xml" overwrite="yes">
+			<filterset>
+				<filter token="export.cutoff" value="${export.cutoff}" />
+				<filter token="export.param2" value="${export.param2}" />
+				<filter token="export.label" value="${export.label}" />
+			</filterset>
+		</copy>
+	</target>
 </project>
