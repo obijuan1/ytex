@@ -786,6 +786,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<filter token="export.cutoff" value="${export.cutoff}" />
 			<filter token="export.param2" value="${export.param2}" />
 		</filterset>
+		<delete dir="${kernel.export.dir}/${export.label}" quiet="yes"/>
 		<!-- generate export property file -->
 		<copy tofile="${kernel.export.dir}/${export.label}/export-test.xml" overwrite="yes" file="${export.tree.srcdir}/export-test.xml">
 			<filterset refid="cutoff.filterset" />
@@ -799,7 +800,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<jvmarg value="${java.log.arg}" />
 		</java>
 		<!-- copy kernel properties -->
-		<copy todir="${kernel.export.dir}/${export.label}/kernel.properties" file="${basedir}/exp/${kernel.experiment}/kernel.properties.template" overwrite="yes">
+		<copy tofile="${kernel.export.dir}/${export.label}/kernel.properties" file="${basedir}/exp/${kernel.experiment}/kernel.properties.template" overwrite="yes">
 			<filterset refid="cutoff.filterset" />
 		</copy>
 		<!-- copy libsvm parameter properties -->
