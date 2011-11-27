@@ -760,7 +760,6 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 				<filterset refid="cutoff.filterset" />
 			</filterset>
 		</copy>
-		<!--
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
 			<arg value="-prop" />
 			<arg value="${export.xml}" />
@@ -769,7 +768,6 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
-		-->
 	</target>
 
 </project>
