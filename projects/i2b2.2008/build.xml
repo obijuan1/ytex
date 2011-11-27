@@ -706,15 +706,17 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
-		<antcall target="cutoff.eval.prepare.label"/>
+		<antcall target="cutoff.iter.param2">
+			<param name="cutoff.iter.param2.target" value="cutoff.eval.prepare" />
+		</antcall>
 	</target>
-	<target name="cutoff.eval.prepare.label" depends="cutoff.init.label" description="export the tree for the given label">
+	<target name="cutoff.iter.param2" depends="cutoff.init.label" description="export the tree for the given label">
 		<propertycopy property="export.param2.list" from="label.${export.label}.${export.cutoff}.export.param2.list" silent="no" />
 		<echo>export.param2.list ${export.param2.list}</echo>
 		<for list="${export.param2.list}" param="export.param2">
 			<sequential>
 				<echo>export.param2  @{export.param2}</echo>
-				<antcall target="cutoff.eval.prepare">
+				<antcall target="${cutoff.iter.param2.target}">
 					<param name="export.param2" value="@{export.param2}" />
 				</antcall>
 			</sequential>
@@ -729,4 +731,45 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			</filterset>
 		</copy>
 	</target>
+	<target name="cutoff.cv.export.all" description="export libsvm files for 2 dim cv">
+		<antcall target="kernel.iter.label">
+			<param name="kernel.iter.target" value="cutoff.iter" />
+			<param name="cutoff.iter.target" value="cutoff.iter.param2" />
+			<param name="cutoff.iter.param2.target" value="cutoff.cv.export.libsvm" />
+		</antcall>
+	</target>
+	<target name="cutoff.cv.export.libsvm">
+		<filterset id="cutoff.filterset">
+			<filter token="kernel.experiment" value="${kernel.experiment}" />
+			<filter token="export.label" value="${export.label}" />
+			<filter token="export.cutoff" value="${export.cutoff}" />
+			<filter token="export.param2" value="${export.param2}" />
+		</filterset>
+
+		<property name="export.dir" value="${export.libsvm.outdir}/${export.label}_${export.cutoff}_${export.param2}" />
+		<property name="export.xml" value="export.xml" />
+		<echo>export.dir/export.xml ${export.dir}/${export.xml}</echo>
+		<mkdir dir="${export.dir}" />
+		<copy file="${export.tree.srcdir}/export.xml" tofile="${export.dir}/${export.xml}" overwrite="yes">
+			<filterset>
+				<filterset refid="cutoff.filterset" />
+			</filterset>
+		</copy>
+		<copy file="exp/${kernel.experiment}/kernel.properties.template" tofile="${export.dir}/kernel.properties" overwrite="yes">
+			<filterset>
+				<filterset refid="cutoff.filterset" />
+			</filterset>
+		</copy>
+		<!--
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
+			<arg value="-prop" />
+			<arg value="${export.xml}" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+		-->
+	</target>
+
 </project>
