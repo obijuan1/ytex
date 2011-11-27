@@ -480,7 +480,6 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<property name="export.filterset" value="export.filterset" />
 		<echo>export.param2 ${export.param2}</echo>
 		<property name="kernel.xml" value="${kernel.cv.experiment}_${export.cutoff}${export.param2.suffix}.xml" />
-		<property name="kernel.evalTest" value="no" />
 		<copy file="exp/${kernel.cv.experiment}/${kernel.cv.experiment}.xml" tofile="${export.tree.outdir}/${kernel.xml}" overwrite="yes">
 			<filterset>
 				<filterset refid="${export.filterset}" />
@@ -499,6 +498,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</for>
 	</target>
 	<target name="kernel.eval.label.cluster" if="kernel.cluster" description="send slices to slaves for processing">
+		<property name="kernel.evalTest" value="no" />
 		<!-- pass the properties to the slave that aren't in ytex.properties -->
 		<if>
 			<equals arg1="${kernel.cluster}" arg2="torque" />
@@ -531,6 +531,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<antcall target="kernel.eval.slice" />
 	</target>
 	<target name="kernel.eval.slice" description="eval slice">
+		<property name="kernel.evalTest" value="no" />
 		<echo>export.tree.outdir ${export.tree.outdir}</echo>
 		<echo>kernel.xml ${kernel.xml}</echo>
 		<echo>kernel.slice ${kernel.slice}</echo>
@@ -618,9 +619,10 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 	</target>
 	<target name="kern.test.export.label" depends="kern.test.init.label" description="export gram matrix">
+		<property name="export.filterset" value="export.filterset"/>
 		<!-- generate export property file -->
 		<copy tofile="${kernel.export.dir}/${export.label}/export-test.xml" overwrite="yes" file="${export.tree.srcdir}/export-test.xml">
-			<filterset refid="export.filterset" />
+			<filterset refid="${export.filterset}" />
 		</copy>
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${kernel.export.dir}/${export.label}">
 			<arg value="-prop" />
@@ -769,5 +771,38 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-
+	<target name="cutoff.test.export.all">
+		<antcall target="kernel.iter.label">
+			<param name="kernel.iter.target" value="cutoff.iter" />
+			<param name="cutoff.iter.target" value="cutoff.iter.param2" />
+			<param name="cutoff.iter.param2.target" value="cutoff.test.export.label" />
+		</antcall>
+	</target>
+	<target name="cutoff.test.export.label">
+		<filterset id="cutoff.filterset">
+			<filter token="kernel.experiment" value="${kernel.experiment}" />
+			<filter token="kernel.cv.experiment" value="${kernel.cv.experiment}" />
+			<filter token="export.label" value="${export.label}" />
+			<filter token="export.cutoff" value="${export.cutoff}" />
+			<filter token="export.param2" value="${export.param2}" />
+		</filterset>
+		<!-- generate export property file -->
+		<copy tofile="${kernel.export.dir}/${export.label}/export-test.xml" overwrite="yes" file="${export.tree.srcdir}/export-test.xml">
+			<filterset refid="cutoff.filterset" />
+		</copy>
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${kernel.export.dir}/${export.label}">
+			<arg value="-prop" />
+			<arg value="export-test.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xms1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+		<!-- copy kernel properties -->
+		<copy todir="${kernel.export.dir}/${export.label}/kernel.properties" file="${basedir}/exp/${kernel.experiment}/kernel.properties.template" overwrite="yes">
+			<filterset refid="cutoff.filterset" />
+		</copy>
+		<!-- copy libsvm parameter properties -->
+		<copy todir="${kernel.export.dir}/${export.label}" file="${kernel.export.dir}/parameters.properties" overwrite="yes" />
+	</target>
 </project>
