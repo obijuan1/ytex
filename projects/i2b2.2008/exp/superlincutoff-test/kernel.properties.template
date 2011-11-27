@@ -2,4 +2,5 @@ kernel.experiment=superlincutoff-test
 kernel.param1=@export.cutoff@
 kernel.param2=@export.param2@
 kernel.types=4
-
+no.genParams=yes
+kernel.StoreInstanceEval=yes
