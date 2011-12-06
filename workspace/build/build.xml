@@ -163,9 +163,7 @@
 				<include name="*.xml" />
 				<exclude name="build.xml" />
 			</fileset>
-			<!--
 			<fileset dir="../" includes="ytex.kernel/scripts/*.*" />
-			-->
 		</copy>
 		<copy todir="${ytex.dist.home}/">
 			<fileset dir=".." includes="libs.system/**/*.*" excludes="**/.svn/**/*.*,*.*,.settings/**/*.*" />
