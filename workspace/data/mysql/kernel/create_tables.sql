@@ -22,33 +22,6 @@ create table kernel_eval_instance (
 	UNIQUE KEY NK_kernel_eval (kernel_eval_id, instance_id1, instance_id2)
 ) ENGINE=MyISAM comment 'kernel instance evaluation';
 
-
-create table tfidf_doclength (
-  tfidf_doclength_id int auto_increment not null primary key,
-  name varchar(255) not null default '',
-  instance_id bigint not null,
-  length int not null default 0,
-  unique key nk_instance_id (name, instance_id)
-) ENGINE=MyISAM comment 'doc length for calculating tf-idf';
-
-create table tfidf_docfreq (
-  tfidf_docfreq_id int auto_increment not null primary key,
-  name varchar(255) not null default '',
-  term varchar(50) not null,
-  numdocs int not null default 0,
-  unique key nk_docfreq (name, term)
-) ENGINE=MyISAM comment 'num docs term occurs for calculating tf-idf';
-
-create table tfidf_termfreq (
-  tfidf_termfreq_id int auto_increment primary key,
-  name varchar(50) not null,
-  instance_id bigint not null,
-  term varchar(50) not null,
-  freq int not null,
-  unique index NK_tfidif_termfreq (name, instance_id, term),
-  index IX_instance(name, instance_id)
-) ENGINE=MyISAM comment 'per-doc term count';
-
 create table classifier_eval (
 	classifier_eval_id int AUTO_INCREMENT not null primary key,
 	name varchar(50) not null,
@@ -174,7 +147,7 @@ create table feature_rank (
   evaluation double not null default 0 comment 'measurement of feature worth',
   rank int not null default 0 comment 'rank among all features',
   unique index nk_feature_name(feature_eval_id, feature_name),
-  unique index ix_feature_rank(feature_eval_id, rank),
+  index ix_feature_rank(feature_eval_id, rank),
   index fk_feature_eval(feature_eval_id)
 ) engine=myisam comment 'evaluation of a feature in a corpus';
 
@@ -185,6 +158,16 @@ CREATE TABLE feature_parchd (
   PRIMARY KEY (feature_parchd_id),
   UNIQUE KEY NK_feature_parent (par_feature_rank_id,chd_feature_rank_id)
 ) ENGINE=MyISAM COMMENT='link between propagated parent and raw child feature rank';
+
+CREATE TABLE tfidf_doclength (
+  tfidf_doclength_id int(11) NOT NULL AUTO_INCREMENT,
+  feature_eval_id int(11) NOT NULL COMMENT 'fk feature_eval',
+  instance_id bigint(20) NOT NULL,
+  length int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (tfidf_doclength_id),
+  UNIQUE KEY nk_instance_id (feature_eval_id,instance_id)
+) ENGINE=MyISAM COMMENT='doc length for calculating tf-idf'
+;
 
 create table hotspot (
   hotspot_id int auto_increment not null primary key,
