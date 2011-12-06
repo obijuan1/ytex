@@ -29,8 +29,7 @@ ytex.conceptGraphDir=E:/projects/ytex/conceptGraph
 # how many cores does your system have? 
 # should have atleast 4, or this will take more than a weekend
 kernel.threads=4
-kernel.mod=4
-# the slices should go from 1 ... kernel.mod
+# the slices should go from 1 ... kernel.threads
 kernel.slices=1,2,3,4
 # where to place temporary files
 kernel.eval.tmpdir=E:/temp
@@ -53,7 +52,7 @@ To run the cross validation and test, run the following (will run an entire week
 ant -Dytex.home=%YTEX_HOME% cv.all test.all
 }}}
 
-To run just the test using the optimal parameters we found (will run a overnight):
+To run just the test using the optimal parameters we found (will run overnight):
 {{{
 ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 }}}
@@ -93,6 +92,12 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 		<antcall target="test.exp.all">
 			<param name="kernel.experiment" value="cui-test" />
+		</antcall>
+		<antcall target="test.kern.all">
+			<param name="kernel.experiment" value="lin-test" />
+		</antcall>
+		<antcall target="test.kern.all">
+			<param name="kernel.experiment" value="superlin-test" />
 		</antcall>
 	</target>
 	<!-- setup targets -->
@@ -139,7 +144,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</java>
 	</target>
 	<target name="RunCPE.all" description="annotate i2b2 2008 corpus in parallel">
-		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.threads}">
 			<sequential>
 				<antcall target="RunCPE.slice">
 					<param name="kernel.slice" value="@{kernel.slice}" />
@@ -156,7 +161,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 				<filter token="collectionreader.url" value="${collectionreader.url}" />
 				<filter token="pipeline.url" value="${pipeline.url}" />
 				<filter token="kernel.slice" value="${kernel.slice}" />
-				<filter token="kernel.mod" value="${kernel.mod}" />
+				<filter token="kernel.threads" value="${kernel.threads}" />
 			</filterset>
 		</copy>
 		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
@@ -341,6 +346,15 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<arg value="source svmlin_classrel.sql" />
 		</exec>
 	</target>
+	<target name="test.load.best" description="load optimal params from cv_best_svm.sql, generate trees for kernels">
+		<antcall target="mysql">
+			<param name="mysql.dir" value="${basedir}/data" />
+			<param name="mysql.script" value="cv_best_svm.sql" />
+		</antcall>
+		<antcall target="kernel.tree.all">
+			<param name="kernel.experiment" value="superlin" />
+		</antcall>		
+	</target>
 	<target name="test.exp.all" depends="init.exp,clean.exp" description="train model on training set using optimal params, test on test set">
 		<copy todir="${kernel.export.dir}">
 			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="export-bow.xml,kernel.properties" />
@@ -489,7 +503,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 	</target>
 	<target name="kernel.eval.label" depends="kernel.eval.label.prepare,kernel.eval.label.local,kernel.eval.label.cluster" description="evaluate kernel on instance tree map" />
 	<target name="kernel.eval.label.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
-		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.threads}">
 			<sequential>
 				<antcall target="kernel.eval.slice">
 					<param name="kernel.slice" value="@{kernel.slice}" />
@@ -505,15 +519,15 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<then>
 				<exec executable="qsub">
 					<arg value="-t" />
-					<arg value="1-${kernel.mod}" />
+					<arg value="1-${kernel.threads}" />
 					<arg value="-v" />
-					<arg value="ANT_PARAMS=kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest} -Dkernel.mod=${kernel.mod}" />
+					<arg value="ANT_PARAMS=kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest} -Dkernel.threads=${kernel.threads}" />
 					<arg value="${i2b2ant.pbs}" />
 				</exec>
 			</then>
 			<else>
 				<exec executable="qsub">
-					<arg line="-sync y -t 1-${kernel.mod} ${i2b2ant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest} -Dkernel.mod=${kernel.mod}" />
+					<arg line="-sync y -t 1-${kernel.threads} ${i2b2ant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest} -Dkernel.threads=${kernel.threads}" />
 				</exec>
 			</else>
 		</if>
@@ -537,7 +551,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<echo>kernel.evalTest ${kernel.evalTest}</echo>
 		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
-			<arg line="-beans ${kernel.xml} -loadInstanceMap ${label.tree}.obj -mod ${kernel.mod} -slice ${kernel.slice} -evalTest ${kernel.evalTest}" />
+			<arg line="-beans ${kernel.xml} -loadInstanceMap ${label.tree}.obj -mod ${kernel.threads} -slice ${kernel.slice} -evalTest ${kernel.evalTest}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />
