@@ -157,10 +157,14 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
         inner join anno_ontology_concept c
         	on c.anno_base_id = ac.child_anno_base_id
         /* limit concepts based on type and frequency */
-        inner join tfidf_docfreq tf
-        	on tf.term = c.code
-        	and tf.name = 'i2b2.2008-cui'
-        	and tf.numdocs < 1000
+        inner join feature_rank tfr
+            on tfr.feature_name = c.code
+            and tfr.evaluation < 1000
+        inner join feature_eval tfe
+            on tfe.feature_eval_id = tfr.feature_eval_id
+            and tfe.featureset_name = 'cui'
+            and tfe.type = 'tfidf'
+            and tfe.corpus_name = doc.corpus_name
         where doc.corpus_name = 'i2b2.2008'
 		order by instance_id, code
     					]]></value>
