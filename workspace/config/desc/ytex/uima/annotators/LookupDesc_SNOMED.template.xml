@@ -38,6 +38,10 @@
 						value="VB,VBD,VBG,VBN,VBP,VBZ,CC,CD,DT,EX,LS,MD,PDT,POS,PP,PP$,PRP,PRP$,RP,TO,WDT,WP,WPS,WRB" />
 				</properties>
 			</lookupInitializer>
+			<!-- 
+			The YTEX consumer is based on cTAKES NamedEntityLookupConsumerImpl.  
+			It differs in that it filters out duplicate cuis
+			-->
 			<lookupConsumer
 				className="ytex.uima.lookup.ae.NamedEntityLookupConsumerImpl">
 				<properties>
