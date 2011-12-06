@@ -12,6 +12,8 @@
 		select aui,str
 		from MRCONSO
 		where length(aui) > 0
+		and length(str) < 200
+		and lat = 'ENG'
 		order by aui
 	]]></query>
 	<query name="getNextAuiStr"><![CDATA[
@@ -19,6 +21,8 @@
 		from MRCONSO
 		where aui > :aui
 		and length(aui) > 0
+		and length(str) < 200
+		and lat = 'ENG'
 		order by aui
 	]]></query>
 	<query name="getLastAui"><![CDATA[
