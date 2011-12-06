@@ -1,0 +1,145 @@
+= reproduce ambert =
+use unstemmed words
+200 character window
+{{{
+update i2b2_2008_doc d
+inner join document yd
+    on d.docId = yd.uid 
+    and yd.analysis_batch = 'i2b2.2008'
+inner join anno_base ab 
+    on ab.document_id = yd.document_id
+inner join ref_uima_type t 
+    on t.uima_type_id = ab.uima_type_id
+    and t.uima_type_name in ( 'ytex.uima.types.WordToken', 'edu.mayo.bmi.uima.core.ae.type.NumToken')
+set covered_text = substring(d.docText, ab.span_begin+1, ab.span_end-ab.span_begin)
+}}}
+
+cleanup infogain
+{{{
+delete r, e
+from feature_rank r
+inner join feature_eval e on e.feature_eval_id = r.feature_eval_id and e.featureset_name = 'usword'
+}}}
+
+Compute infogain:
+{{{
+nohup ant -Dytex.home=${YTEX_HOME} -Deval.infogain.prop=infogain-usword.xml eval.infogain > ant.out 2>&1 &
+}}}
+
+= find optimal parameters =
+bag-usword2: 
+- goal find optimal parameters for test set, 
+- verify that it is possible to get the performance
+
+try all cutoffs + costs + weights on all labels
+Overall did better than ambert (as to be expected), but still subpar on a few labels:
+CAD -0.038
+Hypercholesterolemia -0.082
+Hypertension -0.083
+
+Improvement over bag-word, bag-usword on following labels:
+Diabetes - only difference cost 0.01 vs. 0.1
+OSA - little better
+Venous Insufficiency - much better - only difference cost 0.01 vs 0.0001
+
+bag-word and bag-usword-test2 did much better than ambert on OA: 0.84 vs 0.63 - makes up for other problems
+
+TODO: 
+Biggest problem for bag-word was Venous Insufficiency - 'fixed' in bag-usword-test2
+Venous Insufficiency - cutoff of 0.3 attained as above this, we only have 1 class left
+Can be easily obtained by throwing out labels that don't have > 1 classes after a certain cutoff
+
+Biggest problems for bag-word and bag-usword were Hypercholseterolemia and Hypertension - fix these
+Try more granular cutoffs; for hypercholesterolemia we have a sharp drop after 0.05
+0.03	0.80990
+0.05	0.83070
+0.07	0.41162
+
+for hypertension:
+0.01	0.72032
+0.03	0.81673
+0.05	0.51109
+
+= Re-Run cross validation with more granular hotspot cutoffs =
+Differences between cv and optimum cutoff:
+5	0.62	 bag-usword	 	0.01	 	0.02
+5	0.957	 bag-usword-test2	 	0.1	 	0.06
+7	0.895	 bag-usword	 	0.001	 	0.15
+7	0.588	 bag-usword-test2	 	0.1	 	0.03
+9	0.545	 bag-usword	 	0.1	 	0.04
+9	0.896	 bag-usword-test2	 	1	 	0.06
+10	0.83	 bag-usword	 	0.0001	 	0.03
+10	0.926	 bag-usword-test2	 	0.1	 	0.06
+14	0.703	 bag-usword	 	0.1	 	0.15
+14	0.656	 bag-usword-test2	 	0.0001	 	0.2
+
+10 - hypertension - to fix cutoff, change default class for zv to N
+The presence of a hotspot token indicates presence of disease
+Best when using only top 2 features (Hypertension)
+Interestingly, dropping lisinopril & norvasc improves performance
+May be due to using ig instead of rank - 0.03 pulls in other garbage
+rerun with cutoff of 0.0337 to include just these features
+Didn't help - these features didn't improve performance
+
+= Results with new 'best' parameters =
+got hammered on:
+CAD
+	- radically higher cutoff 
+	- problem due to missing Q class for some CV folds
+	- maybe modify query to skip folds that don't have the Q class when it is needed
+	- or add missing Q class
+Diabetes 
+Gout (why? got worse!)
+PVD
+	- identical params
+	- SVM giving everything the Y class (1) - but why?  bag-usword-test2 worked well
+ 	- Q class - need weighting?
+
+Redo bag-usword-test2 
+	- make sure we get the right classes - we may be throwing out the Q classes
+	- with CAD the zero vectors haven't been added correctly
+
+= Finally !!!!! =
+Reproduced ambert
+Issues resolved:
+- used linear kernel on test set (default is radial)
+- properly calculating truth tables with zero vectors - adding missing class ids during cv
+- don't bother running cv on folds with only 1 class
+
+Need to resolve
+- extra class for label 9 
+- how to calculate macro-averaged f1 across all labels? 
+	- this is too high
+	- should be same as ambert - 0.6344
+macro averged f1
+{{{
+select avg(ppv), avg(sens), avg(f1)
+from classifier_eval e
+inner join classifier_eval_irzv i on e.classifier_eval_id = i.classifier_eval_id 
+where e.experiment = 'bag-usword-test'
+;
+}}}
+0.78031052631579	0.773286842105263	0.774446673550147
+
+difference in number of classes:
+{{{
+select *
+from
+(
+select label, count(distinct ir_class_id) nclass
+from classifier_eval e
+inner join classifier_eval_irzv i on e.classifier_eval_id = i.classifier_eval_id
+where e.experiment = 'bag-usword-test'
+group by label
+) s
+inner join
+(
+select disease_id, count(distinct judgement) ngold
+from i2b2_2008_doc d
+inner join i2b2_2008_anno a on a.docId = d.docId and source = 'intuitive'
+inner join i2b2_2008_disease ds on ds.disease = a.disease
+where d.documentSet = 'test'
+group by disease_id
+) i on s.label = i.disease_id
+where s.nclass <> i.ngold;
+}}}
