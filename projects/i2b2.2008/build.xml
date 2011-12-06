@@ -353,7 +353,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 		<antcall target="kernel.tree.all">
 			<param name="kernel.experiment" value="superlin" />
-		</antcall>		
+		</antcall>
 	</target>
 	<target name="test.exp.all" depends="init.exp,clean.exp" description="train model on training set using optimal params, test on test set">
 		<copy todir="${kernel.export.dir}">
@@ -633,7 +633,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</antcall>
 	</target>
 	<target name="kern.test.export.label" depends="kern.test.init.label" description="export gram matrix">
-		<property name="export.filterset" value="export.filterset"/>
+		<property name="export.filterset" value="export.filterset" />
 		<!-- generate export property file -->
 		<copy tofile="${kernel.export.dir}/${export.label}/export-test.xml" overwrite="yes" file="${export.tree.srcdir}/export-test.xml">
 			<filterset refid="${export.filterset}" />
@@ -800,7 +800,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<filter token="export.cutoff" value="${export.cutoff}" />
 			<filter token="export.param2" value="${export.param2}" />
 		</filterset>
-		<delete dir="${kernel.export.dir}/${export.label}" quiet="yes"/>
+		<delete dir="${kernel.export.dir}/${export.label}" quiet="yes" />
 		<!-- generate export property file -->
 		<copy tofile="${kernel.export.dir}/${export.label}/export-test.xml" overwrite="yes" file="${export.tree.srcdir}/export-test.xml">
 			<filterset refid="cutoff.filterset" />
@@ -819,5 +819,21 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		</copy>
 		<!-- copy libsvm parameter properties -->
 		<copy todir="${kernel.export.dir}/${export.label}" file="${kernel.export.dir}/parameters.properties" overwrite="yes" />
+	</target>
+	<target name="package" description="pack up i2b2 for distribution">
+		<zip destfile="../i2b2.2008.zip">
+			<zipfileset dir="${basedir}" prefix="i2b2.2008">
+				<include name="build.xml" />
+				<include name="data/*.*" />
+				<include name="desc/**/*.*" />
+				<include name="src/**/*.*" />
+				<include name="exp/word*/*.*" />
+				<include name="exp/imputed*/*.*" />
+				<include name="exp/cui*/*.*" />
+				<include name="exp/lin*/*.*" />
+				<include name="exp/superlin*/*.*" />
+				<exclude name="**/.svn/**/*.*" />
+			</zipfileset>
+		</zip>
 	</target>
 </project>
