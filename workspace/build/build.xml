@@ -203,6 +203,7 @@
 		<property name="project.classpathref" value="cp.all" />
 		<delete dir="${project.bin.home}" quiet="yes" />
 		<mkdir dir="${project.bin.home}" />
+		<mkdir dir="${ytex.dist.home}/libs.system" />
 		<javac srcdir="${project.src.home}" destdir="${project.bin.home}" classpathref="${project.classpathref}" debug="yes" />
 		<copy todir="${project.bin.home}">
 			<fileset dir="${project.src.home}">
