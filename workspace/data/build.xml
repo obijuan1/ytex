@@ -151,7 +151,7 @@ quit</echo>
 	</target>
 	<target name="umls.setupAuiFword" depends="init" description="setup umls_aui_fword from mrconso">
 		<echo>setting up umls_aui_fword table. please be patient - this can take a while</echo>
-		<java classname="ytex.tools.SetupAuiFirstWord" fork="yes" classpathref="${kernel.cp}">
+		<java classname="ytex.tools.SetupAuiFirstWord" fork="yes" classpathref="${kernel.cp}" failonerror="yes">
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
