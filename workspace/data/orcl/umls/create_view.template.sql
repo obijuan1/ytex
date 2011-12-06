@@ -1,20 +1,15 @@
-create view v_snomed_fword_lookup
+create table v_snomed_fword_lookup
 as
 select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
 from umls_aui_fword c
 inner join @UMLS_SCHEMA@.MRCONSO mrc on c.aui = mrc.aui
 where 
-/*
-for some reason limiting to SABs dramatically decreases performance
-If you want to limit to SABs, it would be better to create a table instead of a view 
-mrc.SAB in ( 'SNOMEDCT','RXNORM' )
-and 
-*/
 exists
 (
 	select *
 	from @UMLS_SCHEMA@.MRSTY sty
 	where mrc.cui = sty.cui
+	and mrc.SAB in ( 'SNOMEDCT','RXNORM' )
 	and sty.tui in
 	(
 	'T017' /* Anatomical Structure */,
@@ -25,3 +20,6 @@ exists
 	)
 )
 ;
+create index IX_vsnfl_cui on v_snomed_fword_lookup(cui);
+create index IX_vsnfl_fword on v_snomed_fword_lookup(fword);
+create index IX_vsnfl_fstem on v_snomed_fword_lookup(fstem);
