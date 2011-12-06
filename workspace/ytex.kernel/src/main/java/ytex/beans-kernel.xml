@@ -223,20 +223,30 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</map>
 		</property>
 	</bean>
-	<bean id="svmLightFormatterFactory" class="ytex.svmlight.SVMLightFormatterFactory">
+	<bean id="sparseDataFormatterFactory" abstract="true">
+		<property name="kernelUtil" ref="kernelUtil" />
 	</bean>
-	<bean id="libSVMFormatterFactory" class="ytex.libsvm.LibSVMFormatterFactory">
+	<bean id="svmLightFormatterFactory" class="ytex.svmlight.SVMLightFormatterFactory"
+		parent="sparseDataFormatterFactory">
 	</bean>
-	<bean id="svmLinFormatterFactory" class="ytex.kernel.SVMLinFormatterFactory">
+	<bean id="libSVMFormatterFactory" class="ytex.libsvm.LibSVMFormatterFactory"
+		parent="sparseDataFormatterFactory">
 	</bean>
-	<bean id="sgtFormatterFactory" class="ytex.svmlight.SGTFormatterFactory">
+	<bean id="svmLinFormatterFactory" class="ytex.kernel.SVMLinFormatterFactory"
+		parent="sparseDataFormatterFactory">
 	</bean>
-	<bean id="sparseMatrixFormatterFactory" class="ytex.sparsematrix.SparseMatrixFormatterFactory">
+	<bean id="sgtFormatterFactory" class="ytex.svmlight.SGTFormatterFactory"
+		parent="sparseDataFormatterFactory">
+	</bean>
+	<bean id="sparseMatrixFormatterFactory" class="ytex.sparsematrix.SparseMatrixFormatterFactory"
+		parent="sparseDataFormatterFactory">
 		<property name="instanceDataExporter" ref="instanceDataExporter" />
 	</bean>
-	<bean id="semiLFormatterFactory" class="ytex.semil.SemiLFormatterFactory">
+	<bean id="semiLFormatterFactory" class="ytex.semil.SemiLFormatterFactory"
+		parent="sparseDataFormatterFactory">
 	</bean>
-	<bean id="wekaFormatterFactory" class="ytex.weka.WekaFormatterFactory">
+	<bean id="wekaFormatterFactory" class="ytex.weka.WekaFormatterFactory"
+		parent="sparseDataFormatterFactory">
 	</bean>
 	<bean id="instanceDataExporter" class="ytex.sparsematrix.InstanceDataExporterImpl">
 	</bean>

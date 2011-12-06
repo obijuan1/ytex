@@ -212,39 +212,30 @@ public abstract class BaseClassifierEvaluationParser implements
 		}
 	}
 
-	protected Map<String, Map<Integer, String>> loadLabelToIndexClassMap(
-			File dataDir) throws IOException {
-		Map<String, Map<Integer, String>> labelToIndexClassMap = new HashMap<String, Map<Integer, String>>();
-		File f = new File(FileUtil.addFilenameToDir(dataDir.getPath(),
-				"labelToClassIndexMap.obj"));
+	protected Map<Integer, String> loadClassIdMap(File dataDir, String label)
+			throws IOException {
+		Map<Integer, String> classIndexMap = new HashMap<Integer, String>();
+		String filename = FileUtil.getScopedFileName(dataDir.getPath(), label,
+				null, null, "class.properties");
+		File f = new File(filename);
 		if (f.exists()) {
-			ObjectInputStream is = null;
+			BufferedReader r = null;
 			try {
-				is = new ObjectInputStream(new FileInputStream(f));
-				@SuppressWarnings("unchecked")
-				Map<String, Map<String, Integer>> labelMapInverted = (Map<String, Map<String, Integer>>) is
-						.readObject();
-				for (Map.Entry<String, Map<String, Integer>> labelEntry : labelMapInverted
-						.entrySet()) {
-					Map<Integer, String> indexToClassMap = new HashMap<Integer, String>();
-					for (Map.Entry<String, Integer> classEntry : labelEntry
-							.getValue().entrySet()) {
-						indexToClassMap.put(classEntry.getValue(),
-								classEntry.getKey());
-					}
-					labelToIndexClassMap.put(labelEntry.getKey(),
-							indexToClassMap);
+				r = new BufferedReader(new FileReader(f));
+				Properties props = new Properties();
+				props.load(r);
+				for (String key : props.stringPropertyNames()) {
+					classIndexMap.put(Integer.parseInt(key),
+							props.getProperty(key));
 				}
-			} catch (ClassNotFoundException cnfe) {
-				throw new IOException(cnfe);
 			} finally {
 				try {
-					is.close();
+					r.close();
 				} catch (IOException e) {
 				}
 			}
 		}
-		return labelToIndexClassMap;
+		return classIndexMap;
 	}
 
 	protected List<List<Long>> loadClassInfo(File dataDir, String classFileName)

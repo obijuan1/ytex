@@ -50,15 +50,14 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		public LibSVMFormatter(KernelUtil kernelUtil) {
 			super(kernelUtil);
 		}
-		
+
 		@Override
 		public void initializeLabel(
 				String label,
 				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
 				Properties properties, SparseData sparseData)
 				throws IOException {
-			// TODO Auto-generated method stub
-
+			exportClassIds(this.labelToClassIndexMap.get(label), label);
 		}
 
 		/**
