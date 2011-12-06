@@ -1,3 +1,12 @@
+delete e,r,dl
+from feature_eval e
+left join feature_rank r on e.feature_eval_id = r.feature_eval_id
+left join tfidf_doclength dl on dl.feature_eval_id = r.feature_eval_id
+where corpus_name = 'i2b2.2008'
+and featureset_name = 'cui'
+and type = 'tfidf'
+;
+
 insert into feature_eval (corpus_name, featureset_name, type)
 values ('i2b2.2008', 'cui', 'tfidf')
 ;
