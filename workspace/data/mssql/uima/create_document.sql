@@ -226,14 +226,13 @@ create table $(db_schema).anno_date (
 
 
 create table $(db_schema).anno_contain (
-  anno_contain_id int identity not null primary key,
   parent_anno_base_id int not null foreign key references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE,
   parent_uima_type_id int not null,
   child_anno_base_id int not null,
-  child_uima_type_id int not null
+  child_uima_type_id int not null,
+  primary key (parent_anno_base_id, child_anno_base_id)
 );
 
-create unique index NK_anno_contain on $(db_schema).anno_contain(parent_anno_base_id, child_anno_base_id);
 create index ix_child_id on $(db_schema).anno_contain(child_anno_base_id);
 create index ix_parent_id on $(db_schema).anno_contain(parent_anno_base_id);
 create index IX_parent_id_child_type on $(db_schema).anno_contain(parent_anno_base_id, child_uima_type_id);

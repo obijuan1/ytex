@@ -214,19 +214,15 @@ create table anno_date (
 ) ;
 
 create table anno_contain (
-  anno_contain_id int,
   parent_anno_base_id int not null,
   parent_uima_type_id int not null,
   child_anno_base_id int not null,
   child_uima_type_id int not null,
-  primary key (anno_contain_id),
+  primary key (parent_anno_base_id, child_anno_base_id),
   foreign key (parent_anno_base_id)
 		references anno_base(anno_base_id)
 		ON DELETE CASCADE
 );
-
-CREATE UNIQUE INDEX NK_anno_contain ON anno_contain (parent_anno_base_id, child_anno_base_id)
-;
 
 CREATE INDEX IX_anno_contain_p ON anno_contain (parent_anno_base_id, child_uima_type_id)
 ;
@@ -266,14 +262,6 @@ for each row
 when (new.anno_ontology_concept_id is null)
 begin
  select anno_onto_concept_id_sequence.nextval into :new.anno_ontology_concept_id from dual;
-end;
-/
-
-create trigger trg_anno_contain before insert on anno_contain
-for each row
-when (new.anno_contain_id is null)
-begin
- select anno_contain_id_sequence.nextval into :new.anno_contain_id from dual;
 end;
 /
 
