@@ -54,7 +54,7 @@ ant -Dytex.home=%YTEX_HOME% cv.all test.all
 
 To run just the test using the optimal parameters we found (will run overnight):
 {{{
-ant -Dytex.home=%YTEX_HOME% test.load.best test.all
+ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 }}}
 
 -->
@@ -73,9 +73,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 		<antcall target="cv.exp.all">
 			<param name="kernel.experiment" value="cui" />
 		</antcall>
-		<antcall target="kernel.tree.all">
-			<param name="kernel.experiment" value="superlin" />
-		</antcall>
+		<antcall target="tree.export"/>
 		<antcall target="cv.kern.all">
 			<param name="kernel.experiment" value="lin" />
 		</antcall>
@@ -346,15 +344,26 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 			<arg value="source svmlin_classrel.sql" />
 		</exec>
 	</target>
+	<target name="insert.hotspot.all" description="insert hotspots for word and imputed">
+		<antcall target="insert.hotspot">
+			<param name="kernel.experiment" value="word" />
+		</antcall>
+		<antcall target="insert.hotspot">
+			<param name="kernel.experiment" value="imputed" />
+		</antcall>
+	</target>
 	<target name="test.load.best" description="load optimal params from cv_best_svm.sql, generate trees for kernels">
 		<antcall target="mysql">
 			<param name="mysql.dir" value="${basedir}/data" />
 			<param name="mysql.script" value="cv_best_svm.sql" />
 		</antcall>
+	</target>
+	<target name="tree.export">
 		<antcall target="kernel.tree.all">
 			<param name="kernel.experiment" value="superlin" />
 		</antcall>
 	</target>
+	<target name="test.skip.cv" depends="insert.hotspot.all,test.load.best,tree.export" description="skip cross validation and prepare for test using optimal parameters" />
 	<target name="test.exp.all" depends="init.exp,clean.exp" description="train model on training set using optimal params, test on test set">
 		<copy todir="${kernel.export.dir}">
 			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="export-bow.xml,kernel.properties" />
@@ -832,6 +841,7 @@ ant -Dytex.home=%YTEX_HOME% test.load.best test.all
 				<include name="exp/cui*/*.*" />
 				<include name="exp/lin*/*.*" />
 				<include name="exp/superlin*/*.*" />
+				<include name="exp/tree-cui/*.*" />
 				<exclude name="**/.svn/**/*.*" />
 			</zipfileset>
 		</zip>
