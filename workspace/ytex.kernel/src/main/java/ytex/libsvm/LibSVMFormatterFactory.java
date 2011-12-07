@@ -44,7 +44,6 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 				Properties properties, SparseData sparseData)
 				throws IOException {
 			super.initializeExport(instanceLabel, properties, sparseData);
-			kernelUtil.exportLabelToClassIndexMap(outdir, labelToClassIndexMap);
 		}
 
 		public LibSVMFormatter(KernelUtil kernelUtil) {
@@ -57,7 +56,8 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
 				Properties properties, SparseData sparseData)
 				throws IOException {
-			exportClassIds(this.labelToClassIndexMap.get(label), label);
+			kernelUtil.exportClassIds(this.outdir,
+					this.labelToClassIndexMap.get(label), label);
 		}
 
 		/**

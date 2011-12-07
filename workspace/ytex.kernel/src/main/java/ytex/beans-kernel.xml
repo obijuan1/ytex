@@ -264,6 +264,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="sparseDataExporter" ref="sparseDataExporter" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="asEvaluation" ref="infogainAttributeEval" />
+		<property name="kernelUtil" ref="kernelUtil" />
 	</bean>
 	<bean id="infoContentEvaluator" class="ytex.kernel.InfoContentEvaluatorImpl">
 		<property name="conceptDao" ref="conceptDao" />

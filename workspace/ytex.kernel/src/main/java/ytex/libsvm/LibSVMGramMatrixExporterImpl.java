@@ -98,13 +98,14 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	 *            map of instance id to index in gramMatrix
 	 * @param filePrefix
 	 *            - prefix to which we add train_data.txt
-	 * @param mapClassToIndex 
+	 * @param mapClassToIndex
 	 * @throws IOException
 	 */
 	private void exportFold(double[][] gramMatrix,
 			Map<Boolean, SortedMap<Long, String>> instanceIdToClassMap,
 			boolean train, Map<Long, Integer> mapInstanceIdToIndex,
-			String filePrefix, Map<String, Integer> mapClassToIndex) throws IOException {
+			String filePrefix, Map<String, Integer> mapClassToIndex)
+			throws IOException {
 		String fileName = new StringBuilder(filePrefix).append("_data.txt")
 				.toString();
 		String idFileName = new StringBuilder(filePrefix).append("_id.txt")
@@ -187,7 +188,6 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 			String outdir, InstanceData instanceData,
 			Map<String, Map<String, Integer>> labelToClassIndexMap)
 			throws IOException {
-		kernelUtil.exportLabelToClassIndexMap(outdir, labelToClassIndexMap);
 		// the full, symmetric gram matrix
 		double[][] gramMatrix = null;
 		// the set of all instance ids
@@ -210,6 +210,8 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 						mapInstanceIdToIndex);
 				if (gramMatrix == null)
 					return;
+				kernelUtil.exportClassIds(outdir,
+						labelToClassIndexMap.get(label), label);
 			}
 			for (int run : instanceData.getLabelToInstanceMap().get(label)
 					.keySet()) {
@@ -230,12 +232,14 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 						exportFold(gramMatrix, foldMap, true,
 								mapInstanceIdToIndex,
 								FileUtil.getDataFilePrefix(outdir, label, run,
-										fold, true), labelToClassIndexMap.get(label));
+										fold, true),
+								labelToClassIndexMap.get(label));
 						// export test fold
 						exportFold(gramMatrix, foldMap, false,
 								mapInstanceIdToIndex,
 								FileUtil.getDataFilePrefix(outdir, label, run,
-										fold, false), labelToClassIndexMap.get(label));
+										fold, false),
+								labelToClassIndexMap.get(label));
 					}
 				}
 			}

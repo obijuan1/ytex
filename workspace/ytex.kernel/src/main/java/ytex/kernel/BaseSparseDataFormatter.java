@@ -67,35 +67,6 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 	}
 
 	/**
-	 * export the class id to class name map.
-	 * 
-	 * @param classIdMap
-	 * @param label
-	 * @param run
-	 * @param fold
-	 * @throws IOException
-	 */
-	protected void exportClassIds(Map<String, Integer> classIdMap,
-			String label) throws IOException {
-		// construct file name
-		String filename = FileUtil.getScopedFileName(outdir, label, null, null,
-				"class.properties");
-		Properties props = new Properties();
-		for (Map.Entry<String, Integer> entry : classIdMap.entrySet()) {
-			props.put(entry.getValue().toString(), entry.getKey());
-		}
-		BufferedWriter w = null;
-		try {
-			w = new BufferedWriter(new FileWriter(filename));
-			props.store(w, "class id to class name map");
-		} finally {
-			if (w != null) {
-				w.close();
-			}
-		}
-	}
-
-	/**
 	 * assign indices to each attribute.
 	 * 
 	 * @param outdir

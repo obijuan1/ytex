@@ -1,6 +1,8 @@
 package ytex.kernel;
 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Map;
@@ -57,9 +59,19 @@ public interface KernelUtil {
 	public abstract void generateFolds(InstanceData instanceLabel,
 			Properties props);
 
-	public abstract void exportLabelToClassIndexMap(String outdir, Map<String, Map<String, Integer>> labelToClassIndexMap)
-			throws IOException;
+	public abstract void fillLabelToClassToIndexMap(
+			Map<String, SortedSet<String>> labelToClasMap,
+			Map<String, Map<String, Integer>> labelToClassIndexMap);
 
-	public abstract void fillLabelToClassToIndexMap(Map<String, SortedSet<String>> labelToClasMap, Map<String, Map<String, Integer>> labelToClassIndexMap);
-
+	/**
+	 * export the class id to class name map.
+	 * 
+	 * @param classIdMap
+	 * @param label
+	 * @param run
+	 * @param fold
+	 * @throws IOException
+	 */
+	public void exportClassIds(String outdir, Map<String, Integer> classIdMap,
+			String label) throws IOException;
 }

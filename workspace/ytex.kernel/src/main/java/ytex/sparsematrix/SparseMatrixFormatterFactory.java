@@ -48,7 +48,8 @@ public class SparseMatrixFormatterFactory implements SparseDataFormatterFactory 
 
 	@Override
 	public SparseDataFormatter getFormatter() {
-		return new SparseMatrixDataFormatter(getInstanceDataExporter(), getKernelUtil());
+		return new SparseMatrixDataFormatter(getInstanceDataExporter(),
+				getKernelUtil());
 	}
 
 	public static class SparseMatrixDataFormatter extends LibSVMFormatter {
@@ -81,18 +82,16 @@ public class SparseMatrixFormatterFactory implements SparseDataFormatterFactory 
 				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> labelInstances,
 				Properties properties, SparseData sparseData)
 				throws IOException {
-			super.initializeLabel(label, labelInstances, properties, sparseData);
+			// super.initializeLabel(label, labelInstances, properties,
+			// sparseData);
 			if (SCOPE_LABEL.equals(this.exportProperties.getProperty(SCOPE))) {
 				exportSparseMatrix(sparseData, label, null, null);
 			}
 		}
 
 		@Override
-		public void initializeFold(
-				SparseData sparseData,
-				String label,
-				Integer run,
-				Integer fold,
+		public void initializeFold(SparseData sparseData, String label,
+				Integer run, Integer fold,
 				SortedMap<Boolean, SortedMap<Long, String>> foldInstanceLabelMap)
 				throws IOException {
 			if (SCOPE_FOLD.equals(this.exportProperties.getProperty(SCOPE))) {

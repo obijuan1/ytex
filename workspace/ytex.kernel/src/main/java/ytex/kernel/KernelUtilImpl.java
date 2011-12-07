@@ -1,8 +1,10 @@
 package ytex.kernel;
 
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
@@ -320,29 +322,31 @@ public class KernelUtilImpl implements KernelUtil {
 			}
 		}
 	}
-
 	/**
-	 * export the label to class index map so that we can map class ids to class
-	 * labels later on
+	 * export the class id to class name map.
 	 * 
+	 * @param classIdMap
+	 * @param label
+	 * @param run
+	 * @param fold
 	 * @throws IOException
 	 */
-	@Override
-	public void exportLabelToClassIndexMap(String outdir,
-			Map<String, Map<String, Integer>> labelToClassIndexMap)
-			throws IOException {
-		String filename = FileUtil.addFilenameToDir(outdir,
-				"labelToClassIndexMap.obj");
-		ObjectOutputStream os = null;
+	public void exportClassIds(String outdir, Map<String, Integer> classIdMap,
+			String label) throws IOException {
+		// construct file name
+		String filename = FileUtil.getScopedFileName(outdir, label, null, null,
+				"class.properties");
+		Properties props = new Properties();
+		for (Map.Entry<String, Integer> entry : classIdMap.entrySet()) {
+			props.put(entry.getValue().toString(), entry.getKey());
+		}
+		BufferedWriter w = null;
 		try {
-			os = new ObjectOutputStream(new FileOutputStream(filename));
-			os.writeObject(labelToClassIndexMap);
+			w = new BufferedWriter(new FileWriter(filename));
+			props.store(w, "class id to class name map");
 		} finally {
-			if (os != null) {
-				try {
-					os.close();
-				} catch (IOException e) {
-				}
+			if (w != null) {
+				w.close();
 			}
 		}
 	}
