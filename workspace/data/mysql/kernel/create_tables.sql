@@ -1,7 +1,7 @@
 
 CREATE TABLE  kernel_eval (
 	kernel_eval_id int(11) NOT NULL AUTO_INCREMENT,
-	name varchar(50) NOT NULL DEFAULT '' comment 'corpus name',
+	corpus_name varchar(50) NOT NULL DEFAULT '' comment 'corpus name',
 	experiment varchar(50) not null comment 'experiment - type of kernel',
 	label varchar(50) not NULL default '' comment 'class label',
 	cv_fold_id int not null default 0 comment 'fk cv_fold',
