@@ -559,7 +559,7 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 		<echo>kernel.xml ${kernel.xml}</echo>
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<echo>kernel.evalTest ${kernel.evalTest}</echo>
-		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
+		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}" failonerror="yes">
 			<arg line="-beans ${kernel.xml} -loadInstanceMap ${label.tree}.obj -mod ${kernel.threads} -slice ${kernel.slice} -evalTest ${kernel.evalTest}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
@@ -647,7 +647,7 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 		<copy tofile="${kernel.export.dir}/${export.label}/export-test.xml" overwrite="yes" file="${export.tree.srcdir}/export-test.xml">
 			<filterset refid="${export.filterset}" />
 		</copy>
-		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${kernel.export.dir}/${export.label}">
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${kernel.export.dir}/${export.label}" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="export-test.xml" />
 			<jvmarg value="-Xmx1g" />
