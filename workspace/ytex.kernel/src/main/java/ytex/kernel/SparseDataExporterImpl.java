@@ -35,6 +35,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 
 	private static final Log log = LogFactory
 			.getLog(SparseDataExporterImpl.class);
+
 	@SuppressWarnings("static-access")
 	public static void main(String args[]) throws IOException {
 		Options options = new Options();
@@ -66,6 +67,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 			}
 		}
 	}
+
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
 
@@ -141,16 +143,20 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 		if (scope == null) {
 			sparseData = this.loadData(instanceLabel,
 					properties.getProperty("numericWordQuery"),
-					properties.getProperty("nominalWordQuery"), bDecorator,
-					null, null, null);
+					properties.getProperty("nominalWordQuery"),
+					properties.getProperty("prepareScript"),
+					properties.getProperty("prepareScriptDelimiter", ";"),
+					bDecorator, null, null, null);
 		}
 		formatter.initializeExport(instanceLabel, properties, sparseData);
 		for (String label : instanceLabel.getLabelToInstanceMap().keySet()) {
 			if ("label".equals(scope)) {
 				sparseData = this.loadData(instanceLabel,
 						properties.getProperty("numericWordQuery"),
-						properties.getProperty("nominalWordQuery"), bDecorator,
-						label, null, null);
+						properties.getProperty("nominalWordQuery"),
+						properties.getProperty("prepareScript"),
+						properties.getProperty("prepareScriptDelimiter", ";"),
+						bDecorator, label, null, null);
 			}
 			formatter
 					.initializeLabel(label, instanceLabel
@@ -165,9 +171,11 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 						log.info("exporting, label " + label + " run " + run
 								+ " fold " + fold);
 					if ("fold".equals(scope)) {
-						sparseData = this.loadData(instanceLabel,
-								properties.getProperty("numericWordQuery"),
-								properties.getProperty("nominalWordQuery"),
+						sparseData = this.loadData(instanceLabel, properties
+								.getProperty("numericWordQuery"), properties
+								.getProperty("nominalWordQuery"), properties
+								.getProperty("prepareScript"), properties
+								.getProperty("prepareScriptDelimiter", ";"),
 								bDecorator, label, fold, run);
 					}
 					formatter.initializeFold(sparseData, label, run, fold,
@@ -240,6 +248,30 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 	}
 
 	/**
+	 * run the prepare script if defined.
+	 * 
+	 * @param prepareScript
+	 *            sequence of sql statements to be executed with named params.
+	 * @param prepareScriptDelimiter
+	 *            delimiter separating the sql statements.
+	 * @param params
+	 *            for named parameters in sql statements.
+	 */
+	protected void prepare(final String prepareScript,
+			final String prepareScriptDelimiter,
+			final Map<String, Object> params) {
+		if (prepareScript != null && prepareScript.length() > 0) {
+			String[] statements = prepareScript.split(prepareScriptDelimiter);
+			// throw out empty lines
+			for (String sql : statements) {
+				if (sql != null && sql.trim().length() > 0) {
+					this.namedJdbcTemplate.update(sql, params);
+				}
+			}
+		}
+	}
+
+	/**
 	 * 
 	 * @param sql
 	 *            result set has 3 columns. 1st column - integer - instance id.
@@ -251,6 +283,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 	 * @return populate maps with results of query.
 	 */
 	protected void getNominalInstanceWords(final String sql,
+			final String prepareScript, final String prepareScriptDelimiter,
 			final SparseData sparseData, final Map<String, Object> params) {
 		txTemplateNew.execute(new TransactionCallback<Object>() {
 
@@ -266,6 +299,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 			//
 			// } @Override
 			public Object doInTransaction(TransactionStatus txStatus) {
+				prepare(prepareScript, prepareScriptDelimiter, params);
 				namedJdbcTemplate.query(sql, params, new RowCallbackHandler() {
 
 					@Override
@@ -291,11 +325,13 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 	 *            map of instance id - [map word - word value] to be populated
 	 */
 	protected void getNumericInstanceWords(final String sql,
+			final String prepareScript, final String prepareScriptDelimiter,
 			final SparseData sparseData, final Map<String, Object> params) {
 		txTemplateNew.execute(new TransactionCallback<Object>() {
 
 			@Override
 			public Object doInTransaction(TransactionStatus txStatus) {
+				prepare(prepareScript, prepareScriptDelimiter, params);
 				namedJdbcTemplate.query(sql, params
 				// new PreparedStatementCreator() {
 				//
@@ -330,8 +366,29 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 		return txTemplateNew;
 	}
 
+	/**
+	 * 
+	 * @param instanceLabel
+	 *            instance data: label - fold - instance id - class map
+	 * @param instanceNumericWordQuery
+	 *            query to get numeric attributes
+	 * @param instanceNominalWordQuery
+	 *            query to get nominal attributes
+	 * @param prepareScript
+	 *            prepare script to be executed in same tx as instance attribute
+	 *            queries
+	 * @param prepareScriptDelimiter
+	 *            delimiter for statements in prepare script
+	 * @param bDecorator
+	 *            decorator to add attributes
+	 * @param label
+	 * @param fold
+	 * @param run
+	 * @return
+	 */
 	protected SparseData loadData(InstanceData instanceLabel,
 			String instanceNumericWordQuery, String instanceNominalWordQuery,
+			String prepareScript, String prepareScriptDelimiter,
 			BagOfWordsDecorator bDecorator, String label, Integer fold,
 			Integer run) {
 		SparseData sparseData = new SparseData();
@@ -345,8 +402,8 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 		// load numeric attributes
 		if (instanceNumericWordQuery != null
 				&& instanceNumericWordQuery.trim().length() > 0)
-			this.getNumericInstanceWords(instanceNumericWordQuery, sparseData,
-					params);
+			this.getNumericInstanceWords(instanceNumericWordQuery,
+					prepareScript, prepareScriptDelimiter, sparseData, params);
 		// added to support adding gram matrix index in GramMatrixExporter
 		if (bDecorator != null)
 			bDecorator.decorateNumericInstanceWords(
@@ -355,8 +412,8 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 		// load nominal attributes
 		if (instanceNominalWordQuery != null
 				&& instanceNominalWordQuery.trim().length() > 0)
-			this.getNominalInstanceWords(instanceNominalWordQuery, sparseData,
-					params);
+			this.getNominalInstanceWords(instanceNominalWordQuery,
+					prepareScript, prepareScriptDelimiter, sparseData, params);
 		if (bDecorator != null)
 			bDecorator.decorateNominalInstanceWords(
 					sparseData.getInstanceNominalWords(),
