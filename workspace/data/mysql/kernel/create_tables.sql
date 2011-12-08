@@ -148,6 +148,7 @@ create table feature_rank (
   rank int not null default 0 comment 'rank among all features',
   unique index nk_feature_name(feature_eval_id, feature_name),
   index ix_feature_rank(feature_eval_id, rank),
+  index ix_feature_evaluation(feature_eval_id, evaluation),
   index fk_feature_eval(feature_eval_id)
 ) engine=myisam comment 'evaluation of a feature in a corpus';
 
