@@ -344,7 +344,7 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 			<arg value="source svmlin_classrel.sql" />
 		</exec>
 	</target>
-	<target name="insert.hotspot.all" description="insert hotspots for word and imputed">
+	<target name="insert.hotspot.all" description="insert hotspots for word and imputed.  The best params for word must be defined for this to work.">
 		<antcall target="insert.hotspot">
 			<param name="kernel.experiment" value="word" />
 		</antcall>
@@ -363,7 +363,7 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 			<param name="kernel.experiment" value="superlin" />
 		</antcall>
 	</target>
-	<target name="test.skip.cv" depends="insert.hotspot.all,test.load.best,tree.export" description="skip cross validation and prepare for test using optimal parameters" />
+	<target name="test.skip.cv" depends="test.load.best,insert.hotspot.all,tree.export" description="skip cross validation and prepare for test using optimal parameters" />
 	<target name="test.exp.all" depends="init.exp,clean.exp" description="train model on training set using optimal params, test on test set">
 		<copy todir="${kernel.export.dir}">
 			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="export-bow.xml,kernel.properties" />
