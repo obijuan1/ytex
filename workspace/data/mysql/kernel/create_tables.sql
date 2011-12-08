@@ -8,7 +8,7 @@ CREATE TABLE  kernel_eval (
 	param1 double not null default 0,
 	param2 varchar(50) not null default '',
 	PRIMARY KEY (kernel_eval_id),
-	UNIQUE KEY NK_kernel_eval (name, experiment, label, cv_fold_id, param1, param2)
+	UNIQUE KEY NK_kernel_eval (corpus_name, experiment, label, cv_fold_id, param1, param2)
 ) ENGINE=MyISAM comment 'set of all kernel evaluations';
 
 create table kernel_eval_instance (
