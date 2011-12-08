@@ -19,6 +19,7 @@ ant -f build-test.xml all
 		</for>
 	</target>
 	<target name="test.init" description="load properties">
+		<echo>ytex.prop ${ytex.prop}</echo>
 		<property file="${ytex.prop}" prefix="test"/>
 	</target>
 	<target name="test.cleandb" depends="test.init" description="drop umls tables from ytex schema">
@@ -34,13 +35,12 @@ ant -f build-test.xml all
 			<equals arg1="${test.db.type}" arg2="mysql" />
 			<then>
 				<exec executable="mysql" failonerror="yes">
-					<arg line="--user=${test.db.user} --password=${test.db.password} --host=${test.db.host} ${test.db.schema} -e &quot;drop table if exists MRCONSO; drop table if exists MRSTY;&quot;" />
+					<arg line="--user=${test.db.username} --password=${test.db.password} --host=${test.db.host} --database=${test.db.schema} -e &quot;drop table if exists MRCONSO; drop table if exists MRSTY;&quot;" />
 				</exec>
 			</then>
 		</if>
 	</target>	
 	<target name="test.config" depends="test.init,test.cleandb" description="setup ytex, annotate examples, export bow for fracture">
-		<echo>ytex.prop ${ytex.prop}</echo>
 		<property name="test.ytex.home" value="${test.home}/ytex" />
 		<delete dir="${test.ytex.home}" quiet="yes" />
 		<unzip src="${test.home}/ytex-with-dependencies.zip" dest="${test.home}" overwrite="yes" />
