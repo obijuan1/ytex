@@ -40,7 +40,9 @@ inner join
 (
 select distinct code from anno_ontology_concept
 ) c on mrc.cui = c.code
-where mrc.sab in ( 'SNOMEDCT', 'RXNORM', 'SRC');
+where mrc.sab in ( 'SNOMEDCT', 'RXNORM', 'SRC')
+and lat = 'ENG'
+;
 
 select fw.*
 into outfile 'E:/projects/ytex/data/mysql/umls/umls_aui_fword.txt'
@@ -75,6 +77,7 @@ into outfile 'E:/projects/ytex-umls/mysql/MRCONSO.RRF'
 fields terminated by '|' ESCAPED BY '' lines terminated by '\r\n'
 from umls.MRCONSO mrc
 where SAB in ('SNOMEDCT', 'RXNORM', 'SRC')
+and LAT = 'ENG'
 ;
 
 
