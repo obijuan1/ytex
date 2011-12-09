@@ -1,4 +1,0 @@
-kernel.name=cmc.2007
-kernel.experiment=kern-ctakes-ident-test
-kernel.types=4
-cv.costs=@cv.costs@
