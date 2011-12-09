@@ -1,7 +1,7 @@
-drop table if exists hotspot_feature_eval;
+drop table if exists hotspot_sentence;
 drop table if exists hotspot_instance;
-drop table if exists hotspot_zero_vector;
 drop table if exists hotspot;
+drop table if exists feature_parchd;
 drop table if exists feature_rank;
 drop table if exists feature_eval;
 drop table if exists tfidf_doclength; 
