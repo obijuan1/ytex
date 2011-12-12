@@ -358,7 +358,7 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 			<param name="mysql.script" value="cv_best_svm.sql" />
 		</antcall>
 	</target>
-	<target name="tree.export">
+	<target name="tree.export" description="export trees for use with kernel">
 		<antcall target="kernel.tree.all">
 			<param name="kernel.experiment" value="superlin" />
 		</antcall>
