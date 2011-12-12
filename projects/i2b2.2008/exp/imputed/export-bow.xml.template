@@ -9,27 +9,14 @@
 	inner join corpus_label a 
 		on a.label = f.label 
 		and a.corpus_name = f.corpus_name
-		and a.instance_id = i.instance_id
-	/* 
-	limit to non-zero vectors 
-	get the minimum evaluation via the propagated IG
-	*/
+		and a.instance_id = i.instance_id 
     inner join hotspot_instance hi 
     	on hi.instance_id = i.instance_id
     	and hi.label = f.label
 		and hi.corpus_name = f.corpus_name
-		and hi.experiment = 'imputed'
-	inner join feature_eval e
-		on e.corpus_name = a.corpus_name
-		and e.label = a.label
-		and e.type = 'infogain-propagated' 
-		and e.featureset_name = 'ctakes'
-		and e.param2 = 'rbpar'
-	inner join feature_rank r
-		on r.feature_eval_id = e.feature_eval_id
-		and r.rank = @export.cutoff@
-		and hi.max_evaluation >= r.evaluation
-	where f.corpus_name = 'i2b2.2008'
+		and hi.experiment = 'imputed'	
+	where hi.min_rank <= @export.cutoff@
+	and f.corpus_name = 'i2b2.2008'
 ]]></entry>
 	<entry key="numericWordQuery"><![CDATA[
 	select instance_id, 
@@ -42,15 +29,6 @@
 			on doc.instance_id = a.instance_id 
 			and doc.corpus_name = a.corpus_name
 			and a.label = :label
-		inner join feature_eval e
-			on e.corpus_name = a.corpus_name
-			and e.label = a.label
-			and e.type = 'infogain-propagated' 
-			and e.featureset_name = 'ctakes'
-			and e.param2 = 'rbpar'
-		inner join feature_rank r
-			on r.feature_eval_id = e.feature_eval_id
-			and r.rank = @export.cutoff@
 		inner join hotspot_instance hi 
 			on hi.instance_id = doc.instance_id
 		    and hi.label = a.label
@@ -59,7 +37,7 @@
         /* limit to sentence */
         inner join hotspot_sentence hs
             on hi.hotspot_instance_id = hs.hotspot_instance_id
-            and hs.evaluation >= r.evaluation
+            and hs.rank <= @export.cutoff@
         /* get words and numbers in sentence */
         inner join anno_contain ac 
             on ac.parent_anno_base_id = hs.anno_base_id
