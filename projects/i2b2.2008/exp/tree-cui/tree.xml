@@ -43,32 +43,23 @@ create temporary table tmp_sent
 as
 select hi.instance_id, hs.anno_base_id
 from corpus_doc doc
-inner join corpus_label a
-        on doc.instance_id = a.instance_id
-        and doc.corpus_name = a.corpus_name
-        and a.label = '@export.label@'
-inner join cv_best_svm b
-    on b.label = a.label
-    and b.corpus_name = a.corpus_name
-    and b.experiment = 'cui'
-inner join feature_eval e
-        on e.corpus_name = a.corpus_name
-        and e.label = a.label
-        and e.type = 'infogain-propagated'
-        and e.featureset_name = 'ctakes'
-        and e.param2 = 'rbpar'
-inner join feature_rank r
-        on r.feature_eval_id = e.feature_eval_id
-        and r.rank = b.param1
-inner join hotspot_instance hi
-    on hi.instance_id = doc.instance_id
-	and hi.label = a.label
-    and hi.corpus_name = doc.corpus_name
-    and hi.experiment = 'imputed'
+inner join corpus_label a 
+	on doc.instance_id = a.instance_id 
+	and doc.corpus_name = a.corpus_name
+	and a.label = '@export.label@'
+inner join hotspot_instance hi 
+	on hi.instance_id = doc.instance_id
+    and hi.label = a.label
+	and hi.corpus_name = doc.corpus_name
+	and hi.experiment = 'imputed'
 /* limit to sentence */
 inner join hotspot_sentence hs
     on hi.hotspot_instance_id = hs.hotspot_instance_id
-    and hs.evaluation >= r.evaluation
+inner join cv_best_svm b
+	on b.label = a.label
+	and b.corpus_name = a.corpus_name
+    and hs.rank <=  b.param1
+    and b.experiment = 'cui'        
 where doc.corpus_name = 'i2b2.2008'
 ;
 create unique index NK_tmp_sent on tmp_sent(instance_id, anno_base_id)
