@@ -45,6 +45,7 @@
 			on b.label = a.label
 			and b.corpus_name = a.corpus_name
             and hs.rank <=  b.param1
+            and b.experiment = 'word'
         /* get words and numbers in sentence */
         inner join anno_contain ac 
             on ac.parent_anno_base_id = hs.anno_base_id
