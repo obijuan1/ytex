@@ -34,53 +34,30 @@
 		and hi.max_evaluation >= r.evaluation
 	where a.corpus_name = 'i2b2.2008'
 ]]></entry>
-	<entry key="prepareScript"><![CDATA[
-drop table if exists tmp_sent
-;
-create temporary table tmp_sent
-as
-select hi.instance_id, hs.anno_base_id
-      from corpus_doc doc
-inner join corpus_label a 
-	on doc.instance_id = a.instance_id 
-	and doc.corpus_name = a.corpus_name
-	and a.label = :label
-inner join cv_best_svm b
-    on b.label = a.label
-    and b.corpus_name = a.corpus_name
-    and b.experiment = 'imputed'
-inner join feature_eval e
-	on e.corpus_name = a.corpus_name
-	and e.label = a.label
-	and e.type = 'infogain-propagated' 
-	and e.featureset_name = 'ctakes'
-	and e.param2 = 'rbpar'
-inner join feature_rank r
-	on r.feature_eval_id = e.feature_eval_id
-	and r.rank = b.param1
-inner join hotspot_instance hi 
-	on hi.instance_id = doc.instance_id
-    and hi.label = a.label
-	and hi.corpus_name = doc.corpus_name
-	and hi.experiment = 'imputed'
-/* limit to sentence */
-inner join hotspot_sentence hs
-    on hi.hotspot_instance_id = hs.hotspot_instance_id
-    and hs.evaluation >= r.evaluation
-where doc.corpus_name = 'i2b2.2008'
-;
-create unique index NK_tmp_sent on tmp_sent(instance_id, anno_base_id)
-;
-create index IX_tmp_sent on tmp_sent(anno_base_id)
-;		
-]]></entry>
 	<entry key="numericWordQuery"><![CDATA[
 	select instance_id, 
         cast(concat(if(r.feature_name is null, '', if(negated > 0, 'neg_', 'pos_')), lower(covered_text)) as char(100)) word, 1
 	from
 	(
-		select distinct hs.instance_id, covered_text, coalesce(wt.negated, 0) negated
-        from tmp_sent hs
+		select distinct hi.instance_id, covered_text, coalesce(wt.negated, 0) negated
+        from corpus_doc doc
+		inner join corpus_label a 
+			on doc.instance_id = a.instance_id 
+			and doc.corpus_name = a.corpus_name
+			and a.label = :label
+		inner join hotspot_instance hi 
+			on hi.instance_id = doc.instance_id
+		    and hi.label = a.label
+			and hi.corpus_name = doc.corpus_name
+			and hi.experiment = 'imputed'
+        /* limit to sentence */
+        inner join hotspot_sentence hs
+            on hi.hotspot_instance_id = hs.hotspot_instance_id
+		inner join cv_best_svm b
+			on b.label = a.label
+			and b.corpus_name = a.corpus_name
+            and hs.rank <=  b.param1
+            and b.experiment = 'imputed'        
         /* get words and numbers in sentence */
         inner join anno_contain ac 
             on ac.parent_anno_base_id = hs.anno_base_id
@@ -93,6 +70,7 @@ create index IX_tmp_sent on tmp_sent(anno_base_id)
         /* get negation status */
         left join anno_word_token wt
             on wt.anno_base_id = ac.child_anno_base_id
+        where doc.corpus_name = 'i2b2.2008'
     ) s
     left join
     (
