@@ -226,3 +226,27 @@ inner join tmp_hirank hir
 	on hi.hotspot_instance_id = hir.hotspot_instance_id
 set hi.min_rank = hir.min_rank
 ;
+
+drop table if exists tmp_rank;
+create temporary table tmp_rank
+as
+select label, evaluation, min(rank) rank
+from feature_eval e
+inner join feature_rank r
+	on r.feature_eval_id = e.feature_eval_id
+	and r.rank <= 10
+where e.type = 'infogain-propagated' 
+	and e.featureset_name = 'ctakes'
+	and e.param2 = 'rbpar'
+  and e.corpus_name = 'i2b2.2008'
+group by label, evaluation
+;
+create unique index NK_rank on tmp_rank(label, evaluation);
+
+update hotspot_instance hi 
+inner join hotspot_sentence s on hi.hotspot_instance_id = s.hotspot_instance_id
+inner join tmp_rank r on hi.label = r.label and s.evaluation = r.evaluation
+set s.rank = r.rank
+where s.evaluation <> 1
+and hi.experiment = 'imputed'
+and hi.corpus_name = 'i2b2.2008';
