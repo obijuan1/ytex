@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
-<beans>
-	<import resource="classpath:/ytex/beans-datasource.xml"/>
-	<import resource="classpath:/ytex/beans-model.hbm.xml"/>
-	<import resource="classpath:/ytex/beans.xml"/>
-	<import resource="classpath:/ytex/web/beans-web.xml"/>
-	<import resource="classpath:/ytex/web/beans-security.xml"/>
-</beans>
