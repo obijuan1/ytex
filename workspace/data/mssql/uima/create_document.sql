@@ -224,13 +224,16 @@ create table $(db_schema).anno_date (
 );
 
 
-
+/*
+ * we run into deadlocks if we have a clustered index and foreign key constraint
+ * on anno_contain.  use a nonclustered primary key and throw out the fk.
+ */
 create table $(db_schema).anno_contain (
-  parent_anno_base_id int not null foreign key references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE,
+  parent_anno_base_id int not null,
   parent_uima_type_id int not null,
   child_anno_base_id int not null,
   child_uima_type_id int not null,
-  primary key (parent_anno_base_id, child_anno_base_id)
+  primary key nonclustered (parent_anno_base_id, child_anno_base_id)
 );
 
 create index ix_child_id on $(db_schema).anno_contain(child_anno_base_id);
