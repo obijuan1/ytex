@@ -830,7 +830,7 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 		<copy todir="${kernel.export.dir}/${export.label}" file="${kernel.export.dir}/parameters.properties" overwrite="yes" />
 	</target>
 	<target name="package" description="pack up i2b2 for distribution">
-		<zip destfile="../i2b2.2008.zip">
+		<zip destfile="../i2b2-2008.zip">
 			<zipfileset dir="${basedir}" prefix="i2b2.2008">
 				<include name="build.xml" />
 				<include name="data/*.*" />
