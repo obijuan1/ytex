@@ -36,7 +36,7 @@ Database connection parameters are taken from ytex.properties.
 	<property name="umls.catalog" value="${db.name}" />
 	<property name="umls.schema" value="${db.schema}" />
 	<property name="sql.dir" value="./${db.type}" />
-	<property name="umls.zip" value="${ytex.home}/../umls-${db.type}.zip" />
+	<property name="umls.zip" value="${ytex.home}/../umls.zip" />
 
 
 	<target name="all" depends="umls.all,uima.all" description="call umls.all and uima.all" />
