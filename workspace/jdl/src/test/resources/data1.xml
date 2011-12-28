@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE data [
+<!ENTITY VHS "Video Home System">
+<!ENTITY DVD "Digital Versatile Disc">
+<!ENTITY BrD "Blu-ray Disc">
+]>
+<composer>
+	<name born="1928">Ennio Morricone</name>
+	<movie storage="&VHS;">
+		<year>1984</year>
+		<title>Once Upon A Time In America</title>
+		<number>9</number>
+	</movie>
+	<movie storage="&DVD;">
+		<year>1986</year>
+		<title>The Mission</title>
+		<number>10</number>
+	</movie>
+	<movie storage="&BrD;">
+		<year>1988</year>
+		<title>Cinema Paradiso</title>
+		<number>11</number>
+	</movie>
+</composer>

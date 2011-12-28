@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<xml table="tab_test">
+		<xroot>/band/album</xroot>
+		<column name="id">
+			<xleaf>number(/album/year)</xleaf>
+		</column>
+		<column name="name">
+			<xleaf>/album/title</xleaf>
+		</column>
+		<column name="thekey">
+			<xleaf>number(/album/number)</xleaf>
+		</column>
+		<column name="thevalue">
+			<xleaf>/album/@storage</xleaf>
+		</column>
+		<column name="code">
+			<xpath>/band/name/@formed</xpath>
+		</column>
+		<column name="descr">
+			<xpath>/band/name</xpath>
+		</column>
+	</xml>
+</load>

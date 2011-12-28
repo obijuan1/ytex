@@ -1,0 +1,1 @@
+xjc src/main/resources/xdl.xsd -p my.mas.jdl.schema.xdl -d src/main/java

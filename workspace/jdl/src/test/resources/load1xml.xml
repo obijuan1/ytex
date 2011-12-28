@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<xml table="tab_test">
+		<xroot>/composer/movie</xroot>
+		<column name="id">
+			<xleaf>number(/movie/year)</xleaf>
+		</column>
+		<column name="name">
+			<xleaf>/movie/title</xleaf>
+		</column>
+		<column name="thekey">
+			<seq>9</seq>
+		</column>
+		<column name="thevalue">
+			<xleaf>/movie/@storage</xleaf>
+		</column>
+		<column name="code">
+			<constant>1928</constant>
+		</column>
+		<column name="descr">
+			<xpath>/composer/name</xpath>
+		</column>
+	</xml>
+</load>

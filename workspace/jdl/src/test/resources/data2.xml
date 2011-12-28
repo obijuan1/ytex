@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE data [
+<!ENTITY LP "Long Play">
+<!ENTITY CC "Compact Cassette">
+<!ENTITY CD "Compact Disc">
+]>
+<band>
+	<name formed="1980">Depeche Mode</name>
+	<album storage="&LP;">
+		<year>1981</year>
+		<title>Speak &amp; Spell</title>
+		<number>1</number>
+	</album>
+	<album storage="&CC;">
+		<year>1990</year>
+		<title>Violator</title>
+		<number>7</number>
+	</album>
+	<album storage="&CD;">
+		<year>2001</year>
+		<title>Exc<![CDATA[it]]>er</title>
+		<number>10</number>
+	</album>
+</band>
