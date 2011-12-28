@@ -101,12 +101,6 @@ CREATE TABLE anno_segment(
 )
 ;
 
-/*
-ALTER TABLE anno_segment  WITH CHECK ADD FOREIGN KEY(anno_base_id)
-REFERENCES anno_base (anno_base_id)
-ON DELETE CASCADE
-;
-*/
 
 CREATE INDEX IX_segment_anno_seg ON anno_segment
 (
@@ -115,11 +109,7 @@ CREATE INDEX IX_segment_anno_seg ON anno_segment
 )
 ;
 
-/*
- * mapped to SourceDocumentInformation
- * TODO: best mapping of boolean for oracle?
- */
-
+-- mapped to SourceDocumentInformation
 create table anno_source_doc_info (
 	anno_base_id int NOT NULL,
 	uri varchar2(256),
@@ -134,9 +124,7 @@ create table anno_source_doc_info (
 );
 
 
-/**
- * mapped to BaseToken
- */
+-- mapped to BaseToken
 create table anno_base_token (
 	anno_base_id int NOT NULL,
 	token_number int,
@@ -151,27 +139,8 @@ create table anno_base_token (
 		ON DELETE CASCADE
 ) ;
 
-/**
- * BaseToken.lemmaEntries
-create table anno_lemma (
-	anno_lemma_id int  NOT NULL,
-	anno_base_id int not null,
-	lemma_key varchar2(10),
-	pos_tag varchar2(5),
-	PRIMARY KEY
-	(
-		anno_lemma_id 
-	),
-	foreign key (anno_base_id)
-		references anno_base_token(anno_base_id)
-		ON DELETE CASCADE
 
-);
- */
-
-/**
- * mapped to NumToken
- */
+-- mapped to NumToken
 create table anno_num_token (
 	anno_base_id int NOT NULL,
 	num_type int,
@@ -184,9 +153,7 @@ create table anno_num_token (
 		ON DELETE CASCADE
 ) ;
 
-/**
- * mapped to WordToken
- */
+-- mapped to WordToken
 create table anno_word_token (
 	anno_base_id int NOT NULL,
 	capitalization int,
@@ -238,38 +205,4 @@ CREATE TABLE fracture_demo (
 	fracture varchar2(20) NULL,
 	note_set varchar2(10) NULL
 );
-
-/
-
-create or replace trigger trg_document before insert on document
-for each row
-when (new.document_id is null)
-begin
- select document_id_sequence.nextval into :new.document_id from dual;
-end;
-/
-
-create trigger trg_anno_base before insert on anno_base
-for each row
-when (new.anno_base_id is null)
-begin
- select anno_base_id_sequence.nextval into :new.anno_base_id from dual;
-end;
-/
-
-create trigger trg_anno_ontology_concept before insert on anno_ontology_concept
-for each row
-when (new.anno_ontology_concept_id is null)
-begin
- select anno_onto_concept_id_sequence.nextval into :new.anno_ontology_concept_id from dual;
-end;
-/
-
-create trigger trg_fracture_demo before insert on fracture_demo
-for each row
-when (new.note_id is null)
-begin
- select demo_note_id_sequence.nextval into :new.note_id from dual;
-end;
-/
 

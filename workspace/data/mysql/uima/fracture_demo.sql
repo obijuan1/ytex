@@ -1,4 +1,4 @@
-load data local infile '../../examples/fracture_demo.txt' 
+load data local infile './examples/fracture_demo.txt' 
 into table fracture_demo 
 fields terminated by '\t' 
 ESCAPED BY '' 

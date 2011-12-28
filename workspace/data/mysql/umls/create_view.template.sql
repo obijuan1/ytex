@@ -1,8 +1,6 @@
-/**
- * mysql performance on views is abominable
- * use a table instead
- * replace @UMLS_SCHEMA@ with the appropriate value
- */
+-- mysql performance on views is abominable
+-- use a table instead
+-- replace @UMLS_SCHEMA@ with the appropriate value
 drop view if exists v_snomed_fword_lookup;
 drop table if exists v_snomed_fword_lookup;
 

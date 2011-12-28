@@ -231,24 +231,3 @@ inner join corpus_label l
     on d.corpus_name = l.corpus_name 
     and d.instance_id = l.instance_id
 ;
-
-
-/*
-create table hotspot_zero_vector_tt
-(
-  hotspot_zero_vector_tt int auto_increment not null primary key,
-  name varchar(50) not null comment 'corpus name',
-  experiment varchar(50) not null comment 'classifier_eval.experiment',
-  label varchar(50) not null comment 'classifier_eval.label',
-  run int not null default 0 comment 'classifier_eval.run',
-  fold int not null default 0 comment 'classifier_eval.fold',
-  ir_class_id int not null comment 'truth table wrt this class',
-  cutoff double not null comment 'zero vector cutoff',
-  tp int not null,
-  tn int not null,
-  fp int not null,
-  fn int not null,
-  unique key NK_hotspot_zero_vector_tt (name, experiment, label, run, fold, ir_class_id, cutoff)
-) engine=myisam comment 'truth table for hotspot zero vectors'
-;
-*/

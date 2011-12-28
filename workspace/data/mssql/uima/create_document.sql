@@ -126,9 +126,7 @@ CREATE NONCLUSTERED INDEX [IX_segment_anno_seg] ON $(db_schema).[anno_segment]
 )
 ;
 
-/*
- * mapped to SourceDocumentInformation
- */
+-- mapped to SourceDocumentInformation
 create table $(db_schema).anno_source_doc_info (
 	[anno_base_id] [int] NOT NULL,
 	uri varchar(256),
@@ -143,9 +141,7 @@ create table $(db_schema).anno_source_doc_info (
 );
 
 
-/**
- * mapped to BaseToken
- */
+-- mapped to BaseToken
 create table $(db_schema).anno_base_token (
 	[anno_base_id] [int] NOT NULL,
 	token_number int,
@@ -160,27 +156,7 @@ create table $(db_schema).anno_base_token (
 		ON DELETE CASCADE
 );
 
-/**
- * BaseToken.lemmaEntries
-create table $(db_schema).anno_lemma (
-	anno_lemma_id [int] IDENTITY(1,1) NOT NULL,
-	anno_base_id int not null,
-	lemma_key varchar(10),
-	pos_tag varchar(5),
-	PRIMARY KEY CLUSTERED 
-	(
-		[anno_lemma_id] ASC
-	),
-	foreign key (anno_base_id) 
-		references $(db_schema).anno_base_token(anno_base_id)  
-		ON DELETE CASCADE
-
-);
- */
-
-/**
- * mapped to NumToken
- */
+-- mapped to NumToken
 create table $(db_schema).anno_num_token (
 	[anno_base_id] [int] NOT NULL,
 	num_type int,
@@ -193,9 +169,7 @@ create table $(db_schema).anno_num_token (
 		ON DELETE CASCADE
 )
 
-/**
- * mapped to WordToken
- */
+-- mapped to WordToken
 create table $(db_schema).anno_word_token (
 	[anno_base_id] [int] NOT NULL,
 	capitalization [int],
@@ -224,10 +198,8 @@ create table $(db_schema).anno_date (
 );
 
 
-/*
- * we run into deadlocks if we have a clustered index and foreign key constraint
- * on anno_contain.  use a nonclustered primary key and throw out the fk.
- */
+-- we run into deadlocks if we have a clustered index and foreign key constraint
+-- on anno_contain.  use a nonclustered primary key and throw out the fk.
 create table $(db_schema).anno_contain (
   parent_anno_base_id int not null,
   parent_uima_type_id int not null,

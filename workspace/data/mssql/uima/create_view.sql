@@ -1,9 +1,7 @@
 create view $(db_schema).v_document as
-/*
- * We assume the metadata about documents (patient id, date) come from
- * some table in your database.  modify this view to join with that table
- * and get this info
- */
+-- We assume the metadata about documents (patient id, date) come from
+-- some table in your database.  modify this view to join with that table
+-- and get this info
 select analysis_batch, document_id, doc_text, uid, cast(null as int) patient_id, cast(null as datetime) doc_date, cast(null as varchar(256)) doc_title, cast(null as varchar(256)) document_type_name
 from $(db_schema).document;
 go
@@ -19,9 +17,7 @@ GO
 
 create view $(db_schema).v_document_cui_sent
 as
-/*
-this view gives the document info, cui info, and sentence info in which a cui is found
-*/
+-- this view gives the document info, cui info, and sentence info in which a cui is found
 SELECT 
   da.anno_base_id,
   d.analysis_batch,
@@ -39,9 +35,7 @@ INNER JOIN $(db_schema).anno_named_entity  ne ON da.anno_base_id = ne.anno_base_
 INNER JOIN $(db_schema).anno_ontology_concept  o ON o.anno_base_id = ne.anno_base_id 
 left join 
 ( 
-  /*
-  get the sentence that contains the cui
-  */
+  --  get the sentence that contains the cui
   select ac.child_anno_base_id, s.span_begin, s.span_end
   from $(db_schema).anno_contain ac 
   INNER join $(db_schema).anno_base s on ac.parent_anno_base_id = s.anno_base_id

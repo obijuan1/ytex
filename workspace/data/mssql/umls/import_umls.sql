@@ -1,12 +1,9 @@
-/*
- * this is only executed if you don't have umls installed in your db 
- * load the umls mrconso table from a dump file.
- * the following was copied directly from the umls load script.
- * 
- * intentionally do not drop MRCONSO - if it exists then we should use it 
- * instead of overwriting it
- */
+-- this is only executed if you don't have umls installed in your db 
+-- load the umls mrconso table from a dump file.
+-- the following was copied directly from the umls load script.
 
+-- intentionally do not drop MRCONSO - if it exists then we should use it 
+-- instead of overwriting it
 CREATE TABLE $(db_schema).[MRCONSO](
 	[CUI] [nchar](8) NOT NULL,
 	[LAT] [nchar](3) NOT NULL,
@@ -28,22 +25,7 @@ CREATE TABLE $(db_schema).[MRCONSO](
 	[CVF] [int] NULL
 );
 
-CREATE INDEX X_MRCONSO_CUI ON $(db_schema).MRCONSO(CUI);
-
 ALTER TABLE $(db_schema).MRCONSO ADD CONSTRAINT X_MRCONSO_PK  PRIMARY KEY (AUI);
-
-CREATE INDEX X_MRCONSO_SUI ON $(db_schema).MRCONSO(SUI);
-
-CREATE INDEX X_MRCONSO_LUI ON $(db_schema).MRCONSO(LUI);
-
-CREATE INDEX X_MRCONSO_CODE ON $(db_schema).MRCONSO(CODE);
-
-CREATE INDEX X_MRCONSO_SAB_TTY ON $(db_schema).MRCONSO(SAB,TTY);
-
-CREATE INDEX X_MRCONSO_SCUI ON $(db_schema).MRCONSO(SCUI);
-
-CREATE INDEX X_MRCONSO_SDUI ON $(db_schema).MRCONSO(SDUI);
-
 
 CREATE TABLE  $(db_schema).MRSTY (
     CUI	nchar(8) NOT NULL,
@@ -54,8 +36,5 @@ CREATE TABLE  $(db_schema).MRSTY (
     CVF	int 
 );
 
-CREATE INDEX X_MRSTY_CUI ON $(db_schema).MRSTY(CUI);
-
 ALTER TABLE $(db_schema).MRSTY ADD CONSTRAINT X_MRSTY_PK  PRIMARY KEY (ATUI);
 
-CREATE INDEX X_MRSTY_STY ON $(db_schema).MRSTY(STY);

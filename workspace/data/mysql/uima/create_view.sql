@@ -1,8 +1,6 @@
-/*
- * We assume the metadata about documents (patient id, date) come from
- * some table in your database.  modify this view to join with that table
- * and get this info
- */
+-- We assume the metadata about documents (patient id, date) come from
+-- some table in your database.  modify this view to join with that table
+-- and get this info
 create view v_document as
 select analysis_batch, document_id, doc_text, uid, null patient_id, null doc_date, null doc_title, null document_type_name
 from document;
@@ -17,10 +15,7 @@ INNER JOIN ref_uima_type AS ur on ur.uima_type_id = anno.uima_type_id
 ;
 
 
-/*
-this view gives the document info, cui info, and sentence info in which a cui is found.
-this joins with v_document - you may want to inline document for performance
-*/
+-- this view gives the document info, cui info, and sentence info in which a cui is found.
 create view v_document_cui_sent
 as
 SELECT

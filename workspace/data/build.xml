@@ -21,17 +21,12 @@ from dump files.  We look for a umls-[db.type].zip file in the directory
 that contains ytex.  If it exists, we load the umls tables from that file.
 If not, we load the sample umls tables included in the ytex distro
 
-== vacs.all ==
+== uima.all ==
 setup all ytex database tables.  All existing ytex tables
 will be dropped first.
 		
 == configuration ==
 Database connection parameters are taken from ytex.properties.
-  * mysql: For MySQL, you must define the MYSQL_HOME environment variable,
-or specify the directory that contains mysql.exe via the -Dmysql.home option.
-  * oracle: sqlldr must be in the path
-  * sql server: sqlcmd and bcp must be in the path
-These variables are set by setenv.cmd / ytex.profile script
 	]]>
 	</description>
 	<property name="ytex.home" value=".." />
@@ -41,13 +36,7 @@ These variables are set by setenv.cmd / ytex.profile script
 	<property name="umls.catalog" value="${db.name}" />
 	<property name="umls.schema" value="${db.schema}" />
 	<property name="sql.dir" value="./${db.type}" />
-	<property name="sqlcmd.line" value="-d ${db.name} -E -S ${db.host} -v db_schema=${db.schema} -v umls_schema=${umls.schema} -v umls_catalog=${umls.catalog}" />
-	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
-	<property name="sqlplus.line" value="${db.username}/${db.password}@${db.name}" />
 	<property name="umls.zip" value="${ytex.home}/../umls-${db.type}.zip" />
-	<property name="mysql.home" value="${env.MYSQL_HOME}" />
-	<property name="sqlplus.exe" value="sqlplus" />
-	<property name="sqlldr.exe" value="sqlldr" />
 
 
 	<target name="all" depends="umls.all,uima.all" description="call umls.all and uima.all" />
@@ -69,79 +58,46 @@ These variables are set by setenv.cmd / ytex.profile script
 		<echo>db.type ${db.type}</echo>
 	</target>
 
-	<target name="sqlcmd.orcl" if="orcl" description="execute sql script for oracle server">
-		<echo>executing ${sqlcmd.dir}/${sqlcmd.script}</echo>
-		<property name="sqlplus.args" value="" />
-		<!-- append quit to end of file -->
-		<copy file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}" tofile="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" overwrite="yes" />
-		<echo file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" append="yes">
-quit</echo>
-		<exec executable="${sqlplus.exe}" dir="${sql.dir}/${sqlcmd.dir}">
-			<arg line="${sqlplus.line} @${sqlcmd.script}.tmp ${sqlplus.args}" />
-		</exec>
-		<delete file="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}.tmp" />
-	</target>
-	<target name="sqlcmd.mssql" if="mssql" description="execute sql script for ms sql server">
-		<echo>executing ${sqlcmd.dir}/${sqlcmd.script}</echo>
-		<exec executable="sqlcmd" dir="${sql.dir}/${sqlcmd.dir}">
-			<arg line="${sqlcmd.line} -i ${sqlcmd.script}" />
-		</exec>
-	</target>
-	<target name="sqlcmd.mysql" if="mysql" description="execute sql script for mysql">
-		<echo>executing ${sqlcmd.dir}/${sqlcmd.script}</echo>
-		<exec executable="${mysql.home}/mysql" dir="${sql.dir}/${sqlcmd.dir}">
-			<arg line="${mysql.line} -e &quot;source ${sqlcmd.script}&quot;" />
-		</exec>
-	</target>
-
-	<target name="sqlcmd" depends="init,sqlcmd.mysql,sqlcmd.mssql,sqlcmd.orcl" />
-
-	<target name="umls.check.mrconso.mysql" if="mysql" description="see if mrconso table exists">
-		<exec executable="${mysql.home}/mysql" outputproperty="mrconso.out">
-			<arg line="${mysql.line} --skip-column-names --batch -e &quot;show tables from ${umls.schema} like 'MRCONSO'&quot;" />
-		</exec>
+	<target name="umls.check.mrconso" description="set mrconso.exists property if mrconso table can be found">
+		<delete file="${java.io.tmpdir}/mrconso-check.txt" quiet="yes" />
+		<if>
+			<equals arg1="${db.type}" arg2="mysql" />
+			<then>
+				<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" classpathref="${kernel.cp}" output="${java.io.tmpdir}/mrconso-check.txt" print="true" showheaders="false" showtrailers="false">show tables from ${umls.schema} like 'MRCONSO';</sql>
+			</then>
+		</if>
+		<if>
+			<equals arg1="${db.type}" arg2="mssql" />
+			<then>
+				<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" classpathref="${kernel.cp}" output="${java.io.tmpdir}/mrconso-check.txt" print="true" showheaders="false" showtrailers="false">use ${umls.catalog}; SELECT count(*) FROM sys.objects WHERE object_id = OBJECT_ID(N'${umls.schema}.[MRCONSO]');</sql>
+			</then>
+		</if>
+		<if>
+			<equals arg1="${db.type}" arg2="orcl" />
+			<then>
+				<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" classpathref="${kernel.cp}" output="${java.io.tmpdir}/mrconso-check.txt" print="true" showheaders="false" showtrailers="false">select count(*) from all_tables where lower(table_name) = 'mrconso' and lower(owner) = lower('${umls.schema}');</sql>
+			</then>
+		</if>
+		<loadfile srcFile="${java.io.tmpdir}/mrconso-check.txt" property="mrconso.out" />
+		<delete file="${java.io.tmpdir}/mrconso-check.txt" />
+		<condition property="mrconso.equals" value="mrconso" else="1">
+			<equals arg1="mysql" arg2="${db.type}" />
+		</condition>
 		<condition property="mrconso.exists">
-			<equals arg1="mrconso" arg2="${mrconso.out}" casesensitive="false" trim="true" />
+			<equals arg1="${mrconso.equals}" arg2="${mrconso.out}" casesensitive="false" trim="true" />
 		</condition>
 		<echo>${mrconso.exists}</echo>
 	</target>
-	<target name="umls.check.mrconso.mssql" if="mssql" description="see if mrconso table exists">
-		<exec executable="sqlcmd" outputproperty="mrconso.out">
-			<arg line="-d ${umls.catalog} -E -S ${db.host} -h-1 -W -Q &quot;set nocount on; SELECT count(*) FROM sys.objects WHERE object_id = OBJECT_ID(N'${umls.schema}.[MRCONSO]')&quot;" />
-		</exec>
-		<condition property="mrconso.exists">
-			<equals arg1="1" arg2="${mrconso.out}" casesensitive="false" trim="true" />
-		</condition>
-		<echo>${mrconso.exists}</echo>
-	</target>
-	<target name="umls.check.mrconso.orcl" if="orcl" description="see if mrconso table exists">
-		<exec executable="${sqlplus.exe}" dir="${sql.dir}/umls">
-			<arg line="${sqlplus.line} @check_mrconso.sql ${umls.schema}" />
-		</exec>
-		<loadfile srcFile="${sql.dir}/umls/mrconso-check.txt" property="mrconso.out" />
-		<condition property="mrconso.exists">
-			<equals arg1="1" arg2="${mrconso.out}" casesensitive="false" trim="true" />
-		</condition>
-		<echo>mrconso.exists: ${mrconso.exists}</echo>
-	</target>
-	<target name="umls.all" depends="init" description="setup umls tables from dump or db, depending on existence of mrconso">
-		<!-- 
-		somewhat convoluted: we need to call init so that we can set the database type flags (mysql, mssql, orcl)
-		we then can call umls.setup, which can call all the targets to set mrconso.exists attribute
-		which then controls which target gets called (dump/db)
-		-->
-		<antcall target="umls.setup" />
-	</target>
-	<target name="umls.setup" depends="umls.check.mrconso.mysql,umls.check.mrconso.orcl,umls.check.mrconso.mssql">
+
+	<target name="umls.all" depends="init,umls.check.mrconso" description="setup umls tables from dump or db, depending on existence of mrconso">
 		<antcall target="umls.setup.dump" />
 		<antcall target="umls.setup.db" />
 	</target>
 	<target name="umls.setup.dump" depends="init" unless="mrconso.exists" description="unpack umls_aui_fword and mrconso from dump, and setup ctakes umls lookup view">
 		<antcall target="umls.init" />
 		<antcall target="unpack.umls" />
-		<antcall target="umls.import.mssql" />
-		<antcall target="umls.import.mysql" />
-		<antcall target="umls.import.orcl" />
+		<antcall target="umls.import" />
+		<antcall target="umls.index" />
 		<antcall target="umls.finish" />
 	</target>
 	<target name="umls.setup.db" depends="init" if="mrconso.exists" description="setup umls_aui_fword from mrconso in db, and setup ctakes umls lookup view">
@@ -157,71 +113,69 @@ quit</echo>
 		</java>
 	</target>
 	<target name="unpack.umls.zip" if="umls.zip.available">
-		<unzip src="${umls.zip}" dest="${db.type}/umls" />
+		<unzip src="${umls.zip}" dest="." />
 	</target>
 	<target name="unpack.umls" depends="init,unpack.umls.zip" description="unpack umls from archive" />
 
-	<target name="umls.import.mssql" if="mssql">
+	<target name="umls.import" depends="init.conn">
 		<echo>import umls tables into ${umls.schema} schema.  Be patient, this can take a while.</echo>
-		<exec executable="sqlcmd" dir="mssql/umls">
-			<arg line="-d ${umls.catalog} -E -S ${db.host} -v db_schema=${umls.schema} -i import_umls.sql" />
-		</exec>
-		<exec executable="bcp" dir="${sql.dir}/umls">
-			<arg line="${umls.catalog}.${umls.schema}.MRCONSO in MRCONSO.bcp -T -S ${db.host} -n" />
-		</exec>
-		<exec executable="bcp" dir="${sql.dir}/umls">
-			<arg line="${umls.catalog}.${umls.schema}.MRSTY in MRSTY.bcp -T -S ${db.host} -n" />
-		</exec>
-		<exec executable="bcp" dir="${sql.dir}/umls">
-			<arg line="${db.name}.${db.schema}.umls_aui_fword in umls_aui_fword.bcp -T -S ${db.host} -n" />
-		</exec>
-	</target>
-	<target name="umls.import.orcl" if="orcl">
-		<echo>import umls tables into ${umls.schema} schema.  Be patient, this can take a while.</echo>
-		<antcall target="sqlcmd">
+		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="umls" />
 			<param name="sqlcmd.script" value="import_umls.sql" />
 		</antcall>
-		<exec executable="${sqlldr.exe}" dir="${sql.dir}/umls" failonerror="yes">
-			<arg line="${sqlplus.line} control=MRCONSO.ctl" />
-		</exec>
-		<exec executable="${sqlldr.exe}" dir="${sql.dir}/umls" failonerror="yes">
-			<arg line="${sqlplus.line} control=MRSTY.ctl" />
-		</exec>
-		<exec executable="${sqlldr.exe}" dir="${sql.dir}/umls" failonerror="yes">
-			<arg line="${sqlplus.line} control=umls_aui_fword.ctl" />
-		</exec>
-	</target>
-	<target name="umls.import.mysql" if="mysql">
-		<echo>import umls tables into ${umls.schema} schema.  Be patient, this can take a while</echo>
-		<exec executable="${mysql.home}/mysql" dir="${sql.dir}/umls">
-			<arg line="--user=${db.username} --password=${db.password} --host=${db.host} ${umls.schema} -e &quot;source import_umls.sql&quot;" />
-		</exec>
-		<echo>import umls_aui_fword table</echo>
-		<exec executable="${mysql.home}/mysql" dir="${sql.dir}/umls">
-			<arg line="${mysql.line} -e &quot;load data local infile 'umls_aui_fword.txt' into table umls_aui_fword&quot;" />
-		</exec>
+		<antcall target="jdl">
+			<param name="jdl.data" value="MRCONSO.RRF" />
+			<param name="jdl.format" value="mrconso.xml" />
+		</antcall>
+		<antcall target="jdl">
+			<param name="jdl.data" value="MRSTY.RRF" />
+			<param name="jdl.format" value="mrsty.xml" />
+		</antcall>
+		<antcall target="jdl">
+			<param name="jdl.data" value="umls_aui_fword.txt" />
+			<param name="jdl.format" value="umls_aui_fword.xml" />
+		</antcall>
 	</target>
 	<target name="umls.init" description="drop and create umls tables">
+		<fail message="when importing umls from dump, you must use the same database and schema as ytex tables: unset umls.schema and db.schema in ytex.properties">
+			<condition>
+				<or>
+					<not>
+						<equals arg1="${umls.schema}" arg2="${db.schema}" casesensitive="false" />
+					</not>
+					<and>
+						<equals arg1="${db.type}" arg2="${mssql}" casesensitive="false" />
+						<not>
+							<equals arg1="${umls.catalog}" arg2="${db.name}" casesensitive="false" />
+						</not>
+					</and>
+				</or>
+			</condition>
+		</fail>
+		<condition property="drop.sql.onerror" value="continue" else="abort">
+			<equals arg1="${db.type}" arg2="orcl" />
+		</condition>
 		<echo>drop umls views</echo>
-		<antcall target="sqlcmd">
+		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="./umls" />
 			<param name="sqlcmd.script" value="drop_view.sql" />
+			<param name="sql.onerror" value="${drop.sql.onerror}" />
 		</antcall>
 		<echo>drop ytex umls tables</echo>
-		<antcall target="sqlcmd">
+		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="./umls" />
 			<param name="sqlcmd.script" value="drop_tables.sql" />
+			<param name="sql.onerror" value="${drop.sql.onerror}" />
 		</antcall>
 		<echo>create ytex umls tables</echo>
-		<antcall target="sqlcmd">
+		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="./umls" />
 			<param name="sqlcmd.script" value="create_tables.sql" />
 		</antcall>
 	</target>
 	<target name="umls.create" description="create mrconso table">
 		<echo>create nlm's umls tables</echo>
-		<antcall target="sqlcmd">
+		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="./umls" />
 			<param name="sqlcmd.script" value="umls.sql" />
 		</antcall>
@@ -233,77 +187,174 @@ quit</echo>
 			</filterset>
 		</copy>
 	</target>
+	<target name="umls.index" description="index nlm umls tables, create lookup view">
+		<echo>index umls tables</echo>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="./umls" />
+			<param name="sqlcmd.script" value="index_umls.sql" />
+		</antcall>
+	</target>
 	<target name="umls.finish" depends="umls.finish.template" description="index umls tables, create lookup view">
 		<echo>index umls tables</echo>
-		<antcall target="sqlcmd">
+		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="./umls" />
 			<param name="sqlcmd.script" value="create_indices.sql" />
 		</antcall>
 		<echo>create lookup view</echo>
-		<antcall target="sqlcmd">
+		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="./umls" />
 			<param name="sqlcmd.script" value="create_view.sql" />
 		</antcall>
 	</target>
 	<!-- uima script targets -->
+	<target name="jdbc.sqlcmd">
+		<property name="sql.onerror" value="abort" />
+		<property name="sql.delimiter" value=";" />
+		<property name="sql.catalog" value="${db.name}" />
+		<property name="sql.schema" value="${db.schema}" />
+		<property name="sql.file" value="${sql.dir}/${sqlcmd.dir}/${sqlcmd.script}" />
+		<property name="sql.src" value="${java.io.tmpdir}/${sqlcmd.script}" />
+		<if>
+			<equals arg1="${db.type}" arg2="mssql" />
+			<then>
+				<echo file="${java.io.tmpdir}/use.sql">
+use ${sql.catalog}
+${sql.delimiter}					
+</echo>
+				<copy file="${sql.file}" tofile="${sql.src}" overwrite="true">
+					<!-- for mssql replace db_schema and go -->
+					<filterset begintoken="$(" endtoken=")">
+						<filter token="db_schema" value="${db.schema}" />
+						<filter token="umls_catalog" value="${umls.catalog}" />
+						<filter token="umls_schema" value="${umls.schema}" />
+					</filterset>
+					<filterchain>
+						<concatfilter prepend="${java.io.tmpdir}/use.sql" />
+						<tokenfilter>
+							<replaceregex pattern="\Ago\z" flags="gi" replace="" />
+							<replaceregex pattern="\Wgo\W" flags="gi" replace="" />
+						</tokenfilter>
+					</filterchain>
+				</copy>
+			</then>
+			<else>
+				<if>
+					<equals arg1="${db.type}" arg2="mysql" />
+					<then>
+						<echo file="${java.io.tmpdir}/use.sql">
+use ${sql.schema}
+${sql.delimiter}					
+</echo>
+					</then>
+				</if>
+				<if>
+					<equals arg1="${db.type}" arg2="orcl" />
+					<then>
+						<echo file="${java.io.tmpdir}/use.sql">
+ALTER SESSION SET CURRENT_SCHEMA=${sql.schema}
+${sql.delimiter}					
+</echo>
+					</then>
+				</if>
+				<copy file="${sql.file}" tofile="${sql.src}" overwrite="true">
+					<!-- for oracle and mysql use the correct schema -->
+					<filterchain>
+						<concatfilter prepend="${java.io.tmpdir}/use.sql" />
+					</filterchain>
+				</copy>
+			</else>
+		</if>
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${sql.src}" onerror="${sql.onerror}" classpathref="${kernel.cp}" delimiter="${sql.delimiter}" />
+		<delete file="${sql.src}" />
+		<delete file="${java.io.tmpdir}/use.sql" />
+	</target>
+	<target name="jdl" description="load data with java data loader.  used instead of native database utilities.">
+		<tempfile property="jdl.format.file" suffix=".xml" deleteonexit="true" />
+		<copy file="${jdl.format}" tofile="${jdl.format.file}" overwrite="true">
+			<filterset>
+				<filter token="db.schema" value="${db.schema}" />
+				<filter token="umls.catalog" value="${umls.catalog}" />
+				<filter token="umls.schema" value="${umls.schema}" />
+			</filterset>
+		</copy>
+		<java classpathref="${kernel.cp}" classname="my.mas.AppMain" fork="yes" failonerror="yes">
+			<jvmarg value="-Dfile.encoding=UTF-8" />
+			<arg value="-c" />
+			<arg value="conn.xml" />
+			<arg value="-d" />
+			<arg value="${jdl.data}" />
+			<arg value="-l" />
+			<arg value="${jdl.format.file}" />
+		</java>
+	</target>
 	<target name="uima.all" description="drop and create ytex uima tables" depends="uima.drop,uima.create" />
 	<target name="uima.drop" description="drop ytex uima tables">
+		<!-- for oracle we don't check existence before dropping objects, so just continue in case of errors -->
+		<condition property="sql.onerror" value="continue" else="abort">
+			<equals arg1="${db.type}" arg2="orcl" />
+		</condition>
 		<for list="drop_view.sql,drop_document.sql,drop_reference.sql" param="sqlcmd.script">
 			<sequential>
-				<antcall target="sqlcmd">
+				<antcall target="jdbc.sqlcmd">
 					<param name="sqlcmd.dir" value="uima" />
 					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-	<target name="uima.create" description="create ytex uima tables">
+	<target name="uima.create" depends="init" description="create ytex uima tables">
 		<for list="create_reference.sql,create_document.sql,create_view.sql,insert_reference.sql" param="sqlcmd.script">
 			<sequential>
-				<antcall target="sqlcmd">
+				<antcall target="jdbc.sqlcmd">
 					<param name="sqlcmd.dir" value="uima" />
 					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
 				</antcall>
 			</sequential>
 		</for>
+		<antcall target="uima.create.trigger" />
 		<antcall target="examples.load" />
 	</target>
-	<target name="examples.load" depends="init,examples.load.orcl,examples.load.mssql">
-		<antcall target="sqlcmd">
+	<target name="uima.create.trigger" if="orcl" description="create insert triggers for oracle">
+		<for list="create_reference_trg.sql,create_document_trg.sql" param="sqlcmd.script">
+			<sequential>
+				<antcall target="jdbc.sqlcmd">
+					<param name="sqlcmd.dir" value="uima" />
+					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
+					<param name="sql.delimiter" value="/" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="examples.load" depends="init,init.conn">
+		<antcall target="jdl">
+			<param name="jdl.data" value="examples/fracture_demo.txt" />
+			<param name="jdl.format" value="examples/fracture_demo.xml" />
+		</antcall>
+		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="uima" />
 			<param name="sqlcmd.script" value="fracture_demo.sql" />
 		</antcall>
 	</target>
-	<target name="examples.load.orcl" depends="init" if="orcl" description="load example data with sqlldr">
-		<exec executable="${sqlldr.exe}" dir="orcl/uima" failonerror="yes">
-			<arg line="${sqlplus.line} control=fracture_demo.ctl" />
-		</exec>
+	<target name="init.conn">
+		<copy file="conn.xml.template" tofile="conn.xml" overwrite="yes">
+			<filterset>
+				<filter token="db.driver" value="${db.driver}" />
+				<filter token="db.url" value="${db.url}" />
+				<filter token="db.username" value="${db.username}" />
+				<filter token="db.password" value="${db.password}" />
+			</filterset>
+		</copy>
 	</target>
-	<target name="examples.load.mssql" depends="init" if="mssql" description="load example data with bcp">
-		<exec executable="bcp" dir="examples">
-			<arg line="${db.name}.${db.schema}.fracture_demo in fracture_demo.txt -T -S ${db.host} -c" />
-		</exec>
-	</target>
-
 	<target name="kernel.drop" description="create tables for data mining">
-		<for list="drop_tables.sql" param="sqlcmd.script">
-			<sequential>
-				<antcall target="sqlcmd">
-					<param name="sqlcmd.dir" value="kernel" />
-					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
-				</antcall>
-			</sequential>
-		</for>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="kernel" />
+			<param name="sqlcmd.script" value="drop_tables.sql" />
+		</antcall>
 	</target>
 	<target name="kernel.create" description="create tables for data mining">
-		<for list="create_tables.sql" param="sqlcmd.script">
-			<sequential>
-				<antcall target="sqlcmd">
-					<param name="sqlcmd.dir" value="kernel" />
-					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
-				</antcall>
-			</sequential>
-		</for>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="kernel" />
+			<param name="sqlcmd.script" value="create_tables.sql" />
+		</antcall>
 	</target>
-
 </project>
