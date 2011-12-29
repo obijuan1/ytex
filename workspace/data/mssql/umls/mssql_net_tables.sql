@@ -1,6 +1,4 @@
-/* adapted from oracle/mysql umls load scripts */
 
-DROP TABLE $(db_schema).SRDEF;
 CREATE TABLE  $(db_schema).SRDEF (
 	RT	VARCHAR (3)  NOT NULL,
 	UI	CHAR (4)  NOT NULL,
@@ -14,7 +12,7 @@ CREATE TABLE  $(db_schema).SRDEF (
 	RIN	VARCHAR (23) 
 ) ;
 
-DROP TABLE $(db_schema).SRFIL;
+
 CREATE TABLE  $(db_schema).SRFIL (
 	FIL	VARCHAR (7)  NOT NULL,
 	DES	VARCHAR (56)  NOT NULL,
@@ -25,7 +23,7 @@ CREATE TABLE  $(db_schema).SRFIL (
 ) ;
 
 
-DROP TABLE $(db_schema).SRFLD;
+
 CREATE TABLE  $(db_schema).SRFLD (
 	COL	VARCHAR (3)  NOT NULL,
 	DES	VARCHAR (32)  NOT NULL,
@@ -33,7 +31,7 @@ CREATE TABLE  $(db_schema).SRFLD (
 	FIL	VARCHAR (19)  NOT NULL
 ) ;
 
-DROP TABLE $(db_schema).SRSTR;
+
 CREATE TABLE  $(db_schema).SRSTR (
 	STY_RL1	VARCHAR (41)  NOT NULL,
 	RL	VARCHAR (23)  NOT NULL,
@@ -41,14 +39,14 @@ CREATE TABLE  $(db_schema).SRSTR (
 	LS	VARCHAR (3)  NOT NULL
 ) ;
 
-DROP TABLE $(db_schema).SRSTRE1;
+
 CREATE TABLE  $(db_schema).SRSTRE1 (
 	UI1	CHAR (4)  NOT NULL,
 	UI2	CHAR (4)  NOT NULL,
 	UI3	CHAR (4)  NOT NULL
 ) ;
 
-DROP TABLE $(db_schema).SRSTRE2;
+
 CREATE TABLE  $(db_schema).SRSTRE2 (
 	STY1	VARCHAR (41)  NOT NULL,
 	RL	VARCHAR (23)  NOT NULL,

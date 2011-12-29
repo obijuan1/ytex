@@ -1,6 +1,3 @@
-/* adapted from oracle/mysql umls load scripts */
-
-
 CREATE TABLE  $(db_schema).MRCOC (
     CUI1	char(8) NOT NULL,
     AUI1	varchar(9) NOT NULL,

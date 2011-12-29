@@ -37,6 +37,9 @@ Database connection parameters are taken from ytex.properties.
 	<property name="umls.schema" value="${db.schema}" />
 	<property name="sql.dir" value="./${db.type}" />
 	<property name="umls.zip" value="${ytex.home}/../umls.zip" />
+	<property name="meta.tables" value="MRDOC,MRSAB,MRSTY,MRCONSO,MRREL,MRXNS_ENG,MRXNW_ENG" />
+	<!-- SU is in a different format -->
+	<property name="net.tables" value="SRDEF,SRFIL,SRFLD,SRSTR,SRSTRE1,SRSTRE2" />
 
 
 	<target name="all" depends="dbping,umls.all,uima.all" description="call umls.all and uima.all" />
@@ -137,16 +140,51 @@ Database connection parameters are taken from ytex.properties.
 				</and>
 			</condition>
 		</fail>
-		<!-- do the import -->
-		<antcall target="umls.mssql.import" />
+		<!-- do the import if necessary -->
+		<if>
+			<isset property="umls.mssql.import" />
+			<then>
+				<antcall target="umls.mssql.import" />
+			</then>
+		</if>
 		<!-- set the flag that says that mrconso table exists -->
 		<property name="mrconso.exists" value="yes" />
 	</target>
-	<target name="umls.mssql.import" if="umls.mssql.import" description="create mssql umls tables, import from RRF files">
-		<antcall target="umls.import.meta">
+	<target name="umls.mssql.import" description="create mssql umls tables, import from RRF files" depends="init.conn">
+		<echo>create umls tables</echo>
+		<for list="mssql_drop.sql,mssql_tables.sql,mssql_net_tables.sql" param="sqlcmd.script">
+			<sequential>
+				<antcall target="jdbc.sqlcmd">
+					<param name="sqlcmd.dir" value="umls" />
+					<param name="db.name" value="${umls.catalog}" />
+					<param name="db.schema" value="${umls.schema}" />
+					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
+				</antcall>
+			</sequential>
+		</for>
+		<echo>import umls tables</echo>
+		<for list="${meta.tables}" param="rrf.base">
+			<sequential>
+				<antcall target="jdl">
+					<param name="jdl.data" value="${rrf.home}/META/@{rrf.base}.RRF" />
+					<param name="jdl.format" value="${basedir}/umls/@{rrf.base}.xml" />
+				</antcall>
+			</sequential>
+		</for>
+		<for list="${net.tables}" param="rrf.base">
+			<sequential>
+				<antcall target="jdl">
+					<param name="jdl.data" value="${rrf.home}/NET/@{rrf.base}" />
+					<param name="jdl.format" value="${basedir}/umls/@{rrf.base}.xml" />
+				</antcall>
+			</sequential>
+		</for>
+		<echo>index umls tables</echo>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="umls" />
 			<param name="db.name" value="${umls.catalog}" />
 			<param name="db.schema" value="${umls.schema}" />
-			<param name="umls.data" value="${rrf.home}/META" />
+			<param name="sqlcmd.script" value="mssql_indexes.sql" />
 		</antcall>
 	</target>
 	<target name="umls.import.meta" description="create and import MRCONSO and MRSTY tables" depends="init.conn">
@@ -326,6 +364,8 @@ ${sql.delimiter}
 		<delete file="${java.io.tmpdir}/use.sql" />
 	</target>
 	<target name="jdl" description="load data with java data loader.  used instead of native database utilities.">
+		<echo>jdl.format ${jdl.format}</echo>
+		<echo>jdl.data ${jdl.data}</echo>
 		<tempfile property="jdl.format.file" suffix=".xml" deleteonexit="true" />
 		<condition property="umls.prefix" value="${umls.catalog}.${umls.schema}" else="${umls.schema}">
 			<isset property="mssql" />

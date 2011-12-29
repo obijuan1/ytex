@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="@umls.prefix@.SRSTR" commit="10000" delimiter="|">
+		<column name="STY_RL1" />
+		<column name="RL" />
+		<column name="STY_RL2" />
+		<column name="LS" />
+	</csv>
+</load>

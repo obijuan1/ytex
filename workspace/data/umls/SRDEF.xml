@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="@umls.prefix@.SRDEF" commit="10000" delimiter="|">
+		<column name="RT" />
+		<column name="UI" />
+		<column name="STY_RL" />
+		<column name="STN_RTN" />
+		<column name="DEF" />
+		<column name="EX" />
+		<column name="UN" />
+		<column name="NH" />
+		<column name="ABR" />
+		<column name="RIN" />
+	</csv>
+</load>

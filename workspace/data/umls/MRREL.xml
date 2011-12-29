@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="@umls.prefix@.MRREL" commit="10000" delimiter="|">
+		<column name="CUI1" />
+		<column name="AUI1" />
+		<column name="STYPE1" />
+		<column name="REL" />
+		<column name="CUI2" />
+		<column name="AUI2" />
+		<column name="STYPE2" />
+		<column name="RELA" />
+		<column name="RUI" />
+		<column name="SRUI" />
+		<column name="SAB" />
+		<column name="SL" />
+		<column name="RG" />
+		<column name="DIR" />
+		<column name="SUPPRESS" />
+		<column name="CVF" />
+	</csv>
+</load>

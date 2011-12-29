@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="@umls.prefix@.MRSAB" commit="10000" delimiter="|">
+		<column name="VCUI" />
+		<column name="RCUI" />
+		<column name="VSAB" />
+		<column name="RSAB" />
+		<column name="SON" />
+		<column name="SF" />
+		<column name="SVER" />
+		<column name="VSTART" />
+		<column name="VEND" />
+		<column name="IMETA" />
+		<column name="RMETA" />
+		<column name="SLC" />
+		<column name="SCC" />
+		<column name="SRL" />
+		<column name="TFR" />
+		<column name="CFR" />
+		<column name="CXTY" />
+		<column name="TTYL" />
+		<column name="ATNL" />
+		<column name="LAT" />
+		<column name="CENC" />
+		<column name="CURVER" />
+		<column name="SABIN" />
+		<column name="SSN" />
+		<column name="SCIT" />
+	</csv>
+</load>

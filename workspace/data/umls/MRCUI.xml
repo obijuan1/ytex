@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="@umls.prefix@.MRCUI" commit="10000" delimiter="|">
+		<column name="CUI1" />
+		<column name="VER" />
+		<column name="REL" />
+		<column name="RELA" />
+		<column name="MAPREASON" />
+		<column name="CUI2" />
+		<column name="MAPIN" />
+	</csv>
+</load>
