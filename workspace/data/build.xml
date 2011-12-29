@@ -64,6 +64,7 @@ Database connection parameters are taken from ytex.properties.
 		<java classname="ytex.tools.DBPing" fork="yes" classpathref="${kernel.cp}" failonerror="yes">
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
+			<arg value="${ytex.properties}" />
 		</java>
 	</target>
 
