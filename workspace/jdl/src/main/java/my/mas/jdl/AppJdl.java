@@ -61,7 +61,7 @@ public class AppJdl {
 							CsvLoader csvLoader = new CsvLoader(csv, new File(srcData));
 							csvLoader.dataInsert(jdlConnection);
 						} catch (FileNotFoundException e) {
-							e.printStackTrace();
+							throw new RuntimeException(e);
 						}
 					}
 					XmlLoadType xml = load.getXml();
