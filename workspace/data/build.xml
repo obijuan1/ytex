@@ -39,7 +39,7 @@ Database connection parameters are taken from ytex.properties.
 	<property name="umls.zip" value="${ytex.home}/../umls.zip" />
 
 
-	<target name="all" depends="umls.all,uima.all" description="call umls.all and uima.all" />
+	<target name="all" depends="dbping,umls.all,uima.all" description="call umls.all and uima.all" />
 	<target name="init" description="initialize flags indicating which db is in use">
 		<condition property="mysql">
 			<equals arg1="${db.type}" arg2="mysql" />
@@ -51,11 +51,20 @@ Database connection parameters are taken from ytex.properties.
 			<equals arg1="${db.type}" arg2="orcl" />
 		</condition>
 		<available file="${umls.zip}" property="umls.zip.available" />
+		<condition property="umls.data" value="${java.io.tmpdir}" else="${basedir}">
+			<isset property="umls.zip.available" />
+		</condition>
 	</target>
 	<target name="test" depends="init">
 		<echo>umls.zip.available ${umls.zip.available}</echo>
 		<echo>db.schema ${db.schema}</echo>
 		<echo>db.type ${db.type}</echo>
+	</target>
+	<target name="dbping" description="verify db connection params">
+		<java classname="ytex.tools.DBPing" fork="yes" classpathref="${kernel.cp}" failonerror="yes">
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
 	</target>
 
 	<target name="umls.check.mrconso" description="set mrconso.exists property if mrconso table can be found">
@@ -86,25 +95,83 @@ Database connection parameters are taken from ytex.properties.
 		<condition property="mrconso.exists">
 			<equals arg1="${mrconso.equals}" arg2="${mrconso.out}" casesensitive="false" trim="true" />
 		</condition>
-		<echo>${mrconso.exists}</echo>
+		<echo>mrconso.exists = ${mrconso.exists}</echo>
 	</target>
 
-	<target name="umls.all" depends="init,umls.check.mrconso" description="setup umls tables from dump or db, depending on existence of mrconso">
-		<antcall target="umls.setup.dump" />
-		<antcall target="umls.setup.db" />
+	<target name="umls.all" depends="init,umls.mssql.setup,umls.check.mrconso" description="setup umls tables from dump or db, depending on existence of mrconso">
+		<echo>mrconso.exists = ${mrconso.exists}</echo>
+		<if>
+			<isset property="mrconso.exists" />
+			<then>
+				<antcall target="umls.setup.db" />
+			</then>
+			<else>
+				<antcall target="umls.setup.dump" />
+			</else>
+		</if>
 	</target>
-	<target name="umls.setup.dump" depends="init" unless="mrconso.exists" description="unpack umls_aui_fword and mrconso from dump, and setup ctakes umls lookup view">
-		<antcall target="umls.init" />
-		<antcall target="unpack.umls" />
-		<antcall target="umls.import" />
-		<antcall target="umls.index" />
-		<antcall target="umls.finish" />
+	<target name="umls.mssql.setup" depends="init,umls.check.mrconso" description="setup umls from RRF files for mssql">
+		<!--
+		perform import if mrconso table does not exist
+		and this is ms sql server setup
+		and rrf.home is set 
+		-->
+		<condition property="umls.mssql.import">
+			<and>
+				<isset property="mssql" />
+				<isset property="rrf.home" />
+				<not>
+					<isset property="mrconso.exists" />
+				</not>
+			</and>
+		</condition>
+		<!-- abort if we can't find the RRF files -->
+		<fail message="could not find ${rrf.home}/META/MRCONSO.RRF">
+			<condition>
+				<and>
+					<isset property="umls.mssql.import" />
+					<not>
+						<available file="${rrf.home}/META/MRCONSO.RRF" />
+					</not>
+				</and>
+			</condition>
+		</fail>
+		<!-- do the import -->
+		<antcall target="umls.mssql.import" />
+		<!-- set the flag that says that mrconso table exists -->
+		<property name="mrconso.exists" value="yes" />
 	</target>
-	<target name="umls.setup.db" depends="init" if="mrconso.exists" description="setup umls_aui_fword from mrconso in db, and setup ctakes umls lookup view">
-		<antcall target="umls.init" />
-		<antcall target="umls.setupAuiFword" />
-		<antcall target="umls.finish" />
+	<target name="umls.mssql.import" if="umls.mssql.import" description="create mssql umls tables, import from RRF files">
+		<antcall target="umls.import.meta">
+			<param name="db.name" value="${umls.catalog}" />
+			<param name="db.schema" value="${umls.schema}" />
+			<param name="umls.data" value="${rrf.home}/META" />
+		</antcall>
 	</target>
+	<target name="umls.import.meta" description="create and import MRCONSO and MRSTY tables" depends="init.conn">
+		<echo>create umls tables</echo>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="umls" />
+			<param name="sqlcmd.script" value="import_umls.sql" />
+		</antcall>
+		<echo>import MRCONSO</echo>
+		<antcall target="jdl">
+			<param name="jdl.data" value="${umls.data}/MRCONSO.RRF" />
+			<param name="jdl.format" value="${basedir}/umls/MRCONSO.xml" />
+		</antcall>
+		<echo>import MRSTY</echo>
+		<antcall target="jdl">
+			<param name="jdl.data" value="${umls.data}/MRSTY.RRF" />
+			<param name="jdl.format" value="${basedir}/umls/MRSTY.xml" />
+		</antcall>
+		<echo>index umls tables</echo>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="./umls" />
+			<param name="sqlcmd.script" value="index_umls.sql" />
+		</antcall>
+	</target>
+	<target name="umls.setup.dump" depends="umls.init,umls.unpack,umls.import.meta,umls.import.auiFword,umls.cleanup,umls.finish" unless="mrconso.exists" description="unpack umls_aui_fword and mrconso from dump, and setup ctakes umls lookup view" />
+	<target name="umls.setup.db" depends="umls.init,umls.setupAuiFword,umls.finish" if="mrconso.exists" description="setup umls_aui_fword from mrconso in db, and setup ctakes umls lookup view" />
 	<target name="umls.setupAuiFword" depends="init" description="setup umls_aui_fword from mrconso">
 		<echo>setting up umls_aui_fword table. please be patient - this can take a while</echo>
 		<java classname="ytex.tools.SetupAuiFirstWord" fork="yes" classpathref="${kernel.cp}" failonerror="yes">
@@ -112,44 +179,40 @@ Database connection parameters are taken from ytex.properties.
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	<target name="unpack.umls.zip" if="umls.zip.available">
-		<unzip src="${umls.zip}" dest="." />
+	<target name="umls.unpack" if="umls.zip.available" description="unpack umls from archive">
+		<unzip src="${umls.zip}" dest="${java.io.tmpdir}" />
 	</target>
-	<target name="unpack.umls" depends="init,unpack.umls.zip" description="unpack umls from archive" />
-
-	<target name="umls.import" depends="init.conn">
+	<target name="umls.cleanup" if="umls.zip.available" description="delete unpacked umls files">
+		<delete quiet="yes">
+			<fileset dir="${java.io.tmpdir}" includes="MRREL.RRF,MRCONSO.RRF,MRSTY.RRF,umls_aui_fword.txt" />
+		</delete>
+	</target>
+	<target name="umls.import.auiFword" depends="init.conn">
 		<echo>import umls tables into ${umls.schema} schema.  Be patient, this can take a while.</echo>
-		<antcall target="jdbc.sqlcmd">
-			<param name="sqlcmd.dir" value="umls" />
-			<param name="sqlcmd.script" value="import_umls.sql" />
-		</antcall>
 		<antcall target="jdl">
-			<param name="jdl.data" value="MRCONSO.RRF" />
-			<param name="jdl.format" value="mrconso.xml" />
-		</antcall>
-		<antcall target="jdl">
-			<param name="jdl.data" value="MRSTY.RRF" />
-			<param name="jdl.format" value="mrsty.xml" />
-		</antcall>
-		<antcall target="jdl">
-			<param name="jdl.data" value="umls_aui_fword.txt" />
+			<param name="jdl.data" value="${umls.data}/umls_aui_fword.txt" />
 			<param name="jdl.format" value="umls_aui_fword.xml" />
 		</antcall>
 	</target>
 	<target name="umls.init" description="drop and create umls tables">
 		<fail message="when importing umls from dump, you must use the same database and schema as ytex tables: unset umls.schema and db.schema in ytex.properties">
 			<condition>
-				<or>
+				<and>
 					<not>
-						<equals arg1="${umls.schema}" arg2="${db.schema}" casesensitive="false" />
+						<isset property="mrconso.exists" />
 					</not>
-					<and>
-						<equals arg1="${db.type}" arg2="${mssql}" casesensitive="false" />
+					<or>
 						<not>
-							<equals arg1="${umls.catalog}" arg2="${db.name}" casesensitive="false" />
+							<equals arg1="${umls.schema}" arg2="${db.schema}" casesensitive="false" />
 						</not>
-					</and>
-				</or>
+						<and>
+							<equals arg1="${db.type}" arg2="${mssql}" casesensitive="false" />
+							<not>
+								<equals arg1="${umls.catalog}" arg2="${db.name}" casesensitive="false" />
+							</not>
+						</and>
+					</or>
+				</and>
 			</condition>
 		</fail>
 		<condition property="drop.sql.onerror" value="continue" else="abort">
@@ -186,13 +249,6 @@ Database connection parameters are taken from ytex.properties.
 				<filter token="UMLS_SCHEMA" value="${umls.schema}" />
 			</filterset>
 		</copy>
-	</target>
-	<target name="umls.index" description="index nlm umls tables, create lookup view">
-		<echo>index umls tables</echo>
-		<antcall target="jdbc.sqlcmd">
-			<param name="sqlcmd.dir" value="./umls" />
-			<param name="sqlcmd.script" value="index_umls.sql" />
-		</antcall>
 	</target>
 	<target name="umls.finish" depends="umls.finish.template" description="index umls tables, create lookup view">
 		<echo>index umls tables</echo>
@@ -270,11 +326,12 @@ ${sql.delimiter}
 	</target>
 	<target name="jdl" description="load data with java data loader.  used instead of native database utilities.">
 		<tempfile property="jdl.format.file" suffix=".xml" deleteonexit="true" />
+		<condition property="umls.prefix" value="${umls.catalog}.${umls.schema}" else="${umls.schema}">
+			<isset property="mssql" />
+		</condition>
 		<copy file="${jdl.format}" tofile="${jdl.format.file}" overwrite="true">
 			<filterset>
-				<filter token="db.schema" value="${db.schema}" />
-				<filter token="umls.catalog" value="${umls.catalog}" />
-				<filter token="umls.schema" value="${umls.schema}" />
+				<filter token="umls.prefix" value="${umls.prefix}" />
 			</filterset>
 		</copy>
 		<java classpathref="${kernel.cp}" classname="my.mas.AppMain" fork="yes" failonerror="yes">

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="@db.schema@.umls_aui_fword" commit="10000" delimiter="&#009;">
+		<column name="aui" />
+		<column name="fword" />
+		<column name="fstem" />
+		<column name="tok_str" />
+		<column name="stem_str" />
+	</csv>
+</load>
