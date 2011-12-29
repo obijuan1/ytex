@@ -242,6 +242,7 @@ public class SetupAuiFirstWord {
 			// batch insert
 			if (listFword.size() > 0) {
 				umlsDao.insertAuiFirstWord(listFword);
+				log.info("inserted " + listFword.size() + " rows");
 			}
 		} while (listAuiStr.size() > 0);
 	}
