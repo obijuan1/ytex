@@ -47,9 +47,9 @@ import ytex.kernel.model.FeatureRank;
  * graph and classification task (label) and possibly a fold. We calculate the
  * following:
  * <ul>
- * <li>raw mutual information of each concept (infogain). We calculate the
- * joint distribution of concepts (X) and document classes (Y), and compute the
- * mutual information for each concept.
+ * <li>raw mutual information of each concept (infogain). We calculate the joint
+ * distribution of concepts (X) and document classes (Y), and compute the mutual
+ * information for each concept.
  * <li>mutual information inherited by parents (infogain-parent). For each
  * concept in the concept graph, we merge the joint distribution of child
  * concepts. This is done recursively.
@@ -661,8 +661,8 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java " + InfoGainEvaluatorImpl.class.getName()
-				+ " calculate infogain for each feature", options);
+		formatter.printHelp("java " + ImputedFeatureEvaluatorImpl.class.getName()
+				+ " calculate raw, propagated, and imputed infogain for each feature", options);
 	}
 
 	protected ClassifierEvaluationDao classifierEvaluationDao;
@@ -815,7 +815,7 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 		for (String type : new String[] { params.getMeasure().getName(),
 				params.getMeasure().getName() + SUFFIX_PROP,
 				params.getMeasure().getName() + SUFFIX_IMPUTED,
-				params.getMeasure().getName() + SUFFIX_IMPUTED_FILTERED  })
+				params.getMeasure().getName() + SUFFIX_IMPUTED_FILTERED })
 			this.classifierEvaluationDao.deleteFeatureEvaluation(
 					params.getCorpusName(), params.getConceptSetName(), label,
 					type, foldId, 0, params.getConceptGraphName());
@@ -872,14 +872,16 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 						.getxVals(),
 						instanceData.getLabelToClassMap().get(label), params
 								.getxLeftover());
+		List<FeatureRank> listRawRanks = new ArrayList<FeatureRank>(
+				rawJointDistro.size());
 		FeatureEvaluation feRaw = saveFeatureEvaluation(rawJointDistro, params,
-				label, foldId, yEntropy, "");
+				label, foldId, yEntropy, "", listRawRanks);
 		// propagate across graph and save
-		propagateJointDistribution(rawJointDistro,
-				params, label, foldId, cg, yMargin);
+		propagateJointDistribution(rawJointDistro, params, label, foldId, cg,
+				yMargin);
 		// store children of top concepts
-		storeChildConcepts(feRaw, params, label, foldId, cg, true);
-		storeChildConcepts(feRaw, params, label, foldId, cg, false);
+		storeChildConcepts(listRawRanks, params, label, foldId, cg, true);
+		storeChildConcepts(listRawRanks, params, label, foldId, cg, false);
 	}
 
 	/**
@@ -1040,14 +1042,16 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 					params.getMinInfo(),
 					Arrays.asList(new String[] { cr.getConceptID() }));
 		}
+		List<FeatureRank> listPropRanks = new ArrayList<FeatureRank>(
+				conceptJointDistroMap.size());
 		return this.saveFeatureEvaluation(conceptJointDistroMap, params, label,
-				foldId, yEntropy, SUFFIX_PROP);
+				foldId, yEntropy, SUFFIX_PROP, listPropRanks);
 	}
 
 	private List<FeatureRank> rank(MeasureType measureType,
 			FeatureEvaluation fe,
-			Map<String, JointDistribution> rawJointDistro, double yEntropy) {
-		List<FeatureRank> featureRankList = new ArrayList<FeatureRank>();
+			Map<String, JointDistribution> rawJointDistro, double yEntropy,
+			List<FeatureRank> featureRankList) {
 		for (Map.Entry<String, JointDistribution> conceptJointDistro : rawJointDistro
 				.entrySet()) {
 			JointDistribution d = conceptJointDistro.getValue();
@@ -1071,11 +1075,14 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 
 	private FeatureEvaluation saveFeatureEvaluation(
 			Map<String, JointDistribution> rawJointDistro, Parameters params,
-			String label, int foldId, double yEntropy, String suffix) {
+			String label, int foldId, double yEntropy, String suffix,
+			List<FeatureRank> listRawRanks) {
 		FeatureEvaluation fe = initFeatureEval(params, label, foldId, params
 				.getMeasure().getName() + suffix);
-		fe.setFeatures(rank(params.getMeasure(), fe, rawJointDistro, yEntropy));
-		this.classifierEvaluationDao.saveFeatureEvaluation(fe);
+		this.classifierEvaluationDao.saveFeatureEvaluation(
+				fe,
+				rank(params.getMeasure(), fe, rawJointDistro, yEntropy,
+						listRawRanks));
 		return fe;
 	}
 
@@ -1179,8 +1186,9 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 	 *            hypernyms of concepts in the corpus). else only impute to
 	 *            conrete concepts in the corpus
 	 */
-	public void storeChildConcepts(FeatureEvaluation feRaw, Parameters params,
-			String label, int foldId, ConceptGraph cg, boolean bAll) {
+	public void storeChildConcepts(List<FeatureRank> listRawRanks,
+			Parameters params, String label, int foldId, ConceptGraph cg,
+			boolean bAll) {
 		// only include concepts that actually occur in the corpus
 		Map<String, Double> conceptICMap = bAll ? classifierEvaluationDao
 				.getInfoContent(params.getCorpusName(),
@@ -1190,8 +1198,8 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 		// get the raw feature evaluations. The imputed feature evaluation is a
 		// mixture of the parent feature eval and the raw feature eval.
 		Map<String, Double> conceptRawEvalMap = new HashMap<String, Double>(
-				feRaw.getFeatures().size());
-		for (FeatureRank r : feRaw.getFeatures()) {
+				listRawRanks.size());
+		for (FeatureRank r : listRawRanks) {
 			conceptRawEvalMap.put(r.getFeatureName(), r.getEvaluation());
 		}
 		// this map will get filled with the links between parent and child
@@ -1222,7 +1230,8 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 						params.getConceptGraphName(),
 						params.getParentConceptEvalThreshold());
 		FeatureEvaluation fe = this.initFeatureEval(params, label, foldId,
-				params.getMeasure().getName() + (bAll ? SUFFIX_IMPUTED : SUFFIX_IMPUTED_FILTERED));
+				params.getMeasure().getName()
+						+ (bAll ? SUFFIX_IMPUTED : SUFFIX_IMPUTED_FILTERED));
 		// map of concept id to children and the 'best' statistic
 		Map<String, FeatureRank> mapChildConcept = new HashMap<String, FeatureRank>();
 		// get all the children of the parent concepts
@@ -1234,9 +1243,9 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 		// save the imputed feature ranks
 		List<FeatureRank> features = new ArrayList<FeatureRank>(
 				mapChildConcept.values());
-		fe.setFeatures(FeatureRank.sortFeatureRankList(features,
-				new FeatureRank.FeatureRankDesc()));
-		this.classifierEvaluationDao.saveFeatureEvaluation(fe);
+		FeatureRank.sortFeatureRankList(features,
+				new FeatureRank.FeatureRankDesc());
+		this.classifierEvaluationDao.saveFeatureEvaluation(fe, features);
 		if (!bAll) {
 			// save the parent-child links
 			for (Map.Entry<FeatureRank, Set<FeatureRank>> childParentEntry : childParentMap

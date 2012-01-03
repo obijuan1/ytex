@@ -20,7 +20,7 @@ public interface ClassifierEvaluationDao {
 			String splitName);
 
 	public abstract void saveFeatureEvaluation(
-			FeatureEvaluation featureEvaluation);
+			FeatureEvaluation featureEvaluation, List<FeatureRank> features);
 
 	public abstract void deleteFeatureEvaluationByNameAndType(
 			String corpusName, String featureSetName, String type);
@@ -67,10 +67,6 @@ public interface ClassifierEvaluationDao {
 
 	public abstract Map<String, Double> getInfoContent(String corpusName,
 			String conceptGraphName, String conceptSet);
-
-	public abstract List<FeatureEvaluation> getFeatureEvaluations(
-			String corpusName, String featureSetName, String evaluationType,
-			double param1, String param2);
 
 	public abstract void saveFeatureParentChild(FeatureParentChild parchd);
 

@@ -35,7 +35,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
 import ytex.kernel.FileUtil;
-import ytex.kernel.InfoGainEvaluatorImpl;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
@@ -328,8 +327,8 @@ public class ConceptDaoImpl implements ConceptDao {
 
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java " + InfoGainEvaluatorImpl.class.getName()
-				+ " calculate infogain for each feature", options);
+		formatter.printHelp("java " + ConceptDaoImpl.class.getName()
+				+ " generate concept graph", options);
 	}
 
 }

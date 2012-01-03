@@ -14,12 +14,6 @@
 		<property name="label" />
 		<property name="crossValidationFoldId" column="cv_fold_id" />
 		<property name="evaluationType" column="type" />
-		<list name="features" table="feature_rank" cascade="all,delete-orphan" 
-			inverse="true">
-			<key column="feature_eval_id" />
-			<list-index column="rank" base="1" />
-			<one-to-many class="FeatureRank" />
-		</list>
 	</class>
 	<class name="FeatureRank" table="feature_rank">
 		<id name="featureRankId" column="feature_rank_id">
@@ -243,16 +237,6 @@
 		and r.featureEval.evaluationType = :evaluationType
 		and r.featureEval.label = :label
 		and r.featureName = s.cui
-	]]></query>	
-	<query name="getFeatureEvaluations"><![CDATA[
-		from FeatureEvaluation fe 
-		inner join fetch fe.features
-		where fe.corpusName = :corpusName
-		and fe.featureSetName = :featureSetName
-		and fe.param1 = :param1
-		and fe.param2 = :param2
-		and fe.crossValidationFoldId = 0
-		and fe.evaluationType = :evaluationType
 	]]></query>	
 	<query name="getCuiMinStr"><![CDATA[
 		select cui, min(str)

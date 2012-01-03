@@ -1,7 +1,6 @@
 package ytex.kernel.model;
 
 import java.io.Serializable;
-import java.util.List;
 
 import ytex.dao.DBUtil;
 
@@ -12,11 +11,10 @@ public class FeatureEvaluation implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private String corpusName;
+	private String corpusName = DBUtil.getEmptyString();
 	private int crossValidationFoldId = 0;
 	private String evaluationType;
 	private int featureEvaluationId;
-	private List<FeatureRank> features;
 	private String featureSetName = DBUtil.getEmptyString();
 	private String label = DBUtil.getEmptyString();
 	private double param1 = 0;
@@ -27,14 +25,12 @@ public class FeatureEvaluation implements Serializable {
 	}
 
 	public FeatureEvaluation(String name, String label,
-			Integer crossValidationFoldId, String evaluationType,
-			List<FeatureRank> features) {
+			Integer crossValidationFoldId, String evaluationType) {
 		super();
 		this.corpusName = name;
 		this.label = label;
 		this.crossValidationFoldId = crossValidationFoldId;
 		this.evaluationType = evaluationType;
-		this.features = features;
 	}
 
 	public String getCorpusName() {
@@ -51,10 +47,6 @@ public class FeatureEvaluation implements Serializable {
 
 	public int getFeatureEvaluationId() {
 		return featureEvaluationId;
-	}
-
-	public List<FeatureRank> getFeatures() {
-		return features;
 	}
 
 	public String getFeatureSetName() {
@@ -83,10 +75,6 @@ public class FeatureEvaluation implements Serializable {
 
 	public void setFeatureEvaluationId(int featureEvaluationId) {
 		this.featureEvaluationId = featureEvaluationId;
-	}
-
-	public void setFeatures(List<FeatureRank> features) {
-		this.features = features;
 	}
 
 	public void setFeatureSetName(String featureSetName) {

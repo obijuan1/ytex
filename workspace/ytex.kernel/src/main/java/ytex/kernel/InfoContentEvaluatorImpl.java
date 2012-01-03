@@ -161,9 +161,9 @@ public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 			}
 		}
 		// the rank is irrelevant, but rank the features anyways
-		eval.setFeatures(FeatureRank.sortFeatureRankList(featureRankList,
-				new FeatureRank.FeatureRankDesc()));
-		classifierEvaluationDao.saveFeatureEvaluation(eval);
+		featureRankList = FeatureRank.sortFeatureRankList(featureRankList,
+				new FeatureRank.FeatureRankDesc());
+		classifierEvaluationDao.saveFeatureEvaluation(eval, featureRankList);
 	}
 
 	public ClassifierEvaluationDao getClassifierEvaluationDao() {

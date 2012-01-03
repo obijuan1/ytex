@@ -116,12 +116,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="kernelUtil" ref="kernelUtil" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 	</bean>
-
-	<bean id="infoGainEvaluator" class="ytex.kernel.InfoGainEvaluatorImpl">
-		<property name="dataSource" ref="dataSource" />
-		<property name="transactionManager" ref="transactionManager" />
-		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
-	</bean>
 	<bean id="kernelUtil" class="ytex.kernel.KernelUtilImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
@@ -270,6 +264,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="conceptDao" ref="conceptDao" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<bean id="intrinsicInfoContentEvaluator" class="ytex.kernel.IntrinsicInfoContentEvaluatorImpl">
+		<property name="conceptDao" ref="conceptDao" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 	</bean>
 	<bean id="imputedFeatureEvaluator" class="ytex.kernel.ImputedFeatureEvaluatorImpl">
 		<property name="conceptDao" ref="conceptDao" />

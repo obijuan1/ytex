@@ -40,6 +40,7 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 		String featureSetName;
 
 		String splitName;
+
 		public WekaAttributeEvaluatorFormatter(String corpusName,
 				String featureSetName, String splitName) {
 			super(getKernelUtil());
@@ -65,8 +66,10 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 		}
 
 	}
+
 	private static final Log log = LogFactory
 			.getLog(WekaAttributeEvaluatorImpl.class);
+
 	/**
 	 * @param args
 	 * @throws Exception
@@ -108,6 +111,7 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 			printHelp(options);
 		}
 	}
+
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
 		formatter
@@ -117,6 +121,7 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 								+ " evaluate attributes using a weka AttributeEvaluator",
 						options);
 	}
+
 	private ASEvaluation asEvaluation;
 	private AttributeSelection attributeSelection;
 
@@ -159,8 +164,11 @@ public class WekaAttributeEvaluatorImpl implements WekaAttributeEvaluator {
 			r.setEvaluation(eval);
 			featureRanks.add(r);
 		}
-		fe.setFeatures(featureRanks);
-		classifierEvaluationDao.saveFeatureEvaluation(fe);
+		// delete this feature evaluation if it exists
+		classifierEvaluationDao.deleteFeatureEvaluation(corpusName,
+				featureSetName, label, fe.getEvaluationType(),
+				fe.getCrossValidationFoldId(), fe.getParam1(), fe.getParam2());
+		classifierEvaluationDao.saveFeatureEvaluation(fe, featureRanks);
 	}
 
 	/*

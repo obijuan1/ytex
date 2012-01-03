@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 
+import ytex.dao.DBUtil;
 import ytex.kernel.InfoContentEvaluator;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.ClassifierEvaluationIRStat;
@@ -174,9 +175,9 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	// }
 
 	@Override
-	public void saveFeatureEvaluation(FeatureEvaluation featureEvaluation) {
+	public void saveFeatureEvaluation(FeatureEvaluation featureEvaluation, List<FeatureRank> features) {
 		this.getSessionFactory().getCurrentSession().save(featureEvaluation);
-		for (FeatureRank r : featureEvaluation.getFeatures())
+		for (FeatureRank r : features)
 			this.getSessionFactory().getCurrentSession().save(r);
 	}
 
@@ -210,7 +211,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 			int foldId, double param1, String param2, String queryName) {
 		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
 				queryName);
-		q.setString("corpusName", corpusName);
+		q.setString("corpusName", nullToEmptyString(corpusName));
 		q.setString("featureSetName", nullToEmptyString(featureSetName));
 		q.setString("label", nullToEmptyString(label));
 		q.setString("evaluationType", evaluationType);
@@ -227,7 +228,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	 * @return
 	 */
 	private String nullToEmptyString(String param1) {
-		return param1 == null ? "" : param1;
+		return DBUtil.nullToEmptyString(param1);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -296,21 +297,6 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 			String conceptGraphName, String conceptSet) {
 		return getFeatureRankEvaluations(corpusName, conceptSet, null,
 				InfoContentEvaluator.INFOCONTENT, 0, 0, conceptGraphName);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<FeatureEvaluation> getFeatureEvaluations(String corpusName,
-			String conceptSetName, String evaluationType, double param1,
-			String param2) {
-		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
-				"getFeatureEvaluations");
-		q.setString("corpusName", corpusName);
-		q.setString("featureSetName", nullToEmptyString(conceptSetName));
-		q.setString("evaluationType", evaluationType);
-		q.setDouble("param1", param1);
-		q.setString("param2", nullToEmptyString(param2));
-		return q.list();
 	}
 
 	@Override

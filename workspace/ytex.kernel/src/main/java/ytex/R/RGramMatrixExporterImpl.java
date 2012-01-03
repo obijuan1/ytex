@@ -17,7 +17,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import ytex.kernel.FileUtil;
-import ytex.kernel.InfoGainEvaluatorImpl;
 import ytex.kernel.InstanceData;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.KernelUtil;
@@ -46,8 +45,8 @@ public class RGramMatrixExporterImpl implements RGramMatrixExporter {
 					line.getOptionValue("prop"), true));
 		} catch (ParseException pe) {
 			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("java " + InfoGainEvaluatorImpl.class.getName()
-					+ " calculate infogain for each feature", options);
+			formatter.printHelp("java " + RGramMatrixExporterImpl.class.getName()
+					+ " export gram matrix for use in R/Matlab", options);
 		}
 	}
 
