@@ -175,7 +175,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	// }
 
 	@Override
-	public void saveFeatureEvaluation(FeatureEvaluation featureEvaluation, List<FeatureRank> features) {
+	public void saveFeatureEvaluation(FeatureEvaluation featureEvaluation,
+			List<FeatureRank> features) {
 		this.getSessionFactory().getCurrentSession().save(featureEvaluation);
 		for (FeatureRank r : features)
 			this.getSessionFactory().getCurrentSession().save(r);
@@ -208,16 +209,16 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 
 	private Query prepareUniqueFeatureEvalQuery(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			int foldId, double param1, String param2, String queryName) {
+			Integer foldId, Double param1, String param2, String queryName) {
 		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
 				queryName);
 		q.setString("corpusName", nullToEmptyString(corpusName));
 		q.setString("featureSetName", nullToEmptyString(featureSetName));
 		q.setString("label", nullToEmptyString(label));
 		q.setString("evaluationType", evaluationType);
-		q.setDouble("param1", 0);
+		q.setDouble("param1", param1 == null ? 0 : param1);
 		q.setString("param2", nullToEmptyString(param2));
-		q.setInteger("crossValidationFoldId", foldId);
+		q.setInteger("crossValidationFoldId", foldId == null ? 0 : foldId);
 		return q;
 	}
 
@@ -247,7 +248,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public void deleteFeatureEvaluation(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			Integer foldId, double param1, String param2) {
+			Integer foldId, Double param1, String param2) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
 				label, evaluationType, foldId, param1, param2,
 				"getFeatureEvaluationByNK");
@@ -287,7 +288,7 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	public List<Object[]> getCorpusCuiTuis(String corpusName,
 			String conceptGraphName, String conceptSetName) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, conceptSetName,
-				null, InfoContentEvaluator.INFOCONTENT, 0, 0, conceptGraphName,
+				null, InfoContentEvaluator.INFOCONTENT, 0, 0d, conceptGraphName,
 				"getCorpusCuiTuis");
 		return q.list();
 	}
@@ -306,11 +307,11 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 
 	@Override
 	public List<FeatureRank> getImputedFeaturesByPropagatedCutoff(
-			String corpusName, String conceptSetName, String label, String evaluationType,
-			String conceptGraphName, String propEvaluationType,
-			int propRankCutoff) {
+			String corpusName, String conceptSetName, String label,
+			String evaluationType, String conceptGraphName,
+			String propEvaluationType, int propRankCutoff) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, conceptSetName,
-				label, evaluationType, 0, 0, conceptGraphName,
+				label, evaluationType, 0, 0d, conceptGraphName,
 				"getImputedFeaturesByPropagatedCutoff");
 		q.setInteger("propRankCutoff", propRankCutoff);
 		q.setString("propEvaluationType", propEvaluationType);

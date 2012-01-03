@@ -818,7 +818,7 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 				params.getMeasure().getName() + SUFFIX_IMPUTED_FILTERED })
 			this.classifierEvaluationDao.deleteFeatureEvaluation(
 					params.getCorpusName(), params.getConceptSetName(), label,
-					type, foldId, 0, params.getConceptGraphName());
+					type, foldId, 0d, params.getConceptGraphName());
 	}
 
 	/*

@@ -123,7 +123,7 @@ public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 			final String conceptSetName) {
 		ConceptGraph cg = conceptDao.getConceptGraph(conceptGraphName);
 		classifierEvaluationDao.deleteFeatureEvaluation(corpusName,
-				conceptSetName, null, INFOCONTENT, 0, 0, conceptGraphName);
+				conceptSetName, null, INFOCONTENT, 0, 0d, conceptGraphName);
 		FeatureEvaluation eval = new FeatureEvaluation();
 		eval.setCorpusName(corpusName);
 		if (conceptSetName != null)

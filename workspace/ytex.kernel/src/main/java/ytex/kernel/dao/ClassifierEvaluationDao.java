@@ -56,7 +56,7 @@ public interface ClassifierEvaluationDao {
 
 	public abstract void deleteFeatureEvaluation(String corpusName,
 			String featureSetName, String label, String evaluationType,
-			Integer foldId, double param1, String param2);
+			Integer foldId, Double param1, String param2);
 
 	public abstract Map<String, Double> getFeatureRankEvaluations(
 			String corpusName, String featureSetName, String label,
