@@ -17,7 +17,7 @@ check if mrconso table exists and import umls tables if required.
 If the umls database tables exist, then setup the umls_aui_fword table
 from the database.  If yes, execute umls.setup.db to setup umls_aui_fword 
 from db. If no, execute umls.setup.dump to create and import umls tables
-from dump files.  We look for a umls-[db.type].zip file in the directory
+from dump files.  We look for a umls.zip file in the directory
 that contains ytex.  If it exists, we load the umls tables from that file.
 If not, we load the sample umls tables included in the ytex distro
 
@@ -40,9 +40,11 @@ Database connection parameters are taken from ytex.properties.
 	<property name="meta.tables" value="MRDOC,MRSAB,MRSTY,MRCONSO,MRREL,MRXNS_ENG,MRXNW_ENG" />
 	<!-- SU is in a different format -->
 	<property name="net.tables" value="SRDEF,SRFIL,SRFLD,SRSTR,SRSTRE1,SRSTRE2" />
+	<property name="sct.home" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Snapshot/Terminology" />
+	<property name="sct.version" value="20110731" />
 
 
-	<target name="all" depends="dbping,umls.all,uima.all" description="call umls.all and uima.all" />
+	<target name="all" depends="umls.all,uima.all" description="call umls.all and uima.all" />
 	<target name="init" description="initialize flags indicating which db is in use">
 		<condition property="mysql">
 			<equals arg1="${db.type}" arg2="mysql" />
@@ -453,6 +455,33 @@ ${sql.delimiter}
 		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="kernel" />
 			<param name="sqlcmd.script" value="create_tables.sql" />
+		</antcall>
+	</target>
+	<target name="sct.all" depends="sct.drop,sct.create,sct.load" description="import snomed-ct tables" />
+	<target name="sct.drop" description="drop snomed-ct tables">
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="snomedct" />
+			<param name="sqlcmd.script" value="drop_tables.sql" />
+		</antcall>
+	</target>
+	<target name="sct.create" description="create snomed-ct tables">
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="snomedct" />
+			<param name="sqlcmd.script" value="create_tables.sql" />
+		</antcall>
+	</target>
+	<target name="sct.load" depends="init.conn" description="load snomed-ct tables">
+		<antcall target="jdl">
+			<param name="jdl.data" value="${sct.home}/sct2_Concept_Snapshot_INT_${sct.version}.txt" />
+			<param name="jdl.format" value="${basedir}/snomedct/sct2_concept.xml" />
+		</antcall>
+		<antcall target="jdl">
+			<param name="jdl.data" value="${sct.home}/sct2_Relationship_Snapshot_INT_${sct.version}.txt" />
+			<param name="jdl.format" value="${basedir}/snomedct/sct2_relationship.xml" />
+		</antcall>
+		<antcall target="jdl">
+			<param name="jdl.data" value="${sct.home}/sct2_Description_Snapshot-en_INT_${sct.version}.txt" />
+			<param name="jdl.format" value="${basedir}/snomedct/sct2_description.xml" />
 		</antcall>
 	</target>
 </project>
