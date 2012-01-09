@@ -1,0 +1,18 @@
+<project name="jdl">
+	<property environment="env" />
+	<property name="ytex.home" value=".." />
+	<include file="${ytex.home}/libs.system/build-classpath.xml" />
+	<property name="jaxb.lib" value="C:/java/jaxb-ri-20110512/lib" />
+	<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+	  <classpath>
+	    <fileset dir="${jaxb.lib}" includes="*.jar" />
+	  </classpath>
+	</taskdef>	
+	<target name="xjc.jdl">
+		<delete quiet="yes">
+			<fileset dir="src/main/java/my/mas/jdl/schema/xdl" includes="*.java" />
+		</delete>
+		<xjc schema="src/main/resources/xdl.xsd" package="my.mas.jdl.schema.xdl" destdir="src/main/java">
+		</xjc>
+	</target>
+</project>

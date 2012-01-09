@@ -7,8 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.Format;
+import java.util.HashMap;
+import java.util.Map;
 
 import my.mas.jdl.data.base.JdlConnection;
 import my.mas.jdl.schema.xdl.CsvLoadType;
@@ -29,6 +33,8 @@ public class CsvLoader extends Loader {
 	private CSVParser parser;
 	private CsvLoadType loader;
 
+	private Map<String, Format> formatMap;
+
 	/**
 	 * @param loader
 	 *            the loader
@@ -37,6 +43,7 @@ public class CsvLoader extends Loader {
 	 * @throws FileNotFoundException
 	 *             exception
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public CsvLoader(final CsvLoadType loader, final File file)
 			throws FileNotFoundException {
 		InputStream inputStrem = new FileInputStream(file);
@@ -46,6 +53,20 @@ public class CsvLoader extends Loader {
 		strategy.setEncapsulator(CharUtils.toChar(loader.getEncapsulator()));
 		parser = new CSVParser(reader, strategy);
 		this.loader = loader;
+		formatMap = new HashMap<String, Format>();
+		try {
+			for (Column col : loader.getColumn()) {
+				if (col.getFormat() != null && col.getFormat().length() > 0) {
+					Class cf = Class.forName(col.getFormat());
+					Constructor ccf = cf.getConstructor(String.class);
+					this.formatMap.put(col.getName(),
+							(Format) ccf.newInstance(col.getPattern()));
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("oops", e);
+		}
+
 	}
 
 	/**
@@ -125,8 +146,31 @@ public class CsvLoader extends Loader {
 									|| (value instanceof String && ((String) value)
 											.length() == 0))
 								preparedStatement.setObject(c, null);
-							else
-								preparedStatement.setObject(c, value);
+							else {
+								// if there is a formatter, parse the string
+								if (this.formatMap
+										.containsKey(column.getName())) {
+									try {
+										preparedStatement
+												.setObject(
+														c,
+														this.formatMap
+																.get(column
+																		.getName())
+																.parseObject(
+																		(String) value));
+									} catch (Exception e) {
+										System.err.println("Could not format '"
+												+ value + "' for column "
+												+ column.getName()
+												+ " on line " + r);
+										e.printStackTrace(System.err);
+										throw new RuntimeException(e);
+									}
+								} else {
+									preparedStatement.setObject(c, value);
+								}
+							}
 						}
 					}
 					preparedStatement.addBatch();

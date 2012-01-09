@@ -34,6 +34,8 @@
     </xs:choice>
     <xs:attribute name="name" type="sqlNameType" use="required" />
     <xs:attribute name="skip" type="xs:boolean" />
+    <xs:attribute name="format" type="xs:string" />
+    <xs:attribute name="pattern" type="xs:string" />
   </xs:complexType>
   <xs:complexType name="csvLoadType">
     <xs:sequence>
