@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="sct2_concept" commit="10000" delimiter="&#009;" skip="1">
+		<column name="id"/>
+		<column name="effectiveTime" format="java.text.SimpleDateFormat" pattern="yyyyMMdd" />
+		<column name="active" format="java.text.DecimalFormat" pattern="#"/>
+		<column name="moduleId"/>
+		<column name="definitionStatusId"/>
+	</csv>
+</load>
