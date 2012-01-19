@@ -1,0 +1,29 @@
+<!--
+-->
+<project name="ytex.kernel.sct">
+	<property name="ytex.home" value="../.." />
+	<include file="${ytex.home}/libs.system/build-classpath.xml" />
+	<target name="sct.year">
+		<property name="sct.year" value="2008" />
+		<copy file="snomed-template.xml" tofile="snomed-${sct.year}.xml" overwrite="yes">
+			<filterset>
+				<filter token="sct.year" value="${sct.year}" />
+			</filterset>
+		</copy>
+		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+			<jvmarg value="-Xmx1g" />
+			<arg value="-prop" />
+			<arg value="snomed-${sct.year}.xml" />
+		</java>
+		<java classname="ytex.kernel.IntrinsicInfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Dytex.conceptGraphName=snomed-${sct.year}" />
+		</java>
+	</target>
+</project>
