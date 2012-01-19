@@ -42,11 +42,11 @@
     <delegateAnalysisEngine key="DictionaryLookupAnnotator">
       <import name="ytex.uima.annotators.DictionaryLookupAnnotator"/>
     </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="DBConsumer">
-      <import name="ytex.uima.annotators.DBConsumer"/>
-    </delegateAnalysisEngine>
     <delegateAnalysisEngine key="LvgAnnotator">
       <import name="LVG.LvgAnnotator"/>
+    </delegateAnalysisEngine>
+    <delegateAnalysisEngine key="DBConsumer">
+      <import name="ytex.uima.annotators.DBConsumer"/>
     </delegateAnalysisEngine>
   </delegateAnalysisEngineSpecifiers>
   <analysisEngineMetaData>
@@ -155,6 +155,15 @@
             <string>edu.mayo.bmi.uima.core.ae.type.PunctuationToken</string>
             <string>edu.mayo.bmi.uima.core.ae.type.SymbolToken</string>
             <string>edu.mayo.bmi.uima.cdt.ae.type.RomanNumeralAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.ae.type.DateAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.ae.type.FractionAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.ae.type.MeasurementAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.ae.type.PersonTitleAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.ae.type.RangeAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.ae.type.TimeAnnotation</string>
+            <string>ytex.uima.types.Date</string>
+            <string>edu.mayo.bmi.uima.chunker.type.NP</string>
+            <string>edu.mayo.bmi.uima.chunker.type.VP</string>
           </array>
         </value>
       </nameValuePair>
