@@ -153,12 +153,13 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				// for command line, split pairs by semicolon
 				String lines[] = line.split(";");
 				for (String subline : lines) {
-					String pair[] = subline.split(",");
+					String pair[] = subline.split(",|\\t");
 					if (pair.length != 2) {
 						System.err
-								.println("cannot parse concept pair: " + pair);
+								.println("cannot parse concept pair: " + subline);
+					} else {
+						conceptPairs.add(new ConceptPair(pair[0], pair[1]));
 					}
-					conceptPairs.add(new ConceptPair(pair[0], pair[1]));
 				}
 			}
 			return conceptPairs;
@@ -246,7 +247,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				formatPath(b, "->", lcsPath.getValue().get(0).iterator());
 				b.append("->*").append(lcs);
 			}
-			if (lcsPath.getValue().size() == 2 && lcsPath.getValue().get(1).size() > 0) {
+			if (lcsPath.getValue().size() == 2
+					&& lcsPath.getValue().get(1).size() > 0) {
 				b.append("*<-");
 				formatPath(b, "<-", lcsPath.getValue().get(1).iterator());
 			}

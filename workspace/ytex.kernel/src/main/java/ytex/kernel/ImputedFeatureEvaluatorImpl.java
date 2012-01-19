@@ -661,8 +661,12 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 
 	private static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java " + ImputedFeatureEvaluatorImpl.class.getName()
-				+ " calculate raw, propagated, and imputed infogain for each feature", options);
+		formatter
+				.printHelp(
+						"java "
+								+ ImputedFeatureEvaluatorImpl.class.getName()
+								+ " calculate raw, propagated, and imputed infogain for each feature",
+						options);
 	}
 
 	protected ClassifierEvaluationDao classifierEvaluationDao;
@@ -1034,14 +1038,11 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 		Map<String, JointDistribution> conceptJointDistroMap = new HashMap<String, JointDistribution>(
 				cg.getConceptMap().size());
 		Map<String, Integer> conceptDistMap = new HashMap<String, Integer>();
-		for (String cName : cg.getRoots()) {
-			ConcRel cr = cg.getConceptMap().get(cName);
-			// recurse
-			calcMergedJointDistribution(conceptJointDistroMap, conceptDistMap,
-					cr, rawJointDistroMap, yMargin, params.getxMerge(),
-					params.getMinInfo(),
-					Arrays.asList(new String[] { cr.getConceptID() }));
-		}
+		// recurse
+		calcMergedJointDistribution(conceptJointDistroMap, conceptDistMap, cg
+				.getConceptMap().get(cg.getRoot()), rawJointDistroMap, yMargin,
+				params.getxMerge(), params.getMinInfo(),
+				Arrays.asList(new String[] { cg.getRoot() }));
 		List<FeatureRank> listPropRanks = new ArrayList<FeatureRank>(
 				conceptJointDistroMap.size());
 		return this.saveFeatureEvaluation(conceptJointDistroMap, params, label,

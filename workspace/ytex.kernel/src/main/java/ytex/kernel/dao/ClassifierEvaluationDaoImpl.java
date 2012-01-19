@@ -13,6 +13,7 @@ import org.hibernate.SessionFactory;
 
 import ytex.dao.DBUtil;
 import ytex.kernel.InfoContentEvaluator;
+import ytex.kernel.IntrinsicInfoContentEvaluator;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.ClassifierEvaluationIRStat;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
@@ -288,8 +289,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	public List<Object[]> getCorpusCuiTuis(String corpusName,
 			String conceptGraphName, String conceptSetName) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, conceptSetName,
-				null, InfoContentEvaluator.INFOCONTENT, 0, 0d, conceptGraphName,
-				"getCorpusCuiTuis");
+				null, InfoContentEvaluator.INFOCONTENT, 0, 0d,
+				conceptGraphName, "getCorpusCuiTuis");
 		return q.list();
 	}
 
@@ -298,6 +299,12 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 			String conceptGraphName, String conceptSet) {
 		return getFeatureRankEvaluations(corpusName, conceptSet, null,
 				InfoContentEvaluator.INFOCONTENT, 0, 0, conceptGraphName);
+	}
+
+	@Override
+	public Map<String, Double> getIntrinsicInfoContent(String conceptGraphName) {
+		return getFeatureRankEvaluations(null, null, null,
+				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, 0, 0, conceptGraphName);
 	}
 
 	@Override

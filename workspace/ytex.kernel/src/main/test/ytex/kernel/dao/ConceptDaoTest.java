@@ -27,7 +27,7 @@ public class ConceptDaoTest extends TestCase {
 						"select cui1, cui2 from umls.MRREL where sab = 'SNOMEDCT' and rel = 'PAR'");
 		System.out.println("depth:" + cg.getDepthMax());
 		System.out.println("concepts:" + cg.getConceptMap().size());
-		System.out.println("roots:" + (cg.getRoots().size()));
+		System.out.println("root:" + cg.getRoot());
 		// System.out.println("roots:"+cg.getRoots());
 		// ascites - hepatoma
 		testPath(cg, "C0003962", "C2239176");

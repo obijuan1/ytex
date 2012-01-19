@@ -3,8 +3,6 @@ package ytex.kernel;
 import java.io.File;
 import java.io.IOException;
 
-import ytex.kernel.model.ClassifierEvaluation;
-
 public interface ClassifierEvaluationParser {
 	public static final String YES = "yes";
 	public static final String NO = "no";

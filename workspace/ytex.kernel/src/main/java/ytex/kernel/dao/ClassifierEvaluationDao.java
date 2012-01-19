@@ -68,6 +68,9 @@ public interface ClassifierEvaluationDao {
 	public abstract Map<String, Double> getInfoContent(String corpusName,
 			String conceptGraphName, String conceptSet);
 
+	public abstract Map<String, Double> getIntrinsicInfoContent(
+			String conceptGraphName);
+
 	public abstract void saveFeatureParentChild(FeatureParentChild parchd);
 
 	public abstract List<FeatureRank> getImputedFeaturesByPropagatedCutoff(

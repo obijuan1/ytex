@@ -1,5 +1,8 @@
 package ytex.kernel;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,8 +80,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			IntrinsicInfoContentEvaluator corpusEvaluator = KernelContextHolder
 					.getApplicationContext().getBean(
 							IntrinsicInfoContentEvaluator.class);
-			corpusEvaluator.evaluateIntrinsicInfoContent(props
-					.getProperty("ytex.conceptGraphName"));
+			corpusEvaluator.evaluateIntrinsicInfoContent(props);
 			System.exit(0);
 		}
 	}
@@ -102,11 +104,14 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 * 
 	 * @param concept
 	 * @param icInfoMap
+	 * @param w
 	 * @param subsumerMap
+	 * @throws IOException
 	 */
 	private void computeLeafCount(ConcRel concept,
 			Map<String, IntrinsicICInfo> icInfoMap,
-			Map<String, Set<String>> leafMap) {
+			Map<String, Set<String>> leafMap, BufferedWriter w)
+			throws IOException {
 		// see if we already computed this
 		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
 		if (icInfo != null && icInfo.getLeafCount() > 0) {
@@ -121,13 +126,18 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		if (!concept.isLeaf()) {
 			Set<String> leaves = this.getLeaves(concept, leafMap);
 			icInfo.setLeafCount(leaves.size());
-			if (log.isDebugEnabled()) {
-				log.debug(concept.getConceptID() + " leaves: " + leaves);
+			if (w != null) {
+				w.write(concept.getConceptID());
+				w.write("\t");
+				w.write(Integer.toString(leaves.size()));
+				w.write("\t");
+				w.write(leaves.toString());
+				w.newLine();
 			}
 		}
 		// recurse to parents
 		for (ConcRel parent : concept.getParents()) {
-			computeLeafCount(parent, icInfoMap, leafMap);
+			computeLeafCount(parent, icInfoMap, leafMap, w);
 		}
 	}
 
@@ -137,10 +147,13 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 * @param concept
 	 * @param icInfoMap
 	 * @param subsumerMap
+	 * @param w
+	 * @throws IOException
 	 */
 	private void computeSubsumerCount(ConcRel concept,
 			Map<String, IntrinsicICInfo> icInfoMap,
-			Map<String, Set<String>> subsumerMap) {
+			Map<String, Set<String>> subsumerMap, BufferedWriter w)
+			throws IOException {
 		// see if we already computed this
 		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
 		if (icInfo != null && icInfo.getSubsumerCount() > 0) {
@@ -152,13 +165,18 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			icInfoMap.put(concept.getConceptID(), icInfo);
 		}
 		Set<String> subsumers = this.getSubsumers(concept, subsumerMap);
-		if (log.isDebugEnabled()) {
-			log.debug(concept.getConceptID() + " subsumers: " + subsumers);
+		if (w != null) {
+			w.write(concept.getConceptID());
+			w.write("\t");
+			w.write(Integer.toString(subsumers.size()));
+			w.write("\t");
+			w.write(subsumers.toString());
+			w.newLine();
 		}
 		icInfo.setSubsumerCount(subsumers.size());
 		// recursively compute the children's subsumer counts
 		for (ConcRel child : concept.getChildren()) {
-			computeSubsumerCount(child, icInfoMap, subsumerMap);
+			computeSubsumerCount(child, icInfoMap, subsumerMap, w);
 		}
 	}
 
@@ -170,37 +188,86 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 * (java.lang.String)
 	 */
 	@Override
-	public void evaluateIntrinsicInfoContent(final String conceptGraphName) {
+	public void evaluateIntrinsicInfoContent(final Properties props)
+			throws IOException {
+		String conceptGraphName = props.getProperty("ytex.conceptGraphName");
+		String conceptGraphDir = props.getProperty("ytex.conceptGraphDir",
+				System.getProperty("java.io.tmpdir"));
 		ConceptGraph cg = this.conceptDao.getConceptGraph(conceptGraphName);
 		log.info("computing max leaves");
 		log.info("computing subsumer counts");
 		// compute the subsumer count
 		Map<String, IntrinsicICInfo> icInfoMap = new HashMap<String, IntrinsicICInfo>();
 		Map<String, Set<String>> subsumerMap = new WeakHashMap<String, Set<String>>();
-		for (String subroot : cg.getRoots()) {
-			computeSubsumerCount(cg.getConceptMap().get(subroot), icInfoMap,
-					subsumerMap);
+		BufferedWriter w = null;
+		try {
+			w = this.getOutputFile(conceptGraphName, conceptGraphDir,
+					"subsumer");
+			computeSubsumerCount(cg.getConceptMap().get(cg.getRoot()),
+					icInfoMap, subsumerMap, w);
+		} finally {
+			if (w != null) {
+				try {
+					w.close();
+				} catch (IOException e) {
+				}
+			}
 		}
 		subsumerMap = null;
 		// get the leaves in this concept graph
-		Set<String> leafSet = this.getAllLeaves(cg);
+		Set<String> leafSet = null;
+		try {
+			w = this.getOutputFile(conceptGraphName, conceptGraphDir, "allleaf");
+			leafSet = this.getAllLeaves(cg, w);
+		} finally {
+			if (w != null) {
+				try {
+					w.close();
+				} catch (IOException e) {
+				}
+			}
+		}
 		log.info("computing leaf counts");
 		Map<String, Set<String>> leafMap = new WeakHashMap<String, Set<String>>();
 		// compute leaf count of all concepts in this graph
-		for (String leaf : leafSet) {
-			computeLeafCount(cg.getConceptMap().get(leaf), icInfoMap, leafMap);
+		try {
+			w = this.getOutputFile(conceptGraphName, conceptGraphDir, "leaf");
+			for (String leaf : leafSet) {
+				computeLeafCount(cg.getConceptMap().get(leaf), icInfoMap,
+						leafMap, w);
+			}
+		} finally {
+			if (w != null) {
+				try {
+					w.close();
+				} catch (IOException e) {
+				}
+			}
 		}
 		leafMap = null;
 		log.info("storing intrinsic ic");
 		storeIntrinsicIC(conceptGraphName, leafSet.size(), icInfoMap);
 	}
 
-	public Set<String> getAllLeaves(ConceptGraph cg) {
+	private BufferedWriter getOutputFile(final String conceptGraphName,
+			final String conceptGraphDir, String type) throws IOException {
+		return new BufferedWriter(new FileWriter(FileUtil.addFilenameToDir(
+				conceptGraphDir, conceptGraphName + "-" + type + ".txt")));
+	}
+
+	public Set<String> getAllLeaves(ConceptGraph cg, BufferedWriter w)
+			throws IOException {
 		Set<String> leafSet = new HashSet<String>();
 		for (Map.Entry<String, ConcRel> con : cg.getConceptMap().entrySet()) {
 			if (con.getValue().isLeaf()) {
 				leafSet.add(con.getValue().getConceptID());
 			}
+		}
+		if (w != null) {
+			w.write(Integer.toString(leafSet.size()));
+			w.write("\t");
+			w.write(leafSet.toString());
+			w.newLine();
 		}
 		return leafSet;
 	}
@@ -249,9 +316,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		// not in cache - compute recursively
 		Set<String> subsumers = new HashSet<String>();
 		// no parents - add the fake root
-		if (concept.getParents() == null || concept.getParents().isEmpty()) {
-			subsumers.add("C0000000");
-		} else {
+		if (concept.getParents() != null && !concept.getParents().isEmpty()) {
 			// parents - recurse
 			for (ConcRel parent : concept.getParents()) {
 				subsumers.addAll(getSubsumers(parent, subsumerMap));

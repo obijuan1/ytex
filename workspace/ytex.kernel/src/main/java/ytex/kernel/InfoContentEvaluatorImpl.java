@@ -145,10 +145,8 @@ public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 		Map<String, Double> conceptFreq = new HashMap<String, Double>(cg
 				.getConceptMap().size());
 		// recurse through the tree
-		for (String conceptId : cg.getRoots()) {
-			totalFreq += getFrequency(cg.getConceptMap().get(conceptId),
-					conceptFreq, rawFreq);
-		}
+		totalFreq = getFrequency(cg.getConceptMap().get(cg.getRoot()),
+				conceptFreq, rawFreq);
 		List<FeatureRank> featureRankList = new ArrayList<FeatureRank>(
 				conceptFreq.size());
 		// update information content

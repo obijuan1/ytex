@@ -8,9 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -44,6 +46,10 @@ public class ConceptDaoImpl implements ConceptDao {
 	private static final Log log = LogFactory.getLog(ConceptDaoImpl.class);
 	private JdbcTemplate jdbcTemplate;
 	private Properties ytexProperties;
+	/**
+	 * the default concept id for the root. override with -Dytex.defaultRootId
+	 */
+	private static final String DEFAULT_ROOT_ID = "C0000000";
 
 	public Properties getYtexProperties() {
 		return ytexProperties;
@@ -118,20 +124,68 @@ public class ConceptDaoImpl implements ConceptDao {
 			final Map<String, ConcRel> conceptMap = new HashMap<String, ConcRel>();
 			final Set<String> roots = new HashSet<String>();
 			this.jdbcTemplate.query(query, new RowCallbackHandler() {
+				int nRowsProcessed = 0;
 
 				@Override
 				public void processRow(ResultSet rs) throws SQLException {
 					String child = rs.getString(1);
 					String parent = rs.getString(2);
 					addRelation(conceptMap, roots, child, parent);
+					nRowsProcessed++;
+					if (nRowsProcessed % 10000 == 0) {
+						log.debug("processed " + nRowsProcessed + " edges");
+					}
 				}
 			});
 			ConceptGraph cg = new ConceptGraph();
-			cg.setRoots(roots);
+			// set the root
+			// if there is only one potential root, use it
+			// else use a synthetic root and add all the roots as its children
+			String rootId = null;
+			if (roots.size() == 1) {
+				rootId = roots.iterator().next();
+			} else {
+				rootId = System.getProperty("ytex.defaultRootId",
+						DEFAULT_ROOT_ID);
+				ConcRel crRoot = new ConcRel(rootId);
+				for (String crChildId : roots) {
+					ConcRel crChild = conceptMap.get(crChildId);
+					crRoot.getChildren().add(crChild);
+					crChild.getParents().add(crRoot);
+				}
+				conceptMap.put(rootId, crRoot);
+			}
+			cg.setRoot(rootId);
 			cg.setConceptMap(conceptMap);
-			cg.setDepthMax(calculateDepthMax(roots, conceptMap));
+			cg.setDepthMax(calculateDepthMax(rootId, conceptMap));
 			writeConceptGraph(name, cg);
+			writeConceptGraphProps(name, query);
 			return cg;
+		}
+	}
+
+	private void writeConceptGraphProps(String name, String query) {
+		File propFile = new File(FileUtil.addFilenameToDir(
+				this.getConceptGraphDir(), name + ".xml"));
+		try {
+			if (!propFile.exists()) {
+				Properties props = new Properties();
+				props.put("ytex.conceptGraphQuery", query);
+				OutputStream os = null;
+				try {
+					os = new FileOutputStream(propFile);
+					props.storeToXML(os, "created on " + (new Date()));
+				} finally {
+					if (os != null) {
+						try {
+							os.close();
+						} catch (Exception e) {
+						}
+					}
+				}
+			}
+		} catch (IOException ioe) {
+			throw new RuntimeException(ioe);
 		}
 	}
 
@@ -235,19 +289,9 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * @param conceptMap
 	 * @return
 	 */
-	private int calculateDepthMax(Set<String> roots,
-			Map<String, ConcRel> conceptMap) {
-		int d = 0;
-		// iterate through the roots
-		for (String rootCUI : roots) {
-			ConcRel r = conceptMap.get(rootCUI);
-			// recursively compute the maximum depth
-			int dm = r.depthMax() + 1;
-			// if the depth from this root is greater, save it
-			if (dm > d)
-				d = dm;
-		}
-		return d;
+	private int calculateDepthMax(String rootId, Map<String, ConcRel> conceptMap) {
+		ConcRel crRoot = conceptMap.get(rootId);
+		return crRoot.depthMax();
 	}
 
 	private String getConceptGraphFileName(String name) {
@@ -262,11 +306,12 @@ public class ConceptDaoImpl implements ConceptDao {
 	public ConceptGraph getConceptGraph(String name) {
 		File f = new File(getConceptGraphFileName(name));
 		if (log.isInfoEnabled())
-			log.info("getConceptGraph() initializing concept graph from file: "
-					+ f.getPath());
+			log.info("getConceptGraph(" + name
+					+ ") initializing concept graph from file: " + f.getPath());
 		if (f.exists()) {
 			if (log.isInfoEnabled())
-				log.info("getConceptGraph() file exists, reading concept graph");
+				log.info("getConceptGraph(" + name
+						+ ") file exists, reading concept graph");
 			return initializeConceptGraph(this.readConceptGraph(f));
 		} else {
 			return null;
