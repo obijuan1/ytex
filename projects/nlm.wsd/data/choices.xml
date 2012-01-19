@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="nlm_wsd_cui" commit="10000" delimiter="|">
+		<column name="word">
+			<constant>@word@</constant>
+		</column>
+		<column name="choice_code" />
+		<column name="term" />
+		<column name="term_type" />
+		<column name="cui" />
+	</csv>
+</load>

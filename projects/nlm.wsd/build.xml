@@ -1,0 +1,62 @@
+<project name="nlm.wsd">
+	<property environment="env" />
+	<property name="ytex.home" value=".." />
+	<property name="choices.home" value="E:/Downloads/text mining/nlm wsd/NLM-WSD.target_word.choices_v0.3/NLM-WSD.target_word.choices_v0.3/choices/2007" />
+	<include file="${ytex.home}/libs.system/build-classpath.xml" />
+	<import file="${ytex.home}/data/build.xml" />
+
+	<target name="choices.all">
+		<antcall target="init.conn">
+			<param name="basedir" value="${ytex.home}/data" />
+		</antcall>
+		<for param="jdl.data">
+			<fileset dir="${choices.home}" includes="*.choices" />
+			<sequential>
+				<antcall target="choices.jdl">
+					<param name="jdl.data" value="@{jdl.data}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+
+	<target name="choices.jdl" description="load choices data with java data loader">
+		<property name="jdl.data" value="${choices.home}/adjustment.choices" />
+		<basename file="${jdl.data}" property="word" suffix=".choices" />
+		<echo>jdl.data ${jdl.data}</echo>
+		<echo>word ${word}</echo>
+		<tempfile property="jdl.format.file" suffix=".xml" deleteonexit="true" />
+		<copy file="${basedir}/data/choices.xml" tofile="${jdl.format.file}" overwrite="true">
+			<filterset>
+				<filter token="word" value="${word}" />
+			</filterset>
+		</copy>
+		<java classpathref="${kernel.cp}" classname="my.mas.AppMain" fork="yes" failonerror="yes">
+			<jvmarg value="-Dfile.encoding=UTF-8" />
+			<arg value="-c" />
+			<arg value="${ytex.home}/data/conn.xml" />
+			<arg value="-d" />
+			<arg value="${jdl.data}" />
+			<arg value="-l" />
+			<arg value="${jdl.format.file}" />
+		</java>
+	</target>
+
+	<target name="setup.generateConceptGraph" description="generate concept graph, compute intrinsic infogain">
+		<mkdir dir="${ytex.conceptGraphDir}" />
+		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
+			<arg value="-prop" />
+			<arg value="nlm.wsd.xml" />
+			<jvmarg value="-Xmx1g" />
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+		</java>
+		<java classname="ytex.kernel.IntrinsicInfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Dytex.conceptGraphName=nlm.wsd" />
+		</java>
+	</target>
+</project>
