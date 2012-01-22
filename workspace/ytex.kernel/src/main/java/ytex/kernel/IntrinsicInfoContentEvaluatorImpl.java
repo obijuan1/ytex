@@ -95,7 +95,13 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 						/ (double) icInfo.getSubsumerCount() + 1d);
 		// max_leaves + 1
 		double num = log2adjust * Math.log((double) maxLeaves + 1d);
-		return num - denom;
+		if (denom == Double.NaN || num == Double.NaN) {
+			log.error("IC = NaN for " + icInfo.getConcept().getConceptID()
+					+ ", leafCount=" + icInfo.getLeafCount()
+					+ ", subsumerCount = " + icInfo.getSubsumerCount());
+			return -1d;
+		} else
+			return num - denom;
 	}
 
 	/**
