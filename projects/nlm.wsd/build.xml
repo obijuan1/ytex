@@ -43,6 +43,7 @@
 
 	<target name="setup.generateConceptGraph" description="generate concept graph, compute intrinsic infogain">
 		<mkdir dir="${ytex.conceptGraphDir}" />
+		<!--
 		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="nlm.wsd.xml" />
@@ -51,12 +52,42 @@
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
 		</java>
+		-->
+	</target>
+	<target name="setup.ic">
 		<java classname="ytex.kernel.IntrinsicInfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
-			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xmx4g" />
 			<jvmarg value="-Dytex.conceptGraphName=nlm.wsd" />
 		</java>
 	</target>
+	<target name="RunCPE">
+		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
+		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
+		<!--
+		<copy file="desc/cpe.template.xml" tofile="desc/cpe.xml.${kernel.slice}" overwrite="yes">
+			<filterset id="exp.filter">
+				<filter token="collectionreader.url" value="${collectionreader.url}" />
+				<filter token="pipeline.url" value="${pipeline.url}" />
+				<filter token="kernel.slice" value="${kernel.slice}" />
+				<filter token="kernel.threads" value="${kernel.threads}" />
+			</filterset>
+		</copy>
+		-->
+		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
+			<classpath>
+				<dirset dir="${basedir}">
+					<include name="${basedir}/desc" />
+				</dirset>
+				<path refid="${kernel.cp}" />
+			</classpath>
+			<arg value="cpe-title.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+
 </project>
