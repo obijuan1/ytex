@@ -1,6 +1,5 @@
 package ytex.kernel;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -296,8 +295,8 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 				leaves.addAll(getLeaves(child, leafMap));
 			}
 		}
-		// add this to the cache
-		leafMap.put(concept.getConceptID(), leaves);
+		// add this to the cache - copy the key so that it can be gc'ed
+		leafMap.put(new String(concept.getConceptID()), leaves);
 		return leaves;
 	}
 
@@ -324,8 +323,9 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		}
 		// add the concept itself to the set of subsumers
 		subsumers.add(concept.getConceptID());
-		// add this to the cache
-		subsumerMap.put(concept.getConceptID(), subsumers);
+		// add this to the cache - copy the key so that this can be gc'ed as
+		// needed
+		subsumerMap.put(new String(concept.getConceptID()), subsumers);
 		return subsumers;
 	}
 
