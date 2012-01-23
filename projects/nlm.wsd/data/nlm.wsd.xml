@@ -5,7 +5,7 @@
 	<entry key="ytex.conceptGraphQuery"><![CDATA[
 	select distinct cui1, cui2 
 	from umls.MRREL 
-	where sab in ('SNOMEDCT', 'MSH' , 'NCI', 'MTH')
+	where sab in ('SNOMEDCT', 'MSH' , 'MTH')
 	and rel in ('PAR', 'RB')
 	order by cui1
 	]]></entry>
