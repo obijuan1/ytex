@@ -47,7 +47,7 @@
 		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="nlm.wsd.xml" />
-			<jvmarg value="-Xmx1500m" />
+			<jvmarg value="-Xmx${maxMemory}" />
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
@@ -58,7 +58,7 @@
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
-			<jvmarg value="-Xmx1500m" />
+			<jvmarg value="-Xmx${maxMemory}" />
 			<jvmarg value="-Dytex.conceptGraphName=nlm.wsd" />
 		</java>
 	</target>
