@@ -43,23 +43,21 @@
 
 	<target name="setup.generateConceptGraph" description="generate concept graph, compute intrinsic infogain">
 		<mkdir dir="${ytex.conceptGraphDir}" />
-		<!--
 		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
 			<arg value="-prop" />
 			<arg value="nlm.wsd.xml" />
-			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xmx1500m" />
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
 		</java>
-		-->
 	</target>
 	<target name="setup.ic">
 		<java classname="ytex.kernel.IntrinsicInfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
-			<jvmarg value="-Xmx4g" />
+			<jvmarg value="-Xmx1500m" />
 			<jvmarg value="-Dytex.conceptGraphName=nlm.wsd" />
 		</java>
 	</target>
