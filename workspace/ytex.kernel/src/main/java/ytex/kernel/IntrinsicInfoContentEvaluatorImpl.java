@@ -353,6 +353,8 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 				icInfoMap.size());
 		for (IntrinsicICInfo icInfo : icInfoMap.values()) {
 			double ic = computeIC(icInfo, maxLeaves);
+			if(log.isDebugEnabled())
+				log.debug(icInfo.getConcept().getConceptID() + "=" + ic);
 			listFeatureRank.add(new FeatureRank(fe, icInfo.getConcept()
 					.getConceptID(), ic));
 		}
