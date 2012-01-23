@@ -1,6 +1,7 @@
 <project name="nlm.wsd">
 	<property environment="env" />
 	<property name="ytex.home" value=".." />
+	<property name="maxMemory" value="1500m" />
 	<property name="choices.home" value="E:/Downloads/text mining/nlm wsd/NLM-WSD.target_word.choices_v0.3/NLM-WSD.target_word.choices_v0.3/choices/2007" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
