@@ -142,6 +142,8 @@ public class ConceptDaoImpl implements ConceptDao {
 			// if there is only one potential root, use it
 			// else use a synthetic root and add all the roots as its children
 			String rootId = null;
+			if (log.isDebugEnabled())
+				log.debug("roots: " + roots);
 			if (roots.size() == 1) {
 				rootId = roots.iterator().next();
 			} else {
@@ -253,28 +255,36 @@ public class ConceptDaoImpl implements ConceptDao {
 		}
 		// ignore self relations
 		if (!childCUI.equals(parentCUI)) {
+			boolean checkCycle = true;
 			// get parent from cui map
 			ConcRel crPar = conceptMap.get(parentCUI);
 			if (crPar == null) {
+				checkCycle = false;
 				// parent not in cui map - add it
 				crPar = new ConcRel(parentCUI);
 				conceptMap.put(parentCUI, crPar);
 				// this is a candidate root - add it to the set of roots
 				roots.add(parentCUI);
 			}
+			// get the child cui
+			ConcRel crChild = conceptMap.get(childCUI);
 			// avoid cycles - don't add child cui if it is an ancestor
-			// of the parent
-			if (!crPar.hasAncestor(childCUI)) {
-				// get the child cui
-				ConcRel crChild = conceptMap.get(childCUI);
+			// of the parent. if the child is not yet in the map, then it can't
+			// possibly induce a cycle.
+			// if the parent is not yet in the map, it can't induce a cycle
+			// else check for cycles
+			// @TODO: this is very inefficient. implement feedback arc algo
+			if (crChild == null || !checkCycle || !crPar.hasAncestor(childCUI)) {
 				if (crChild == null) {
 					// child not in cui map - add it
 					crChild = new ConcRel(childCUI);
 					conceptMap.put(childCUI, crChild);
+					checkCycle = false;
+				} else {
+					// remove the cui from the list of candidate roots
+					if (roots.contains(childCUI))
+						roots.remove(childCUI);
 				}
-				// remove the cui from the list of candidate roots
-				if (roots.contains(childCUI))
-					roots.remove(childCUI);
 				// link child to parent and vice-versa
 				crPar.children.add(crChild);
 				crChild.parents.add(crPar);
