@@ -274,7 +274,12 @@ public class ConceptDaoImpl implements ConceptDao {
 			// if the parent is not yet in the map, it can't induce a cycle
 			// else check for cycles
 			// @TODO: this is very inefficient. implement feedback arc algo
-			if (crChild == null || !checkCycle || !crPar.hasAncestor(childCUI)) {
+			boolean bCycle = crChild != null && checkCycle
+					&& crPar.hasAncestor(childCUI);
+			if (bCycle) {
+				log.warn("skipping relation that induces cycle: par="
+						+ parentCUI + ", child=" + childCUI);
+			} else {
 				if (crChild == null) {
 					// child not in cui map - add it
 					crChild = new ConcRel(childCUI);
