@@ -1,5 +1,8 @@
 package ytex.wsd.nlm;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,15 +22,35 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 
 import ytex.kernel.ConceptSimilarityService;
 import ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum;
-import ytex.kernel.KernelContextHolder;
+import ytex.kernel.SimSvcContextHolder;
 import ytex.kernel.wsd.WordSenseDisambiguator;
 
+/**
+ * disambiguate nlm wsd dataset using specified semantic similarity measure.
+ * required parameters:
+ * <ul>
+ * <li>metric @see SimilarityMetricEnum
+ * <li>windowSize number of concepts on either side of the target concept to use
+ * for disambiguation
+ * </ul>
+ * will write tab-delimited file to [metric].txt in working directory. columns:
+ * <ul>
+ * <li>instanceId
+ * <li>word
+ * <li>target cui
+ * <li>predicted cui
+ * <li>scores for each cui
+ * </ul>
+ * 
+ * @author vijay
+ * 
+ */
 public class WSDDisambiguator {
 
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		SimilarityMetricEnum metric = SimilarityMetricEnum.valueOf(args[0]);
 		int windowSize = Integer.parseInt(args[1]);
 		WSDDisambiguator wsd = new WSDDisambiguator();
@@ -128,17 +151,20 @@ public class WSDDisambiguator {
 	}
 
 	Map<String, Set<String>> wordCuis;
+	Map<Long, Set<String>> titleConcepts;
 	Map<Long, Word> words;
 	JdbcTemplate jdbcTemplate;
 	SortedMap<Long, Sentence> sentences;
 	WordSenseDisambiguator wordSenseDisambiguator;
 
 	public WSDDisambiguator() {
-		DataSource ds = (DataSource)KernelContextHolder.getApplicationContext().getBean("dataSource");
+		DataSource ds = (DataSource) SimSvcContextHolder
+				.getApplicationContext().getBean("dataSource");
 		this.jdbcTemplate = new JdbcTemplate(ds);
-		this.wordSenseDisambiguator = KernelContextHolder.getApplicationContext().getBean(WordSenseDisambiguator.class);
+		this.wordSenseDisambiguator = SimSvcContextHolder
+				.getApplicationContext().getBean(WordSenseDisambiguator.class);
 	}
-	
+
 	public Map<String, Set<String>> loadWordCuis() {
 		wordCuis = new HashMap<String, Set<String>>();
 		jdbcTemplate.query("select word, cui from nlm_wsd_cui order by word",
@@ -161,10 +187,34 @@ public class WSDDisambiguator {
 		return wordCuis;
 	}
 
+	public Map<Long, Set<String>> loadTitleConcepts() {
+		titleConcepts = new HashMap<Long, Set<String>>();
+		jdbcTemplate
+				.query("select uid, code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id  where d.analysis_batch = 'wsd-title' order by uid",
+						new RowCallbackHandler() {
+							long wordCurrent = -1;
+							Set<String> cuisCurrent = null;
+
+							@Override
+							public void processRow(ResultSet rs)
+									throws SQLException {
+								long wordNew = rs.getLong(1);
+								String cui = rs.getString(2);
+								if (wordCurrent != wordNew) {
+									cuisCurrent = new HashSet<String>();
+									wordCurrent = wordNew;
+									titleConcepts.put(wordCurrent, cuisCurrent);
+								}
+								cuisCurrent.add(cui);
+							}
+						});
+		return titleConcepts;
+	}
+
 	public Map<Long, Word> loadWords() {
 		words = new HashMap<Long, Word>();
 		jdbcTemplate
-				.query("select w.instance_id, w.word, coalesce(c.cui, w.concept_code) cui, w.sent_ambiguity_start spanBegin, w.sent_ambiguity_end+1 spanEnd from nlm_wsd w left join nlm_wsd_cui c on w.word = c.word",
+				.query("select w.instance_id, w.word, coalesce(c.cui, w.choice_code) cui, w.sent_ambiguity_start spanBegin, w.sent_ambiguity_end+1 spanEnd from nlm_wsd w left join nlm_wsd_cui c on w.word = c.word and w.choice_code = c.choice_code",
 						new RowCallbackHandler() {
 							@Override
 							public void processRow(ResultSet rs)
@@ -213,6 +263,8 @@ public class WSDDisambiguator {
 										.getIndex()) {
 									currentConcepts.add(cui);
 								}
+								if (rs.isLast())
+									checkSentenceTargetIndex();
 							}
 
 							private void resetCurrentConcepts(int spanBegin,
@@ -224,13 +276,27 @@ public class WSDDisambiguator {
 								// add the set to the sentence
 								currentSentence.getConcepts().add(
 										currentConcepts);
-								// see if this concept is the target for
-								// disambiguation
 								Word w = words.get(currentSentence
 										.getInstanceId());
+								if (currentSentence.getIndex() < 0
+										&& w.spanBegin < spanBegin) {
+									// we didn't have the target concept
+									// annotated as a named entity, and we've
+									// passed the target concept.
+									// insert the target concept into the
+									// sentence
+									currentSentence
+											.setIndex(currentConceptIndex);
+									currentConcepts.addAll(wordCuis.get(w
+											.getWord()));
+									// reset again
+									resetCurrentConcepts(spanBegin, spanEnd);
+								}
+
 								if (w.getSpanBegin() == spanBegin
 										&& w.spanEnd == spanEnd) {
-									// bingo
+									// this concept is the target for
+									// disambiguation
 									currentSentence
 											.setIndex(currentConceptIndex);
 									currentConcepts.addAll(wordCuis.get(w
@@ -239,6 +305,7 @@ public class WSDDisambiguator {
 							}
 
 							private void reset(long instanceId) {
+								checkSentenceTargetIndex();
 								currentSpanBegin = -1;
 								currentSpanEnd = -1;
 								currentSentence = new Sentence(instanceId);
@@ -246,30 +313,68 @@ public class WSDDisambiguator {
 								currentConceptIndex = -1;
 								sentences.put(instanceId, currentSentence);
 							}
+
+							private void checkSentenceTargetIndex() {
+								if (currentSentence != null
+										&& currentSentence.getIndex() == -1) {
+									Word w = words.get(currentSentence
+											.getInstanceId());
+									// we didn't have the target concept
+									// annotated as a named entity, and we've
+									// come to the end of the sentence.
+									// insert the target concept into the
+									// sentence.
+									// this would be a problem if
+									currentSentence
+											.setIndex(currentConceptIndex + 1);
+									currentConcepts = new HashSet<String>();
+									currentConcepts.addAll(wordCuis.get(w
+											.getWord()));
+									currentSentence.getConcepts().add(
+											currentConcepts);
+								}
+							}
 						});
 		return sentences;
 	}
-	
-	public void disambiguate(ConceptSimilarityService.SimilarityMetricEnum metric, int windowSize) {
+
+	public void disambiguate(
+			ConceptSimilarityService.SimilarityMetricEnum metric, int windowSize)
+			throws IOException {
 		this.loadWordCuis();
 		this.loadWords();
 		this.loadSentences();
-		PrintStream ps = System.out;
-		for(Map.Entry<Long, Sentence> sentEntry : sentences.entrySet()) {
-			long instanceId = sentEntry.getKey();
-			Sentence s = sentEntry.getValue();
-			Word w = words.get(instanceId);
-			ps.print(instanceId);
-			ps.print("\t");
-			ps.print(w.getWord());
-			ps.print("\t");
-			ps.print(w.getCui());
-			ps.print("\t");
-			Map<String, Double> scoreMap = new HashMap<String,Double>();
-			String cui = this.wordSenseDisambiguator.disambiguate(s.getConcepts(), s.getIndex(), null, windowSize, metric, scoreMap);
-			ps.print(cui);
-			ps.print("\t");
-			ps.println(scoreMap);
+		this.loadTitleConcepts();
+		PrintStream ps = null;
+		try {
+			ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(
+					metric.name() + ".txt")));
+			for (Map.Entry<Long, Sentence> sentEntry : sentences.entrySet()) {
+				long instanceId = sentEntry.getKey();
+				Sentence s = sentEntry.getValue();
+				Word w = words.get(instanceId);
+				Set<String> title = titleConcepts.get(instanceId);
+				ps.print(instanceId);
+				ps.print("\t");
+				ps.print(w.getWord());
+				ps.print("\t");
+				ps.print(w.getCui());
+				ps.print("\t");
+				Map<String, Double> scoreMap = new HashMap<String, Double>();
+				String cui = this.wordSenseDisambiguator.disambiguate(
+						s.getConcepts(), s.getIndex(), title, windowSize,
+						metric, scoreMap);
+				ps.print(cui);
+				ps.print("\t");
+				ps.println(scoreMap);
+			}
+		} finally {
+			if (ps != null) {
+				try {
+					ps.close();
+				} catch (Exception e) {
+				}
+			}
 		}
 	}
 }

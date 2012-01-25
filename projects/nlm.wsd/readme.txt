@@ -123,4 +123,123 @@ select distinct cui from umls.mrxns_eng where nstr = 'adjustment';
 need following vocabs:
 ('SNOMEDCT', 'MSH', 'MEDCIN', 'NCI', 'LNC', 'MTH')
 
+* too many relations - building concept graph very slow upwards of 1 mil relationships
+--  615828 distinct snomedct 
+-- 1015422 distinct snomedct + msh 
+-- 1372307 distinct snomedct + msh + medcin
+-- 1449100 distinct snomedct + msh + medcin + nci
+-- 1578228 distinct snomedct + msh + medcin + nci + lnc
+-- 1692994 distinct snomedct + msh + medcin + nci + lnc + mth
+select count(distinct cui1, cui2)
+from umls.MRREL 
+where sab in ('SNOMEDCT', 'MSH' , 'MEDCIN', 'NCI', 'LNC', 'MTH')
+and rel in ('PAR', 'RB')
+
+
+* which vocabs actually have relations for the concepts
+-- 97 distinct cuis
+select count(distinct cui) 
+from nlm_wsd_cui wc 
+inner join nlm_wsd ws 
+    on ws.choice_code = wc.choice_code 
+    and ws.word = wc.word;
+
+
+-- missing 4 of the 97 from umls hierarchical relationships
+select *
+from
+(
+    select distinct wc.word, wc.choice_code, cui
+    from nlm_wsd_cui wc inner join nlm_wsd ws on ws.choice_code = wc.choice_code and ws.word = wc.word
+) wc
+left join
+(
+    select distinct wc.cui
+    from nlm_wsd_cui wc 
+    inner join umls.MRREL mr 
+        on (wc.cui = mr.cui1 or wc.cui = mr.cui2) 
+        and mr.REL in ('PAR', 'CHD', 'RB', 'RN') 
+) uc on wc.cui = uc.cui
+where uc.cui is null
+;
+
+missing following concepts in any relationship:
+extraction	M1	C0684295	
+failure	M1	C0680095	
+radiation	M2	C0034618	
+transport	M2	C0150390	
+
+
+select SAB, count(distinct wc.cui) sc
+from tmp_cui wc 
+inner join umls.MRREL mr on wc.cui = mr.cui1 or wc.cui = mr.cui2 and mr.REL in ('PAR', 'CHD', 'RB', 'RN')
+group by SAB
+order by count(distinct wc.cui) desc
+;
+top vocabs:
+MTH	89
+SNOMEDCT	73
+NCI	52
+MSH	52
+MEDCIN	19
+LNC	19
+
+* use following SABS: 'SNOMEDCT', 'MSH', 'MTH', 'NCI'
+-- 93 ALL SABS
+-- 73 SNOMEDCT
+-- 88 SNOMEDCT + MSH
+-- 92 SNOMEDCT + MSH + MTH
+-- 92 SNOMEDCT + MSH + MTH + LNC
+-- 92 SNOMEDCT + MSH + MTH + MEDCIN
+-- 93 SNOMEDCT + MSH + MTH + NCI
+select count(distinct wc.cui)
+from tmp_cui wc 
+inner join umls.MRREL mr 
+    on (wc.cui = mr.cui1 or wc.cui = mr.cui2) 
+    and mr.REL in ('PAR', 'CHD', 'RB', 'RN') 
+    and mr.sab in ('SNOMEDCT', 'MSH', 'MTH', 'NCI')
+
+-- 1210154 relationships 'SNOMEDCT', 'MSH', 'MTH', 'NCI'
+-- 1135734 relationships 'SNOMEDCT', 'MSH', 'MTH'
+-- 1015422 relationships 'SNOMEDCT', 'MSH'
+--  615828 relationships SNOMEDCT
+select count(distinct cui1, cui2)
+from umls.MRREL 
+where sab in ('SNOMEDCT', 'MSH' , 'NCI', 'MTH')
+and rel in ('PAR', 'RB')
+
+---------
+umls 2011ab
+---------
+/*
+rel = all, sab = all: missing radiation	M2 C0034618
+
+rel = hierarchical, sab = all: missing radiation	M2 C0034618
+
+rel = hierarchical, sab = AOD, MSH, CSP, SNOMEDCT: missing 
+radiation	M2	C0034618	
+transport	M2	C0150390	
+ultrasound	M2	C0041621	
+
+rel = all, sab = AOD, MSH, CSP, SNOMEDCT: missing 
+radiation	M2	C0034618	
+transport	M2	C0150390	
+*/
+select *
+from
+(
+    select distinct wc.word, wc.choice_code, cui
+    from nlm_wsd_cui wc inner join nlm_wsd ws on ws.choice_code = wc.choice_code and ws.word = wc.word
+) wc
+left join
+(
+    select distinct wc.cui
+    from nlm_wsd_cui wc 
+    inner join umls2011ab.MRREL mr 
+        on (wc.cui = mr.cui1 or wc.cui = mr.cui2) 
+--        and mr.REL in ('PAR', 'CHD', 'RB', 'RN')
+        and mr.SAB in ('AOD', 'MSH', 'CSP', 'SNOMEDCT')
+) uc on wc.cui = uc.cui
+where uc.cui is null
+;
 

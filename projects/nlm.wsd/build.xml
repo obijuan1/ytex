@@ -88,5 +88,30 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-
+	<target name="eval.wsd.all">
+		<for list="LCH,INTRINSIC_LCH,LIN,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" param="metric">
+			<sequential>
+				<antcall target="eval.wsd.metric">
+					<param name="metric" value="@{metric}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="eval.wsd.metric">
+		<property name="metric" value="PATH" />
+		<java classname="ytex.wsd.nlm.WSDDisambiguator" fork="yes" dir="${basedir}/desc">
+			<classpath>
+				<dirset dir="${basedir}">
+					<include name="bin" />
+				</dirset>
+				<path refid="${kernel.cp}" />
+			</classpath>
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+			<jvmarg value="-Dytex.conceptGraphName=nlm.wsd" />
+			<arg value="${metric}" />
+			<arg value="5" />
+		</java>
+	</target>
 </project>
