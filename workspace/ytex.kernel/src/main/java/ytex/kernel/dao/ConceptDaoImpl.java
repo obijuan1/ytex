@@ -274,11 +274,11 @@ public class ConceptDaoImpl implements ConceptDao {
 		}
 		// ignore self relations
 		if (!childCUI.equals(parentCUI)) {
-			boolean parNull = true;
+			boolean parNull = false;
 			// get parent from cui map
 			ConcRel crPar = cg.getConceptMap().get(parentCUI);
 			if (crPar == null) {
-				parNull = false;
+				parNull = true;
 				// parent not in cui map - add it
 				crPar = cg.addConcept(parentCUI);
 				// this is a candidate root - add it to the set of roots
@@ -286,6 +286,9 @@ public class ConceptDaoImpl implements ConceptDao {
 			}
 			// get the child cui
 			ConcRel crChild = cg.getConceptMap().get(childCUI);
+			// crPar already has crChild, return
+			if (crChild != null && crPar.getChildren().contains(crChild))
+				return;
 			// avoid cycles - don't add child cui if it is an ancestor
 			// of the parent. if the child is not yet in the map, then it can't
 			// possibly induce a cycle.
@@ -301,7 +304,6 @@ public class ConceptDaoImpl implements ConceptDao {
 				if (crChild == null) {
 					// child not in cui map - add it
 					crChild = cg.addConcept(childCUI);
-					checkCycle = false;
 				} else {
 					// remove the cui from the list of candidate roots
 					if (roots.contains(childCUI))
