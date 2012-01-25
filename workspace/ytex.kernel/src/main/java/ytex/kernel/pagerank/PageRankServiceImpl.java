@@ -68,8 +68,16 @@ public class PageRankServiceImpl implements PageRankService {
 		double diff = 1d;
 		for (int i = 0; i < iter; i++) {
 			Map<Integer, Double> scoreMapOld = scoreMapCurrent;
+			long timeBegin = 0;
+			if (log.isDebugEnabled()) {
+				timeBegin = System.currentTimeMillis();
+			}
 			scoreMapCurrent = pagerankIter(scoreMapCurrent, dampingVector, cg,
 					dampingFactor, N);
+			if (log.isDebugEnabled()) {
+				log.debug("iter " + i + " "
+						+ Long.toString(System.currentTimeMillis() - timeBegin));
+			}
 			if (scoreMapOld != null
 					&& (diff = difference(scoreMapCurrent, scoreMapOld)) <= threshold)
 				break;

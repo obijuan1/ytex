@@ -251,4 +251,15 @@
 		and (tty = 'PN' or tty = 'PT')
 		group by cui
 	]]></query>
+	<query name="getMaxFeatureEvaluation"><![CDATA[
+		select max(evaluation)
+		from FeatureRank
+		where featureEval.corpusName = :corpusName
+		and featureEval.featureSetName = :featureSetName
+		and featureEval.param1 = :param1
+		and featureEval.param2 = :param2
+		and featureEval.crossValidationFoldId = :crossValidationFoldId
+		and featureEval.evaluationType = :evaluationType
+		and featureEval.label = :label
+	]]></query>
 </hibernate-mapping>

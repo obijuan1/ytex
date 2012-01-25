@@ -13,6 +13,15 @@ import ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum;
 public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 	ConceptSimilarityService conceptSimilarityService;
 
+	public ConceptSimilarityService getConceptSimilarityService() {
+		return conceptSimilarityService;
+	}
+
+	public void setConceptSimilarityService(
+			ConceptSimilarityService conceptSimilarityService) {
+		this.conceptSimilarityService = conceptSimilarityService;
+	}
+
 	/* (non-Javadoc)
 	 * @see ytex.kernel.wsd.WordSenseDisambiguator#disambiguate(java.util.List, int, java.util.Set, int, ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum, java.util.Map)
 	 */

@@ -207,6 +207,15 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		q.setMaxResults(parentConceptTopThreshold);
 		return q.list();
 	}
+	
+	@Override
+	public Double getMaxFeatureEvaluation(String corpusName,
+			String featureSetName, String label, String evaluationType,
+			Integer foldId, double param1, String param2) {
+		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
+				label, evaluationType, foldId, param1, param2, "getMaxFeatureEvaluation");
+		return (Double)q.uniqueResult();
+	}
 
 	private Query prepareUniqueFeatureEvalQuery(String corpusName,
 			String featureSetName, String label, String evaluationType,

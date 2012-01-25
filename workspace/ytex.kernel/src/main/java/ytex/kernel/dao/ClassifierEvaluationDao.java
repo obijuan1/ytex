@@ -78,4 +78,7 @@ public interface ClassifierEvaluationDao {
 			String evaluationType, String conceptGraphName,
 			String propEvaluationType, int propRankCutoff);
 
+	public abstract Double getMaxFeatureEvaluation(String corpusName, String featureSetName,
+			String label, String evaluationType, Integer foldId, double param1, String param2);
+
 }

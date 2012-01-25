@@ -11,13 +11,16 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -107,12 +110,19 @@ public class ConceptDaoImpl implements ConceptDao {
 		this.sessionFactory = sessionFactory;
 	}
 
+	@Override
+	public ConceptGraph createConceptGraph(String name, String query) {
+		return createConceptGraph(name, query, true);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see ytex.kernel.dao.ConceptDao#createConceptGraph
 	 */
-	public ConceptGraph createConceptGraph(String name, String query) {
+	@Override
+	public ConceptGraph createConceptGraph(String name, String query,
+			final boolean checkCycle) {
 		ConceptGraph conceptGraph = getConceptGraph(name);
 		if (conceptGraph != null) {
 			if (log.isWarnEnabled())
@@ -121,7 +131,12 @@ public class ConceptDaoImpl implements ConceptDao {
 		} else {
 			if (log.isInfoEnabled())
 				log.info("createConceptGraph(): file not found, initializing concept graph from database.");
-			final Map<String, ConcRel> conceptMap = new HashMap<String, ConcRel>();
+			// final Map<String, ConcRel> conceptMap = new HashMap<String,
+			// ConcRel>();
+			// final List<String> conceptList = new ArrayList<String>();
+			// final Map<String, Integer> conceptIndexMap = new HashMap<String,
+			// Integer>();
+			final ConceptGraph cg = new ConceptGraph();
 			final Set<String> roots = new HashSet<String>();
 			this.jdbcTemplate.query(query, new RowCallbackHandler() {
 				int nRowsProcessed = 0;
@@ -130,14 +145,13 @@ public class ConceptDaoImpl implements ConceptDao {
 				public void processRow(ResultSet rs) throws SQLException {
 					String child = rs.getString(1);
 					String parent = rs.getString(2);
-					addRelation(conceptMap, roots, child, parent);
+					addRelation(cg, roots, child, parent, checkCycle);
 					nRowsProcessed++;
 					if (nRowsProcessed % 10000 == 0) {
 						log.debug("processed " + nRowsProcessed + " edges");
 					}
 				}
 			});
-			ConceptGraph cg = new ConceptGraph();
 			// set the root
 			// if there is only one potential root, use it
 			// else use a synthetic root and add all the roots as its children
@@ -149,30 +163,33 @@ public class ConceptDaoImpl implements ConceptDao {
 			} else {
 				rootId = System.getProperty("ytex.defaultRootId",
 						DEFAULT_ROOT_ID);
-				ConcRel crRoot = new ConcRel(rootId);
+				ConcRel crRoot = cg.addConcept(rootId);
 				for (String crChildId : roots) {
-					ConcRel crChild = conceptMap.get(crChildId);
+					ConcRel crChild = cg.getConceptMap().get(crChildId);
 					crRoot.getChildren().add(crChild);
 					crChild.getParents().add(crRoot);
 				}
-				conceptMap.put(rootId, crRoot);
 			}
 			cg.setRoot(rootId);
-			cg.setConceptMap(conceptMap);
-			cg.setDepthMax(calculateDepthMax(rootId, conceptMap));
+			// can't get the maximum depth unless we're sure there are no cycles
+			if (checkCycle)
+				cg.setDepthMax(calculateDepthMax(rootId, cg.getConceptMap()));
 			writeConceptGraph(name, cg);
-			writeConceptGraphProps(name, query);
+			writeConceptGraphProps(name, query, checkCycle);
 			return cg;
 		}
 	}
 
-	private void writeConceptGraphProps(String name, String query) {
+	private void writeConceptGraphProps(String name, String query,
+			boolean checkCycle) {
 		File propFile = new File(FileUtil.addFilenameToDir(
 				this.getConceptGraphDir(), name + ".xml"));
 		try {
 			if (!propFile.exists()) {
 				Properties props = new Properties();
 				props.put("ytex.conceptGraphQuery", query);
+				props.put("ytex.conceptGraphName", name);
+				props.put("ytex.checkCycle", checkCycle ? "true" : "false");
 				OutputStream os = null;
 				try {
 					os = new FileOutputStream(propFile);
@@ -243,11 +260,13 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * add the relationship to the concept map
 	 * 
 	 * @param conceptMap
+	 * @param conceptIndexMap
+	 * @param conceptList
 	 * @param roots
 	 * @param conceptPair
 	 */
-	private void addRelation(Map<String, ConcRel> conceptMap,
-			Set<String> roots, String childCUI, String parentCUI) {
+	private void addRelation(ConceptGraph cg, Set<String> roots,
+			String childCUI, String parentCUI, boolean checkCycle) {
 		if (forbiddenConcepts.contains(childCUI)
 				|| forbiddenConcepts.contains(parentCUI)) {
 			// ignore relationships to useless concepts
@@ -255,26 +274,25 @@ public class ConceptDaoImpl implements ConceptDao {
 		}
 		// ignore self relations
 		if (!childCUI.equals(parentCUI)) {
-			boolean checkCycle = true;
+			boolean parNull = true;
 			// get parent from cui map
-			ConcRel crPar = conceptMap.get(parentCUI);
+			ConcRel crPar = cg.getConceptMap().get(parentCUI);
 			if (crPar == null) {
-				checkCycle = false;
+				parNull = false;
 				// parent not in cui map - add it
-				crPar = new ConcRel(parentCUI);
-				conceptMap.put(parentCUI, crPar);
+				crPar = cg.addConcept(parentCUI);
 				// this is a candidate root - add it to the set of roots
 				roots.add(parentCUI);
 			}
 			// get the child cui
-			ConcRel crChild = conceptMap.get(childCUI);
+			ConcRel crChild = cg.getConceptMap().get(childCUI);
 			// avoid cycles - don't add child cui if it is an ancestor
 			// of the parent. if the child is not yet in the map, then it can't
 			// possibly induce a cycle.
 			// if the parent is not yet in the map, it can't induce a cycle
 			// else check for cycles
 			// @TODO: this is very inefficient. implement feedback arc algo
-			boolean bCycle = crChild != null && checkCycle
+			boolean bCycle = !parNull && crChild != null && checkCycle
 					&& crPar.hasAncestor(childCUI);
 			if (bCycle) {
 				log.warn("skipping relation that induces cycle: par="
@@ -282,8 +300,7 @@ public class ConceptDaoImpl implements ConceptDao {
 			} else {
 				if (crChild == null) {
 					// child not in cui map - add it
-					crChild = new ConcRel(childCUI);
-					conceptMap.put(childCUI, crChild);
+					crChild = cg.addConcept(childCUI);
 					checkCycle = false;
 				} else {
 					// remove the cui from the list of candidate roots
@@ -334,16 +351,20 @@ public class ConceptDaoImpl implements ConceptDao {
 	}
 
 	/**
-	 * replace cui strings in concrel with references to other nodes.
+	 * replace cui strings in concrel with references to other nodes. initialize
+	 * the concept list
 	 * 
 	 * @param cg
 	 * @return
 	 */
 	private ConceptGraph initializeConceptGraph(ConceptGraph cg) {
 		Map<String, ConcRel> conceptMap = cg.getConceptMap();
+		SortedMap<Integer, ConcRel> conceptIndexMap = new TreeMap<Integer, ConcRel>();
 		for (ConcRel cr : conceptMap.values()) {
 			cr.constructRel(conceptMap);
+			conceptIndexMap.put(cr.getNodeIndex(), cr);
 		}
+		cg.setConceptList(new ArrayList<ConcRel>(conceptIndexMap.values()));
 		return cg;
 	}
 
@@ -372,11 +393,17 @@ public class ConceptDaoImpl implements ConceptDao {
 					.getProperty("ytex.conceptGraphName");
 			String conceptGraphQuery = props
 					.getProperty("ytex.conceptGraphQuery");
+			String strCheckCycle = props.getProperty("ytex.checkCycle", "true");
+			boolean checkCycle = true;
+			if ("false".equalsIgnoreCase(strCheckCycle)
+					|| "no".equalsIgnoreCase(strCheckCycle))
+				checkCycle = false;
 			if (conceptGraphName != null && conceptGraphQuery != null) {
 				KernelContextHolder
 						.getApplicationContext()
 						.getBean(ConceptDao.class)
-						.createConceptGraph(conceptGraphName, conceptGraphQuery);
+						.createConceptGraph(conceptGraphName,
+								conceptGraphQuery, checkCycle);
 			} else {
 				printHelp(options);
 			}

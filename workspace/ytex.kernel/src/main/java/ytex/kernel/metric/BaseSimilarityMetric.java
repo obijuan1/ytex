@@ -71,6 +71,23 @@ public abstract class BaseSimilarityMetric implements SimilarityMetric {
 		return lcsIC;
 	}
 
+	/**
+	 * call initLCSes and initLcsIC
+	 * 
+	 * @param concept1
+	 * @param concept2
+	 * @param conceptFilter
+	 * @param simInfo
+	 * @param intrinsicIC
+	 * @return
+	 */
+	protected double initLcsIC(String concept1, String concept2,
+			Map<String, Double> conceptFilter, SimilarityInfo simInfo,
+			boolean intrinsicIC) {
+		this.initLCSes(concept1, concept2, simInfo);
+		return this.initLcsIC(conceptFilter, simInfo, intrinsicIC);
+	}
+
 	public BaseSimilarityMetric(ConceptSimilarityService simSvc) {
 		this.simSvc = simSvc;
 	}

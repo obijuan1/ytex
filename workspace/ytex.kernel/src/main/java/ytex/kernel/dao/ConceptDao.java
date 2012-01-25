@@ -35,4 +35,7 @@ public interface ConceptDao {
 	 */
 	public abstract ConceptGraph getConceptGraph(String name);
 
+	public abstract ConceptGraph createConceptGraph(String name, String query,
+			final boolean checkCycle);
+
 }

@@ -290,6 +290,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		</property>
 		<property name="methodName" value="evaluate" />
 	</bean>
+	<bean id="pageRankService" class="ytex.kernel.pagerank.PageRankServiceImpl">
+	</bean>
 	<!-- <bean id="abstractKernelCacheAdvisor" class="org.springframework.aop.support.DefaultPointcutAdvisor"> 
 		<property name="pointcut"> <bean class="org.springframework.aop.support.JdkRegexpMethodPointcut"> 
 		<property name="pattern"> <value>.*evaluate.*</value> </property> </bean> 

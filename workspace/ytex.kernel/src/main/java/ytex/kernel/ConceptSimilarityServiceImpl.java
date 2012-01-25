@@ -43,13 +43,20 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.ConceptDao;
+import ytex.kernel.metric.IntrinsicLCHMetric;
+import ytex.kernel.metric.IntrinsicPathMetric;
+import ytex.kernel.metric.JaccardMetric;
 import ytex.kernel.metric.LCHMetric;
 import ytex.kernel.metric.LinMetric;
+import ytex.kernel.metric.PageRankMetric;
+import ytex.kernel.metric.PathMetric;
 import ytex.kernel.metric.SimilarityInfo;
 import ytex.kernel.metric.SimilarityMetric;
+import ytex.kernel.metric.SokalSneathMetric;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
 import ytex.kernel.model.FeatureRank;
+import ytex.kernel.pagerank.PageRankService;
 
 /**
  * compute concept similarity
@@ -155,8 +162,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				for (String subline : lines) {
 					String pair[] = subline.split(",|\\t");
 					if (pair.length != 2) {
-						System.err
-								.println("cannot parse concept pair: " + subline);
+						System.err.println("cannot parse concept pair: "
+								+ subline);
 					} else {
 						conceptPairs.add(new ConceptPair(pair[0], pair[1]));
 					}
@@ -275,6 +282,15 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private ClassifierEvaluationDao classifierEvaluationDao;
 
 	private ConceptDao conceptDao;
+	private PageRankService pageRankService;
+
+	public PageRankService getPageRankService() {
+		return pageRankService;
+	}
+
+	public void setPageRankService(PageRankService pageRankService) {
+		this.pageRankService = pageRankService;
+	}
 
 	private String conceptGraphName;
 
@@ -291,6 +307,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * 
 	 */
 	private Map<String, Double> intrinsicICMap = null;
+
 	/**
 	 * cache to hold lcs's
 	 */
@@ -518,10 +535,13 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	@Override
-	public Double getIC(String concept, boolean intrinsicICMap) {
+	public double getIC(String concept, boolean intrinsicICMap) {
 		Map<String, Double> icMap = intrinsicICMap ? this.intrinsicICMap
 				: this.corpusICMap;
-		return icMap.get(concept);
+		if (icMap.containsKey(concept))
+			return icMap.get(concept);
+		else
+			return 0d;
 	}
 
 	public int getLCS(String concept1, String concept2, Set<String> lcses,
@@ -665,6 +685,10 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * initialize the metrics
 	 */
 	private void initSimilarityMetricMap() {
+		Double maxIC = this.classifierEvaluationDao.getMaxFeatureEvaluation(
+				null, null, null,
+				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, 0, 0,
+				conceptGraphName);
 		this.similarityMetricMap = new HashMap<SimilarityMetricEnum, SimilarityMetric>(
 				SimilarityMetricEnum.values().length);
 		this.similarityMetricMap.put(SimilarityMetricEnum.LCH, new LCHMetric(
@@ -673,6 +697,19 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				this, false));
 		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_LIN,
 				new LinMetric(this, true));
+		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_LCH,
+				new IntrinsicLCHMetric(this, maxIC));
+		this.similarityMetricMap.put(SimilarityMetricEnum.PATH, new PathMetric(
+				this));
+		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_PATH,
+				new IntrinsicPathMetric(this, maxIC));
+		this.similarityMetricMap.put(SimilarityMetricEnum.SOKAL,
+				new SokalSneathMetric(this));
+		this.similarityMetricMap.put(SimilarityMetricEnum.JACCARD,
+				new JaccardMetric(this));
+		this.similarityMetricMap.put(SimilarityMetricEnum.PAGERANK,
+				new PageRankMetric(this, this.getPageRankService()));
+
 	}
 
 	/*

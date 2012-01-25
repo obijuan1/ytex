@@ -12,6 +12,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="conceptDao" ref="conceptDao" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="cacheManager" ref="cacheManager" />
+		<property name="pageRankService" ref="pageRankService" />
 		<property name="corpusName" value="${ytex.corpusName}" />
 		<property name="conceptGraphName" value="${ytex.conceptGraphName}" />
 		<property name="conceptSetName" value="${ytex.conceptSetName}" />
@@ -37,6 +38,9 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="tuiSemanticTypeKernel" class="ytex.kernel.evaluator.SemanticTypeKernel"
 		init-method="init">
 		<property name="mode" value="TUI" />
+		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
+	</bean>
+	<bean id="wordSenseDisambiguator" class="ytex.kernel.wsd.WordSenseDisambiguatorImpl">
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 	</bean>
 </beans>

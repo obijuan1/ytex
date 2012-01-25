@@ -4,7 +4,6 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 
 import ytex.kernel.metric.SimilarityInfo;
 import ytex.kernel.model.ConceptGraph;
@@ -12,7 +11,7 @@ import ytex.kernel.model.ConceptGraph;
 public interface ConceptSimilarityService {
 
 	public enum SimilarityMetricEnum {
-		LCH, LIN, INTRINSIC_LIN;
+		LCH, INTRINSIC_LCH, LIN, INTRINSIC_LIN, PATH, INTRINSIC_PATH, JACCARD, SOKAL, PAGERANK
 	}
 
 	public abstract double lch(String concept1, String concept2);
@@ -104,7 +103,7 @@ public interface ConceptSimilarityService {
 	public Object[] getBestLCS(Set<String> lcses, boolean intrinsicIC,
 			Map<String, Double> conceptFilter);
 
-	public abstract Double getIC(String concept, boolean intrinsicICMap);
+	public abstract double getIC(String concept, boolean intrinsicICMap);
 
 	/**
 	 * compute similarity for a pair of concepts
