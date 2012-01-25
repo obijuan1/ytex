@@ -26,4 +26,13 @@
 			<jvmarg value="-Dytex.conceptGraphName=snomed-${sct.year}" />
 		</java>
 	</target>
+	<target name="snomed-umls">
+		<java classname="ytex.kernel.IntrinsicInfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Dytex.conceptGraphName=snomed-umls" />
+		</java>
+	</target>
 </project>
