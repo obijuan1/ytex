@@ -18,7 +18,7 @@ public class PageRankMetric extends BaseSimilarityMetric {
 	public double similarity(String concept1, String concept2,
 			Map<String, Double> conceptFilter, SimilarityInfo simInfo) {
 		return pageRankService.sim(concept1, concept2,
-				this.simSvc.getConceptGraph(), 30, 1e-4, 0.85);
+				this.simSvc.getConceptGraph(), 10, 1e-2, 0.85);
 	}
 
 }

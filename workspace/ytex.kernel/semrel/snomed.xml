@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.conceptGraphName">snomed</entry>
+	<entry key="ytex.parentConceptTopThreshold">50</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+	select sourceId, destinationId
+	from sct2_relationship
+	where typeId = 116680003 and active = 1
+	]]></entry>
+</properties>

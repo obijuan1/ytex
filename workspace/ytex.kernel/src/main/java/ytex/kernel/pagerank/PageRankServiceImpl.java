@@ -1,8 +1,11 @@
 package ytex.kernel.pagerank;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -110,6 +113,175 @@ public class PageRankServiceImpl implements PageRankService {
 			}
 		}
 		return diff;
+	}
+
+	/**
+	 * 
+	 * @param u
+	 * @param v
+	 * @return norm(u-v)
+	 */
+	private double difference(double[] u, double[] v) {
+		double diff = 0d;
+		for (int i = 0; i < u.length; i++) {
+			double d = (u[i] - v[i]);
+			diff += d * d;
+		}
+		return Math.sqrt(diff);
+	}
+
+	private double cosine(double[] u, double[] v) {
+		double uu = 0;
+		double vv = 0;
+		double uv = 0;
+		for (int i = 0; i < u.length; i++) {
+			uu += u[i] * u[i];
+			vv += v[i] * v[i];
+			uv += u[i] * v[i];
+		}
+		return uv / Math.sqrt(uu * vv);
+	}
+
+	public double[] pagerankIter(double[] currentScores,
+			Map<Integer, Double> dampingVector, ConceptGraph cg,
+			double dampingFactor, double N, Set<Integer> activeNodes) {
+		double newScores[] = new double[(int) N];
+		Arrays.fill(newScores, 0d);
+		Integer[] activeNodeArr = new Integer[activeNodes.size()];
+		activeNodes.toArray(activeNodeArr);
+		for (int index : activeNodeArr) {
+			// pagerank with non-uniform damping vector (topic vector).
+			// because of the non-uniform damping vector, few nodes will have a
+			// non-zero pagerank.
+			// optimized so that we only iterate over nodes with non-zero
+			// pagerank.
+			// propagate from non-zero nodes to linked nodes
+			// we assume currentScores is non-null - it is initialized to the
+			// damping vector.
+			// iterate over nodes that have a pagerank, and propagate the
+			// pagerank to out-links.
+			// pagerank
+			double score = currentScores[index];
+			// get concept id
+			ConcRel cr = cg.getConceptList().get(index);
+			// get number of out-links
+			double nOutlinks = (double) cr.getChildren().size();
+			if (nOutlinks > 0) {
+				// propagate pagerank to out-links (children)
+				for (ConcRel crOut : cr.getChildren()) {
+					int targetIndex = crOut.getNodeIndex();
+					// get current pagerank value for target page
+					double childScore = newScores[targetIndex];
+					// add the pagerank/|links|
+					childScore += (score / nOutlinks);
+					newScores[targetIndex] = childScore;
+					activeNodes.add(targetIndex);
+				}
+			}
+		}
+		// we just added the contribution of pages to newScores sum(score).
+		// adjust: convert to (d)*sum(score) + (1-d)*v_i
+		for (int index : activeNodes) {
+			// personalized pagerank
+			double adjusted = (newScores[index] * dampingFactor);
+			// v_i
+			Double v_i = dampingVector.get(index);
+			// 1-c * v_i
+			if (v_i != null)
+				adjusted += v_i;
+			newScores[index] = adjusted;
+		}
+		return newScores;
+	}
+
+	public double[] pagerankIter(double[] currentScores,
+			Map<Integer, Double> dampingVector, ConceptGraph cg,
+			double dampingFactor, double N) {
+		double newScores[] = new double[(int) N];
+		double jump = ((1 - dampingFactor) / N);
+		for (int i = 0; i < currentScores.length; i++) {
+			double score = 0d;
+			ConcRel c = cg.getConceptList().get(i);
+			// get nodes pointing at node c
+			for (ConcRel in : c.getParents()) {
+				// get the pagerank for node p which is pointing at c
+				// if this is the first iteration, currentScores is null so
+				// use the initial pagerank
+				double prIn = currentScores[in.getNodeIndex()];
+				// add the pagerank divided by the number of nodes p is
+				// pointing at
+				score += (prIn / (double) in.getChildren().size());
+			}
+			if (dampingVector == null) {
+				// uniform damping
+				newScores[i] = (score * dampingFactor) + jump;
+			} else {
+				// personalized pagerank
+				double adjusted = (score * dampingFactor);
+				// get the random jump for this node
+				Double v_i = dampingVector.get(i);
+				// if not null, add it
+				if (v_i != null)
+					adjusted += v_i;
+				newScores[i] = adjusted;
+			}
+		}
+		return newScores;
+	}
+
+	@Override
+	public double[] rank2(Map<Integer, Double> dampingVector, ConceptGraph cg,
+			int iter, double threshold, double dampingFactor) {
+		double N = (double) cg.getConceptMap().size();
+		double scoresCurrent[] = new double[cg.getConceptMap().size()];
+		Map<Integer, Double> dampingVectorAdj = null;
+		// Set<Integer> activeNodes = null;
+		if (dampingVector != null) {
+			// for personalized page rank, put together a map of possibilities
+			// of randomly jumping to a specific node
+			dampingVectorAdj = new HashMap<Integer, Double>(
+					dampingVector.size());
+			// // initialize set of active nodes
+			// activeNodes = new HashSet<Integer>(dampingVector.keySet());
+			Arrays.fill(scoresCurrent, 0d);
+			for (Map.Entry<Integer, Double> dvEntry : dampingVector.entrySet()) {
+				// set the random jump for the node
+				dampingVectorAdj.put(dvEntry.getKey(), dvEntry.getValue()
+						* (1 - dampingFactor));
+				// set the initial weight for the node
+				scoresCurrent[dvEntry.getKey()] = dvEntry.getValue();
+
+			}
+		} else {
+			// for static page rank, all nodes have same weight initially
+			Arrays.fill(scoresCurrent, 1d / N);
+		}
+		double diff = 1d;
+		for (int i = 0; i < iter; i++) {
+			double scoresOld[] = scoresCurrent;
+			long timeBegin = 0;
+			if (log.isDebugEnabled()) {
+				timeBegin = System.currentTimeMillis();
+			}
+			// if (activeNodes == null) {
+			scoresCurrent = pagerankIter(scoresCurrent, dampingVectorAdj, cg,
+					dampingFactor, N);
+			// } else {
+			// scoresCurrent = pagerankIter(scoresCurrent, dampingVectorAdj,
+			// cg, dampingFactor, N, activeNodes);
+			// }
+			if (log.isDebugEnabled()) {
+				log.debug("iter " + i + " time(ms) "
+						+ Long.toString(System.currentTimeMillis() - timeBegin));
+			}
+			if ((diff = difference(scoresCurrent, scoresOld)) <= threshold)
+				break;
+		}
+		if (log.isDebugEnabled() && diff > threshold) {
+			log.debug("did not converge, diff = " + diff + ", dampingVector = "
+					+ dampingVector);
+		}
+		return scoresCurrent;
 	}
 
 	/**
@@ -275,12 +447,10 @@ public class PageRankServiceImpl implements PageRankService {
 			int iter, double threshold, double dampingFactor) {
 		Map<Integer, Double> c1dv = new HashMap<Integer, Double>(1);
 		c1dv.put(cg.getConceptMap().get(concept1).getNodeIndex(), 1d);
-		Map<Integer, Double> c1pr = this.rankInternal(c1dv, cg, iter,
-				threshold, dampingFactor);
+		double[] c1pr = this.rank2(c1dv, cg, iter, threshold, dampingFactor);
 		Map<Integer, Double> c2dv = new HashMap<Integer, Double>(1);
 		c2dv.put(cg.getConceptMap().get(concept2).getNodeIndex(), 1d);
-		Map<Integer, Double> c2pr = this.rankInternal(c2dv, cg, iter,
-				threshold, dampingFactor);
+		double[] c2pr = this.rank2(c2dv, cg, iter, threshold, dampingFactor);
 		return cosine(c1pr, c2pr);
 	}
 

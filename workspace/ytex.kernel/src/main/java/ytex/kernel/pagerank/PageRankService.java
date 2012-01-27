@@ -39,4 +39,7 @@ public interface PageRankService {
 	public abstract double sim(String concept1, String concept2, ConceptGraph cg,
 			int iter, double threshold, double dampingFactor);
 
+	public abstract double[] rank2(Map<Integer, Double> dampingVector, ConceptGraph cg, int iter,
+			double threshold, double dampingFactor);
+
 }

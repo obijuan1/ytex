@@ -1,0 +1,155 @@
+
+		//Renal_failure
+		ids.add(new Long(42399005));
+		//Kidney_failure
+		ids.add(new Long(42399005));
+		
+		//Heart
+		ids.add(new Long(80891009));
+		//Myocardium
+		ids.add(new Long(74281007));
+		
+		//Stroke
+		ids.add(new Long(230690007));
+		//Infarct
+		ids.add(new Long(55641003));
+				
+		//Abortion
+		ids.add(new Long(70317007));
+		//Miscarriage
+		ids.add(new Long(17369002));
+		
+		//Delusion (delusional disorder)
+		ids.add(new Long(48500005));
+		//Schizophrenia
+		ids.add(new Long(58214004));
+		
+				
+		//Congestive_heart_failure
+		//ids.add(new Long(42343007));
+		//Pulmonary_edema
+		//ids.add(new Long(19242006));
+				
+		//Metastasis (tumour)
+		ids.add(new Long(128462008));
+		//Adenocarcinoma
+		ids.add(new Long(443961001));
+		
+		//Calcification (focal)
+		ids.add(new Long(125369001));
+		//Stenosis
+		ids.add(new Long(415582006));
+		
+		
+		//Diarrhea
+		ids.add(new Long(373421000));
+		//Stomach_cramps
+		ids.add(new Long(51197009));
+		
+		//Mitral_stenosis
+		ids.add(new Long(79619009));
+		//Atrial_fibrillation
+		ids.add(new Long(49436004));
+		
+		
+		//Rheumatoid_arthritis
+		ids.add(new Long(69896004));
+		//Lupus
+		ids.add(new Long(200936003));
+		
+		
+		//Brain_tumour
+		//ids.add(new Long(254935002));
+		//Intracranial_haemorrhage
+		//ids.add(new Long(1386000));
+		
+		
+		//Carpal_tunnel_syndrome
+		ids.add(new Long(57406009));
+		//Osteoarthritis
+		ids.add(new Long(396275006));
+		
+		
+		//Diabetes_mellitus
+		ids.add(new Long(73211009));
+		//Hypertension
+		ids.add(new Long(38341003));
+		
+		//Acne
+		ids.add(new Long(11381005));
+		//Syringe
+		ids.add(new Long(61968008));
+		
+		//Antibiotic
+		ids.add(new Long(255631004));
+		//Allergy
+		ids.add(new Long(106190000));
+		
+		//Cortisone
+		//ids.add(new Long(32498003));
+		//Total_knee_replacement (cemented)
+		//ids.add(new Long(179344006));
+		
+		//Pulmonary_embolus (embolism)
+		//ids.add(new Long(59282003));
+		//Myocardial_infarction
+		//ids.add(new Long(22298006));
+		
+		//Pulmonary_fibrosis
+		//ids.add(new Long(51615001));
+		//Lung_cancer
+		//ids.add(new Long(126713003));
+		
+		
+		//Cholangiocarcinoma
+		//ids.add(new Long(70179006));
+		//Colonoscopy
+		//ids.add(new Long(73761001));
+		
+		//Lymphoid_hyperplasia
+		//ids.add(new Long(128863005));
+		//Laryngeal_cancer (neoplasm of larynx)
+		//ids.add(new Long(126692004));
+		
+		//Multiple_sclerosis
+		ids.add(new Long(24700007));
+		//Psychosis
+		ids.add(new Long(69322001));
+		
+		
+		//Appendicitis
+		ids.add(new Long(74400008));
+		//Osteoporosis
+		ids.add(new Long(64859006));
+		
+		//Rectal_polyp
+		//ids.add(new Long(39772007));
+		//Aorta
+		//ids.add(new Long(15825003));
+		
+		//Xerostomia
+		ids.add(new Long(87715008));
+		//Alcoholic_cirrhosis
+		ids.add(new Long(420054005));
+		
+		
+		//Peptic_ulcer_disease
+		ids.add(new Long(13200003));
+		//Myopia
+		ids.add(new Long(57190000));
+		
+		//Depression
+		ids.add(new Long(35489007));
+		//Cellulitis
+		ids.add(new Long(128045006));
+		
+		//Varicose_vein
+		//ids.add(new Long(12856003));
+		//Entire_knee_meniscus
+		//ids.add(new Long(244568009));
+		
+		
+		//Hyperlipidaemia
+		ids.add(new Long(55822004));
+		//malignant_neoplastic_disease
+		ids.add(new Long(363346000));
