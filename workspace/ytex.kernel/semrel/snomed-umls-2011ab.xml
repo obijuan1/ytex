@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.conceptGraphName">snomed-umls-2011ab</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+	select cui1, cui2 
+	from umls2011ab.MRREL 
+	where sab in ('SNOMEDCT')
+	and rel in ('PAR')
+	]]></entry>
+</properties>

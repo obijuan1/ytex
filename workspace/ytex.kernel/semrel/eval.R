@@ -8,9 +8,9 @@ eval.con = function(cg, con) {
 	return(res.m)
 }
  
-eval.mini = function(cg) {
-	gold = read.delim("MiniMayoSRS.csv", header=T, stringsAsFactors=F, sep=",")
-	sim = read.delim(paste(cg, "/MiniMayoSRS_cui_sim.txt", sep=""), sep="\t", header=T, stringsAsFactors=F)
+eval.mini = function(cg, prefix="MiniMayoSRS") {
+	gold = read.delim(paste(prefix, ".csv", sep=""), header=T, stringsAsFactors=F, sep=",")
+	sim = read.delim(paste(cg, "/", prefix, "_cui_sim.txt", sep=""), sep="\t", header=T, stringsAsFactors=F)
 	sim = sim[,-c(1,2)]
 	res.m1 = data.frame(
 		con=rep("MiniMayoSRS_Physicians", ncol(sim)),
@@ -36,8 +36,9 @@ eval.mini = function(cg) {
 # main
 res = data.frame(cg=c(), file=c(), spearman=c(),p.value=c())
 
-cgs = c("snomed-umls-2011ab", "snomed-umls-2010ab") 
+cgs = c("snomed-umls-2011ab", "snomed-umls-2010ab", "agirre.hier.2011ab") 
 cons = c("UMNSRS_similarity", "UMNSRS_relatedness", "MayoSRS")
+sct.years = c(2008,2009,2010,2011)
 
 for(cg in cgs) {
 	for(con in cons) {
@@ -45,6 +46,10 @@ for(cg in cgs) {
 		res = rbind(res, res.con)
 	}
 	res = rbind(res, eval.mini(cg))
+}
+
+for(year in sct.years) {
+	res = rbind(res, eval.mini(paste("snomed-", year, sep=""), prefix="MiniMayoSRS_snomed"))
 }
 
 write.csv(res, file="eval_cui.csv", row.names=F)
