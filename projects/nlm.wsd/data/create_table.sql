@@ -1,6 +1,10 @@
+delete from ref_segment_regex where segment_id in ('nlm.wsd.UI', 'nlm.wsd.TI', 'nlm.wsd.AB');
+insert into ref_segment_regex (regex, segment_id) values ('UI - ', 'nlm.wsd.UI');
+insert into ref_segment_regex (regex, segment_id) values ('TI - ', 'nlm.wsd.TI');
+insert into ref_segment_regex (regex, segment_id) values ('AB - ', 'nlm.wsd.AB');
+
 
 drop table if exists nlm_wsd;
-
 create table nlm_wsd (
     instance_id int auto_increment not null primary key,
     word varchar(20) not null,
@@ -15,22 +19,19 @@ create table nlm_wsd (
     sent_ambiguity_start int not null,
     sent_ambiguity_end int not null,
     sent_immediate_context varchar(200) not null,
-    UI int not null,
-    TI text not null,
-    AB text,
-    cite_ambiguity varchar(200) not null,
-    cite_ambiguity_alias varchar(200) not null,
-    cite_context_start int not null,
-    cite_context_end int not null,
-    cite_ambiguity_start int not null,
-    cite_ambiguity_end int not null,
-    cite_immediate_context varchar(200) not null,
+    abstract text,
+    abs_ambiguity varchar(200) not null,
+    abs_ambiguity_alias varchar(200) not null,
+    abs_context_start int not null,
+    abs_context_end int not null,
+    abs_ambiguity_start int not null,
+    abs_ambiguity_end int not null,
+    abs_immediate_context varchar(200) not null,
     unique key NK_nlm_wsd (word, choice_id)
 ) engine=myisam;
 
 
 drop table if exists nlm_wsd_cui;
-
 create table nlm_wsd_cui (
     word varchar(20) not null,
     choice_code varchar(4) not null,
@@ -45,6 +46,3 @@ create table nlm_wsd_word (
     word varchar(20) not null primary key
 ) engine=myisam;  
 
-drop table if exists v_wsd_fword_lookup;
-create table v_wsd_fword_lookup
-as

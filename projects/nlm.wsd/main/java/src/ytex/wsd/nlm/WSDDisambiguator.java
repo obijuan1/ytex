@@ -214,7 +214,7 @@ public class WSDDisambiguator {
 	public Map<Long, Word> loadWords() {
 		words = new HashMap<Long, Word>();
 		jdbcTemplate
-				.query("select w.instance_id, w.word, coalesce(c.cui, w.choice_code) cui, w.sent_ambiguity_start spanBegin, w.sent_ambiguity_end+1 spanEnd from nlm_wsd w left join nlm_wsd_cui c on w.word = c.word and w.choice_code = c.choice_code",
+				.query("select w.instance_id, w.word, coalesce(c.cui, w.choice_code) cui, w.abs_ambiguity_start spanBegin, w.abs_ambiguity_end+1 spanEnd from nlm_wsd w left join nlm_wsd_cui c on w.word = c.word and w.choice_code = c.choice_code",
 						new RowCallbackHandler() {
 							@Override
 							public void processRow(ResultSet rs)
@@ -231,7 +231,7 @@ public class WSDDisambiguator {
 	public Map<Long, Sentence> loadSentences() {
 		sentences = new TreeMap<Long, Sentence>();
 		jdbcTemplate
-				.query("select d.uid instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'wsd-sentence' order by d.uid, span_begin, span_end",
+				.query("select d.uid instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'nlm.wsd' order by d.uid, span_begin, span_end",
 						new RowCallbackHandler() {
 							int currentSpanBegin = -1;
 							int currentSpanEnd = -1;

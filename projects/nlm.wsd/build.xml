@@ -82,14 +82,14 @@
 				</dirset>
 				<path refid="${kernel.cp}" />
 			</classpath>
-			<arg value="cpe-title.xml" />
+			<arg value="cpe.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 	<target name="eval.wsd.all">
-		<for list="LCH,INTRINSIC_LCH,LIN,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" param="metric">
+		<for list="LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" param="metric">
 			<sequential>
 				<antcall target="eval.wsd.metric">
 					<param name="metric" value="@{metric}" />
@@ -99,19 +99,22 @@
 	</target>
 	<target name="eval.wsd.metric">
 		<property name="metric" value="PATH" />
-		<java classname="ytex.wsd.nlm.WSDDisambiguator" fork="yes" dir="${basedir}/desc">
+		<property name="window" value="10" />
+		<property name="ytex.conceptGraphName" value="nlm.wsd" />
+		<mkdir dir="${basedir}/eval/${ytex.conceptGraphName}-${window}" />
+		<java classname="ytex.wsd.nlm.WSDDisambiguator" fork="yes" dir="${basedir}/eval/${ytex.conceptGraphName}-${window}">
 			<classpath>
 				<dirset dir="${basedir}">
 					<include name="bin" />
 				</dirset>
 				<path refid="${kernel.cp}" />
 			</classpath>
-			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xmx1500m" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
-			<jvmarg value="-Dytex.conceptGraphName=nlm.wsd" />
+			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
 			<arg value="${metric}" />
-			<arg value="5" />
+			<arg value="${window}" />
 		</java>
 	</target>
 </project>

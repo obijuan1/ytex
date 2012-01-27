@@ -9,13 +9,13 @@
                 <nameValuePair>
                     <name>queryGetDocumentKeys</name>
                     <value>
-                        <string>select instance_id uid from nlm_wsd w left join document d on d.uid = w.instance_id and d.analysis_batch = 'wsd-sentence' where d.document_id is null</string>
+                        <string>select instance_id uid from nlm_wsd w left join document d on d.uid = w.instance_id and d.analysis_batch = 'nlm.wsd' where d.document_id is null</string>
                     </value>
                 </nameValuePair>
                 <nameValuePair>
                     <name>queryGetDocument</name>
                     <value>
-                        <string>select sentence from nlm_wsd where instance_id = :uid</string>
+                        <string>select abstract from nlm_wsd where instance_id = :uid</string>
                     </value>
                 </nameValuePair>
             </configurationParameterSettings>
@@ -37,7 +37,7 @@
                 <nameValuePair>
                     <name>analysisBatch</name>
                     <value>
-                        <string>wsd-sentence</string>
+                        <string>nlm.wsd</string>
                     </value>
                 </nameValuePair>
                 <nameValuePair>

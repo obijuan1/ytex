@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-	<entry key="ytex.conceptGraphName">nlm.wsd</entry>
+	<entry key="ytex.conceptGraphName">nlm.wsd.2011ab</entry>
 	<entry key="ytex.conceptGraphQuery"><![CDATA[
 	select distinct cui1, cui2 
-	from umls.MRREL 
+	from umls2011ab.MRREL 
 	where sab in ('SNOMEDCT', 'MSH' , 'MTH')
 	and rel in ('PAR', 'RB')
 	order by cui1

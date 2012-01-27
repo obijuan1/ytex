@@ -28,7 +28,7 @@ import ytex.kernel.KernelContextHolder;
  */
 public class WSDLoader {
 
-	private static final String INSERT = "insert into nlm_wsd (word, choice_id, sentence_reference, choice_code, sentence, sent_ambiguity, sent_ambiguity_alias, sent_context_start, sent_context_end, sent_ambiguity_start, sent_ambiguity_end, sent_immediate_context, UI, TI, AB, cite_ambiguity, cite_ambiguity_alias, cite_context_start, cite_context_end, cite_ambiguity_start, cite_ambiguity_end, cite_immediate_context) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	private static final String INSERT = "insert into nlm_wsd (word, choice_id, sentence_reference, choice_code, sentence, sent_ambiguity, sent_ambiguity_alias, sent_context_start, sent_context_end, sent_ambiguity_start, sent_ambiguity_end, sent_immediate_context, abstract, abs_ambiguity, abs_ambiguity_alias, abs_context_start, abs_context_end, abs_ambiguity_start, abs_ambiguity_end, abs_immediate_context) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 	private static final Pattern headerPattern = Pattern
 			.compile("(\\d+)\\|(.*)\\|(\\w+)");
@@ -120,9 +120,11 @@ public class WSDLoader {
 		String choice_code, sent_ambiguity, sent_ambiguity_alias = null;
 		int sent_context_start, sent_context_end, sent_ambiguity_start, sent_ambiguity_end;
 		String sent_immediate_context = null;
-		int UI = 0;
-		String TI = null;
-		String AB = null;
+		StringBuilder absBuilder = new StringBuilder(strUi);
+		if (ti != null)
+			absBuilder.append("\n").append(ti);
+		if (ab != null)
+			absBuilder.append("\n").append(ab);
 		String cite_ambiguity = null;
 		String cite_ambiguity_alias = null;
 		int cite_context_start, cite_context_end, cite_ambiguity_start, cite_ambiguity_end = 0;
@@ -141,42 +143,27 @@ public class WSDLoader {
 				sent_ambiguity_start = Integer.parseInt(m.group(5));
 				sent_ambiguity_end = Integer.parseInt(m.group(6));
 				sent_immediate_context = m.group(7);
-				m = uiPattern.matcher(strUi);
+				m = annoPattern.matcher(tiAnno);
 				if (m.find()) {
-					UI = Integer.parseInt(m.group(1));
-					m = tiPattern.matcher(ti);
-					if (m.find()) {
-						TI = m.group(1);
-						if (ab != null) {
-							m = tiPattern.matcher(ab);
-							if (m.find()) {
-								AB = m.group(1);
-							}
-						}
-						m = annoPattern.matcher(tiAnno);
-						if (m.find()) {
-							cite_ambiguity = m.group(1);
-							cite_ambiguity_alias = m.group(2);
-							cite_context_start = Integer.parseInt(m.group(3));
-							cite_context_end = Integer.parseInt(m.group(4));
-							cite_ambiguity_start = Integer.parseInt(m.group(5));
-							cite_ambiguity_end = Integer.parseInt(m.group(6));
-							cite_immediate_context = m.group(7);
-							// OK - found everything
-							template.update(INSERT, word, choice_id,
-									sentence_reference, choice_code, sentence,
-									sent_ambiguity, sent_ambiguity_alias,
-									sent_context_start, sent_context_end,
-									sent_ambiguity_start, sent_ambiguity_end,
-									sent_immediate_context, UI, TI, AB,
-									cite_ambiguity, cite_ambiguity_alias,
-									cite_context_start, cite_context_end,
-									cite_ambiguity_start, cite_ambiguity_end,
-									cite_immediate_context);
-							return;
-						}
-					}
-
+					cite_ambiguity = m.group(1);
+					cite_ambiguity_alias = m.group(2);
+					cite_context_start = Integer.parseInt(m.group(3));
+					cite_context_end = Integer.parseInt(m.group(4));
+					cite_ambiguity_start = Integer.parseInt(m.group(5));
+					cite_ambiguity_end = Integer.parseInt(m.group(6));
+					cite_immediate_context = m.group(7);
+					// OK - found everything
+					template.update(INSERT, word, choice_id,
+							sentence_reference, choice_code, sentence,
+							sent_ambiguity, sent_ambiguity_alias,
+							sent_context_start, sent_context_end,
+							sent_ambiguity_start, sent_ambiguity_end,
+							sent_immediate_context, absBuilder.toString(),
+							cite_ambiguity, cite_ambiguity_alias,
+							cite_context_start, cite_context_end,
+							cite_ambiguity_start, cite_ambiguity_end,
+							cite_immediate_context);
+					return;
 				}
 			}
 		}

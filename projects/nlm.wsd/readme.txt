@@ -243,3 +243,16 @@ left join
 where uc.cui is null
 ;
 
+* relationship types
+
+RB
+PAR
+RN
+CHD
+SY - synonymous
+AQ - Allowed qualifier
+QB - qualified by
+SIB - sibling
+RO - other
+RQ - related
+RL - similar
