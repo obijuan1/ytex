@@ -72,9 +72,15 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 			Matcher matcher = entry.getValue().matcher(strDocText);
 			while (matcher.find()) {
 				Segment seg = new Segment(aJCas);
-				seg.setBegin(matcher.start());
-				if (entry.getKey().isLimitToRegex()) {
-					seg.setEnd(matcher.end());
+				if (entry.getKey().isLimitToRegex()
+						&& matcher.groupCount() == 1) {
+					seg.setBegin(matcher.start(1));
+					seg.setEnd(matcher.end(1));
+				} else {
+					seg.setBegin(matcher.start());
+					if (entry.getKey().isLimitToRegex()) {
+						seg.setEnd(matcher.end());
+					}
 				}
 				seg.setId(entry.getKey().getSegmentID());
 				if (log.isDebugEnabled()) {
