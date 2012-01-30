@@ -72,9 +72,11 @@ public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 		try {
 			CommandLineParser parser = new GnuParser();
 			CommandLine line = parser.parse(options, args);
-
-			Properties props = FileUtil.loadProperties(
+			Properties props = (Properties) KernelContextHolder
+					.getApplicationContext().getBean("ytexProperties");
+			Properties propsArgs = FileUtil.loadProperties(
 					line.getOptionValue("prop"), true);
+			props.putAll(propsArgs);
 			if (!props.containsKey("ytex.conceptGraphName")
 					|| !props.containsKey("ytex.corpusName")
 					|| !props.containsKey("ytex.freqQuery")) {
