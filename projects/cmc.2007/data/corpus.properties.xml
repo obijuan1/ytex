@@ -2,43 +2,14 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 	<entry key="ytex.freqQuery"><![CDATA[
-select code, count(*)
-from anno_ontology_concept o
-inner join anno_base b on b.anno_base_id = o.anno_base_id
-inner join document d on d.document_id = b.document_id
-where d.analysis_batch = 'cmc-word'
+select oc.code, count(*)
+from document d
+inner join anno_base ak on ak.document_id = d.document_id
+inner join anno_segment k on ak.anno_base_id = k.anno_base_id
+inner join anno_contain c on c.parent_anno_base_id = k.anno_base_id
+inner join anno_ontology_concept oc on oc.anno_base_id = c.child_anno_base_id
+where d.analysis_batch = 'cmc.2007'
 group by code
 	]]></entry>
 	<entry key="ytex.corpusName">cmc.2007</entry>
-	<entry key="ytex.conceptGraphName">umlspar</entry>
-	<entry key="ytex.conceptGraphQuery"><![CDATA[
-select cui1, cui2 
-from umls.MRREL 
-where rel = 'PAR' and rela = 'inverse_isa'
-	]]></entry>
-	<entry key="instanceClassQuery"><![CDATA[
-select cd.doc_id, cda.class, 1, cda.label
-from corpus_doc cd
-inner join corpus_doc_anno cda 
-    on cd.corpus_doc_id = cda.corpus_doc_id 
-    and cda.corpus_doc_id
-where doc_set = 'train'
-and corpus_name = 'cmc.2007'
-	]]></entry>
-	<entry key="ytex.conceptInstanceQuery"><![CDATA[
-select *, 1
-from
-(
-	select distinct c.code, d.doc_id
-	from corpus_doc d
-    inner join corpus_doc_anno da 
-        on da.corpus_doc_id = d.corpus_doc_id
-        and da.label = :label
-	inner join ytex.anno_dockey k on d.doc_id = k.uid
-	inner join ytex.anno_base ak on ak.anno_base_id = k.anno_base_id
-	inner join ytex.document yd on yd.document_id = ak.document_id and yd.analysis_batch = 'cmc-word'
-	inner join ytex.anno_base ac on ac.document_id = yd.document_id
-	inner join ytex.anno_ontology_concept c on ac.anno_base_id = c.anno_base_id
-	where d.doc_set = 'train'
-) s]]></entry>
 </properties>
