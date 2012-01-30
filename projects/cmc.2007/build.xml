@@ -9,6 +9,10 @@
 		<property name="sql.delimiter" value=";" />
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${sql.src}" onerror="${sql.onerror}" classpathref="${kernel.cp}" delimiter="${sql.delimiter}" />
 	</target>
+	<target name="setup.build">
+		<mkdir dir="${basedir}/bin" />
+		<javac srcdir="${basedir}/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
+	</target>
 	<target name="setup.load.corpus" description="load cmc corpus into corpus_doc and corpus_label tables">
 		<antcall target="jdbc.sqlcmd">
 			<param name="sql.src" value="${basedir}/data/delete_corpus.sql" />
