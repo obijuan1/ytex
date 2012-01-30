@@ -28,7 +28,15 @@
 			<param name="sql.src" value="${basedir}/data/insert_corpus_label.sql" />
 		</antcall>
 	</target>
-	
+	<target name="InfoContentEvaluator" description="run the InfoContentEvaluator">
+		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+			<arg value="-prop" />
+			<arg value="corpus.properties.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
 	<target name="RunCPE" description="annotate cmc 2007 corpus in parallel">
 		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
 		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
@@ -109,7 +117,7 @@
 		<antcall target="kernel.eval.cluster" />
 	</target>
 	<target name="kernel.eval.local" unless="kernel.cluster" description="launch multiple processes to evaluate kernel">
-		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.mod}">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.threads}">
 			<sequential>
 				<antcall target="kernel.eval.slice">
 					<param name="kernel.slice" value="@{kernel.slice}" />
@@ -120,7 +128,7 @@
 	<target name="kernel.eval.cluster" if="kernel.cluster" description="send slices to slaves for processing">
 		<!-- pass the properties to the slave that aren't in ytex.properties -->
 		<exec executable="qsub">
-			<arg line="-sync y -t 1-${kernel.mod} ${cmcant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest}" />
+			<arg line="-sync y -t 1-${kernel.threads} ${cmcant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest}" />
 		</exec>
 	</target>
 	<target name="kernel.eval.slice.cluster" if="kernel.cluster" description="eval slice on cluster slave">
@@ -135,7 +143,7 @@
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<echo>kernel.evalTest ${kernel.evalTest}</echo>
 		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
-			<arg line="-beans ${kernel.xml} -loadInstanceMap ${label.tree} -mod ${kernel.mod} -slice ${kernel.slice} -evalTest ${kernel.evalTest}" />
+			<arg line="-beans ${kernel.xml} -loadInstanceMap ${label.tree} -mod ${kernel.threads} -slice ${kernel.slice} -evalTest ${kernel.evalTest}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />

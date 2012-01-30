@@ -19,12 +19,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</list>
 		</property>
 	</bean>
-	<bean name="nodeDocInfo" class="ytex.kernel.tree.NodeMappingInfo">
+	<bean name="nodeSegmentInfo" class="ytex.kernel.tree.NodeMappingInfo">
 		<property name="nodeType" value="doc" />
 		<property name="values">
 			<list>
-				<value>document_type_id</value>
-				<value>document_id</value>
+				<value>segment_instance_id</value>
+				<value>segment_id</value>
 			</list>
 		</property>
 	</bean>
@@ -33,7 +33,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="values">
 			<list>
 				<value>anno_base_id</value>
-				<value>confidence</value>
+				<value>certainty</value>
 			</list>
 		</property>
 	</bean>
@@ -64,18 +64,18 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			<bean class="ytex.kernel.tree.QueryMappingInfo">
 				<property name="query">
 					<value><![CDATA[
-select k.uid instance_id, k.document_type_id, ak.document_id
-from ytex.document d
-inner join ytex.anno_base ak on ak.document_id = d.document_id
-inner join ytex.anno_dockey k on ak.anno_base_id = k.anno_base_id
-where d.analysis_batch = 'cmc-word'
-order by k.uid, k.document_type_id, ak.document_id
+select d.uid instance_id, cast(concat(d.uid, '_', k.segment_id) as char) segment_instance_id, k.segment_id
+from document d
+inner join anno_base ak on ak.document_id = d.document_id
+inner join anno_segment k on ak.anno_base_id = k.anno_base_id
+where d.analysis_batch = 'cmc.2007'
+order by d.uid, k.segment_id
 					]]></value>
 				</property>
 				<property name="nodeTypes">
 					<list>
 						<ref bean="nodeInstanceInfo" />
-						<ref bean="nodeDocInfo" />
+						<ref bean="nodeSegmentInfo" />
 					</list>
 				</property>
 			</bean>
@@ -86,19 +86,19 @@ order by k.uid, k.document_type_id, ak.document_id
 				<bean class="ytex.kernel.tree.QueryMappingInfo">
 					<property name="query">
 						<value><![CDATA[
-select k.document_type_id, ak.document_id, ne.anno_base_id, ne.certainty confidence
-from ytex.document d
-inner join ytex.anno_base ak on ak.document_id = d.document_id
-inner join ytex.anno_dockey k on ak.anno_base_id = k.anno_base_id
-inner join ytex.anno_base ane on ane.document_id = d.document_id
-inner join anno_named_entity ne	on ne.anno_base_id = ane.anno_base_id
-where d.analysis_batch = 'cmc-word'
-order by k.document_type_id, ak.document_id								
+select cast(concat(d.uid, '_', k.segment_id) as char) segment_instance_id, k.segment_id, ne.anno_base_id, ne.certainty
+from document d
+inner join anno_base ak on ak.document_id = d.document_id
+inner join anno_segment k on ak.anno_base_id = k.anno_base_id
+inner join anno_contain c on c.parent_anno_base_id = k.anno_base_id
+inner join anno_named_entity ne	on ne.anno_base_id = c.child_anno_base_id
+where d.analysis_batch = 'cmc.2007'
+order by d.uid, k.segment_id
 					]]></value>
 					</property>
 					<property name="nodeTypes">
 						<list>
-							<ref bean="nodeDocInfo" />
+							<ref bean="nodeSegmentInfo" />
 							<ref bean="nodeNEInfo" />
 						</list>
 					</property>
@@ -107,14 +107,14 @@ order by k.document_type_id, ak.document_id
 				<bean class="ytex.kernel.tree.QueryMappingInfo">
 					<property name="query">
 						<value><![CDATA[
-select distinct ne.anno_base_id, ne.certainty confidence, c.code
-from ytex.document d
-inner join ytex.anno_base ak on ak.document_id = d.document_id
-inner join ytex.anno_dockey k on ak.anno_base_id = k.anno_base_id
-inner join ytex.anno_base ane on ane.document_id = d.document_id
-inner join anno_named_entity ne on ne.anno_base_id = ane.anno_base_id
-inner join anno_ontology_concept c on c.anno_base_id = ne.anno_base_id
-where d.analysis_batch = 'cmc-word'
+select distinct ne.anno_base_id, ne.certainty, oc.code
+from document d
+inner join anno_base ak on ak.document_id = d.document_id
+inner join anno_segment k on ak.anno_base_id = k.anno_base_id
+inner join anno_contain c on c.parent_anno_base_id = k.anno_base_id
+inner join anno_named_entity ne	on ne.anno_base_id = c.child_anno_base_id
+inner join anno_ontology_concept oc on oc.anno_base_id = ne.anno_base_id
+where d.analysis_batch = 'cmc.2007'
 order by ne.anno_base_id
 					]]></value>
 					</property>
@@ -129,30 +129,31 @@ order by ne.anno_base_id
 				<!--  add words to the documents -->
 					<property name="query">
 						<value><![CDATA[
-select document_type_id, document_id, lower(canonical_form) canonical_form
+select cast(concat(uid, '_', segment_id) as char) segment_instance_id, segment_id, lower(coalesce(canonical_form, covered_text)) canonical_form
 from
 (
-select distinct k.document_type_id, ak.document_id, w.canonical_form
-from ytex.document d
-inner join ytex.anno_base ak on ak.document_id = d.document_id
-inner join ytex.anno_dockey k on ak.anno_base_id = k.anno_base_id
-inner join ytex.anno_base an on an.document_id = ak.document_id
-inner join ytex.anno_word_token w on w.anno_base_id = an.anno_base_id
-left join anno_contain ac 
-    on ac.child_anno_base_id = w.anno_base_id
-    and parent_uima_type_id = 8
-left join stopword sw on sw.stopword = w.canonical_form
-where canonical_form is not null
-and analysis_batch = 'cmc-word'
-and ac.parent_anno_base_id is null
-and sw.stopword is null
+    select distinct d.uid, k.segment_id, wb.covered_text, w.canonical_form
+    from document d
+    inner join anno_base ak on ak.document_id = d.document_id
+    inner join anno_segment k on ak.anno_base_id = k.anno_base_id
+    inner join anno_contain c on c.parent_anno_base_id = k.anno_base_id
+    inner join anno_word_token w on w.anno_base_id = c.child_anno_base_id
+    inner join anno_base wb on wb.anno_base_id = c.child_anno_base_id
+    left join anno_contain ac 
+        on ac.child_anno_base_id = w.anno_base_id
+        and ac.parent_uima_type_id = 8
+    left join ref_stopword sw on sw.stopword = w.canonical_form
+    where canonical_form is not null
+    and d.analysis_batch = 'cmc.2007'
+    and ac.parent_anno_base_id is null
+    and sw.stopword is null
 ) s
-order by document_type_id, document_id
+order by uid, segment_id
 					]]></value>
 					</property>
 					<property name="nodeTypes">
 						<list>
-							<ref bean="nodeDocInfo" />
+							<ref bean="nodeSegmentInfo" />
 							<ref bean="nodeWordInfo" />
 						</list>
 					</property>

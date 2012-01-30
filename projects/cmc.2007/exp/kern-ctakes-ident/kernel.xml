@@ -26,7 +26,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<property name="delegateKernels">
 					<list>
 						<bean class="ytex.kernel.evaluator.NodeAttributeKernel">
-							<property name="attributeName" value="document_type_id" />
+							<property name="attributeName" value="segment_id" />
 							<property name="delegateKernel" ref="equalityKernel" />
 						</bean>
 						<bean class="ytex.kernel.evaluator.SumKernel">
@@ -75,9 +75,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="experiment" value="kern-ctakes-ident" />
 		<property name="instanceIDQuery">
 			<value><![CDATA[
-select doc_id, 1 
+select instance_id, 1 
 from corpus_doc 
 where corpus_name = 'cmc.2007'
+and instance_id < 97635067
 			]]></value>
 <!-- 
 want all document evaluations
