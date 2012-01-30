@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 public class FileUtil {
 	static Pattern pFold = Pattern.compile("fold(\\d+)_");
 	static Pattern pRun = Pattern.compile("run(\\d+)_");
-	static Pattern pLabel = Pattern.compile("label([\\w&&[^_]]+)_");
+	static Pattern pLabel = Pattern.compile("label([^_]+)_");
 
 	/**
 	 * extract fold from file name produced by file util

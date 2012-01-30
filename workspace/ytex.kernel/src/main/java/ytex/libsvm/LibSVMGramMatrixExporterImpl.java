@@ -210,9 +210,10 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 						mapInstanceIdToIndex);
 				if (gramMatrix == null)
 					return;
-				kernelUtil.exportClassIds(outdir,
-						labelToClassIndexMap.get(label), label);
 			}
+			// write the properties file with the class id to class name map
+			kernelUtil.exportClassIds(outdir, labelToClassIndexMap.get(label),
+					label);
 			for (int run : instanceData.getLabelToInstanceMap().get(label)
 					.keySet()) {
 				for (int fold : instanceData.getLabelToInstanceMap().get(label)
