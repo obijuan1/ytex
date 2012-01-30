@@ -39,6 +39,8 @@
 		<pathelement location="${ytex.home}/ytex.uima/bin" />
 		<pathelement location="${ytex.home}/ytex.negex/bin" />
 		<pathelement location="${ytex.home}/ctakes-patches/bin" />
+		<pathelement location="${ytex.home}/jdl/bin" />
+		<pathelement location="${ytex.home}/jdl/src/main/resources" />
 		<fileset dir="${ytex.home}/ytex.web/WebContent/WEB-INF/lib"
 			includes="**/*.jar" />
 		<path refid="kernel.cp.common"/>
