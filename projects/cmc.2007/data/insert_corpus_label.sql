@@ -19,10 +19,10 @@ and d.corpus_name = 'cmc.2007';
 -- add the section boundaries
 delete from ref_segment_regex where segment_id in ('CMC_IMPRESSION', 'CMC_HISTORY');
 
-insert into ref_segment_regex (regex, segment_id)
-values ('=IMPRESSION=', 'CMC_IMPRESSION')
+insert into ref_segment_regex (regex, segment_id, limit_to_regex)
+values ('<text.*CLINICAL_HISTORY">(.*)<\/text>', 'CMC_HISTORY', 1)
 ;
 
-insert into ref_segment_regex (regex, segment_id)
-values ('=CLINICAL_HISTORY=', 'CMC_HISTORY')
+insert into ref_segment_regex (regex, segment_id, limit_to_regex)
+values ('<text.*IMPRESSION">(.*)<\/text>', 'CMC_IMPRESSION',1)
 ;
