@@ -75,14 +75,14 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="experiment" value="kern-ctakes-ident" />
 		<property name="instanceIDQuery">
 			<value><![CDATA[
-select instance_id, 1 
+select instance_id, case when doc_group = 'train' then 1 else 0 end  
 from corpus_doc 
 where corpus_name = 'cmc.2007'
 			]]></value>
 <!-- 
 want all document evaluations
 select doc_id, case when doc_set = 'train' then 1 else 0 end 
-and instance_id < 97635067
+and instance_id < 97636018
 -->
 		</property>
 	</bean>

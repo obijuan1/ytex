@@ -27,7 +27,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<property name="delegateKernels">
 					<list>
 						<bean class="ytex.kernel.evaluator.NodeAttributeKernel">
-							<property name="attributeName" value="document_type_id" />
+							<property name="attributeName" value="segment_id" />
 							<property name="delegateKernel" ref="equalityKernel" />
 						</bean>
 						<bean class="ytex.kernel.evaluator.SumKernel">
@@ -49,7 +49,9 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</bean>
 		</property>
 	</bean>
-	<bean id="linKernel" parent="abstractLinKernel" />
+	<bean id="semanticSimKernel" parent="abstractSemanticSimKernel">
+		<property name="metricNames" value="LCH,LIN" />
+	</bean>
 	<!-- namedEntityKernel - norm of convolution of concepts -->
 	<bean id="namedEntityKernel" parent="abstractNormKernel">
 		<property name="delegateKernel">
@@ -68,8 +70,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<property name="delegateKernels">
 					<list>
 						<ref bean="tuiSemanticTypeKernel" />
-						<ref bean="linKernel" />
-						<ref bean="lchKernel" />
+						<ref bean="semanticSimKernel" />
 					</list>
 				</property>
 			</bean>
@@ -88,10 +89,12 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="experiment" value="kern-ctakes-flatne" />
 		<property name="instanceIDQuery">
 			<value><![CDATA[
-select doc_id, case when doc_set = 'train' then 1 else 0 end 
+select instance_id, case when doc_group = 'train' then 1 else 0 end 
 from corpus_doc 
 where corpus_name = 'cmc.2007'
 			]]></value>
+<!--  and instance_id < 97636018
+ -->
 		</property>
 	</bean>
 </beans>
