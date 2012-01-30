@@ -11,6 +11,7 @@ inner join cv_fold_instance i
 inner join corpus_label l 
     on l.corpus_name = f.corpus_name 
     and l.label = f.label
+    and l.instance_id = i.instance_id
 where f.corpus_name = 'cmc.2007'
 	]]></entry>
 </properties>
