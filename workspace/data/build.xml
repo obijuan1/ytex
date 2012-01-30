@@ -375,6 +375,7 @@ ${sql.delimiter}
 		<copy file="${jdl.format}" tofile="${jdl.format.file}" overwrite="true">
 			<filterset>
 				<filter token="umls.prefix" value="${umls.prefix}" />
+				<filter token="db.schema" value="${db.schema}" />
 			</filterset>
 		</copy>
 		<java classpathref="${kernel.cp}" classname="my.mas.AppMain" fork="yes" failonerror="yes">
@@ -412,7 +413,8 @@ ${sql.delimiter}
 			</sequential>
 		</for>
 		<antcall target="uima.create.trigger" />
-		<antcall target="examples.load" />
+		<antcall target="uima.examples.load" />
+		<antcall target="uima.stopword.load" />
 	</target>
 	<target name="uima.create.trigger" if="orcl" description="create insert triggers for oracle">
 		<for list="create_reference_trg.sql,create_document_trg.sql" param="sqlcmd.script">
@@ -425,7 +427,13 @@ ${sql.delimiter}
 			</sequential>
 		</for>
 	</target>
-	<target name="examples.load" depends="init,init.conn">
+	<target name="uima.stopword.load" depends="init,init.conn">
+		<antcall target="jdl">
+			<param name="jdl.data" value="stopword.txt" />
+			<param name="jdl.format" value="stopword.xml" />
+		</antcall>
+	</target>
+	<target name="uima.examples.load" depends="init,init.conn">
 		<antcall target="jdl">
 			<param name="jdl.data" value="examples/fracture_demo.txt" />
 			<param name="jdl.format" value="examples/fracture_demo.xml" />
@@ -436,7 +444,7 @@ ${sql.delimiter}
 		</antcall>
 	</target>
 	<target name="init.conn">
-		<copy file="conn.xml.template" tofile="conn.xml" overwrite="yes">
+		<copy file="${basedir}/conn.xml.template" tofile="${basedir}/conn.xml" overwrite="yes">
 			<filterset>
 				<filter token="db.driver" value="${db.driver}" />
 				<filter token="db.url" value="${db.url}" />
@@ -484,4 +492,19 @@ ${sql.delimiter}
 			<param name="jdl.format" value="${basedir}/snomedct/sct2_description.xml" />
 		</antcall>
 	</target>
+	<target name="sctf.load" depends="init.conn" description="load snomed-ct tables">
+		<antcall target="jdl">
+			<param name="jdl.data" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology/sct2_Concept_Full_INT_${sct.version}.txt" />
+			<param name="jdl.format" value="${basedir}/snomedct/sct2f_concept.xml" />
+		</antcall>
+		<antcall target="jdl">
+			<param name="jdl.data" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology/sct2_Relationship_Full_INT_${sct.version}.txt" />
+			<param name="jdl.format" value="${basedir}/snomedct/sct2f_relationship.xml" />
+		</antcall>
+		<antcall target="jdl">
+			<param name="jdl.data" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology/sct2_Description_Full-en_INT_${sct.version}.txt" />
+			<param name="jdl.format" value="${basedir}/snomedct/sct2f_description.xml" />
+		</antcall>
+	</target>
+
 </project>
