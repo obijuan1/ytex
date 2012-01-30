@@ -78,11 +78,11 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 select instance_id, 1 
 from corpus_doc 
 where corpus_name = 'cmc.2007'
-and instance_id < 97635067
 			]]></value>
 <!-- 
 want all document evaluations
 select doc_id, case when doc_set = 'train' then 1 else 0 end 
+and instance_id < 97635067
 -->
 		</property>
 	</bean>
