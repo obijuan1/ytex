@@ -77,6 +77,11 @@
 		<mkdir dir="${ytex.dist.home}/config/desc" />
 		<mkdir dir="${ytex.dist.home}/web" />
 	</target>
+	<target name="build.jdl">
+		<antcall target="compile" inheritRefs="true">
+			<param name="project.name" value="jdl" />
+		</antcall>
+	</target>
 	<target name="build.ytex.uima">
 		<path id="cp.ytex.uima">
 			<path refid="cp.all" />
@@ -319,5 +324,5 @@
 			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*,${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
 		</zip>
 	</target>
-	<target name="build.all" depends="clean.dist,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,build.ctakes-patches,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />
+	<target name="build.all" depends="clean.dist,build.jdl,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,build.ctakes-patches,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,zip.dist" />
 </project>
