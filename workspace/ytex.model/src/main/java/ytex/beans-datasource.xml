@@ -13,6 +13,9 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<value>classpath:ytex.properties</value>
 			</list>
 		</property>
+		<property name="systemPropertiesModeName">
+			<value>SYSTEM_PROPERTIES_MODE_OVERRIDE</value>
+		</property>
 	</bean>
 	<bean id="ytexProperties"
 		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
@@ -37,7 +40,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="username" value="${db.username}" />
 		<property name="password" value="${db.password}" />
 	</bean>
-		<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
+	<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
 		below) we use read uncommitted because when we annotate documents in parallel, 
 		we read and write to the document table. However, the txs don't interfere 
 		with eachother - they don't touch the same rows - so there is no need to 
@@ -52,23 +55,26 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="transactionAttributes">
 			<props>
-				<prop key="*">PROPAGATION_REQUIRED,ISOLATION_${db.isolationLevel}</prop>
+				<prop key="*">PROPAGATION_REQUIRED,ISOLATION_${db.isolationLevel}
+				</prop>
 			</props>
 		</property>
 	</bean>
-	<bean id="txTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+	<bean id="txTemplate"
+		class="org.springframework.transaction.support.TransactionTemplate">
 		<property name="transactionManager" ref="transactionManager" />
-		<property name="propagationBehaviorName" value="PROPAGATION_REQUIRED"/>
-		<property name="isolationLevelName" value="ISOLATION_${db.isolationLevel}"/>
+		<property name="propagationBehaviorName" value="PROPAGATION_REQUIRED" />
+		<property name="isolationLevelName" value="ISOLATION_${db.isolationLevel}" />
 	</bean>
-	<bean id="txTemplateNew" class="org.springframework.transaction.support.TransactionTemplate">
+	<bean id="txTemplateNew"
+		class="org.springframework.transaction.support.TransactionTemplate">
 		<property name="transactionManager" ref="transactionManager" />
-		<property name="propagationBehaviorName" value="PROPAGATION_REQUIRES_NEW"/>
-		<property name="isolationLevelName" value="ISOLATION_${db.isolationLevel}"/>
+		<property name="propagationBehaviorName" value="PROPAGATION_REQUIRES_NEW" />
+		<property name="isolationLevelName" value="ISOLATION_${db.isolationLevel}" />
 	</bean>
 
 	<bean id="transactionManager"
 		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
 		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>	
+	</bean>
 </beans>
