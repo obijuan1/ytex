@@ -12,4 +12,14 @@ where d.analysis_batch = 'cmc.2007'
 group by code
 	]]></entry>
 	<entry key="ytex.corpusName">cmc.2007</entry>
+	<entry key="instanceClassQuery"><![CDATA[
+select doc.instance_id, l.class, 1, l.label
+from corpus_label  l
+/* limit to training set */
+inner join corpus_doc doc 
+    on doc.instance_id = l.instance_id
+    and doc.corpus_name = l.corpus_name
+    and doc.doc_group = 'train'
+where doc.corpus_name = 'cmc.2007'
+]]></entry>
 </properties>

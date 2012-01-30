@@ -4,6 +4,7 @@
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
+	<property name="maxMemory" value="1500m" />
 	<target name="jdbc.sqlcmd">
 		<property name="sql.onerror" value="abort" />
 		<property name="sql.delimiter" value=";" />
@@ -39,6 +40,24 @@
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	<target name="IntrinsicInfoContentEvaluator" description="run the InfoContentEvaluator">
+		<java classname="ytex.kernel.IntrinsicInfoContentEvaluator" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+			<jvmarg value="-Xmx${maxMemory}" />
+		</java>
+	</target>
+	<target name="setup.generateFolds" description="generate folds, store in cv_fold">
+		<java classname="ytex.kernel.FoldGeneratorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
+			<arg value="-prop" />
+			<arg value="corpus.properties.xml" />
+			<jvmarg value="-Xmx1g" />
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
 		</java>
 	</target>
 	<target name="RunCPE" description="annotate cmc 2007 corpus in parallel">
@@ -81,7 +100,7 @@
 	<target name="kernel.init.label" description="load the export.cutoff for the specified label">
 		<property name="tree.name" value="tree-ctakes-flatne" />
 		<property name="export.label" value="" />
-		<property name="kernel.experiment" value="kern-ctakes-ident" />
+		<property name="kernel.experiment" value="kern-ctakes-flatne" />
 		<property name="export.dir" value="${basedir}/libsvm/${kernel.experiment}" />
 		<property name="kernel.xml" value="${kernel.experiment}.xml" />
 		<property name="label.tree" value="tree.obj" />
