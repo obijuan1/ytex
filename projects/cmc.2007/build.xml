@@ -4,6 +4,67 @@
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
+	<target name="jdbc.sqlcmd">
+		<property name="sql.onerror" value="abort" />
+		<property name="sql.delimiter" value=";" />
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${sql.src}" onerror="${sql.onerror}" classpathref="${kernel.cp}" delimiter="${sql.delimiter}" />
+	</target>
+	<target name="setup.load.corpus" description="load cmc corpus into corpus_doc and corpus_label tables">
+		<antcall target="jdbc.sqlcmd">
+			<param name="sql.src" value="${basedir}/data/delete_corpus.sql" />
+		</antcall>
+		<java classname="ytex.cmc.DocumentLoaderImpl" fork="yes">
+			<classpath>
+				<dirset dir="${basedir}">
+					<include name="bin" />
+				</dirset>
+				<path refid="${kernel.cp}" />
+			</classpath>
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+			<arg value="${cmc.dir}" />
+		</java>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sql.src" value="${basedir}/data/insert_corpus_label.sql" />
+		</antcall>
+	</target>
+	
+	<target name="RunCPE.all" description="annotate cmc 2007 corpus in parallel">
+		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.threads}">
+			<sequential>
+				<antcall target="RunCPE.slice">
+					<param name="kernel.slice" value="@{kernel.slice}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="RunCPE.slice">
+		<property name="kernel.slice" value="1" />
+		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
+		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
+		<copy file="desc/cpe.template.xml" tofile="desc/cpe.xml.${kernel.slice}" overwrite="yes">
+			<filterset id="exp.filter">
+				<filter token="collectionreader.url" value="${collectionreader.url}" />
+				<filter token="pipeline.url" value="${pipeline.url}" />
+				<filter token="kernel.slice" value="${kernel.slice}" />
+				<filter token="kernel.threads" value="${kernel.threads}" />
+			</filterset>
+		</copy>
+		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
+			<classpath>
+				<dirset dir="${basedir}">
+					<include name="${basedir}/desc" />
+				</dirset>
+				<path refid="${kernel.cp}" />
+			</classpath>
+			<arg value="cpe.xml.${kernel.slice}" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
+	
+
 	<target name="kernel.tree" description="export the tree">
 		<property name="tree.name" value="tree-ctakes-flatne" />
 		<mkdir dir="tree/${tree.name}" />
@@ -352,7 +413,7 @@
 		</for>
 	</target>
 	<target name="export.bow-libsvm.params">
-		<property file="libsvm/ctakes-bow-test/kernel.properties"/>
+		<property file="libsvm/ctakes-bow-test/kernel.properties" />
 		<propertycopy property="kernel.evalLines" from="label.${export.label}.kernel.evalLines" />
 		<echoproperties destfile="libsvm/ctakes-bow-test/label${export.label}_train_data.properties">
 			<propertyset>
@@ -360,5 +421,5 @@
 			</propertyset>
 		</echoproperties>
 	</target>
-	
+
 </project>
