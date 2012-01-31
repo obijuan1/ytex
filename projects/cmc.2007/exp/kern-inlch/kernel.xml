@@ -86,12 +86,13 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
 		<property name="treeMappingInfo" ref="treeMappingInfo" />
 		<property name="name" value="cmc.2007" />
-		<property name="experiment" value="kern-ctakes-flatne" />
+		<property name="experiment" value="kern-inlch" />
 		<property name="instanceIDQuery">
 			<value><![CDATA[
 select instance_id, case when doc_group = 'train' then 1 else 0 end 
 from corpus_doc 
 where corpus_name = 'cmc.2007'
+and instance_id < 97636018
 			]]></value>
 <!--  and instance_id < 97636018
  -->
