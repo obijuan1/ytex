@@ -1,5 +1,5 @@
 -- get micro-averaged f1 across all labels
-select 'micro', round(f1, 6) f1, round(ppv, 6) ppv, round(sens, 6) sens
+select 'micro' typ, round(f1, 6) f1, round(ppv, 6) ppv, round(sens, 6) sens
 from
 (
     select *, if(ppv+sens > 0, 2*ppv*sens/(ppv+sens), 0) f1
@@ -16,7 +16,9 @@ from
             and ir_class_id = '1'
         ) s 
     ) s
-) s;
+) s
+
+union
 
 -- get macro-averaged f1 across all labels
 select 'macro', round(avg(f1),6) f1, round(avg(ppv),6) ppv, round(avg(sens),6) sens

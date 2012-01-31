@@ -43,7 +43,7 @@
 		</java>
 	</target>
 	<target name="IntrinsicInfoContentEvaluator" description="run the InfoContentEvaluator">
-		<java classname="ytex.kernel.IntrinsicInfoContentEvaluator" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+		<java classname="ytex.kernel.IntrinsicInfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
@@ -180,18 +180,18 @@
 				<filterset refid="export.filterset" />
 			</filterset>
 		</copy>
-		<copy file="exp/${kernel.experiment}/kernel.properties.template" tofile="${export.dir}/kernel.properties" overwrite="yes">
-			<filterset>
-				<filterset refid="export.filterset" />
-			</filterset>
-		</copy>
+		<echo file="${export.dir}/kernel.properties">
+kernel.name=${kernel.name}
+kernel.experiment=${kernel.experiment}
+kernel.types=4
+		</echo>
 		<antcall target="kernel.export.gram" />
 	</target>
 	<target name="kernel.export.gram">
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
 			<arg value="-prop" />
 			<arg value="export.xml" />
-			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xmx1500m" />
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
