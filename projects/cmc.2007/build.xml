@@ -165,10 +165,10 @@
 		<echo>kernel.xml ${kernel.xml}</echo>
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<echo>kernel.evalTest ${kernel.evalTest}</echo>
-		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
+		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}" failonerror="yes">
 			<arg line="-beans ${kernel.xml} -loadInstanceMap ${label.tree} -mod ${kernel.threads} -slice ${kernel.slice} -evalTest ${kernel.evalTest}" />
 			<jvmarg value="-Xmx1g" />
-			<jvmarg value="-Xms1500m" />
+			<jvmarg value="-Xmx1500m" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
