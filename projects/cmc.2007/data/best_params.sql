@@ -1,6 +1,6 @@
 delete from cv_best_svm 
-where experiment = 'kern-ctakes-ident'
-and corpus_name = 'cmc.2007'
+where experiment = '@kernel.experiment@'
+and corpus_name = '@kernel.name@'
 ;
 
 /* 
@@ -18,8 +18,8 @@ from
     from classifier_eval_ir t
     inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
     inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
-    where name = 'cmc.2007'
-    and experiment = 'kern-ctakes-ident'
+    where name = '@kernel.name@'
+    and experiment = '@kernel.experiment@'
     and ir_class_id = 1
     group by label, cost, run, fold
 ) s group by label, cost;
@@ -28,7 +28,7 @@ create unique index IX_paramf1 on tmp_param_f1(label, cost);
 
 /* get the max f1 for each label */
 insert into cv_best_svm (corpus_name, label, experiment, f1)
-select 'cmc.2007', label, 'kern-ctakes-ident', f1
+select '@kernel.name@', label, '@kernel.experiment@', f1
 from
 (
 	/*
@@ -49,11 +49,11 @@ set kernel =
 	select distinct kernel 
 	from classifier_eval e
     inner join classifier_eval_svm s on e.classifier_eval_id = s.classifier_eval_id
-	where name = 'cmc.2007'
-    and experiment = 'kern-ctakes-ident'
+	where name = '@kernel.name@'
+    and experiment = '@kernel.experiment@'
     )
-where corpus_name = 'cmc.2007'
-    and experiment = 'kern-ctakes-ident'
+where corpus_name = '@kernel.name@'
+    and experiment = '@kernel.experiment@'
 ;
 
 
@@ -66,11 +66,16 @@ select s.label, min(s.cost) cost
 from tmp_param_f1 s 
 inner join cv_best_svm c 
     on c.label = s.label 
-    and c.experiment = 'kern-ctakes-ident'
-    and c.corpus_name = 'cmc.2007'
+    and c.experiment = '@kernel.experiment@'
+    and c.corpus_name = '@kernel.name@'
     and s.f1 >= c.f1
 group by s.label;
 
 update cv_best_svm b inner join cv_cost p on b.label = p.label set b.cost = p.cost
-where b.experiment = 'kern-ctakes-ident' and corpus_name = 'cmc.2007'
+where b.experiment = '@kernel.experiment@' and corpus_name = '@kernel.name@'
+;
+
+select label, cost, f1
+from cv_best_svm 
+where experiment = '@kernel.experiment@' and corpus_name = '@kernel.name@'
 ;
