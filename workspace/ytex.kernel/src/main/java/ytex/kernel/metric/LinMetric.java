@@ -37,12 +37,14 @@ public class LinMetric extends BaseSimilarityMetric {
 		}
 		double denom = simSvc.getIC(concept1, this.intrinsicIC)
 				+ simSvc.getIC(concept2, this.intrinsicIC);
+		if (denom == 0)
+			return 0d;
 		return 2 * lcsIC / denom;
 	}
 
 	public LinMetric(ConceptSimilarityService simSvc, boolean intrinsicIC) {
 		super(simSvc);
-		this.intrinsicIC = intrinsicIC; 
+		this.intrinsicIC = intrinsicIC;
 	}
 
 }

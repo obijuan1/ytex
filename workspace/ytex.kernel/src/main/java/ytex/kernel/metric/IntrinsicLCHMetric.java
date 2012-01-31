@@ -8,15 +8,19 @@ import ytex.kernel.ConceptSimilarityService;
  * compute intrinsic LCH as in eqn 28 from
  * http://dx.doi.org/10.1016/j.jbi.2011.03.013
  * 
+ * Scale to unit interval
+ * 
  * @author vijay
  * 
  */
 public class IntrinsicLCHMetric extends BaseSimilarityMetric {
 	Double maxIC;
+	double logMaxIC2 = 0d;
 
 	public IntrinsicLCHMetric(ConceptSimilarityService simSvc, Double maxIC) {
 		super(simSvc);
 		this.maxIC = maxIC;
+		this.logMaxIC2 = Math.log(2 * maxIC.doubleValue());
 	}
 
 	@Override
@@ -28,8 +32,8 @@ public class IntrinsicLCHMetric extends BaseSimilarityMetric {
 			double ic2 = simSvc.getIC(concept2, true);
 			double lcsIC = initLcsIC(concept1, concept2, conceptFilter,
 					simInfo, true);
-			sim = Math.log(2 * maxIC.doubleValue())
-					- Math.log(ic1 + ic2 - 2 * (lcsIC) + 1);
+			sim = 1 - (Math.log(ic1 + ic2 - 2 * (lcsIC) + 1) / logMaxIC2);
+
 		}
 		return sim;
 	}
