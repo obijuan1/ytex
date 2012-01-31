@@ -250,7 +250,7 @@ kernel.name=${kernel.name}
 		<copy file="${basedir}/data/genLibsvmParams.sql" todir="${export.dir}" overwrite="yes">
 			<filterset refid="export.filterset" />
 		</copy>
-		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${export.dir}/genLibsvmParams.sql" classpathref="${kernel.cp}" output="${export.dir}/parameters.properties" />
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${export.dir}/genLibsvmParams.sql" classpathref="${kernel.cp}" output="${export.dir}/parameters.properties" print="yes" />
 	</target>
 	<target name="test.eval" depends="test.init" description="run libsvm">
 		<echo>run libsvm on directory ${export.dir}</echo>
@@ -260,7 +260,7 @@ kernel.name=${kernel.name}
 			<property name="kernel.data" value="${export.dir}" />
 		</ant>
 	</target>
-	
+
 	<target name="cv.semil">
 		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="semil/kern-ctakes-ident" failonerror="yes">
 			<arg value="-prop" />
