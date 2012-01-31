@@ -168,7 +168,7 @@
 		<java classname="ytex.kernel.evaluator.CorpusKernelEvaluatorImpl" dir="${export.tree.outdir}" fork="yes" classpathref="${kernel.cp}">
 			<arg line="-beans ${kernel.xml} -loadInstanceMap ${label.tree} -mod ${kernel.threads} -slice ${kernel.slice} -evalTest ${kernel.evalTest}" />
 			<jvmarg value="-Xmx1g" />
-			<jvmarg value="-Xms1g" />
+			<jvmarg value="-Xms1500m" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
