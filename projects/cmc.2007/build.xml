@@ -124,6 +124,7 @@
 			<filter token="export.cutoff" value="${export.cutoff}" />
 			<filter token="export.label.name" value="${export.label.name}" />
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
+			<filter token="kernel.name" value="${kernel.name}" />
 		</filterset>
 	</target>
 	<target name="kernel.eval" depends="kernel.init.label" description="evaluate kernel on instance tree map">
@@ -213,7 +214,24 @@ kernel.types=4
 			<property name="kernel.data" value="${export.dir}" />
 		</ant>
 	</target>
-	<target name="cv.all" depends="kernel.eval,kernel.export,cv.eval" description="evaluation kernel, export gram matrices for cv, run libsvm" />
+	<target name="cv.bestParams" depends="kernel.init.label" description="get best params for experiment">
+		<mkdir dir="${export.dir}" />
+		<copy file="${basedir}/data/best_params.sql" todir="${export.dir}" overwrite="yes">
+			<filterset refid="export.filterset" />
+		</copy>
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${export.dir}/best_params.sql" classpathref="${kernel.cp}" />
+	</target>
+
+	<target name="cv.all" depends="kernel.eval,kernel.export,cv.eval,cv.bestParams" description="evaluation kernel, export gram matrices for cv, run libsvm" />
+
+	<target name="cv.all.cluster" description="cv on cluster">
+		<antcall target="kernel.eval" />
+		<exec executable="qsub">
+			<arg line="-sync y ${cmcant.pbs} -Dytex.home=${YTEX_HOME} -Dkernel.experiment=${kernel.experiment} kernel.export" />
+		</exec>
+		<antcall target="cv.eval" />
+		<antcall target="cv.bestParams" />
+	</target>
 
 	<target name="test.all" depends="test.genLibsvmParams,test.export,test.eval" />
 
