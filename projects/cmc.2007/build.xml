@@ -82,7 +82,7 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	
+
 
 	<target name="kernel.tree" description="export the tree">
 		<property name="tree.name" value="tree-ctakes-flatne" />
@@ -215,92 +215,52 @@
 	</target>
 	<target name="cv.all" depends="kernel.eval,kernel.export,cv.eval" description="evaluation kernel, export gram matrices for cv, run libsvm" />
 
-	<target name="test.all" depends="test.export,test.eval" />
+	<target name="test.all" depends="test.genLibsvmParams,test.export,test.eval" />
 
-	<target name="test.init.label" description="load properties for the specified label">
-		<property name="export.label" value="12" />
-		<echo>${basedir}/exp/${kernel.experiment}/experiment.properties</echo>
-		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
-		<property file="${basedir}/exp/${kernel.experiment}/classWeights.properties" />
-		<propertycopy property="test.cv.costs" from="label.${export.label}.cv.costs" />
-		<propertycopy property="test.weights" from="class.weight.${export.label}" silent="yes" />
-		<propertycopy property="test.kernel.param1" from="label.${export.label}.kernel.param1" silent="yes" />
-		<propertycopy property="test.kernel.param2" from="label.${export.label}.kernel.param2" silent="yes" />
-		<property name="test.kernel.param1" value="" />
-		<property name="test.kernel.param2" value="" />
-		<property name="test.weights" value="" />
-		<condition property="eval.kernel">
-			<equals arg1="${kernel.types}" arg2="4" />
-		</condition>
-		<condition property="eval.bag">
-			<not>
-				<equals arg1="${kernel.types}" arg2="4" />
-			</not>
-		</condition>
+	<target name="test.init" description="initialize variables for exporting test results">
+		<property name="tree.name" value="tree-ctakes-flatne" />
+		<property name="exp.srcdir" value="${basedir}/exp/${kernel.experiment}-test" />
 		<property name="export.tree.srcdir" value="${basedir}/exp/${tree.name}" />
-		<property name="export.dir" value="${basedir}/libsvm/${kernel.experiment}/${export.label}" />
-		<property name="export.src.dir" value="${basedir}/exp/${kernel.experiment}" />
+		<property name="export.dir" value="${basedir}/libsvm/${kernel.experiment}-test" />
 		<filterset id="export.filterset">
-			<filter token="export.cutoff" value="${test.kernel.param1}" />
-			<filter token="export.label" value="${export.label}" />
-			<filter token="export.param2" value="${test.kernel.param2}" />
 			<filter token="kernel.name" value="${kernel.name}" />
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
-			<filter token="kernel.hzv.experiment" value="${kernel.hzv.experiment}" />
-			<filter token="cv.costs" value="${test.cv.costs}" />
-			<filter token="kernel.types" value="${kernel.types}" />
 		</filterset>
 	</target>
-	<target name="test.export" description="export gram matrices, move each gram matrix to a different dir">
-		<mkdir dir="${basedir}/libsvm/${kernel.experiment}" />
-		<copy todir="${basedir}/libsvm/${kernel.experiment}" overwrite="yes">
-			<fileset dir="${basedir}/exp/${kernel.experiment}" includes="*.xml,kernel.properties" />
+	<target name="test.export" depends="test.init" description="export gram matrices, move each gram matrix to a different dir">
+		<mkdir dir="${export.dir}" />
+		<echo file="${export.dir}/kernel.properties">kernel.experiment=${kernel.experiment}-test
+kernel.name=${kernel.name}
+</echo>
+		<copy file="${export.tree.srcdir}/export-test.xml" todir="${export.dir}" overwrite="yes">
+			<filterset refid="export.filterset" />
 		</copy>
-		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/libsvm/${kernel.experiment}">
+		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">
 			<arg value="-prop" />
-			<arg value="export-gram.xml" />
+			<arg value="export-test.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="-Xms1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
-		<for list="${labels}" param="export.label">
-			<sequential>
-				<antcall target="test.init.export">
-					<param name="export.label" value="@{export.label}" />
-				</antcall>
-			</sequential>
-		</for>
 	</target>
-	<target name="test.init.export" depends="test.init.label" description="clean export dir, generate kernel.properties">
-		<property name="kernel.evalLines" value="-q -b 1 -t 4 -c ${test.cv.costs} ${test.weights}" />
-		<echo>${basedir}/libsvm/${kernel.experiment}/label${export.label}_train_data.properties</echo>
-		<echoproperties destfile="${basedir}/libsvm/${kernel.experiment}/label${export.label}_train_data.properties">
-			<propertyset id="properties-starting-with-bar">
-				<propertyref name="kernel.evalLines" />
-			</propertyset>
-		</echoproperties>
+	<target name="test.genLibsvmParams" depends="test.init" description="generate libsvm parameters.properties for test">
+		<echo>export optimal params</echo>
+		<mkdir dir="${export.dir}" />
+		<copy file="${basedir}/data/genLibsvmParams.sql" todir="${export.dir}" overwrite="yes">
+			<filterset refid="export.filterset" />
+		</copy>
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${export.dir}/genLibsvmParams.sql" classpathref="${kernel.cp}" output="${export.dir}/parameters.properties" />
 	</target>
-	<target name="test.eval" depends="test.init.label" description="run libsvm">
-		<echo>run libsvm on directory export.dir</echo>
-		<echo>kernel.exp.base ${kernel.exp.base}</echo>
+	<target name="test.eval" depends="test.init" description="run libsvm">
+		<echo>run libsvm on directory ${export.dir}</echo>
 		<ant antfile="build.xml" dir="${ytex.home}/ytex.kernel/scripts" target="process.dir" inheritall="true">
 			<property name="ytex.home" value="${ytex.home}" />
 			<property name="no.genParams" value="yes" />
-			<property name="kernel.data" value="${basedir}/libsvm/${kernel.experiment}" />
+			<property name="kernel.data" value="${export.dir}" />
 		</ant>
 	</target>
-	<target name="infocontent" description="compute infocontent using the specified properties.  you must specify the correct concept graph in ytex.properties.">
-		<property name="kernel.experiment" value="kern-ctakes-umlspar" />
-		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="exp/${kernel.experiment}">
-			<arg value="-prop" />
-			<arg value="corpus.properties.xml" />
-			<jvmarg value="-Xmx1g" />
-			<jvmarg value="-Xms1g" />
-			<jvmarg value="${log4j.arg}" />
-			<jvmarg value="${java.log.arg}" />
-		</java>
-	</target>
+	
 	<target name="cv.semil">
 		<java classname="ytex.kernel.SparseDataExporterImpl" fork="yes" classpathref="${kernel.cp}" dir="semil/kern-ctakes-ident" failonerror="yes">
 			<arg value="-prop" />

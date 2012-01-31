@@ -1,100 +1,76 @@
-/*
- * get the best parameters
- * using just cost and weight
+delete from cv_best_svm 
+where experiment = 'kern-ctakes-ident'
+and corpus_name = 'cmc.2007'
+;
+
+/* 
+ * get the macro average f1 for each parameter combination. 
+ * we leave the Q class out for the macro average when selecting the optimal params
+ * because there are so few examples of this class that it skews results.
  */
-
-drop table if exists best_f1;
-create temporary table best_f1 (
-    label varchar(10),
-    best_f1 double
-);
-
--- select * from weka_results where experiment = '@EXPERIMENT@' and kernel = 0;
-
-insert into best_f1 (label, best_f1)
-select label, truncate(max(f1a), 3)
+drop table if exists tmp_param_f1;
+create temporary table tmp_param_f1
+as
+select label, cost, avg(f1) f1, stddev(f1) stddevf1, avg(f1) - stddev(f1) f1s
 from
 (
-    select label, cost, coalesce(weight, '') weight, avg(f1) f1a
-    from classifier_eval e
-    inner join classifier_eval_ir i on e.classifier_eval_id = i.classifier_eval_id and i.ir_class_id = 1
-    inner join classifier_eval_svm s on e.classifier_eval_id = s.classifier_eval_id
-    where experiment in ('kern-ctakes-flatne')
-    group by label, cost, coalesce(weight, '') 
+  select label, cost, run, fold, avg(f1) f1
+    from classifier_eval_ir t
+    inner join classifier_eval e on e.classifier_eval_id = t.classifier_eval_id
+    inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
+    where name = 'cmc.2007'
+    and experiment = 'kern-ctakes-ident'
+    and ir_class_id = 1
+    group by label, cost, run, fold
+) s group by label, cost;
+
+create unique index IX_paramf1 on tmp_param_f1(label, cost);
+
+/* get the max f1 for each label */
+insert into cv_best_svm (corpus_name, label, experiment, f1)
+select 'cmc.2007', label, 'kern-ctakes-ident', f1
+from
+(
+	/*
+	 * best f1 score by experiment (hotspot cutoff) and svm parameters
+	 */
+	select label, truncate(max(f1),3) f1
+	from tmp_param_f1
+	group by label
 ) s
-group by label
 ;
 
-drop table if exists best_cost;
-create temporary table best_cost (
-    label varchar(10),
-    best_f1 double,
-    best_cost double
-);
-
-insert into best_cost (label, best_f1, best_cost)
-select s.label, best_f1, min(cost)
-from
-(
-    select label, cost, coalesce(weight, '') weight, avg(f1) f1a
-    from classifier_eval e
-    inner join classifier_eval_ir i on e.classifier_eval_id = i.classifier_eval_id and i.ir_class_id = 1
+/*
+ * set the kernel type - assume only 1 kernel type per experiment
+ */
+update cv_best_svm 
+set kernel = 
+	(
+	select distinct kernel 
+	from classifier_eval e
     inner join classifier_eval_svm s on e.classifier_eval_id = s.classifier_eval_id
-    where experiment in ('kern-ctakes-flatne')
-    group by label, cost, coalesce(weight, '') 
-) s inner join best_f1 f1 on f1.label = s.label and f1.best_f1 <= s.f1a
+	where name = 'cmc.2007'
+    and experiment = 'kern-ctakes-ident'
+    )
+where corpus_name = 'cmc.2007'
+    and experiment = 'kern-ctakes-ident'
+;
+
+
+/*
+* get the lowest cost for the best f1 
+*/
+drop table if exists cv_cost;
+create temporary table cv_cost (label varchar(50), cost double)
+select s.label, min(s.cost) cost
+from tmp_param_f1 s 
+inner join cv_best_svm c 
+    on c.label = s.label 
+    and c.experiment = 'kern-ctakes-ident'
+    and c.corpus_name = 'cmc.2007'
+    and s.f1 >= c.f1
 group by s.label;
 
-drop table if exists best_weight;
-create temporary table best_weight (
-    label varchar(10),
-    best_f1 double,
-    best_cost double,
-    best_weight varchar(100)
-);
-
-insert into best_weight (label, best_f1, best_cost, best_weight)
-select s.label, best_f1, best_cost, min(weight)
-from
-(
-    select label, cost, coalesce(weight, '') weight, avg(f1) f1a
-    from classifier_eval e
-    inner join classifier_eval_ir i on e.classifier_eval_id = i.classifier_eval_id and i.ir_class_id = 1
-    inner join classifier_eval_svm s on e.classifier_eval_id = s.classifier_eval_id
-    where experiment in ('kern-ctakes-flatne')
-    group by label, cost, coalesce(weight, '')
-) s inner join best_cost f1 on f1.label = s.label and f1.best_f1 <= s.f1a and s.cost = f1.best_cost
-group by s.label;
-
--- macro
-select avg(best_f1) from best_weight;
-
--- micro
-select ppv, sens, 
-    case 
-    when (ppv+sens) > 0 then 2*ppv*sens/(ppv+sens)
-    else 0
-    end f1
-from
-(
-    select tp/(tp+fp) ppv, tp/(tp+fn) sens
-    from 
-    (
-        select sum(tp) tp, sum(tn) tn, sum(fp) fp, sum(fn) fn
-        from classifier_eval e
-        inner join classifier_eval_ir i on e.classifier_eval_id = i.classifier_eval_id and i.ir_class_id = 1
-        inner join classifier_eval_svm s on e.classifier_eval_id = s.classifier_eval_id
-        inner join best_weight w on w.label = e.label and w.best_cost = s.cost and w.best_weight = coalesce(s.weight, '')
-        where experiment in ('kern-ctakes-flatne')
-    ) s 
-) s;
-
--- best cost
-select cast(concat('label.',label, '.cv.costs=', best_cost) as char(100))
-from best_weight
+update cv_best_svm b inner join cv_cost p on b.label = p.label set b.cost = p.cost
+where b.experiment = 'kern-ctakes-ident' and corpus_name = 'cmc.2007'
 ;
--- best weigths
-select cast(concat('class.weight.',label, '=', best_weight) as char(100))
-from best_weight
-;
-
