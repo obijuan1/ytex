@@ -233,7 +233,15 @@ kernel.types=4
 		<antcall target="cv.bestParams" />
 	</target>
 
-	<target name="test.all" depends="test.genLibsvmParams,test.export,test.eval" />
+	<target name="test.all" depends="test.genLibsvmParams,test.export,test.eval,test.results" />
+	<target name="test.all.cluster">
+		<antcall target="test.genLibsvmParams" />
+		<exec executable="qsub">
+			<arg line="-sync y ${cmcant.pbs} -Dytex.home=${YTEX_HOME} -Dkernel.experiment=${kernel.experiment} test.export" />
+		</exec>
+		<antcall target="test.eval" />
+		<antcall target="test.results" />
+	</target>
 
 	<target name="test.init" description="initialize variables for exporting test results">
 		<property name="tree.name" value="tree-ctakes-flatne" />
