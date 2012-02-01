@@ -83,8 +83,13 @@
 		</java>
 	</target>
 
+	<target name="init.exp" description="init variables for experiment">
+		<property name="kernel.experiment" value="kern-ctakes-flatne" />
+		<property file="${basedir}/exp/${kernel.experiment}/experiment.properties" />
+		<property name="tree.name" value="tree-ctakes-flatne" />
+	</target>
 
-	<target name="kernel.tree" description="export the tree">
+	<target name="kernel.tree" depends="init.exp" description="export the tree">
 		<property name="tree.name" value="tree-ctakes-flatne" />
 		<mkdir dir="tree/${tree.name}" />
 		<copy file="exp/${tree.name}/tree.xml" tofile="tree/${tree.name}/tree.xml" overwrite="yes">
@@ -97,10 +102,8 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	<target name="kernel.init.label" description="load the export.cutoff for the specified label">
-		<property name="tree.name" value="tree-ctakes-flatne" />
+	<target name="kernel.init.label" depends="init.exp" description="load the export.cutoff for the specified label">
 		<property name="export.label" value="" />
-		<property name="kernel.experiment" value="kern-ctakes-flatne" />
 		<property name="export.dir" value="${basedir}/libsvm/${kernel.experiment}" />
 		<property name="kernel.xml" value="${kernel.experiment}.xml" />
 		<property name="label.tree" value="tree.obj" />
@@ -176,7 +179,7 @@
 	</target>
 	<target name="kernel.export" depends="kernel.init.label" description="export libsvm gram matrix for specified label">
 		<mkdir dir="${export.dir}" />
-		<copy file="${export.tree.srcdir}/export.xml" tofile="libsvm/${kernel.experiment}/export.xml" overwrite="yes">
+		<copy file="${basedir}/data/export.xml" tofile="libsvm/${kernel.experiment}/export.xml" overwrite="yes">
 			<filterset>
 				<filterset refid="export.filterset" />
 			</filterset>
@@ -258,7 +261,7 @@ kernel.types=4
 		<echo file="${export.dir}/kernel.properties">kernel.experiment=${kernel.experiment}-test
 kernel.name=${kernel.name}
 </echo>
-		<copy file="${export.tree.srcdir}/export-test.xml" todir="${export.dir}" overwrite="yes">
+		<copy file="${basedir}/data/export-test.xml" todir="${export.dir}" overwrite="yes">
 			<filterset refid="export.filterset" />
 		</copy>
 		<java classname="ytex.libsvm.LibSVMGramMatrixExporterImpl" classpathref="${kernel.cp}" fork="yes" dir="${export.dir}">

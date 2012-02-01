@@ -543,3 +543,80 @@ data/best_params_bow.sql - get best params
 libsvm/ctakes-bow-test - for testing, to export cmc/build.xml#export.bow-libsvm.test
 cv macro: 0.3748667
 cv micro: 0.8137	0.5520	0.657776085524
+
+
+== 1/30 ==
+
+* compare kernel query:
+select k1.instance_id1, k1.instance_id2, k1.similarity, k2.similarity
+from kernel_eval_instance k1
+inner join kernel_eval_instance k2 on k1.instance_id1 = k2.instance_id1 and k1.instance_id2 = k2.instance_id2
+where k1.instance_id1 <> k2.instance_id2 
+and k1.kernel_eval_id = 81
+and k2.kernel_eval_id = 83
+order by k1.instance_id1, k1.instance_id2
+;
+
+# setup
+nohup ant -Dytex.home=$YTEX_HOME setup.build setup.load.corpus RunCPE InfoContentEvaluator setup.generateFolds > ant.out 2>&1 &
+# export tree
+nohup ant -Dytex.home=${YTEX_HOME} -Dkernel.tree=tree-ctakes-flatne kernel.tree > ant.out 2>&1 &
+# compute kernel
+nohup ant -Dytex.home=${YTEX_HOME} -Dkernel.experiment=kern-ctakes-ident kernel.eval > ant.out 2>&1
+# export kernel
+nohup ant -Dytex.home=${YTEX_HOME} -Dkernel.experiment=kern-ctakes-ident kernel.export > ant.out 2>&1 &
+# run cv
+nohup ant -Dytex.home=${YTEX_HOME} -Dkernel.data=${HOME}/ytexProjects/cmc.2007/libsvm/kern-ctakes-ident process.dir > ant.out 2>&1 &
+ant -Dytex.home=${YTEX_HOME} -Dkernel.data=${HOME}/ytexProjects/cmc.2007/libsvm/kern-ctakes-ident kernel.storeDB
+nohup ant -Dytex.home=${YTEX_HOME} -Dkernel.experiment=kern-inlch cv.eval > ant.out 2>&1 &
+
+# export test data
+ant -Dytex.home=${YTEX_HOME}  -Dkernel.experiment=kern-ctakes-ident test.export test.genLibsvmParams > ant.out 2>&1 &
+ant -Dytex.home=${YTEX_HOME}  -Dkernel.experiment=kern-ctakes-flatne test.export test.genLibsvmParams > ant.out 2>&1 &
+
+# eval test
+nohup ant -Dytex.home=${YTEX_HOME} -Dkernel.experiment=kern-ctakes-flatne test.eval > ant.out 2>&1 &
+nohup ant -Dytex.home=${YTEX_HOME} -Dkernel.experiment=kern-ctakes-ident test.eval > ant.out 2>&1 &
+
+
+kern-ctakes-ident: 
+typ,f1,ppv,sens
+micro,0.840933,0.8853,0.8008
+macro,0.441543,0.518233,0.415373
+
+kern-ctakes-flatne:
+typ,f1,ppv,sens
+micro,0.827283,0.887,0.7751
+macro,0.417549,0.47687,0.392958
+
+kern-ctakes-inlch:
+typ,f1,ppv,sens
+micro,0.835608,0.891,0.7867
+macro,0.415538,0.474991,0.391313
+
+
+cleanup query:
+delete ce, s, ir
+from classifier_eval ce
+inner join classifier_eval_svm s on ce.classifier_eval_id = s.classifier_eval_id
+inner join classifier_eval_ir ir on ce.classifier_eval_id = ir.classifier_eval_id
+where experiment = 'kern-ctakes-ident' 
+and name = 'cmc.2007' 
+;
+
+similarity greater for ident kernel?
+select k1.instance_id1, k1.instance_id2, k1.similarity, k2.similarity
+from kernel_eval_instance k1
+inner join kernel_eval_instance k2 on k1.instance_id1 = k2.instance_id1 and k1.instance_id2 = k2.instance_id2
+where k1.instance_id1 <> k2.instance_id2 
+and k1.kernel_eval_id = 81
+and k2.kernel_eval_id = 82
+and k1.instance_id1 <= 97636018
+and k1.instance_id2 <= 97636018
+and k1.similarity > k2.similarity
+
+97634811	97635942	0.171127116982037	0.161622001771301
+97635380	97635942	0.03125	0.0256952004522444
+
+Similarity decreased due to larger norm due to within document concept similarity
+
