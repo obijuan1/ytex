@@ -78,7 +78,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
 		<property name="treeMappingInfo" ref="treeMappingInfo" />
 		<property name="name" value="cmc.2007" />
-		<property name="experiment" value="vec-dot" />
+		<property name="experiment" value="vec-inlch" />
 		<property name="instanceIDQuery">
 			<value><![CDATA[
 select instance_id, case when doc_group = 'train' then 1 else 0 end  
