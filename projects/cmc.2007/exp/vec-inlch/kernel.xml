@@ -48,10 +48,25 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</bean>
 		</property>
 	</bean>
+	<bean id="semanticSimKernel" parent="abstractSemanticSimKernel">
+		<property name="metricNames" value="INTRINSIC_LCH" />
+	</bean>
 	<!-- simply compare cuis - no semantic similarity -->
+	<!-- Check overlapping main semantic type. Concept kernel is lin * lch -->
 	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
 		<property name="attributeName" value="code" />
-		<property name="delegateKernel" ref="equalityKernel" />
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="cacheName" value="conceptSimCache" />
+				<property name="cacheManager" ref="cacheManager" />
+				<property name="delegateKernels">
+					<list>
+						<ref bean="tuiSemanticTypeKernel" />
+						<ref bean="semanticSimKernel" />
+					</list>
+				</property>
+			</bean>
+		</property>
 	</bean>
 	<!-- wordKernel - simply compare words -->
 	<bean id="wordKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
