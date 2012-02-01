@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+idential to tree-ctakes but we do not select just the outermost named entities.
+we use all named entities, and don't combine inner ne with the outermost ne's 
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<!-- define node info for mapping queries -->
+	<bean name="nodeInstanceInfo" class="ytex.kernel.tree.NodeMappingInfo">
+		<property name="nodeType" value="instance" />
+		<property name="values">
+			<list>
+				<value>instance_id</value>
+			</list>
+		</property>
+	</bean>
+	<bean name="nodeSegmentInfo" class="ytex.kernel.tree.NodeMappingInfo">
+		<property name="nodeType" value="doc" />
+		<property name="values">
+			<list>
+				<value>segment_instance_id</value>
+				<value>segment_id</value>
+			</list>
+		</property>
+	</bean>
+	<bean name="nodeOCInfo" class="ytex.kernel.tree.NodeMappingInfo">
+		<property name="nodeType" value="ontology_concept" />
+		<property name="values">
+			<list>
+				<value>code</value>
+			</list>
+		</property>
+	</bean>
+	<bean name="nodeWordInfo" class="ytex.kernel.tree.NodeMappingInfo">
+		<property name="nodeType" value="word" />
+		<property name="values">
+			<list>
+				<value>word</value>
+			</list>
+		</property>
+	</bean>
+	<!-- First query instantiates instances down to named entities 2nd query 
+		adds word nodes to document nodes 
+		for debugging add to query:
+	and  uid in (97634811, 97636670, 97634946, 97634957, 97635067, 97635659,97635718, 97635942, 97636018, 97636701, 97636837)
+		-->
+	<bean name="treeMappingInfo" class="ytex.kernel.tree.TreeMappingInfo">
+		<property name="instanceIDField" value="instance_id" />
+		<property name="instanceQueryMappingInfo">
+			<bean class="ytex.kernel.tree.QueryMappingInfo">
+				<property name="query">
+					<value><![CDATA[
+select d.uid instance_id, cast(concat(d.uid, '_', k.segment_id) as char) segment_instance_id, k.segment_id
+from document d
+inner join anno_base ak on ak.document_id = d.document_id
+inner join anno_segment k on ak.anno_base_id = k.anno_base_id
+where d.analysis_batch = 'cmc.2007'
+order by d.uid, k.segment_id
+					]]></value>
+				</property>
+				<property name="nodeTypes">
+					<list>
+						<ref bean="nodeInstanceInfo" />
+						<ref bean="nodeSegmentInfo" />
+					</list>
+				</property>
+			</bean>
+		</property>
+		<property name="nodeQueryMappingInfos">
+			<list>
+				<!--  add named entities to the documents -->
+				<bean class="ytex.kernel.tree.QueryMappingInfo">
+					<property name="query">
+						<value><![CDATA[
+select cast(concat(uid, '_', segment_id) as char) segment_instance_id, segment_id, code
+from
+(
+	select distinct d.uid, k.segment_id, oc.code
+	from document d
+	inner join anno_base ak on ak.document_id = d.document_id
+	inner join anno_segment k on ak.anno_base_id = k.anno_base_id
+	inner join anno_contain c on c.parent_anno_base_id = k.anno_base_id
+	inner join anno_ontology_concept oc on oc.anno_base_id = c.child_anno_base_id
+	where d.analysis_batch = 'cmc.2007'
+) s
+order by uid, segment_id
+					]]></value>
+					</property>
+					<property name="nodeTypes">
+						<list>
+							<ref bean="nodeSegmentInfo" />
+							<ref bean="nodeOCInfo" />
+						</list>
+					</property>
+				</bean>
+				<bean class="ytex.kernel.tree.QueryMappingInfo">
+				<!--  add words to the documents -->
+					<property name="query">
+						<value><![CDATA[
+select cast(concat(uid, '_', segment_id) as char) segment_instance_id, segment_id, lower(covered_text) word
+from
+(
+    select distinct d.uid, k.segment_id, wb.covered_text
+    from document d
+    inner join anno_base ak on ak.document_id = d.document_id
+    inner join anno_segment k on ak.anno_base_id = k.anno_base_id
+    inner join anno_contain c on c.parent_anno_base_id = k.anno_base_id
+    /* get words and numbers */
+    inner join anno_base wb 
+        on wb.anno_base_id = c.child_anno_base_id 
+        and wb.uima_type_id in (22, 25, 26)
+    left join anno_contain ac 
+        on ac.child_anno_base_id = wb.anno_base_id
+        and ac.parent_uima_type_id = 8
+    left join ref_stopword sw on sw.stopword = wb.covered_text
+    where d.analysis_batch = 'cmc.2007'
+    and ac.parent_anno_base_id is null
+    and sw.stopword is null
+) s
+order by uid, segment_id
+					]]></value>
+					</property>
+					<property name="nodeTypes">
+						<list>
+							<ref bean="nodeSegmentInfo" />
+							<ref bean="nodeWordInfo" />
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+</beans>
