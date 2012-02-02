@@ -5,20 +5,6 @@
 @rem please use the 32-bit jdk unless you know what you're doing
 @set JAVA_HOME=C:\java\jdk-6u17-windows-x32
 
-@rem MS SQL Server
-@rem where ms sql server tools are installed, should contain bcp.exe and sqlcmd.exe
-@rem if you are using ms sql server, uncomment the line below and verify the path
-@rem @set MSSQL_TOOLS=C:\Program Files\Microsoft SQL Server\100\Tools\Binn
-
-@rem MySQL
-@rem where mysql is installed, should contain mysql.exe
-@rem if you are using MySQL, uncomment the line below and make sure the path is correct
-@rem @set MYSQL_HOME=C:\Program Files\MySQL\MySQL Server 5.1\bin
-
-@rem Oracle
-@rem if you are using Oracle, uncomment the line below and make sure the paths are correct 
-@rem @set ORACLE_HOME=C:\oraclexe\app\oracle\product\10.2.0\server
-
 @rem where ytex is intalled (the directory this file is in)
 @set YTEX_HOME=C:\java\clinicalnlp\ytex
 
@@ -47,7 +33,7 @@
 @set JDBC_CP=%JDBC_CP%;%YTEX_LIB_SYS_HOME%\oracle11.2.0.1.0\ojdbc6.jar
 
 @rem tomcat installation directory
-@set CATALINA_HOME=%YTEX_HOME%\..\apache-tomcat-6.0.26
+@set CATALINA_HOME=%YTEX_HOME%\..\apache-tomcat-7.0.25
 
 @rem -------------------------------------------
 @rem end customizations.  The following is environment-independent

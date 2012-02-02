@@ -23,7 +23,7 @@ export ANT_HOME
 # PATH variable
 # make sure mysql or oracle binaries are in this path
 # add java and ant to the front of the path
-PATH=${ANT_HOME}/bin:${JAVA_HOME}/bin:${PATH}:
+PATH=${ANT_HOME}/bin:${JAVA_HOME}/bin:${PATH}
 export PATH
 
 ################################
@@ -32,12 +32,8 @@ export PATH
 ################################
 
 
-CATALINA_HOME=${YTEX_HOME}/../apache-tomcat-6.0.20
+CATALINA_HOME=${YTEX_HOME}/../apache-tomcat-7.0.25
 export CATALINA_HOME
-
-# where mysql binary is located - should not need change
-MYSQL_HOME=/usr/bin
-export MYSQL_HOME
 
 # we have a tomcat configuration in this directory
 CATALINA_BASE=${YTEX_HOME}/web

@@ -9,7 +9,7 @@
 	<property name="ytex.lib.home" value="../ytex.web/WebContent/WEB-INF/lib" />
 
 	<property name="nlp.home" value="c:/java" />
-	<property name="tomcat.dir" value="apache-tomcat-6.0.26" />
+	<property name="tomcat.dir" value="apache-tomcat-7.0.25" />
 	<property name="ant.dir" value="apache-ant-1.8.0" />
 	<property name="ytex.version" value="" />
 
