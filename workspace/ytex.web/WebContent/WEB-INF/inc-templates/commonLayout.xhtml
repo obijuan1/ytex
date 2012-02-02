@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:icecore="http://www.icefaces.org/icefaces/core"
+	xmlns:ace="http://www.icefaces.org/icefaces/components"
+	xmlns:ice="http://www.icesoft.com/icefaces/component">
+<h:head>
+	<title>YTEX - #{pageTitle}</title>
+	<link href="./xmlhttp/css/xp/xp.css" rel="stylesheet" type="text/css" />
+	<!-- page title param passed in by param -->
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Language" content="en" />
+	<meta http-equiv="imagetoolbar" content="no" />
+	<meta name="keywords" content="" />
+	<meta name="description" content="" />
+	<link type="text/css" rel="stylesheet" href="css/mainscript.css" />
+	<!-- -->
+	<!-- override styles in xp.css here -->
+	<link href="css/menuStyle.css" rel="stylesheet" type="text/css" />
+	<link type="image/x-icon" rel="shortcut icon" href="images/favicon.ico" />
+</h:head>
+<h:body>
+	<div class="header">
+		<ui:include src="/WEB-INF/inc-content/header.xhtml" />
+	</div>
+
+	<div class="page-container-header">
+		<ui:insert name="pageContent" />
+	</div>
+
+</h:body>
+</html>
