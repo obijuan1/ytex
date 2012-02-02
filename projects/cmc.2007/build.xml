@@ -154,7 +154,7 @@
 	</target>
 	<target name="kernel.eval.cluster" if="kernel.cluster" description="send slices to slaves for processing">
 		<!-- pass the properties to the slave that aren't in ytex.properties -->
-		<exec executable="qsub">
+		<exec executable="qsub" failonerror="yes">
 			<arg line="-sync y -t 1-${kernel.threads} ${cmcant.pbs} kernel.eval.slice.cluster -Dexport.tree.outdir=${export.tree.outdir} -Dlabel.tree=${label.tree} -Dkernel.xml=${kernel.xml} -Dkernel.evalTest=${kernel.evalTest}" />
 		</exec>
 	</target>
