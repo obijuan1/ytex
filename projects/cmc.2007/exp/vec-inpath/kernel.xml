@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- this kernel is identical to the kern-ctakes-flatne kernel, however we 
+	don't use any concept similarity metric -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<import resource="tree.xml" />
+	<!-- top level kernel - norm of convolution on documents -->
+	<bean id="instanceKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+				<property name="delegateKernel" ref="documentKernel" />
+				<property name="pow" value="2" />
+			</bean>
+		</property>
+	</bean>
+	<!-- document kernel - norm of convolution on lexical units. Only compare 
+		documents of same type -->
+	<bean id="documentKernel" parent="abstractNormKernel">
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="delegateKernels">
+					<list>
+						<bean class="ytex.kernel.evaluator.NodeAttributeKernel">
+							<property name="attributeName" value="segment_id" />
+							<property name="delegateKernel" ref="equalityKernel" />
+						</bean>
+						<bean class="ytex.kernel.evaluator.SumKernel">
+							<property name="delegateKernels">
+								<list>
+									<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+										<property name="nodeType" value="ontology_concept" />
+										<property name="delegateKernel" ref="compositeConceptKernel" />
+									</bean>
+									<bean class="ytex.kernel.evaluator.ConvolutionKernel">
+										<property name="nodeType" value="word" />
+										<property name="delegateKernel" ref="wordKernel" />
+									</bean>
+								</list>
+							</property>
+						</bean>
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<bean id="semanticSimKernel" parent="abstractSemanticSimKernel">
+		<property name="metricNames" value="INTRINSIC_PATH" />
+	</bean>
+	<!-- simply compare cuis - no semantic similarity -->
+	<bean id="compositeConceptKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
+		<property name="attributeName" value="code" />
+		<property name="delegateKernel">
+			<bean class="ytex.kernel.evaluator.ProductKernel">
+				<property name="cacheName" value="conceptSimCache" />
+				<property name="cacheManager" ref="cacheManager" />
+				<property name="delegateKernels">
+					<list>
+						<ref bean="tuiSemanticTypeKernel" />
+						<ref bean="semanticSimKernel" />
+					</list>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<!-- wordKernel - simply compare words -->
+	<bean id="wordKernel" class="ytex.kernel.evaluator.NodeAttributeKernel">
+		<property name="attributeName" value="word" />
+		<property name="delegateKernel" ref="equalityKernel" />
+	</bean>
+	<bean id="corpusKernelEvaluator" parent="abstractCorpusKernelEvaluator">
+		<property name="instanceKernel" ref="instanceKernel" />
+		<property name="instanceTreeBuilder" ref="instanceTreeBuilder" />
+		<property name="treeMappingInfo" ref="treeMappingInfo" />
+		<property name="name" value="cmc.2007" />
+		<property name="experiment" value="vec-inpath" />
+		<property name="instanceIDQuery">
+			<value><![CDATA[
+select instance_id, case when doc_group = 'train' then 1 else 0 end  
+from corpus_doc 
+where corpus_name = 'cmc.2007'
+			]]></value>
+<!-- 
+want all document evaluations
+select doc_id, case when doc_set = 'train' then 1 else 0 end 
+and instance_id < 97636018
+-->
+		</property>
+	</bean>
+</beans>
