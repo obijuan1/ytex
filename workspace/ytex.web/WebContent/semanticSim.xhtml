@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jstl/core"
+	xmlns:icecore="http://www.icefaces.org/icefaces/core"
+	xmlns:ace="http://www.icefaces.org/icefaces/components"
+	xmlns:ice="http://www.icesoft.com/icefaces/component">
+
+<h:body>
+	<ui:composition template="WEB-INF/inc-templates/commonLayout.xhtml">
+		<!-- params for page titles-->
+		<ui:param name="pageTitle" value="Semantic Similarity" />
+		<ui:param name="contentHeader" value="Semantic Similarity" />
+
+		<!-- header content here  -->
+		<ui:define name="pageName">
+                #{contentHeader}
+        </ui:define>
+
+		<!-- insert content here -->
+		<ui:define name="pageContent">
+			<ice:form id="umlsSearch">
+				<ice:panelGrid columns="1">
+					<ice:panelGroup>
+						<table border="0">
+							<tr valign="top">
+								<td><ice:outputLabel id="codeLabel1" value="Concept ID1:" />
+								</td>
+								<td><ice:outputText
+										value="Enter the first word of the concept and select a concept ID" /><br />
+									<ice:selectInputText id="codeInput1" rows="30" width="300"
+										valueChangeListener="#{semanticSimBean.concept1.updateList}"
+										required="true">
+										<f:selectItems value="#{semanticSimBean.concept1.list}" />
+									</ice:selectInputText>
+								</td>
+							</tr>
+							<tr valign="top">
+								<td><ice:outputLabel id="codeLabel2" value="Concept ID1:" />
+								</td>
+								<td><ice:outputText
+										value="Enter the first word of the concept and select a concept ID" /><br />
+									<ice:selectInputText id="codeInput2" rows="30" width="300"
+										valueChangeListener="#{semanticSimBean.concept2.updateList}"
+										required="true">
+										<f:selectItems value="#{semanticSimBean.concept2.list}" />
+									</ice:selectInputText>
+								</td>
+							</tr>
+						</table>
+						<ice:commandButton id="Similarity" value="Similarity"
+							title="ComputeSimilarity"
+							actionListener="#{semanticSimBean.simListen}" />
+						<ice:commandButton id="Reset" value="Reset" title="Reset"
+							actionListener="#{semanticSimBean.resetListen}" />
+					</ice:panelGroup>
+				</ice:panelGrid>
+			</ice:form>
+			<ice:form>
+				<!-- similarity for each metric -->
+				<ice:dataTable value="#{semanticSimBean.similarityMap}" var="entry">
+					<ice:column>
+						<f:facet name="header">
+							<ice:outputText value="Concept 1" />
+						</f:facet>
+						<ice:outputText value="#{semanticSimBean.concept1.searchCUI.cui}" />
+						<ice:outputText value="#{semanticSimBean.concept1.searchCUI.text}" />
+					</ice:column>
+					<ice:column>
+						<f:facet name="header">
+							<ice:outputText value="Concept 2" />
+						</f:facet>
+						<ice:outputText value="#{semanticSimBean.concept2.searchCUI.cui}" />
+						<ice:outputText value="#{semanticSimBean.concept2.searchCUI.text}" />
+					</ice:column>
+					<ice:column>
+						<f:facet name="header">
+							<ice:outputText value="LCS" />
+						</f:facet>
+						<c:choose>
+							<c:when test="${entry.key.intrinsicIC}">
+								<ice:outputText value="#{semanticSimBean.simInfo.intrinsicLcs}" />
+							</c:when>
+							<c:when test="${entry.key.corpusIC}">
+								<ice:outputText value="#{semanticSimBean.simInfo.corpusLcs}" />
+							</c:when>
+						</c:choose>
+					</ice:column>
+
+					<ice:column>
+						<f:facet name="header">
+							<ice:outputText value="Metric" />
+						</f:facet>
+						<ice:outputText value="#{msg[entry.key]}" />
+					</ice:column>
+					<ice:column>
+						<f:facet name="header">
+							<ice:outputText value="Similarity" />
+						</f:facet>
+						<ice:outputText value="#{entry.value}">
+							<f:convertNumber maxFractionDigits="3" minFractionDigits="3" />
+						</ice:outputText>
+					</ice:column>
+				</ice:dataTable>
+				<!-- detailed lcs info -->
+				<ice:dataTable value="#{semanticSimBean.lcsPathMap}" var="lcsEntry">
+					<ice:column>
+						<f:facet name="header">
+							<ice:outputText value="LCS" />
+						</f:facet>
+						<ice:outputText value="#{lcsEntry.key}" />
+					</ice:column>
+					<ice:column>
+						<f:facet name="header">
+							<ice:outputText value="Path" />
+						</f:facet>
+						<ice:outputText value="#{lcsEntry.value}" />
+					</ice:column>
+				</ice:dataTable>
+			</ice:form>
+		</ui:define>
+
+
+	</ui:composition>
+
+</h:body>
+
+</html>
