@@ -3,7 +3,7 @@ eval.con = function(cg, con) {
 	gold = read.delim(paste(con, ".csv", sep=""), header=T, stringsAsFactors=F, sep=",")
 	sim = read.delim(paste(cg, "/", con, "_cui_sim.txt", sep=""), sep="\t", header=T, stringsAsFactors=F)
 	sim = sim[,-c(1,2)]
-	res.m = data.frame(spearman=apply(sim, 2, function(x) { cor.test(gold$Mean, x)$estimate } ), p.value=apply(sim, 2, function(x) { cor.test(gold$Mean, x)$p.value } ))
+	res.m = data.frame(spearman=apply(sim, 2, function(x) { cor.test(gold$Mean, x, method="spearman")$estimate } ), p.value=apply(sim, 2, function(x) { cor.test(gold$Mean, x, method="spearman")$p.value } ))
 	res.m = cbind(cg = rep(cg, nrow(res.m)), metric=rownames(res.m), con = rep(con, nrow(res.m)), res.m)
 	return(res.m)
 }
@@ -14,19 +14,19 @@ eval.mini = function(cg, prefix="MiniMayoSRS") {
 	sim = sim[,-c(1,2)]
 	res.m1 = data.frame(
 		con=rep("MiniMayoSRS_Physicians", ncol(sim)),
-		spearman=apply(sim, 2, function(x) { cor.test(gold$Physicians, x)$estimate } ), 
-		p.value=apply(sim, 2, function(x) { cor.test(gold$Physicians, x)$p.value } ))
+		spearman=apply(sim, 2, function(x) { cor.test(gold$Physicians, x, method="spearman")$estimate } ), 
+		p.value=apply(sim, 2, function(x) { cor.test(gold$Physicians, x, method="spearman")$p.value } ))
 	res.m1 = cbind(metric=rownames(res.m1), res.m1)
 	res.m2 = data.frame(
 		con=rep("MiniMayoSRS_Coders", ncol(sim)),
-		spearman=apply(sim, 2, function(x) { cor.test(gold$Coders, x)$estimate } ), 
-		p.value=apply(sim, 2, function(x) { cor.test(gold$Coders, x)$p.value } ))
+		spearman=apply(sim, 2, function(x) { cor.test(gold$Coders, x, method="spearman")$estimate } ), 
+		p.value=apply(sim, 2, function(x) { cor.test(gold$Coders, x, method="spearman")$p.value } ))
 	res.m2 = cbind(metric=rownames(res.m2), res.m2)
 	comb = apply(gold[,c("Coders","Physicians"), ], 1, mean)
 	res.m3 = data.frame(
 		con=rep("MiniMayoSRS_Combined", ncol(sim)),
-		spearman=apply(sim, 2, function(x) { cor.test(comb, x)$estimate } ), 
-		p.value=apply(sim, 2, function(x) { cor.test(comb, x)$p.value } ))
+		spearman=apply(sim, 2, function(x) { cor.test(comb, x, method="spearman")$estimate } ), 
+		p.value=apply(sim, 2, function(x) { cor.test(comb, x, method="spearman")$p.value } ))
 	res.m3 = cbind(metric=rownames(res.m3), res.m3)
 	res.m = rbind(res.m1, res.m2, res.m3)
 	res.m = cbind(cg = rep(cg, nrow(res.m)), res.m)
