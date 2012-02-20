@@ -1,5 +1,7 @@
 package ytex.ws;
 
+import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -11,11 +13,11 @@ public interface ConceptSimilarityRestService {
 	
 	@GET
 	@Path("/getDefaultConceptGraph")
-	public String getDefaultConceptGraph();
+	public SimServiceInfo getDefaultConceptGraph();
 	
 	@GET
 	@Path("/getConceptGraphs")
-	public String[][] getConceptGraphs();
+	public List<SimServiceInfo> getConceptGraphs();
 
 
 	@GET

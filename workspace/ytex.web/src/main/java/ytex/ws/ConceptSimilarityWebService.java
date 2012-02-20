@@ -1,5 +1,7 @@
 package ytex.ws;
 
+import java.util.List;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -8,9 +10,9 @@ import ytex.kernel.ConceptPair;
 
 @WebService
 public interface ConceptSimilarityWebService {
-	public String getDefaultConceptGraph();
-	
-	public String[][] getConceptGraphs();
+	public SimServiceInfo getDefaultConceptGraph();
+
+	public List<SimServiceInfo> getConceptGraphs();
 
 	/**
 	 * compute similarity for a list of concept pairs

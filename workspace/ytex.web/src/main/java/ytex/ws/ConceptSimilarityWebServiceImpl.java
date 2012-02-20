@@ -107,19 +107,23 @@ public class ConceptSimilarityWebServiceImpl implements
 		conceptPairSim.setSimilarities(Arrays.asList(simMetricVals));
 	}
 
-	public String getDefaultConceptGraph() {
-		return this.semanticSimRegistryBean.getDefaultConceptGraphName();
+	public SimServiceInfo getDefaultConceptGraph() {
+		String conceptGraph = this.semanticSimRegistryBean
+				.getDefaultConceptGraphName();
+		if (conceptGraph != null)
+			return new SimServiceInfo(conceptGraph, semanticSimRegistryBean
+					.getSemanticSimServiceMap().get(conceptGraph)
+					.getDescription());
+		else
+			return null;
 	}
 
-	public String[][] getConceptGraphs() {
-		String[][] cgs = new String[semanticSimRegistryBean
-				.getSemanticSimDescriptionMap().size()][2];
-		int i = 0;
+	public List<SimServiceInfo> getConceptGraphs() {
+		List<SimServiceInfo> cgs = new ArrayList<SimServiceInfo>(
+				semanticSimRegistryBean.getSemanticSimDescriptionMap().size());
 		for (Map.Entry<String, String> entry : semanticSimRegistryBean
 				.getSemanticSimDescriptionMap().entrySet()) {
-			cgs[i][0] = entry.getKey();
-			cgs[i][1] = entry.getValue();
-			i++;
+			cgs.add(new SimServiceInfo(entry.getValue(), entry.getKey()));
 		}
 		return cgs;
 	}

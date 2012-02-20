@@ -11,7 +11,7 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
 	<bean id="conceptSimilarityWebService" class="ytex.ws.ConceptSimilarityWebServiceImpl">
-		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
+		<property name="semanticSimRegistryBean" ref="semanticSimRegistryBean" />
 	</bean>
 	<bean id="conceptSimilarityRestService" class="ytex.ws.ConceptSimilarityRestServiceImpl" />
 	<jaxws:endpoint id="conceptSimilarityWebServiceEndpoint"
@@ -22,7 +22,4 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
 			<ref bean="conceptSimilarityWebService" />
 		</jaxrs:serviceBeans>
 	</jaxrs:server>
-	<!-- <jaxrs:server id="conceptSimilarityRestServiceEndpoint" address="/"> 
-		<jaxrs:serviceBeans> <ref bean="conceptSimilarityRestService" /> </jaxrs:serviceBeans> 
-		</jaxrs:server> -->
 </beans>
