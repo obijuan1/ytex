@@ -1,34 +1,32 @@
 <project name="build-setup" default="help">
 	<description>
 		<![CDATA[
-Setup the ytex environment; does the following:
-  * setup lvg
-  * generate configuration files
-  * create database tables
-You must define the ytex.home variable for this script using the -D option:
-ant -Dytex.home=c:\java\clinicalnlp\ytex -file build-setup.xml
-
-Prior to executing this script, download lvg2010lite.tgz.
-To use this in a 'real' environment, you will need an installation of UMLS,
-or you can ask us nicely for a UMLS database dump.
+Setup ytex
 
 Main target is 'all', which does the following:
-  * setup.lvg unpack the lvg to the appropriate directory
+  * setup.lvg download and unpack the lvg to the appropriate directory
   * templateToConfig generates configuration files from templates. 
   * setupDatabase call data/build.xml to setup the database.
-  * setup.ytex.web fixes crlf and makes executable tomcat setenv.sh script
 
-For setting up a development environment, you should execute setup.lvg 
-and templateToConfig
-		
+You *must* define the ytex.home variable for this script using the -D option:
+ant -Dytex.home=c:\java\clinicalnlp\ytex -file build-setup.xml
+
+Prior to executing this script, download lvg2010lite.tgz; 
+if we can't find this file, we will attempt to download it.
+
+To use this in a 'real' environment, you will need an installation of UMLS,
+or you can download a UMLS database dump we've provided.
+
+To set up a development environment using a preexisting database, 
+execute setup.lvg and templateToConfig
 	]]>
 	</description>
 	<!-- override these variables using eclipse settings/command line -->
 	<property name="ytex.home" value=".." />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="lvg.download.dir" value="${ytex.home}/.." />
-	<property name="lvg.basename" value="lvg2011lite" />
-	<property name="lvg.filename" value="${lvg.basename}.tgz" />
+	<property name="lvg.basename" value="2011" />
+	<property name="lvg.filename" value="lvg${lvg.basename}lite.tgz" />
 	<property name="lvg.tgz" value="${lvg.download.dir}/${lvg.filename}" />
 	<property name="context.root" value="ytex.web" />
 	<property name="catalina.base" value="${ytex.home}/web" />
@@ -40,7 +38,10 @@ Call with option -projecthelp for more info.
 </echo>
 	</target>
 
-	<target name="all" depends="setup.lvg,templateToConfig,setupDatabase" description="calls unpack.umls, setup.lvg, templateToConfig, setupDatabase, and setup.ytex.web " />
+	<target name="all" depends="dbping,setup.lvg,templateToConfig,setupDatabase" description="calls dbping,setup.lvg,templateToConfig,setupDatabase" />
+	<target name="dbping" description="verify db connection params">
+		<ant dir="${ytex.home}/data" target="dbping" />
+	</target>
 	<target name="setupDatabase" description="setup ytex database tables">
 		<ant dir="${ytex.home}/data" target="all" />
 	</target>
@@ -98,35 +99,23 @@ Call with option -projecthelp for more info.
 	</target>
 	<target name="templateToConfig" depends="templateToConfig.init,templateToConfig.fixUnix,templateToConfig.updateExamples,templateToConfig.updateConfig" description="generate config files from templates using values specified in ytex.properties">
 	</target>
-	<!--
-	<target name="setupMavericResources" description="copy resources from maveric to ytex">
-		<delete dir="${ytex.home}/maveric/resources" quiet="yes" />
-		<mkdir dir="${ytex.home}/maveric/resources" />
-		<copy todir="${ytex.home}/maveric/resources">
-			<fileset dir="${maveric.home}">
-				<include name="lookup/**/*.*" />
-				<include name="lvg/**/*.*" />
-				<include name="models/**/*.*" />
-				<include name="sentdetect/**/*.*" />
-				<include name="tokenizer/**/*.*" />
-			</fileset>
-		</copy>
+	<target name="setup.lvg" description="unpack lvg data directory to resources folder" depends="setup.lvg.download,setup.lvg.unzip" />
+	<target name="setup.lvg.download" description="download lvg2010lite.tgz from nlm">
+		<if>
+			<not>
+				<available file="${lvg.tgz}" />
+			</not>
+			<then>
+				<echo>Downloading ${lvg.filename} to ${lvg.download.dir} from nlm.  This may take a while!</echo>
+				<copy todir="${lvg.download.dir}" flatten="true">
+					<resources>
+						<url url="http://lexsrv3.nlm.nih.gov/LexSysGroup/Projects/lvg/${lvg.basename}/release/${lvg.filename}" />
+					</resources>
+				</copy>
+			</then>
+		</if>
 	</target>
-	-->
-	<target name="download.lvg" description="download lvg2010lite.tgz from nlm">
-		<echo>Downloading ${lvg.filename} to ${lvg.download.dir}.  this may take a while!</echo>
-		<copy todir="${lvg.download.dir}" flatten="true">
-			<resources>
-				<url url="http://lexsrv3.nlm.nih.gov/LexSysGroup/Projects/lvg/2011/release/lvg2011lite.tgz" />
-			</resources>
-		</copy>
-	</target>
-	<target name="setup.lvg" description="unpack lvg data directory to resources folder">
-		<available file="${lvg.tgz}" property="lvg.available" />
-		<antcall target="setup.lvg.unzip" />
-		<antcall target="setup.lvg.warn" />
-	</target>
-	<target name="setup.lvg.unzip" if="lvg.available">
+	<target name="setup.lvg.unzip">
 		<untar src="${lvg.tgz}" compression="gzip" dest="${ytex.home}/maveric/resources/lvg">
 			<patternset>
 				<include name="${lvg.basename}/data/**/*.*" />
@@ -136,14 +125,6 @@ Call with option -projecthelp for more info.
 		<move file="${ytex.home}/maveric/resources/lvg/${lvg.basename}/data" todir="${ytex.home}/maveric/resources/lvg" />
 		<delete dir="${ytex.home}/maveric/resources/lvg/${lvg.basename}" />
 	</target>
-	<target name="setup.lvg.warn" unless="lvg.available">
-		<echo>${lvg.tgz} not available - please execute the setup.lvg.all target to download and setup lvg</echo>
-	</target>
-
-	<target name="setup.lvg.all" description="download and unpack lvg" depends="download.lvg,setup.lvg">
-		<echo>LVG setup complete.  You can remove ${lvg.tgz}</echo>
-	</target>
-
 	<target name="update.manifest" description="update the manifest">
 		<manifestclasspath property="ytex.classpath.man" jarfile="${ytex.home}/lib/ytex.model.jar">
 			<classpath>
