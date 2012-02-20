@@ -8,6 +8,10 @@
 		<locale-config>
 			<default-locale>en_US</default-locale>
 		</locale-config>
+		<resource-bundle>
+			<base-name>ytex.web.messages</base-name>
+			<var>msg</var>
+		</resource-bundle>
 	</application>
 
 	<managed-bean>
@@ -35,5 +39,42 @@
 			<value>#{documentDao}</value>
 		</managed-property>
 	</managed-bean>
-
+	<managed-bean>
+		<managed-bean-name>concept1</managed-bean-name>
+		<managed-bean-class>ytex.web.search.ConceptLookupBean
+		</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+		<managed-property>
+			<property-name>umlsFirstWordService</property-name>
+			<value>#{umlsFirstWordService}</value>
+		</managed-property>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>concept2</managed-bean-name>
+		<managed-bean-class>ytex.web.search.ConceptLookupBean
+		</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+		<managed-property>
+			<property-name>umlsFirstWordService</property-name>
+			<value>#{umlsFirstWordService}</value>
+		</managed-property>
+	</managed-bean>
+	<managed-bean>
+		<managed-bean-name>semanticSimBean</managed-bean-name>
+		<managed-bean-class>ytex.web.search.SemanticSimBean
+		</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+		<managed-property>
+			<property-name>concept1</property-name>
+			<value>#{concept1}</value>
+		</managed-property>
+		<managed-property>
+			<property-name>concept2</property-name>
+			<value>#{concept2}</value>
+		</managed-property>
+		<managed-property>
+			<property-name>semanticSimRegistryBean</property-name>
+			<value>#{semanticSimRegistryBean}</value>
+		</managed-property>
+	</managed-bean>
 </faces-config>

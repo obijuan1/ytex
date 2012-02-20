@@ -13,5 +13,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ytex.model"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/config.local"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ytex.kernel"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

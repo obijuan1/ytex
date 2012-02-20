@@ -65,8 +65,20 @@
 		<url-pattern>/xmlhttp/*</url-pattern>
 		<url-pattern>/resources/*</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>CXFServlet</servlet-name>
+		<display-name>CXF Servlet</display-name>
+		<servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CXFServlet</servlet-name>
+		<url-pattern>/services/*</url-pattern>
+		<load-on-startup>1</load-on-startup>
+	</servlet-mapping>
+		
 	<session-config>
-		<session-timeout>1</session-timeout>
+		<session-timeout>5</session-timeout>
 	</session-config>
 
 	<!-- Welcome files -->

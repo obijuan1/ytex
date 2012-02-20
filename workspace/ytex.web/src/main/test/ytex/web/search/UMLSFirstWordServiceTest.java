@@ -4,7 +4,7 @@ package ytex.web.search;
 import junit.framework.TestCase;
 
 public class UMLSFirstWordServiceTest extends TestCase {
-	UMLSFirstWordService umlsFirstWordDao;
+	ConceptSearchService umlsFirstWordDao;
 
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -13,7 +13,7 @@ public class UMLSFirstWordServiceTest extends TestCase {
 	}
 
 	public void testGetUMLSbyFirstWord() {
-		System.out.println(umlsFirstWordDao.getUMLSbyFirstWord("asc"));
+		System.out.println(umlsFirstWordDao.getConceptByFirstWord("asc"));
 	}
 
 }

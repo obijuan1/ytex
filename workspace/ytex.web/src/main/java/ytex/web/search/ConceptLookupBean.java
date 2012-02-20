@@ -1,5 +1,6 @@
 package ytex.web.search;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -22,37 +23,46 @@ import com.icesoft.faces.component.selectinputtext.SelectInputText;
  * @author vijay
  * 
  */
-public class ConceptLookupBean {
+public class ConceptLookupBean implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private static final Log log = LogFactory.getLog(ConceptLookupBean.class);
 
-	private UMLSFirstWordService umlsFirstWordService;
+	private ConceptSearchService conceptSearchService;
 
-	public UMLSFirstWordService getUmlsFirstWordService() {
-		return umlsFirstWordService;
+	public ConceptSearchService getConceptSearchService() {
+		return conceptSearchService;
 	}
 
 	public void setUmlsFirstWordService(
-			UMLSFirstWordService umlsFirstWordService) {
-		this.umlsFirstWordService = umlsFirstWordService;
+			ConceptSearchService umlsFirstWordService) {
+		this.conceptSearchService = umlsFirstWordService;
 	}
 
-	public UMLSFirstWord getSearchCUI() {
+	public ConceptFirstWord getSearchCUI() {
 		return searchCUI;
 	}
 
-	public void setSearchCUI(UMLSFirstWord searchCUI) {
+	public void setSearchCUI(ConceptFirstWord searchCUI) {
 		this.searchCUI = searchCUI;
 	}
 
 	// default city, no value.
-	private UMLSFirstWord currentCUI = new UMLSFirstWord();
+	private ConceptFirstWord currentCUI = new ConceptFirstWord();
 
-	private UMLSFirstWord searchCUI = new UMLSFirstWord();
+	private ConceptFirstWord searchCUI = new ConceptFirstWord();
 
 	// list of possible matches.
 	private List<SelectItem> matchesList = new ArrayList<SelectItem>();
 
 	public void resetListen(ActionEvent event) {
+		reset();
+	}
+
+	public void reset() {
 		this.matchesList.clear();
 		this.searchCUI = null;
 	}
@@ -64,26 +74,38 @@ public class ConceptLookupBean {
 	 * @param event
 	 */
 	public void updateList(ValueChangeEvent event) {
+		String searchString = (String) event.getNewValue();
+		String term = this.conceptSearchService
+				.getTermByConceptId(searchString);
+		if (term != null) {
+			ConceptFirstWord cfw = new ConceptFirstWord();
+			cfw.setFword(term);
+			cfw.setConceptId(searchString);
+			cfw.setText(term);
+			currentCUI = cfw;
+			this.matchesList = new ArrayList<SelectItem>(0);
+		} else {
 
-		// get a new list of matches.
-		setMatches(event);
+			// get a new list of matches.
+			setMatches(event);
 
-		// Get the auto complete component from the event and assing
-		if (event.getComponent() instanceof SelectInputText) {
-			SelectInputText autoComplete = (SelectInputText) event
-					.getComponent();
-			// if no selected item then return the previously selected item.
-			if (autoComplete.getSelectedItem() != null) {
-				currentCUI = (UMLSFirstWord) autoComplete.getSelectedItem()
-						.getValue();
-			}
-			// otherwise if there is a selected item get the value from the
-			// match list
-			else {
-				UMLSFirstWord tempCUI = getMatch(autoComplete.getValue()
-						.toString());
-				if (tempCUI != null) {
-					currentCUI = tempCUI;
+			// Get the auto complete component from the event and assing
+			if (event.getComponent() instanceof SelectInputText) {
+				SelectInputText autoComplete = (SelectInputText) event
+						.getComponent();
+				// if no selected item then return the previously selected item.
+				if (autoComplete.getSelectedItem() != null) {
+					currentCUI = (ConceptFirstWord) autoComplete
+							.getSelectedItem().getValue();
+				}
+				// otherwise if there is a selected item get the value from the
+				// match list
+				else {
+					ConceptFirstWord tempCUI = getMatch(autoComplete.getValue()
+							.toString());
+					if (tempCUI != null) {
+						currentCUI = tempCUI;
+					}
 				}
 			}
 		}
@@ -94,7 +116,7 @@ public class ConceptLookupBean {
 	 * 
 	 * @return selected city.
 	 */
-	public UMLSFirstWord getCurrentCUI() {
+	public ConceptFirstWord getCurrentCUI() {
 		return currentCUI;
 	}
 
@@ -107,13 +129,13 @@ public class ConceptLookupBean {
 		return matchesList;
 	}
 
-	public static String formatUMLSFirstWord(UMLSFirstWord fword) {
-		return fword.getText() + " [" + fword.getCui() + ']';
+	public static String formatUMLSFirstWord(ConceptFirstWord fword) {
+		return fword.getText() + " [" + fword.getConceptId() + ']';
 	}
 
-	public static UMLSFirstWord extractUMLSFirstWord(String fword) {
+	public static ConceptFirstWord extractUMLSFirstWord(String fword) {
 		String tokens[] = fword.split("[|]");
-		UMLSFirstWord umlsFWord = new UMLSFirstWord();
+		ConceptFirstWord umlsFWord = new ConceptFirstWord();
 		// last token is cui
 		if (tokens.length > 1) {
 			String cui = tokens[tokens.length - 1];
@@ -122,7 +144,7 @@ public class ConceptLookupBean {
 				builder.append(tokens[i]);
 			}
 			String text = builder.toString();
-			umlsFWord.setCui(cui);
+			umlsFWord.setConceptId(cui);
 			umlsFWord.setText(text);
 		}
 		return umlsFWord;
@@ -135,14 +157,14 @@ public class ConceptLookupBean {
 			String s1;
 			String s2;
 
-			if (o1 instanceof UMLSFirstWord) {
-				s1 = formatUMLSFirstWord((UMLSFirstWord) o1);
+			if (o1 instanceof ConceptFirstWord) {
+				s1 = formatUMLSFirstWord((ConceptFirstWord) o1);
 			} else {
 				s1 = o1.toString();
 			}
 
-			if (o2 instanceof UMLSFirstWord) {
-				s2 = formatUMLSFirstWord((UMLSFirstWord) o2);
+			if (o2 instanceof ConceptFirstWord) {
+				s2 = formatUMLSFirstWord((ConceptFirstWord) o2);
 			} else {
 				s2 = o2.toString();
 			}
@@ -150,15 +172,15 @@ public class ConceptLookupBean {
 		}
 	};
 
-	private UMLSFirstWord getMatch(String value) {
-		UMLSFirstWord result = null;
+	private ConceptFirstWord getMatch(String value) {
+		ConceptFirstWord result = null;
 		if (matchesList != null) {
 			SelectItem si;
 			Iterator<SelectItem> iter = matchesList.iterator();
 			while (iter.hasNext()) {
 				si = iter.next();
 				if (value.equals(si.getLabel())) {
-					return (UMLSFirstWord) si.getValue();
+					return (ConceptFirstWord) si.getValue();
 				}
 			}
 		}
@@ -181,10 +203,10 @@ public class ConceptLookupBean {
 			searchString = searchWord.toString();
 		}
 		if (searchString != null && searchString.length() > 2) {
-			List<UMLSFirstWord> cuis = this.umlsFirstWordService
-					.getUMLSbyFirstWord(searchString);
+			List<ConceptFirstWord> cuis = this.conceptSearchService
+					.getConceptByFirstWord(searchString);
 			this.matchesList = new ArrayList<SelectItem>(cuis.size());
-			for (UMLSFirstWord cui : cuis) {
+			for (ConceptFirstWord cui : cuis) {
 				this.matchesList.add(new SelectItem(cui,
 						formatUMLSFirstWord(cui)));
 			}

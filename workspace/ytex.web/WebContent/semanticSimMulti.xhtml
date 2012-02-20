@@ -28,14 +28,16 @@
 						<table border="0">
 							<tr valign="top">
 								<td><ice:outputLabel id="conceptGraphLabel"
-										value="Concept Graph:" /></td>
+										value="Concept Graph:" />
+								</td>
 								<td><ice:selectOneMenu
 										value="#{semanticSimBean.conceptGraphName}"
 										valueChangeListener="#{semanticSimBean.updateConceptGraph}"
 										partialSubmit="true">
 										<f:selectItems
 											value="#{semanticSimBean.semanticSimRegistryBean.semanticSimDescriptionMap}" />
-									</ice:selectOneMenu></td>
+									</ice:selectOneMenu>
+								</td>
 							</tr>
 						</table>
 					</ice:panelGroup>
@@ -45,31 +47,8 @@
 				<ice:panelGrid columns="1">
 					<ice:panelGroup>
 						<table border="0">
-							<tr valign="top">
-								<td><ice:outputLabel id="codeLabel1" value="Concept 1:" />
-								</td>
-								<td><ice:selectInputText id="codeInput1" rows="30"
-										width="300"
-										valueChangeListener="#{semanticSimBean.concept1.updateList}"
-										required="true">
-										<f:selectItems value="#{semanticSimBean.concept1.list}" />
-									</ice:selectInputText>
-								</td>
-							</tr>
-							<tr valign="top">
-								<td><ice:outputLabel id="codeLabel2" value="Concept 2:" />
-								</td>
-								<td><ice:selectInputText id="codeInput2" rows="30"
-										width="300"
-										valueChangeListener="#{semanticSimBean.concept2.updateList}"
-										required="true">
-										<f:selectItems value="#{semanticSimBean.concept2.list}" />
-									</ice:selectInputText>
-								</td>
-							</tr>
 							<tr>
-								<td><ice:outputLabel id="metricLabel" value="Metrics:" />
-								</td>
+								<td valign="top">Metrics:</td>
 								<td><h:selectManyCheckbox
 										value="#{semanticSimBean.metricSelect}" layout="pageDirection">
 										<f:selectItem itemValue="PATH" itemLabel="#{msg.PATH}" />
@@ -83,75 +62,56 @@
 											itemLabel="#{msg.INTRINSIC_LIN}" />
 										<f:selectItem itemValue="JACCARD" itemLabel="#{msg.JACCARD}" />
 										<f:selectItem itemValue="SOKAL" itemLabel="#{msg.SOKAL}" />
-									</h:selectManyCheckbox>
+									</h:selectManyCheckbox></td>
+							</tr>
+							<tr>
+								<td valign="top">Concept Pairs:</td>
+								<td><h:inputTextarea id="conceptPairText"
+										value="#{semanticSimBean.conceptPairText}"></h:inputTextarea>
 								</td>
 							</tr>
 						</table>
 						<ice:commandButton id="Similarity" value="Similarity"
 							title="ComputeSimilarity"
-							actionListener="#{semanticSimBean.simListen}" />
+							actionListener="#{semanticSimBean.simMultiListen}" />
 						<ice:commandButton id="Reset" value="Reset" title="Reset"
 							actionListener="#{semanticSimBean.resetListen}" />
 					</ice:panelGroup>
 				</ice:panelGrid>
 			</ice:form>
 			<ice:form>
-				<ice:outputText
-					value="Concept 1: #{semanticSimBean.concept1.searchCUI.text} [#{semanticSimBean.concept1.searchCUI.conceptId}]" />
-				<br />
-				<ice:outputText
-					value="Concept 2: #{semanticSimBean.concept2.searchCUI.text} [#{semanticSimBean.concept2.searchCUI.conceptId}]" />
+				<ice:dataExporter for="simTable" type="csv" label="Download as CSV" />
+				<ice:dataExporter for="simTable" type="excel" label="Download as XLS" />
 				<!-- similarity for each metric -->
-				<ice:dataTable value="#{semanticSimBean.similarityMap}" var="entry">
+				<ice:dataTable id="simTable"
+					value="#{semanticSimBean.similarityList}" var="entry">
 					<ice:column>
 						<f:facet name="header">
-							<ice:outputText value="Metric" />
+							<ice:outputText value="Concept ID 1" />
 						</f:facet>
-						<ice:outputText value="#{msg[entry.key]}" />
+						<ice:outputText value="#{entry.conceptPair.concept1}" />
 					</ice:column>
 					<ice:column>
 						<f:facet name="header">
-							<ice:outputText value="Similarity" />
+							<ice:outputText value="Concept ID 2" />
 						</f:facet>
-						<ice:outputText value="#{entry.value}">
-							<f:convertNumber maxFractionDigits="4" minFractionDigits="4" />
-						</ice:outputText>
+						<ice:outputText value="#{entry.conceptPair.concept2}" />
 					</ice:column>
+					<ice:columns value="#{semanticSimBean.metrics}" var="metric">
+						<f:facet name="header">
+							<ice:panelGroup>
+								<ice:outputText value="#{metric}" />
+							</ice:panelGroup>
+						</f:facet>
+						<!-- display the table cell values-->
+						<ice:panelGroup>
+							<ice:outputText value="#{entry.similarityMap[metric]}" />
+						</ice:panelGroup>
+					</ice:columns>
 				</ice:dataTable>
-				<c:if test="${!empty semanticSimBean.simInfo.corpusLcs}">
-					<br />
-					<ice:outputText
-						value="Corpus LCS: #{semanticSimBean.corpusLcsTerm} [#{semanticSimBean.simInfo.corpusLcs}]" />
-				</c:if>
-				<c:if test="${!empty semanticSimBean.simInfo.intrinsicLcs}">
-					<br />
-					<ice:outputText
-						value="Intrinsic LCS: #{semanticSimBean.intrinsicLcsTerm} [#{semanticSimBean.simInfo.intrinsicLcs}]" />
-				</c:if>
-				<c:if test="${!empty semanticSimBean.lcsPathMap}">
-					<br />
-					<!-- detailed lcs info -->
-					<ice:dataTable value="#{semanticSimBean.lcsPathMap}" var="lcsEntry">
-						<ice:column>
-							<f:facet name="header">
-								<ice:outputText value="LCS" />
-							</f:facet>
-							<ice:outputText value="#{lcsEntry.key}" />
-						</ice:column>
-						<ice:column>
-							<f:facet name="header">
-								<ice:outputText value="Path" />
-							</f:facet>
-							<ice:outputText value="#{lcsEntry.value}" />
-						</ice:column>
-					</ice:dataTable>
-				</c:if>
 			</ice:form>
 		</ui:define>
-
-
 	</ui:composition>
-
 </h:body>
 
 </html>

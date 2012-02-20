@@ -10,13 +10,13 @@ import java.io.Serializable;
  * 
  * @author vijay
  */
-public class UMLSFirstWord implements Serializable {
+public class ConceptFirstWord implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private String fword;
-	private String cui;
+	private String conceptId;
 	private String text;
 	public String getFword() {
 		return fword;
@@ -24,11 +24,11 @@ public class UMLSFirstWord implements Serializable {
 	public void setFword(String fword) {
 		this.fword = fword;
 	}
-	public String getCui() {
-		return cui;
+	public String getConceptId() {
+		return conceptId;
 	}
-	public void setCui(String cui) {
-		this.cui = cui;
+	public void setConceptId(String cui) {
+		this.conceptId = cui;
 	}
 	public String getText() {
 		return text;
@@ -38,7 +38,7 @@ public class UMLSFirstWord implements Serializable {
 	}
 	@Override
 	public String toString() {
-		return "UMLSFirstWord [cui=" + cui + ", text=" + text + "]";
+		return "UMLSFirstWord [cui=" + conceptId + ", text=" + text + "]";
 	}
 	
 

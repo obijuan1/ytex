@@ -20,9 +20,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="ytexProperties" ref="ytexProperties" />
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-	<bean id="umlsFirstWordService" class="ytex.web.search.UMLSFirstWordServiceImpl">
+	<bean id="umlsFirstWordService" class="ytex.web.search.ConceptSearchServiceImpl">
 		<property name="dataSource" ref="dataSource" />
 		<property name="ytexProperties" ref="ytexProperties" />
 		<property name="searchProperties" ref="searchProperties" />
 	</bean>
+	
 </beans>
