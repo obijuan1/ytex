@@ -22,10 +22,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
 		<property name="cacheManager" ref="cacheManager" />
 	</bean>
-	<bean id="lchKernel" class="ytex.kernel.evaluator.LCHKernel">
-		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
-		<property name="cacheManager" ref="cacheManager" />
-	</bean>
 	<bean id="abstractLinKernel" class="ytex.kernel.evaluator.LinKernel"
 		abstract="true">
 		<property name="conceptSimilarityService" ref="conceptSimilarityService" />

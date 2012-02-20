@@ -2,6 +2,7 @@ package ytex.kernel.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.CrossValidationFold;
@@ -62,6 +63,11 @@ public interface ClassifierEvaluationDao {
 			String corpusName, String featureSetName, String label,
 			String evaluationType, Integer foldId, double param1, String param2);
 
+	public abstract Map<String, Double> getFeatureRankEvaluations(
+			Set<String> featureNames, String corpusName, String featureSetName,
+			String label, String evaluationType, Integer foldId, double param1,
+			String param2);
+
 	public abstract List<Object[]> getCorpusCuiTuis(String corpusName,
 			String conceptGraphName, String conceptSetName);
 
@@ -78,7 +84,8 @@ public interface ClassifierEvaluationDao {
 			String evaluationType, String conceptGraphName,
 			String propEvaluationType, int propRankCutoff);
 
-	public abstract Double getMaxFeatureEvaluation(String corpusName, String featureSetName,
-			String label, String evaluationType, Integer foldId, double param1, String param2);
+	public abstract Double getMaxFeatureEvaluation(String corpusName,
+			String featureSetName, String label, String evaluationType,
+			Integer foldId, double param1, String param2);
 
 }

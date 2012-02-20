@@ -30,10 +30,8 @@ public abstract class BaseSimilarityMetric implements SimilarityMetric {
 	protected void initLCSes(String concept1, String concept2,
 			SimilarityInfo simInfo) {
 		if (simInfo.getLcsDist() == null) {
-			Set<String> lcses = new HashSet<String>(1);
-			simInfo.setLcses(lcses);
-			simInfo.setLcsDist(simSvc.getLCS(concept1, concept2, lcses,
-					simInfo.getLcsPathMap()));
+			simInfo.setLcsDist(simSvc.getLCS(concept1, concept2,
+					simInfo.getLcses(), simInfo.getLcsPaths()));
 		}
 	}
 

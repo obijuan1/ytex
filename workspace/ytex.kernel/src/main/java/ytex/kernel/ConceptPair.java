@@ -82,6 +82,7 @@ public class ConceptPair implements Serializable, Comparable {
 		super();
 	}
 
+
 	/**
 	 * compare concept 1, then concept 2
 	 */

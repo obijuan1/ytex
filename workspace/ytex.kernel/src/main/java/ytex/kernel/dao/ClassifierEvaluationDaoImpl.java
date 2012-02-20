@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
+import org.hibernate.type.Type;
 
 import ytex.dao.DBUtil;
 import ytex.kernel.InfoContentEvaluator;
@@ -207,14 +208,15 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		q.setMaxResults(parentConceptTopThreshold);
 		return q.list();
 	}
-	
+
 	@Override
 	public Double getMaxFeatureEvaluation(String corpusName,
 			String featureSetName, String label, String evaluationType,
 			Integer foldId, double param1, String param2) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
-				label, evaluationType, foldId, param1, param2, "getMaxFeatureEvaluation");
-		return (Double)q.uniqueResult();
+				label, evaluationType, foldId, param1, param2,
+				"getMaxFeatureEvaluation");
+		return (Double) q.uniqueResult();
 	}
 
 	private Query prepareUniqueFeatureEvalQuery(String corpusName,
@@ -277,6 +279,19 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		}
 	}
 
+	public Map<String,Double> getFeatureRankEvaluations(Set<String> featureNames,
+			String corpusName, String featureSetName, String label,
+			String evaluationType, Integer foldId, double param1, String param2) {
+		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
+				label, evaluationType, foldId, param1, param2, "getFeatureRankEvaluations");
+		q.setParameterList("featureNames", featureNames);
+		List<FeatureRank> featureRanks = q.list();
+		Map<String,Double> evalMap = new HashMap<String,Double>(featureRanks.size());
+		for(FeatureRank fr : featureRanks)
+			evalMap.put(fr.getFeatureName(), fr.getEvaluation());
+		return evalMap;
+	}
+
 	@Override
 	public Map<String, Double> getFeatureRankEvaluations(String corpusName,
 			String featureSetName, String label, String evaluationType,
@@ -313,7 +328,8 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	@Override
 	public Map<String, Double> getIntrinsicInfoContent(String conceptGraphName) {
 		return getFeatureRankEvaluations(null, null, null,
-				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, 0, 0, conceptGraphName);
+				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, 0, 0,
+				conceptGraphName);
 	}
 
 	@Override

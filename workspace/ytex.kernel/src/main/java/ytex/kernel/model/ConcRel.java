@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import ytex.kernel.metric.LCSPath;
+
 public class ConcRel implements java.io.Serializable {
 	private static final Logger log = Logger.getLogger(ConcRel.class.getName());
 	/**
@@ -127,7 +129,7 @@ public class ConcRel implements java.io.Serializable {
 	 * @return path length, -1 if no lcs
 	 */
 	public static int getLeastCommonConcept(ConcRel c1, ConcRel c2,
-			Set<ConcRel> lcses, Map<ConcRel, List<List<ConcRel>>> paths) {
+			Set<ConcRel> lcses, Map<ConcRel, LCSPath> paths) {
 		if (log.isLoggable(Level.FINE)) {
 			log.fine("getLeastCommonConcept(" + c1 + "," + c2 + ")");
 		}
@@ -222,18 +224,25 @@ public class ConcRel implements java.io.Serializable {
 		else {
 			if (paths != null) {
 				for (ConcRel lcs : lcses) {
-					List<List<ConcRel>> lcsPaths = new ArrayList<List<ConcRel>>(
-							2);
-					if (paths1.containsKey(lcs)) {
-						lcsPaths.add(paths1.get(lcs));
-					}
-					if (paths2.containsKey(lcs)) {
-						lcsPaths.add(paths2.get(lcs));
-					}
-					paths.put(lcs, lcsPaths);
+					LCSPath lcsPath = new LCSPath();
+					lcsPath.setLcs(lcs.getConceptID());
+					lcsPath.setConcept1Path(crListToString(paths1.get(lcs)));
+					lcsPath.setConcept2Path(crListToString(paths2.get(lcs)));
+					paths.put(lcs, lcsPath);
 				}
 			}
 			return minDist;
+		}
+	}
+
+	public static List<String> crListToString(List<ConcRel> crList) {
+		if (crList != null) {
+			List<String> path = new ArrayList<String>(crList.size());
+			for (ConcRel cr : crList)
+				path.add(cr.getConceptID());
+			return path;
+		} else {
+			return null;
 		}
 	}
 
@@ -495,10 +504,10 @@ public class ConcRel implements java.io.Serializable {
 			throws java.io.IOException, ClassNotFoundException {
 		nodeCUI = (String) in.readObject();
 		this.nodeIndex = in.readInt();
-		parents = new HashSet<ConcRel>();
-		children = new HashSet<ConcRel>();
 		parentsArray = (String[]) in.readObject();
 		childrenArray = (String[]) in.readObject();
+		parents = new HashSet<ConcRel>(parentsArray.length);
+		children = new HashSet<ConcRel>(childrenArray.length);
 	}
 
 	public void setConceptID(String nodeCUI) {

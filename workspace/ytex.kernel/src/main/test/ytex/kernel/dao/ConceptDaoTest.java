@@ -8,6 +8,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 import ytex.kernel.KernelContextHolder;
+import ytex.kernel.metric.LCSPath;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
 import ytex.kernel.model.ObjPair;
@@ -41,9 +42,9 @@ public class ConceptDaoTest extends TestCase {
 		ConcRel crHepatoma = cg.getConceptMap().get(cui2);
 		System.out.println(crHepatoma);
 		Set<ConcRel> lcses = new HashSet<ConcRel>();
-		Map<ConcRel, List<List<ConcRel>>> paths = new HashMap<ConcRel, List<List<ConcRel>>>();
-		int depth = ConcRel.getLeastCommonConcept(
-				crAscites, crHepatoma, lcses, paths);
+		Map<ConcRel, LCSPath> paths = new HashMap<ConcRel, LCSPath>();
+		int depth = ConcRel.getLeastCommonConcept(crAscites, crHepatoma, lcses,
+				paths);
 		System.out.println(paths);
 		System.out.println(depth);
 	}

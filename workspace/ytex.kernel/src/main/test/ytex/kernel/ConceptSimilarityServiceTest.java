@@ -1,10 +1,12 @@
 package ytex.kernel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import ytex.kernel.metric.LCSPath;
 import ytex.kernel.model.ConceptGraph;
 
 public class ConceptSimilarityServiceTest extends TestCase {
@@ -78,7 +80,7 @@ public class ConceptSimilarityServiceTest extends TestCase {
 				10, conceptFilter);			
 
 		for (String[] line : conceptsToTest) {
-			Map<String, List<List<String>>> lcsPath = new HashMap<String, List<List<String>>>();
+			List<LCSPath> lcsPath = new ArrayList<LCSPath>();
 			String cui1 = line[0];
 			String cui2 = line[1];
 			String label = line[4];
@@ -94,16 +96,17 @@ public class ConceptSimilarityServiceTest extends TestCase {
 			int lcsDist = conceptSimilarityService.lcs(cui1, cui2, lcsPath);
 			System.out.print(lcsDist);
 			System.out.print("\t");
-			System.out.print(lcsPath.keySet());
+			System.out.print(lcsPath);
 			System.out.print("\t");
-			System.out.print(conceptSimilarityService.lin(cui1, cui2));
-			System.out.print("\t");
-			System.out.println(conceptSimilarityService.lch(cui1, cui2));
+//			System.out.print(conceptSimilarityService.lin(cui1, cui2));
+//			System.out.print("\t");
+//			System.out.println(conceptSimilarityService.lch(cui1, cui2));
 			System.out.print("\t");
 			System.out.print(label);
 			System.out.print("\t");
-			System.out.println(conceptSimilarityService.filteredLin(cui1, cui2,
-					conceptFilter));
+			// System.out.println(conceptSimilarityService.filteredLin(cui1,
+			// cui2,
+			// conceptFilter));
 		}
 	}
 

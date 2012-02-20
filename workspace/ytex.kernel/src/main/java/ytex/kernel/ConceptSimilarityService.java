@@ -5,21 +5,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ytex.kernel.metric.LCSPath;
 import ytex.kernel.metric.SimilarityInfo;
 import ytex.kernel.model.ConceptGraph;
 
 public interface ConceptSimilarityService {
 
 	public enum SimilarityMetricEnum {
-		LCH, INTRINSIC_LCH, LIN, INTRINSIC_LIN, PATH, INTRINSIC_PATH, JACCARD, SOKAL, PAGERANK
+		LCH(false, false), INTRINSIC_LCH(true, false), LIN(false, true), INTRINSIC_LIN(
+				true, false), PATH(false, false), INTRINSIC_PATH(true, false), JACCARD(
+				true, false), SOKAL(true, false), PAGERANK(false, false);
+		boolean intrinsicIC = false;
+		boolean corpusIC = false;
+
+		public boolean isIntrinsicIC() {
+			return intrinsicIC;
+		}
+		public boolean isCorpusIC() {
+			return corpusIC;
+		}
+
+		SimilarityMetricEnum(boolean intrinsicIC, boolean corpusIC) {
+			this.intrinsicIC = intrinsicIC;
+			this.corpusIC = corpusIC;
+		}
 	}
 
-	public abstract double lch(String concept1, String concept2);
+	public String getConceptGraphName();
+	
+//	public abstract double lch(String concept1, String concept2);
 
-	public abstract double lin(String concept1, String concept2);
+	//	public abstract double lin(String concept1, String concept2);
 
 	public int lcs(String concept1, String concept2,
-			Map<String, List<List<String>>> lcsPath);
+			List<LCSPath> lcsPath);
 
 	public abstract ConceptGraph getConceptGraph();
 
@@ -31,19 +50,19 @@ public interface ConceptSimilarityService {
 	 */
 	public abstract Map<String, BitSet> getCuiTuiMap();
 
-	/**
-	 * supervised lin measure.
-	 * 
-	 * @param concept1
-	 * @param concept2
-	 * @param conceptFilter
-	 *            map of concept id to imputed infogain. if the concept isn't in
-	 *            this map, the concepts won't be compared. null for
-	 *            unsupervised lin.
-	 * @return
-	 */
-	public abstract double filteredLin(String concept1, String concept2,
-			Map<String, Double> conceptFilter);
+//	/**
+//	 * supervised lin measure.
+//	 * 
+//	 * @param concept1
+//	 * @param concept2
+//	 * @param conceptFilter
+//	 *            map of concept id to imputed infogain. if the concept isn't in
+//	 *            this map, the concepts won't be compared. null for
+//	 *            unsupervised lin.
+//	 * @return
+//	 */
+//	public abstract double filteredLin(String concept1, String concept2,
+//			Map<String, Double> conceptFilter);
 
 	/**
 	 * list of tuis that corresponds to bitset indices
@@ -83,8 +102,7 @@ public interface ConceptSimilarityService {
 	 * @return distance of path through lcs
 	 */
 	public int getLCS(String concept1, String concept2, Set<String> lcses,
-			Map<String, List<List<String>>> lcsPathMap);
-
+			List<LCSPath> lcsPaths);
 	/**
 	 * get the best lcs
 	 * 

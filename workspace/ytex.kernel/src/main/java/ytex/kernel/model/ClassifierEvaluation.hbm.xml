@@ -218,6 +218,17 @@
 		and featureEval.label = :label
 		order by evaluation desc
 	]]></query>
+	<query name="getFeatureRankEvaluations"><![CDATA[
+		from FeatureRank
+		where featureEval.corpusName = :corpusName
+		and featureEval.featureSetName = :featureSetName
+		and featureEval.param1 = :param1
+		and featureEval.param2 = :param2
+		and featureEval.crossValidationFoldId = :crossValidationFoldId
+		and featureEval.evaluationType = :evaluationType
+		and featureEval.label = :label
+		and featureName in (:featureNames)
+	]]></query>
  	<query name="deleteFeatureRank"><![CDATA[
 		delete from FeatureRank r
 		where featureEval.featureEvaluationId = :featureEvaluationId

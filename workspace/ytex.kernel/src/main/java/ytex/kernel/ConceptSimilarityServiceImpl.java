@@ -8,8 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -47,6 +45,7 @@ import ytex.kernel.metric.IntrinsicLCHMetric;
 import ytex.kernel.metric.IntrinsicPathMetric;
 import ytex.kernel.metric.JaccardMetric;
 import ytex.kernel.metric.LCHMetric;
+import ytex.kernel.metric.LCSPath;
 import ytex.kernel.metric.LinMetric;
 import ytex.kernel.metric.PageRankMetric;
 import ytex.kernel.metric.PathMetric;
@@ -68,14 +67,20 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private static final Log log = LogFactory
 			.getLog(ConceptSimilarityServiceImpl.class);
 
-	private static ThreadLocal<NumberFormat> tlnf = new ThreadLocal<NumberFormat>() {
-
-		@Override
-		protected NumberFormat initialValue() {
-			return new DecimalFormat("#.######");
+	private static String formatPaths(List<LCSPath> lcsPaths) {
+		StringBuilder b = new StringBuilder();
+		Iterator<LCSPath> lcsPathIter = lcsPaths.iterator();
+		while (lcsPathIter.hasNext()) {
+			LCSPath lcsPath = lcsPathIter.next();
+			String lcs = lcsPath.getLcs();
+			b.append(lcs);
+			b.append("=");
+			b.append(lcsPath.toString());
+			if (lcsPathIter.hasNext())
+				b.append("|");
 		}
-
-	};
+		return b.toString();
+	}
 
 	@SuppressWarnings("static-access")
 	public static void main(String args[]) throws IOException {
@@ -225,7 +230,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				while (lcsIter.hasNext()) {
 					os.print(lcsIter.next());
 					if (lcsIter.hasNext())
-						os.print(',');
+						os.print('|');
 				}
 				os.print("\t");
 				os.print(simInfo.getCorpusLcs() == null ? "" : simInfo
@@ -234,44 +239,9 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				os.print(simInfo.getIntrinsicLcs() == null ? "" : simInfo
 						.getIntrinsicLcs());
 				os.print("\t");
-				os.print(formatPaths(simInfo.getLcsPathMap()));
+				os.print(formatPaths(simInfo.getLcsPaths()));
 			}
 			os.println();
-		}
-	}
-
-	private static String formatPaths(Map<String, List<List<String>>> lcsPathMap) {
-		StringBuilder b = new StringBuilder();
-		Iterator<Map.Entry<String, List<List<String>>>> lcsPathIter = lcsPathMap
-				.entrySet().iterator();
-		while (lcsPathIter.hasNext()) {
-			Map.Entry<String, List<List<String>>> lcsPath = lcsPathIter.next();
-			String lcs = lcsPath.getKey();
-			b.append(lcs);
-			b.append("=");
-			if (lcsPath.getValue().size() > 0
-					&& lcsPath.getValue().get(0).size() > 0) {
-				formatPath(b, "->", lcsPath.getValue().get(0).iterator());
-				b.append("->*").append(lcs);
-			}
-			if (lcsPath.getValue().size() == 2
-					&& lcsPath.getValue().get(1).size() > 0) {
-				b.append("*<-");
-				formatPath(b, "<-", lcsPath.getValue().get(1).iterator());
-			}
-			if (lcsPathIter.hasNext())
-				b.append("|");
-		}
-		return b.toString();
-	}
-
-	private static void formatPath(StringBuilder b, String link,
-			Iterator<String> pathIter) {
-		while (pathIter.hasNext()) {
-			b.append(pathIter.next());
-			if (pathIter.hasNext()) {
-				b.append(link);
-			}
 		}
 	}
 
@@ -282,16 +252,6 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private ClassifierEvaluationDao classifierEvaluationDao;
 
 	private ConceptDao conceptDao;
-	private PageRankService pageRankService;
-
-	public PageRankService getPageRankService() {
-		return pageRankService;
-	}
-
-	public void setPageRankService(PageRankService pageRankService) {
-		this.pageRankService = pageRankService;
-	}
-
 	private String conceptGraphName;
 
 	private String conceptSetName;
@@ -302,7 +262,9 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	private Map<String, Double> corpusICMap = null;
 
 	private String corpusName;
+
 	private Map<String, BitSet> cuiTuiMap;
+
 	/**
 	 * 
 	 */
@@ -312,9 +274,11 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * cache to hold lcs's
 	 */
 	private Cache lcsCache;
-
 	private String lcsImputedType = ImputedFeatureEvaluator.MeasureType.INFOGAIN
 			.getName();
+	private PageRankService pageRankService;
+
+	private boolean preload = true;
 
 	private Map<SimilarityMetricEnum, SimilarityMetric> similarityMetricMap = null;
 
@@ -337,6 +301,160 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		tuis.add(tui);
 	}
 
+	// /**
+	// * return lin measure. optionally filter lin measure so that only concepts
+	// * that have an lcs that is relevant to the classification task have a
+	// * non-zero lin measure.
+	// *
+	// * relevant concepts are those whose evaluation wrt the label exceeds a
+	// * threshold.
+	// *
+	// * @param concept1
+	// * @param concept2
+	// * @param label
+	// * if not null, then filter lcses.
+	// * @param lcsMinEvaluation
+	// * if gt; 0, then filter lcses. this is the threshold.
+	// * @return 0 - no lcs, or no lcs that meets the threshold.
+	// */
+	// @Override
+	// public double filteredLin(String concept1, String concept2,
+	// Map<String, Double> conceptFilter) {
+	// double ic1 = getIC(concept1);
+	// double ic2 = getIC(concept2);
+	// // lin not defined if one of the concepts doesn't exist in the corpus
+	// if (ic1 == 0 || ic2 == 0)
+	// return 0;
+	// double denom = getIC(concept1) + getIC(concept2);
+	// if (denom != 0) {
+	// ConcRel cr1 = cg.getConceptMap().get(concept1);
+	// ConcRel cr2 = cg.getConceptMap().get(concept2);
+	// if (cr1 != null && cr2 != null) {
+	// Set<String> lcses = new HashSet<String>();
+	// int dist = getLCSFromCache(cr1, cr2, lcses);
+	// if (dist > 0) {
+	// double ic = getBestIC(lcses, conceptFilter);
+	// return 2 * ic / denom;
+	// }
+	// }
+	// }
+	// return 0;
+	// }
+
+	// /**
+	// * get the information content for the concept with the highest evaluation
+	// * greater than a specified threshold.
+	// *
+	// * If threshold 0, get the lowest IC of all the lcs's.
+	// *
+	// * @param lcses
+	// * the least common subsumers of a pair of concepts
+	// * @param label
+	// * label against which feature was evaluated
+	// * @param lcsMinEvaluation
+	// * threshold that the feature has to exceed. 0 for no filtering.
+	// * @return 0 if no lcs that makes the cut. else find the lcs(es) with the
+	// * maximal evaluation, and return getIC on these lcses.
+	// *
+	// * @see #getIC(Iterable)
+	// */
+	// private double getBestIC(Set<String> lcses,
+	// Map<String, Double> conceptFilter) {
+	// if (conceptFilter != null) {
+	// double currentBest = -1;
+	// Set<String> bestLcses = new HashSet<String>();
+	// for (String lcs : lcses) {
+	// if (conceptFilter.containsKey(lcs)) {
+	// double lcsEval = conceptFilter.get(lcs);
+	// if (currentBest == -1 || lcsEval > currentBest) {
+	// bestLcses.clear();
+	// bestLcses.add(lcs);
+	// currentBest = lcsEval;
+	// } else if (currentBest == lcsEval) {
+	// bestLcses.add(lcs);
+	// }
+	// }
+	// }
+	// if (bestLcses.size() > 0) {
+	// return this.getIC(bestLcses);
+	// }
+	// } else {
+	// // unfiltered - get the lowest ic
+	// return this.getIC(lcses);
+	// }
+	// return 0;
+	// }
+
+	@Override
+	public Object[] getBestLCS(Set<String> lcses, boolean intrinsicIC,
+			Map<String, Double> conceptFilter) {
+		Map<String, Double> lcsICMap = null;
+		if (isPreload()) {
+			lcsICMap = intrinsicIC ? this.intrinsicICMap : this.corpusICMap;
+		} else {
+			lcsICMap = getICOnDemand(lcses, intrinsicIC);
+		}
+		if (conceptFilter != null) {
+			double currentBest = -1;
+			Set<String> bestLcses = new HashSet<String>();
+			for (String lcs : lcses) {
+				if (conceptFilter.containsKey(lcs)) {
+					double lcsEval = conceptFilter.get(lcs);
+					if (currentBest == -1 || lcsEval > currentBest) {
+						bestLcses.clear();
+						bestLcses.add(lcs);
+						currentBest = lcsEval;
+					} else if (currentBest == lcsEval) {
+						bestLcses.add(lcs);
+					}
+				}
+			}
+			if(currentBest < 0)
+				currentBest = 0d;
+			if (bestLcses.size() > 0) {
+				return this.getBestLCS(bestLcses, lcsICMap);
+			} else {
+				// no lcses made the cut
+				return null;
+			}
+		} else {
+			// unfiltered - get the lowest ic
+			return this.getBestLCS(lcses, lcsICMap);
+		}
+	}
+
+	private Map<String, Double> getICOnDemand(Set<String> lcses,
+			boolean intrinsicIC) {
+		if(lcses == null || lcses.isEmpty())
+			return new HashMap<String, Double>(0);
+		Map<String, Double> lcsICMap;
+		lcsICMap = this.classifierEvaluationDao
+				.getFeatureRankEvaluations(
+						lcses,
+						intrinsicIC ? null : this.corpusName,
+						intrinsicIC ? null : this.conceptSetName,
+						null,
+						intrinsicIC ? IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT
+								: InfoContentEvaluator.INFOCONTENT, null, 0d,
+						this.getConceptGraphName());
+		return lcsICMap;
+	}
+
+	public Object[] getBestLCS(Set<String> lcses, Map<String, Double> icMap) {
+		double ic = -1;
+		String bestLCS = null;
+		for (String lcs : lcses) {
+			Double ictmp = icMap.get(lcs);
+			if (ictmp != null && ic < ictmp.doubleValue()) {
+				ic = ictmp;
+				bestLCS = lcs;
+			}
+		}
+		if(ic < 0)
+			ic = 0d;
+		return new Object[] { bestLCS, ic };
+	}
+
 	// private String createKey(String c1, String c2) {
 	// if (c1.compareTo(c2) < 0) {
 	// return new StringBuilder(c1).append("-").append(c2).toString();
@@ -344,135 +462,6 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	// return new StringBuilder(c2).append("-").append(c1).toString();
 	// }
 	// }
-
-	/**
-	 * return lin measure. optionally filter lin measure so that only concepts
-	 * that have an lcs that is relevant to the classification task have a
-	 * non-zero lin measure.
-	 * 
-	 * relevant concepts are those whose evaluation wrt the label exceeds a
-	 * threshold.
-	 * 
-	 * @param concept1
-	 * @param concept2
-	 * @param label
-	 *            if not null, then filter lcses.
-	 * @param lcsMinEvaluation
-	 *            if gt; 0, then filter lcses. this is the threshold.
-	 * @return 0 - no lcs, or no lcs that meets the threshold.
-	 */
-	@Override
-	public double filteredLin(String concept1, String concept2,
-			Map<String, Double> conceptFilter) {
-		double ic1 = getIC(concept1);
-		double ic2 = getIC(concept2);
-		// lin not defined if one of the concepts doesn't exist in the corpus
-		if (ic1 == 0 || ic2 == 0)
-			return 0;
-		double denom = getIC(concept1) + getIC(concept2);
-		if (denom != 0) {
-			ConcRel cr1 = cg.getConceptMap().get(concept1);
-			ConcRel cr2 = cg.getConceptMap().get(concept2);
-			if (cr1 != null && cr2 != null) {
-				Set<String> lcses = new HashSet<String>();
-				int dist = getLCSFromCache(cr1, cr2, lcses);
-				if (dist > 0) {
-					double ic = getBestIC(lcses, conceptFilter);
-					return 2 * ic / denom;
-				}
-			}
-		}
-		return 0;
-	}
-
-	/**
-	 * get the information content for the concept with the highest evaluation
-	 * greater than a specified threshold.
-	 * 
-	 * If threshold 0, get the lowest IC of all the lcs's.
-	 * 
-	 * @param lcses
-	 *            the least common subsumers of a pair of concepts
-	 * @param label
-	 *            label against which feature was evaluated
-	 * @param lcsMinEvaluation
-	 *            threshold that the feature has to exceed. 0 for no filtering.
-	 * @return 0 if no lcs that makes the cut. else find the lcs(es) with the
-	 *         maximal evaluation, and return getIC on these lcses.
-	 * 
-	 * @see #getIC(Iterable)
-	 */
-	private double getBestIC(Set<String> lcses,
-			Map<String, Double> conceptFilter) {
-		if (conceptFilter != null) {
-			double currentBest = -1;
-			Set<String> bestLcses = new HashSet<String>();
-			for (String lcs : lcses) {
-				if (conceptFilter.containsKey(lcs)) {
-					double lcsEval = conceptFilter.get(lcs);
-					if (currentBest == -1 || lcsEval > currentBest) {
-						bestLcses.clear();
-						bestLcses.add(lcs);
-						currentBest = lcsEval;
-					} else if (currentBest == lcsEval) {
-						bestLcses.add(lcs);
-					}
-				}
-			}
-			if (bestLcses.size() > 0) {
-				return this.getIC(bestLcses);
-			}
-		} else {
-			// unfiltered - get the lowest ic
-			return this.getIC(lcses);
-		}
-		return 0;
-	}
-
-	@Override
-	public Object[] getBestLCS(Set<String> lcses, boolean intrinsicIC,
-			Map<String, Double> conceptFilter) {
-		if (conceptFilter != null) {
-			double currentBest = -1;
-			Set<String> bestLcses = new HashSet<String>();
-			for (String lcs : lcses) {
-				if (conceptFilter.containsKey(lcs)) {
-					double lcsEval = conceptFilter.get(lcs);
-					if (currentBest == -1 || lcsEval > currentBest) {
-						bestLcses.clear();
-						bestLcses.add(lcs);
-						currentBest = lcsEval;
-					} else if (currentBest == lcsEval) {
-						bestLcses.add(lcs);
-					}
-				}
-			}
-			if (bestLcses.size() > 0) {
-				return this.getBestLCS(bestLcses,
-						intrinsicIC ? this.intrinsicICMap : this.corpusICMap);
-			} else {
-				// no lcses made the cut
-				return null;
-			}
-		} else {
-			// unfiltered - get the lowest ic
-			return this.getBestLCS(lcses, intrinsicIC ? this.intrinsicICMap
-					: this.corpusICMap);
-		}
-	}
-
-	public Object[] getBestLCS(Set<String> lcses, Map<String, Double> icMap) {
-		double ic = 0;
-		String bestLCS = null;
-		for (String lcs : lcses) {
-			Double ictmp = icMap.get(lcs);
-			if (ictmp != null && ic < ictmp) {
-				ic = ictmp;
-				bestLCS = lcs;
-			}
-		}
-		return new Object[] { bestLCS, ic };
-	}
 
 	public CacheManager getCacheManager() {
 		return cacheManager;
@@ -508,36 +497,41 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		return cuiTuiMap;
 	}
 
-	/**
-	 * get the concept with the lowest Information Content of all the LCSs.
-	 * Functionality copied from umls interface.
-	 * 
-	 * @todo make this configurable/add a parameter - avg/min/max/median?
-	 * @param lcses
-	 * @return
-	 */
-	public double getIC(Iterable<String> lcses) {
-		double ic = 0;
-		for (String lcs : lcses) {
-			double ictmp = getIC(lcs);
-			if (ic < ictmp)
-				ic = ictmp;
-		}
-		return ic;
-	}
-
-	public double getIC(String concept1) {
-		Double dRetVal = corpusICMap.get(concept1);
-		if (dRetVal != null)
-			return (double) dRetVal;
-		else
-			return 0;
-	}
+	// /**
+	// * get the concept with the lowest Information Content of all the LCSs.
+	// * Functionality copied from umls interface.
+	// *
+	// * @todo make this configurable/add a parameter - avg/min/max/median?
+	// * @param lcses
+	// * @return
+	// */
+	// public double getIC(Iterable<String> lcses) {
+	// double ic = 0;
+	// for (String lcs : lcses) {
+	// double ictmp = getIC(lcs);
+	// if (ic < ictmp)
+	// ic = ictmp;
+	// }
+	// return ic;
+	// }
+	//
+	// public double getIC(String concept1) {
+	// Double dRetVal = corpusICMap.get(concept1);
+	// if (dRetVal != null)
+	// return (double) dRetVal;
+	// else
+	// return 0;
+	// }
 
 	@Override
 	public double getIC(String concept, boolean intrinsicICMap) {
-		Map<String, Double> icMap = intrinsicICMap ? this.intrinsicICMap
-				: this.corpusICMap;
+		Map<String, Double> icMap = null;
+		if (isPreload()) {
+			icMap = intrinsicICMap ? this.intrinsicICMap : this.corpusICMap;
+		} else {
+			icMap = getICOnDemand(new HashSet<String>(Arrays.asList(concept)),
+					intrinsicICMap);
+		}
 		if (icMap.containsKey(concept))
 			return icMap.get(concept);
 		else
@@ -545,18 +539,22 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	public int getLCS(String concept1, String concept2, Set<String> lcses,
-			Map<String, List<List<String>>> lcsPathMap) {
+			List<LCSPath> lcsPaths) {
 		int lcsDist = 0;
 		ConcRel cr1 = getConceptGraph().getConceptMap().get(concept1);
 		ConcRel cr2 = getConceptGraph().getConceptMap().get(concept2);
 		if (cr1 != null && cr2 != null) {
-			if (lcsPathMap == null) {
+			lcses.clear();
+			if (lcsPaths == null) {
 				// no need to get paths which we don't cache - look in the cache
 				lcsDist = getLCSFromCache(cr1, cr2, lcses);
 			} else {
+				lcsPaths.clear();
 				// need to get paths - compute the lcses and their paths
-				lcsDist = lcs(concept1, concept2, lcsPathMap);
-				lcses.addAll(lcsPathMap.keySet());
+				lcsDist = lcs(concept1, concept2, lcsPaths);
+				for (LCSPath lcsPath : lcsPaths) {
+					lcses.add(lcsPath.getLcs());
+				}
 			}
 		} else {
 			if (log.isDebugEnabled()) {
@@ -570,7 +568,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public int getLCSFromCache(ConcRel cr1, ConcRel cr2, Set<String> lcses) {
+	private int getLCSFromCache(ConcRel cr1, ConcRel cr2, Set<String> lcses) {
 		OrderedPair<String> cacheKey = new OrderedPair<String>(
 				cr1.getConceptID(), cr2.getConceptID());
 		Element e = this.lcsCache.get(cacheKey);
@@ -606,6 +604,10 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		return lcsImputedType;
 	}
 
+	public PageRankService getPageRankService() {
+		return pageRankService;
+	}
+
 	public Map<SimilarityMetricEnum, SimilarityMetric> getSimilarityMetricMap() {
 		return similarityMetricMap;
 	}
@@ -626,8 +628,10 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 			@Override
 			public Object doInTransaction(TransactionStatus arg0) {
 				cg = conceptDao.getConceptGraph(conceptGraphName);
-				initInfoContent();
-				initCuiTuiMapFromCorpus();
+				if (isPreload()) {
+					initInfoContent();
+					initCuiTuiMapFromCorpus();
+				}
 				initSimilarityMetricMap();
 				return null;
 			}
@@ -712,62 +716,54 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ytex.kernel.ConceptSimilarity#lch(java.lang.String,
-	 * java.lang.String)
-	 */
-	public double lch(String concept1, String concept2) {
-		double dm = 2 * cg.getDepthMax() + 1.0;
-		ConcRel cr1 = cg.getConceptMap().get(concept1);
-		ConcRel cr2 = cg.getConceptMap().get(concept2);
-		if (cr1 != null && cr2 != null) {
-			Set<String> lcses = new HashSet<String>();
-			int lcsDist = getLCSFromCache(cr1, cr2, lcses);
-			// leacock is defined as -log([path length]/(2*[depth])
-			double lch = -Math.log(((double) lcsDist + 1.0) / dm);
-			// scale to depth
-			return lch / Math.log(dm);
-		} else {
-			if (log.isDebugEnabled()) {
-				if (cr1 == null)
-					log.debug("could not find concept:" + concept1);
-				if (cr2 == null)
-					log.debug("could not find concept:" + concept2);
-			}
-			return 0;
-		}
+	public boolean isPreload() {
+		return preload;
 	}
 
-	public int lcs(String concept1, String concept2,
-			Map<String, List<List<String>>> lcsPath) {
+	// /*
+	// * (non-Javadoc)
+	// *
+	// * @see ytex.kernel.ConceptSimilarity#lch(java.lang.String,
+	// * java.lang.String)
+	// */
+	// public double lch(String concept1, String concept2) {
+	// double dm = 2 * cg.getDepthMax() + 1.0;
+	// ConcRel cr1 = cg.getConceptMap().get(concept1);
+	// ConcRel cr2 = cg.getConceptMap().get(concept2);
+	// if (cr1 != null && cr2 != null) {
+	// Set<String> lcses = new HashSet<String>();
+	// int lcsDist = getLCSFromCache(cr1, cr2, lcses);
+	// // leacock is defined as -log([path length]/(2*[depth])
+	// double lch = -Math.log(((double) lcsDist + 1.0) / dm);
+	// // scale to depth
+	// return lch / Math.log(dm);
+	// } else {
+	// if (log.isDebugEnabled()) {
+	// if (cr1 == null)
+	// log.debug("could not find concept:" + concept1);
+	// if (cr2 == null)
+	// log.debug("could not find concept:" + concept2);
+	// }
+	// return 0;
+	// }
+	// }
+
+	public int lcs(String concept1, String concept2, List<LCSPath> lcsPaths) {
 		ConcRel cr1 = cg.getConceptMap().get(concept1);
 		ConcRel cr2 = cg.getConceptMap().get(concept2);
 		int dist = -1;
 		if (cr1 != null && cr2 != null) {
 			Set<ConcRel> crlcses = new HashSet<ConcRel>();
-			Map<ConcRel, List<List<ConcRel>>> crpaths = new HashMap<ConcRel, List<List<ConcRel>>>();
+			Map<ConcRel, LCSPath> crpaths = new HashMap<ConcRel, LCSPath>();
 			dist = ConcRel.getLeastCommonConcept(cr1, cr2, crlcses, crpaths);
-			for (Map.Entry<ConcRel, List<List<ConcRel>>> crLcsPath : crpaths
-					.entrySet()) {
-				List<List<String>> lcsPaths = new ArrayList<List<String>>(2);
-				for (List<ConcRel> crpath : crLcsPath.getValue()) {
-					List<String> lcsPathEntry = new ArrayList<String>(
-							crpath.size());
-					for (ConcRel cr : crpath)
-						lcsPathEntry.add(cr.getConceptID());
-					lcsPaths.add(lcsPathEntry);
-				}
-				lcsPath.put(crLcsPath.getKey().getConceptID(), lcsPaths);
-			}
+			lcsPaths.addAll(crpaths.values());
 		}
 		return dist;
 	}
 
-	public double lin(String concept1, String concept2) {
-		return filteredLin(concept1, concept2, null);
-	}
+	// public double lin(String concept1, String concept2) {
+	// return filteredLin(concept1, concept2, null);
+	// }
 
 	/**
 	 * For the given label and cutoff, get the corresponding concepts whose
@@ -822,6 +818,14 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		this.conceptSetName = conceptSetName;
 	}
 
+	public void setCorpusName(String corpusName) {
+		this.corpusName = corpusName;
+	}
+
+	public void setLcsImputedType(String lcsImputedType) {
+		this.lcsImputedType = lcsImputedType;
+	}
+
 	// double minEval = 1d;
 	// List<FeatureRank> listPropagatedConcepts = classifierEvaluationDao
 	// .getTopFeatures(corpusName, conceptSetName, label,
@@ -860,12 +864,12 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	// }
 	// }
 
-	public void setCorpusName(String corpusName) {
-		this.corpusName = corpusName;
+	public void setPageRankService(PageRankService pageRankService) {
+		this.pageRankService = pageRankService;
 	}
 
-	public void setLcsImputedType(String lcsImputedType) {
-		this.lcsImputedType = lcsImputedType;
+	public void setPreload(boolean preload) {
+		this.preload = preload;
 	}
 
 	public void setSimilarityMetricMap(
@@ -888,7 +892,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 			SimilarityInfo simInfo = null;
 			if (simInfos != null) {
 				simInfo = new SimilarityInfo();
-				simInfo.setLcsPathMap(new HashMap<String, List<List<String>>>());
+				simInfo.setLcsPaths(new ArrayList<LCSPath>());
 			}
 			conceptSimMap.add(similarity(metrics, conceptPair.getConcept1(),
 					conceptPair.getConcept2(), conceptFilter, simInfo));

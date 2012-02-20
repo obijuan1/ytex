@@ -1,9 +1,11 @@
 package ytex.kernel.metric;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Data structure to hold information on the lcs's, paths, and final selected
@@ -33,17 +35,25 @@ public class SimilarityInfo implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+
 	String corpusLcs;
+
 	Double corpusLcsIC;
+
 	String intrinsicLcs;
 
 	Double intrinsicLcsIC;
 
 	Integer lcsDist;
+	List<LCSPath> lcsPaths;
 
-	Set<String> lcses;
+	@XmlTransient
+	Set<String> lcses = new HashSet<String>(1);
 
-	Map<String, List<List<String>>> lcsPathMap;
+
+	public Set<String> getLcses() {
+		return lcses;
+	}
 
 	public SimilarityInfo() {
 		super();
@@ -69,12 +79,8 @@ public class SimilarityInfo implements Serializable {
 		return lcsDist;
 	}
 
-	public Set<String> getLcses() {
-		return lcses;
-	}
-
-	public Map<String, List<List<String>>> getLcsPathMap() {
-		return lcsPathMap;
+	public List<LCSPath> getLcsPaths() {
+		return lcsPaths;
 	}
 
 	public void setCorpusLcs(String corpusLcs) {
@@ -97,17 +103,7 @@ public class SimilarityInfo implements Serializable {
 		this.lcsDist = lcsDist;
 	}
 
-	public void setLcses(Set<String> lcses) {
-		this.lcses = lcses;
-	}
-
-	public void setLcsPathMap(Map<String, List<List<String>>> lcsPathMap) {
-		this.lcsPathMap = lcsPathMap;
-	}
-
-	@Override
-	public String toString() {
-		return "SimilarityInfo [lcses=" + lcses + ", lcsPathMap=" + lcsPathMap
-				+ "]";
+	public void setLcsPaths(List<LCSPath> lcsPaths) {
+		this.lcsPaths = lcsPaths;
 	}
 }
