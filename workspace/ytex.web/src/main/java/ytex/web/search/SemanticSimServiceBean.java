@@ -1,6 +1,6 @@
 package ytex.web.search;
 
-import ytex.kernel.ConceptSimilarityService;
+import ytex.kernel.metric.ConceptSimilarityService;
 
 public class SemanticSimServiceBean {
 

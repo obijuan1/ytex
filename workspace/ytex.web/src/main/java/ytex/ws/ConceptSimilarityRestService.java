@@ -7,6 +7,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import ytex.kernel.metric.ConceptPairSimilarity;
+
 @Path("/rest/")
 @Produces("application/xml")
 public interface ConceptSimilarityRestService {
@@ -26,5 +28,6 @@ public interface ConceptSimilarityRestService {
 			@QueryParam("conceptGraph") String conceptGraph,
 			@QueryParam("concept1") String concept1,
 			@QueryParam("concept2") String concept2,
-			@QueryParam("metrics") String metrics);
+			@QueryParam("metrics") String metrics,
+			@QueryParam("lcs") String lcs);
 }

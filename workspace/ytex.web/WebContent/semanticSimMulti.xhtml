@@ -12,8 +12,8 @@
 <h:body>
 	<ui:composition template="WEB-INF/inc-templates/commonLayout.xhtml">
 		<!-- params for page titles-->
-		<ui:param name="pageTitle" value="Semantic Similarity" />
-		<ui:param name="contentHeader" value="Semantic Similarity" />
+		<ui:param name="pageTitle" value="Semantic Similarity - Multi" />
+		<ui:param name="contentHeader" value="Semantic Similarity - Multi" />
 
 		<!-- header content here  -->
 		<ui:define name="pageName">
@@ -28,16 +28,14 @@
 						<table border="0">
 							<tr valign="top">
 								<td><ice:outputLabel id="conceptGraphLabel"
-										value="Concept Graph:" />
-								</td>
+									value="Concept Graph:" /></td>
 								<td><ice:selectOneMenu
-										value="#{semanticSimBean.conceptGraphName}"
-										valueChangeListener="#{semanticSimBean.updateConceptGraph}"
-										partialSubmit="true">
-										<f:selectItems
-											value="#{semanticSimBean.semanticSimRegistryBean.semanticSimDescriptionMap}" />
-									</ice:selectOneMenu>
-								</td>
+									value="#{semanticSimBean.conceptGraphName}"
+									valueChangeListener="#{semanticSimBean.updateConceptGraph}"
+									partialSubmit="true">
+									<f:selectItems
+										value="#{semanticSimBean.semanticSimRegistryBean.semanticSimDescriptionMap}" />
+								</ice:selectOneMenu></td>
 							</tr>
 						</table>
 					</ice:panelGroup>
@@ -50,25 +48,24 @@
 							<tr>
 								<td valign="top">Metrics:</td>
 								<td><h:selectManyCheckbox
-										value="#{semanticSimBean.metricSelect}" layout="pageDirection">
-										<f:selectItem itemValue="PATH" itemLabel="#{msg.PATH}" />
-										<f:selectItem itemValue="LCH" itemLabel="#{msg.LCH}" />
-										<f:selectItem itemValue="LIN" itemLabel="#{msg.LIN}" />
-										<f:selectItem itemValue="INTRINSIC_PATH"
-											itemLabel="#{msg.INTRINSIC_PATH}" />
-										<f:selectItem itemValue="INTRINSIC_LCH"
-											itemLabel="#{msg.INTRINSIC_LCH}" />
-										<f:selectItem itemValue="INTRINSIC_LIN"
-											itemLabel="#{msg.INTRINSIC_LIN}" />
-										<f:selectItem itemValue="JACCARD" itemLabel="#{msg.JACCARD}" />
-										<f:selectItem itemValue="SOKAL" itemLabel="#{msg.SOKAL}" />
-									</h:selectManyCheckbox></td>
+									value="#{semanticSimBean.metricSelect}" layout="pageDirection">
+									<f:selectItem itemValue="PATH" itemLabel="#{msg.PATH}" />
+									<f:selectItem itemValue="LCH" itemLabel="#{msg.LCH}" />
+									<f:selectItem itemValue="LIN" itemLabel="#{msg.LIN}" />
+									<f:selectItem itemValue="INTRINSIC_PATH"
+										itemLabel="#{msg.INTRINSIC_PATH}" />
+									<f:selectItem itemValue="INTRINSIC_LCH"
+										itemLabel="#{msg.INTRINSIC_LCH}" />
+									<f:selectItem itemValue="INTRINSIC_LIN"
+										itemLabel="#{msg.INTRINSIC_LIN}" />
+									<f:selectItem itemValue="JACCARD" itemLabel="#{msg.JACCARD}" />
+									<f:selectItem itemValue="SOKAL" itemLabel="#{msg.SOKAL}" />
+								</h:selectManyCheckbox></td>
 							</tr>
 							<tr>
 								<td valign="top">Concept Pairs:</td>
 								<td><h:inputTextarea id="conceptPairText"
-										value="#{semanticSimBean.conceptPairText}"></h:inputTextarea>
-								</td>
+									value="#{semanticSimBean.conceptPairText}"></h:inputTextarea></td>
 							</tr>
 						</table>
 						<ice:commandButton id="Similarity" value="Similarity"
@@ -81,7 +78,8 @@
 			</ice:form>
 			<ice:form>
 				<ice:dataExporter for="simTable" type="csv" label="Download as CSV" />
-				<ice:dataExporter for="simTable" type="excel" label="Download as XLS" />
+				<ice:dataExporter for="simTable" type="excel"
+					label="Download as XLS" />
 				<!-- similarity for each metric -->
 				<ice:dataTable id="simTable"
 					value="#{semanticSimBean.similarityList}" var="entry">
@@ -105,7 +103,9 @@
 						</f:facet>
 						<!-- display the table cell values-->
 						<ice:panelGroup>
-							<ice:outputText value="#{entry.similarityMap[metric]}" />
+							<ice:outputText value="#{entry.similarityMap[metric]}">
+								<f:convertNumber maxFractionDigits="4" minFractionDigits="4" />
+							</ice:outputText>
 						</ice:panelGroup>
 					</ice:columns>
 				</ice:dataTable>

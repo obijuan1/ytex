@@ -10,6 +10,18 @@
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<bean id="conceptSimilarityService" class="ytex.kernel.metric.ConceptSimilarityServiceImpl"
+		init-method="init">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="conceptDao" ref="conceptDao" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="pageRankService" ref="pageRankService" />
+		<property name="corpusName" value="${ytex.corpusName}" />
+		<property name="conceptGraphName" value="${ytex.conceptGraphName}" />
+		<property name="conceptSetName" value="${ytex.conceptSetName}" />
+		<property name="preload" value="false" />
+	</bean>
 	<!-- default SemanticSimServiceBean -->
 	<bean id="semanticSimBean" class="ytex.web.search.SemanticSimServiceBean">
 		<property name="conceptSearchService" ref="umlsFirstWordService" />
@@ -17,13 +29,13 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="description" value="SNOMED-CT from UMLS 2011AB" />
 	</bean>
 	<!-- snomed-ct SemanticSimServiceBean -->
-	<bean id="snomedConceptSimilarityService" class="ytex.kernel.ConceptSimilarityServiceImpl"
+	<bean id="snomedConceptSimilarityService" class="ytex.kernel.metric.ConceptSimilarityServiceImpl"
 		init-method="init">
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="conceptDao" ref="conceptDao" />
 		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
 		<property name="cacheManager" ref="cacheManager" />
-		<property name="conceptGraphName" value="snomed-2011" />
+		<property name="conceptGraphName" value="sct" />
 		<property name="preload" value="false" />
 	</bean>
 	<bean id="snomedSearchProperties"

@@ -6,18 +6,17 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 
-import ytex.kernel.ConceptPair;
-import ytex.kernel.ConceptSimilarityService;
-import ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum;
+import ytex.kernel.metric.ConceptPair;
+import ytex.kernel.metric.ConceptPairSimilarity;
+import ytex.kernel.metric.ConceptSimilarityService;
+import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.metric.LCSPath;
 import ytex.kernel.metric.SimilarityInfo;
 
@@ -48,6 +47,7 @@ public class SemanticSimBean implements Serializable {
 		}
 
 	}
+
 	/**
 	 * 
 	 */
@@ -61,7 +61,7 @@ public class SemanticSimBean implements Serializable {
 
 	transient String intrinsicLcsTerm;
 	transient Map<String, String> lcsPathMap = new TreeMap<String, String>();
-	transient Set<SimilarityMetricEnum> metrics = new HashSet<SimilarityMetricEnum>();
+	transient List<SimilarityMetricEnum> metrics = new ArrayList<SimilarityMetricEnum>();
 	transient String[] metricSelect;
 	transient SemanticSimRegistryBean semanticSimRegistryBean;
 	/**
@@ -111,7 +111,7 @@ public class SemanticSimBean implements Serializable {
 		return lcsPathMap;
 	}
 
-	public Set<SimilarityMetricEnum> getMetrics() {
+	public List<SimilarityMetricEnum> getMetrics() {
 		return metrics;
 	}
 
@@ -194,7 +194,7 @@ public class SemanticSimBean implements Serializable {
 		this.lcsPathMap = lcsPathMap;
 	}
 
-	public void setMetrics(Set<SimilarityMetricEnum> metrics) {
+	public void setMetrics(List<SimilarityMetricEnum> metrics) {
 		this.metrics = metrics;
 	}
 
@@ -232,8 +232,6 @@ public class SemanticSimBean implements Serializable {
 				&& this.concept2.getCurrentCUI() != null) {
 			this.concept1.setSearchCUI(this.concept1.getCurrentCUI());
 			this.concept2.setSearchCUI(this.concept2.getCurrentCUI());
-			this.simInfo = new SimilarityInfo();
-			simInfo.setLcsPaths(new ArrayList<LCSPath>());
 			initMetrics();
 			ConceptSimilarityService simSvc = this.getSemanticSimRegistryBean()
 					.getSemanticSimServiceMap().get(conceptGraphName)
@@ -241,9 +239,11 @@ public class SemanticSimBean implements Serializable {
 			ConceptSearchService searchSvc = this.getSemanticSimRegistryBean()
 					.getSemanticSimServiceMap().get(conceptGraphName)
 					.getConceptSearchService();
-			this.similarityMap = simSvc.similarity(metrics, concept1
+			ConceptPairSimilarity csim = simSvc.similarity(metrics, concept1
 					.getSearchCUI().getConceptId(), concept2.getSearchCUI()
-					.getConceptId(), null, simInfo);
+					.getConceptId(), null, true);
+			this.simInfo = csim.getSimilarityInfo();
+			this.similarityMap = toSimMap(csim);
 			lcsPathMap.clear();
 			if (simInfo.getLcsPaths() != null) {
 				for (LCSPath lcsPath : simInfo.getLcsPaths()) {
@@ -264,6 +264,16 @@ public class SemanticSimBean implements Serializable {
 				this.intrinsicLcsTerm = null;
 			}
 		}
+	}
+
+	private Map<SimilarityMetricEnum, Double> toSimMap(
+			ConceptPairSimilarity csim) {
+		Map<SimilarityMetricEnum, Double> simMap = new TreeMap<SimilarityMetricEnum, Double>();
+		for (int i = 0; i < metrics.size(); i++) {
+			simMap.put(metrics.get(i), csim.getSimilarities()
+					.get(i));
+		}
+		return simMap;
 	}
 
 	public void simMultiListen(ActionEvent event) throws IOException {
@@ -288,13 +298,13 @@ public class SemanticSimBean implements Serializable {
 			ConceptSimilarityService simSvc = this.getSemanticSimRegistryBean()
 					.getSemanticSimServiceMap().get(conceptGraphName)
 					.getConceptSimilarityService();
-			List<Map<SimilarityMetricEnum, Double>> similarities = simSvc
-					.similarity(conceptPairs, metrics, null, null);
+			List<ConceptPairSimilarity> similarities = simSvc.similarity(
+					conceptPairs, metrics, null, false);
 			// load list with results
 			for (int i = 0; i < conceptPairs.size(); i++) {
 				SimilarityEntry e = new SimilarityEntry();
 				e.setConceptPair(conceptPairs.get(i));
-				e.setSimilarityMap(similarities.get(i));
+				e.setSimilarityMap(this.toSimMap(similarities.get(i)));
 				this.similarityList.add(e);
 			}
 		}

@@ -9,11 +9,12 @@ import java.util.Map;
 import javax.jws.WebService;
 import javax.ws.rs.WebApplicationException;
 
-import ytex.kernel.ConceptPair;
-import ytex.kernel.ConceptSimilarityService;
-import ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum;
+import ytex.kernel.metric.ConceptPair;
+import ytex.kernel.metric.ConceptPairSimilarity;
+import ytex.kernel.metric.ConceptSimilarityService;
 import ytex.kernel.metric.LCSPath;
 import ytex.kernel.metric.SimilarityInfo;
+import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.web.search.SemanticSimRegistryBean;
 
 @WebService(endpointInterface = "ytex.ws.ConceptSimilarityWebService")
@@ -31,21 +32,16 @@ public class ConceptSimilarityWebServiceImpl implements
 	SemanticSimRegistryBean semanticSimRegistryBean;
 
 	public ConceptPairSimilarity similarity(String conceptGraph,
-			String concept1, String concept2, String metrics) {
+			String concept1, String concept2, String metrics, String lcs) {
 		ConceptSimilarityService s = getConceptSimilarityService(conceptGraph);
 		if (s == null)
-			throw new WebApplicationException(400);
-		Map<SimilarityMetricEnum, Integer> metricIndexMap = this
-				.metricArrayToMap(metrics.split(","));
-		SimilarityInfo simInfo = new SimilarityInfo();
-		simInfo.setLcsPaths(new ArrayList<LCSPath>(1));
-		Map<SimilarityMetricEnum, Double> sim = s.similarity(
-				metricIndexMap.keySet(), concept1, concept2, null, simInfo);
-		ConceptPairSimilarity conceptPairSim = new ConceptPairSimilarity();
-		fillConceptPairSim(metricIndexMap, sim, conceptPairSim);
-		conceptPairSim.setSimilarityInfo(simInfo);
-		conceptPairSim.setConceptPair(new ConceptPair(concept1, concept2));
-		return conceptPairSim;
+			return null;
+		List<SimilarityMetricEnum> metricList = this
+				.metricArrayToList(metrics.split(","));
+		if (metricList.size() == 0)
+			return null;
+		return s.similarity(metricList, concept1, concept2, null,
+				"true".equalsIgnoreCase(lcs));
 	}
 
 	private ConceptSimilarityService getConceptSimilarityService(
@@ -60,51 +56,23 @@ public class ConceptSimilarityWebServiceImpl implements
 		return s;
 	}
 
-	public ConceptPairSimilarity[] similarities(String conceptGraph,
-			ConceptPair[] conceptPairs, String[] metrics) {
+	public List<ConceptPairSimilarity> similarities(String conceptGraph,
+			ConceptPair[] conceptPairs, String[] metrics, boolean lcs) {
 		ConceptSimilarityService s = this
 				.getConceptSimilarityService(conceptGraph);
-		Map<SimilarityMetricEnum, Integer> metricIndexMap = metricArrayToMap(metrics);
-		ConceptPairSimilarity[] sims = new ConceptPairSimilarity[conceptPairs.length];
+		List<SimilarityMetricEnum> metricList = metricArrayToList(metrics);
 		List<ConceptPair> conceptPairList = Arrays.asList(conceptPairs);
-		List<SimilarityInfo> simInfoList = new ArrayList<SimilarityInfo>(
-				conceptPairList.size());
-		List<Map<SimilarityMetricEnum, Double>> simList = s.similarity(
-				conceptPairList, metricIndexMap.keySet(), null, simInfoList);
-		int row = 0;
-		for (Map<SimilarityMetricEnum, Double> sim : simList) {
-			ConceptPairSimilarity conceptPairSim = new ConceptPairSimilarity();
-			fillConceptPairSim(metricIndexMap, sim, conceptPairSim);
-			conceptPairSim.setSimilarityInfo(simInfoList.get(row));
-			conceptPairSim.setConceptPair(conceptPairs[row]);
-			sims[row] = conceptPairSim;
-			row++;
-		}
-		return sims;
+		return s.similarity(conceptPairList, metricList, null, lcs);
 	}
 
-	private Map<SimilarityMetricEnum, Integer> metricArrayToMap(String[] metrics) {
-		Map<SimilarityMetricEnum, Integer> metricIndexMap = new HashMap<SimilarityMetricEnum, Integer>();
-		int index = 0;
+	private List<SimilarityMetricEnum> metricArrayToList(String[] metrics) {
+		List<SimilarityMetricEnum> metricIndexMap = new ArrayList<SimilarityMetricEnum>();
 		for (String metric : metrics) {
 			SimilarityMetricEnum m = SimilarityMetricEnum.valueOf(metric);
 			if (m != null)
-				metricIndexMap.put(m, index++);
-
+				metricIndexMap.add(m);
 		}
 		return metricIndexMap;
-	}
-
-	private void fillConceptPairSim(
-			Map<SimilarityMetricEnum, Integer> metricIndexMap,
-			Map<SimilarityMetricEnum, Double> sim,
-			ConceptPairSimilarity conceptPairSim) {
-		Double simMetricVals[] = new Double[metricIndexMap.size()];
-		for (Map.Entry<SimilarityMetricEnum, Double> simEntry : sim.entrySet()) {
-			simMetricVals[metricIndexMap.get(simEntry.getKey())] = simEntry
-					.getValue();
-		}
-		conceptPairSim.setSimilarities(Arrays.asList(simMetricVals));
 	}
 
 	public SimServiceInfo getDefaultConceptGraph() {

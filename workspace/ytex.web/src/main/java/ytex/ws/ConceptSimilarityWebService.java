@@ -3,10 +3,10 @@ package ytex.ws;
 import java.util.List;
 
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import ytex.kernel.ConceptPair;
+import ytex.kernel.metric.ConceptPair;
+import ytex.kernel.metric.ConceptPairSimilarity;
 
 @WebService
 public interface ConceptSimilarityWebService {
@@ -23,14 +23,11 @@ public interface ConceptSimilarityWebService {
 	 *            computed
 	 * @param metrics
 	 *            required, similarity metrics to compute
-	 * @param conceptFilter
-	 *            optional - only lcs's in this set will be used.
-	 * @param simInfos
-	 *            optional - if provided, this list will be filled with the
-	 *            similarity info for each concept pair.
+	 * @param lcs
+	 *            optional - if true, fill in the lcs paths for each concept pair.
 	 * @return similarities
 	 */
 	@WebMethod
-	public ConceptPairSimilarity[] similarities(@WebParam(name="conceptGraphName") String conceptGraphName, @WebParam(name="conceptPairs") ConceptPair[] conceptPairs,
-			@WebParam(name="metrics") String[] metrics);
+	public List<ConceptPairSimilarity> similarities(String conceptGraph,
+			ConceptPair[] conceptPairs, String[] metrics, boolean lcs);
 }

@@ -13,7 +13,6 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
 	<bean id="conceptSimilarityWebService" class="ytex.ws.ConceptSimilarityWebServiceImpl">
 		<property name="semanticSimRegistryBean" ref="semanticSimRegistryBean" />
 	</bean>
-	<bean id="conceptSimilarityRestService" class="ytex.ws.ConceptSimilarityRestServiceImpl" />
 	<jaxws:endpoint id="conceptSimilarityWebServiceEndpoint"
 		implementor="#conceptSimilarityWebService" address="/conceptSimilarityWebService" />
 	<jaxrs:server id="conceptSimilarityRestServiceEndpoint"
