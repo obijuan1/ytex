@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
@@ -36,20 +38,20 @@ public class SimilarityInfo implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	String corpusLcs;
+	private String corpusLcs;
 
-	Double corpusLcsIC;
+	private Double corpusLcsIC;
 
-	String intrinsicLcs;
+	private String intrinsicLcs;
 
-	Double intrinsicLcsIC;
+	private Double intrinsicLcsIC;
 
-	Integer lcsDist;
-	List<LCSPath> lcsPaths;
+	private Integer lcsDist;
+	
+	private List<LCSPath> lcsPaths;
 
 	@XmlTransient
-	Set<String> lcses = new HashSet<String>(1);
-
+	private Set<String> lcses = new HashSet<String>(1);
 
 	public Set<String> getLcses() {
 		return lcses;
@@ -59,26 +61,32 @@ public class SimilarityInfo implements Serializable {
 		super();
 	}
 
+	@XmlAttribute 
 	public String getCorpusLcs() {
 		return corpusLcs;
 	}
 
+	@XmlAttribute 
 	public Double getCorpusLcsIC() {
 		return corpusLcsIC;
 	}
 
+	@XmlAttribute 
 	public String getIntrinsicLcs() {
 		return intrinsicLcs;
 	}
 
+	@XmlAttribute 
 	public Double getIntrinsicLcsIC() {
 		return intrinsicLcsIC;
 	}
 
+	@XmlAttribute 
 	public Integer getLcsDist() {
 		return lcsDist;
 	}
 
+	@XmlElement
 	public List<LCSPath> getLcsPaths() {
 		return lcsPaths;
 	}

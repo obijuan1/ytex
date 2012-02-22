@@ -197,12 +197,12 @@ public class ConcRel implements java.io.Serializable {
 					// only add it to the list of lcses if it is less than or
 					// equal to the current minimal path length
 					if (distTmp <= minDist) {
-						minDist = distTmp;
 						if (distTmp < minDist) {
 							// we have a new best minimal path length
 							// clear the current lcses
 							lcses.clear();
 						}
+						minDist = distTmp;
 						lcses.add(lcs);
 					}
 					// all additional lcses must be found within maxIter

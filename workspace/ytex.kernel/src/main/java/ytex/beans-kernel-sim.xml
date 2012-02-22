@@ -6,7 +6,7 @@
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
 http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
-	<bean id="conceptSimilarityService" class="ytex.kernel.ConceptSimilarityServiceImpl"
+	<bean id="conceptSimilarityService" class="ytex.kernel.metric.ConceptSimilarityServiceImpl"
 		init-method="init">
 		<property name="transactionManager" ref="transactionManager" />
 		<property name="conceptDao" ref="conceptDao" />

@@ -5,7 +5,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import ytex.kernel.ConceptSimilarityService;
 
 /**
  * compute corpus-ic or intrinsic-ic based lin measure.

@@ -1,6 +1,8 @@
-package ytex.kernel;
+package ytex.kernel.metric;
 
 import java.io.Serializable;
+
+import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * pair of concepts. used to submit a set of concepts to the similarity service
@@ -9,15 +11,15 @@ import java.io.Serializable;
  * @author vijay
  * 
  */
-public class ConceptPair implements Serializable, Comparable {
+public class ConceptPair implements Serializable, Comparable<ConceptPair> {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	String concept1;
-	String concept2;
+	private String concept1;
+	private String concept2;
 
-	public String getConcept1() {
+	@XmlAttribute public String getConcept1() {
 		return concept1;
 	}
 
@@ -25,7 +27,7 @@ public class ConceptPair implements Serializable, Comparable {
 		this.concept1 = concept1;
 	}
 
-	public String getConcept2() {
+	@XmlAttribute public String getConcept2() {
 		return concept2;
 	}
 
@@ -87,8 +89,7 @@ public class ConceptPair implements Serializable, Comparable {
 	 * compare concept 1, then concept 2
 	 */
 	@Override
-	public int compareTo(Object o) {
-		ConceptPair other = (ConceptPair)o;
+	public int compareTo(ConceptPair other) {
 		int c1 = getConcept1().compareTo(other.getConcept1());
 		if(c1 != 0)
 			return c1;

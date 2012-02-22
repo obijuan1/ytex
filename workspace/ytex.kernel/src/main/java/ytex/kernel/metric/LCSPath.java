@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "LCSPath")
@@ -12,22 +13,28 @@ public class LCSPath implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	List<String> concept1Path;
-	List<String> concept2Path;
-	String lcs;
+
+	private List<String> concept1Path;
+
+	private List<String> concept2Path;
+	
+	private String lcs;
 
 	public LCSPath() {
 		super();
 	}
 
+	@XmlAttribute 
 	public List<String> getConcept1Path() {
 		return concept1Path;
 	}
 
+	@XmlAttribute 
 	public List<String> getConcept2Path() {
 		return concept2Path;
 	}
 
+	@XmlAttribute
 	public String getLcs() {
 		return lcs;
 	}

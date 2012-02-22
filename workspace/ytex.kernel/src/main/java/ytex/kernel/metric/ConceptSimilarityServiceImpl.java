@@ -1,4 +1,4 @@
-package ytex.kernel;
+package ytex.kernel.metric;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -39,19 +39,15 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import ytex.kernel.ImputedFeatureEvaluator;
+import ytex.kernel.InfoContentEvaluator;
+import ytex.kernel.IntrinsicInfoContentEvaluator;
+import ytex.kernel.OrderedPair;
+import ytex.kernel.SimSvcContextHolder;
+import ytex.kernel.ImputedFeatureEvaluator.MeasureType;
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.ConceptDao;
-import ytex.kernel.metric.IntrinsicLCHMetric;
-import ytex.kernel.metric.IntrinsicPathMetric;
-import ytex.kernel.metric.JaccardMetric;
-import ytex.kernel.metric.LCHMetric;
-import ytex.kernel.metric.LCSPath;
-import ytex.kernel.metric.LinMetric;
-import ytex.kernel.metric.PageRankMetric;
-import ytex.kernel.metric.PathMetric;
-import ytex.kernel.metric.SimilarityInfo;
-import ytex.kernel.metric.SimilarityMetric;
-import ytex.kernel.metric.SokalSneathMetric;
+import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
 import ytex.kernel.model.FeatureRank;
@@ -89,7 +85,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				.withArgName("concepts")
 				.hasArg()
 				.withDescription(
-						"concept pairs or a file containing concept pairs.  To specify pairs on command line, separate concepts by comma, concept pairs by semicolon.  For file, separate concepts by comma, each concept pair on a new line.")
+						"concept pairs or a file containing concept pairs.  To specify pairs on command line, separate concepts by comma, concept pairs by semicolon.  For file, separate concepts by comma or tab, each concept pair on a new line.")
 				.isRequired(true).create("concepts"));
 		options.addOption(OptionBuilder
 				.withArgName("metrics")
@@ -123,16 +119,16 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 					os = System.out;
 				}
 				List<ConceptPair> conceptPairs = parseConcepts(concepts);
-				Set<SimilarityMetricEnum> metricSet = parseMetrics(metrics);
+				List<SimilarityMetricEnum> metricList = parseMetrics(metrics);
 				ConceptSimilarityService simSvc = SimSvcContextHolder
 						.getApplicationContext().getBean(
 								ConceptSimilarityService.class);
 				List<SimilarityInfo> simInfos = lcs ? new ArrayList<SimilarityInfo>(
 						conceptPairs.size()) : null;
-				List<Map<SimilarityMetricEnum, Double>> conceptSimMap = simSvc
-						.similarity(conceptPairs, metricSet, null, simInfos);
-				printSimilarities(conceptPairs, conceptSimMap, metricSet,
-						simInfos, os);
+				List<ConceptPairSimilarity> conceptSimMap = simSvc
+						.similarity(conceptPairs, metricList, null, lcs);
+				printSimilarities(conceptPairs, conceptSimMap, metricList,
+						simInfos, lcs, os);
 			} finally {
 				if (out != null) {
 					try {
@@ -181,9 +177,9 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		}
 	}
 
-	private static Set<SimilarityMetricEnum> parseMetrics(String metrics) {
+	private static List<SimilarityMetricEnum> parseMetrics(String metrics) {
 		String ms[] = metrics.split(",");
-		Set<SimilarityMetricEnum> metricSet = new HashSet<SimilarityMetricEnum>();
+		List<SimilarityMetricEnum> metricSet = new ArrayList<SimilarityMetricEnum>();
 		for (String metric : ms) {
 			SimilarityMetricEnum m = SimilarityMetricEnum.valueOf(metric);
 			if (m == null)
@@ -195,36 +191,34 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	private static void printSimilarities(List<ConceptPair> conceptPairs,
-			List<Map<SimilarityMetricEnum, Double>> conceptSims,
-			Set<SimilarityMetricEnum> metrics, List<SimilarityInfo> simInfos,
+			List<ConceptPairSimilarity> conceptSimList,
+			List<SimilarityMetricEnum> metricList, List<SimilarityInfo> simInfos, boolean lcs,
 			PrintStream os) {
 		// print header
 		os.print("Concept 1\tConcept 2");
-		for (SimilarityMetricEnum metric : metrics) {
+		for (SimilarityMetricEnum metric : metricList) {
 			os.print("\t");
 			os.print(metric);
 		}
-		if (simInfos != null) {
+		if (lcs) {
 			os.print("\tlcs(s)\tcorpus lcs\tintrinsic lcs\tpaths");
 		}
 		os.println();
 		// print content
-		for (int i = 0; i < conceptPairs.size(); i++) {
-			ConceptPair p = conceptPairs.get(i);
-			Map<SimilarityMetricEnum, Double> s = conceptSims.get(i);
+		for (ConceptPairSimilarity csim : conceptSimList) {
+			ConceptPair p = csim.getConceptPair();
 			os.print(p.getConcept1());
 			os.print("\t");
 			os.print(p.getConcept2());
-			for (SimilarityMetricEnum metric : metrics) {
+			for (Double sim : csim.getSimilarities()) {
 				os.print("\t");
-				Double sim = s.get(metric);
 				if (sim != null)
 					os.print(String.format("%6f", sim));
 				else
 					os.print(0d);
 			}
-			if (simInfos != null) {
-				SimilarityInfo simInfo = simInfos.get(i);
+			if (lcs) {
+				SimilarityInfo simInfo = csim.getSimilarityInfo();
 				os.print("\t");
 				Iterator<String> lcsIter = simInfo.getLcses().iterator();
 				while (lcsIter.hasNext()) {
@@ -409,7 +403,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 					}
 				}
 			}
-			if(currentBest < 0)
+			if (currentBest < 0)
 				currentBest = 0d;
 			if (bestLcses.size() > 0) {
 				return this.getBestLCS(bestLcses, lcsICMap);
@@ -425,7 +419,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 
 	private Map<String, Double> getICOnDemand(Set<String> lcses,
 			boolean intrinsicIC) {
-		if(lcses == null || lcses.isEmpty())
+		if (lcses == null || lcses.isEmpty())
 			return new HashMap<String, Double>(0);
 		Map<String, Double> lcsICMap;
 		lcsICMap = this.classifierEvaluationDao
@@ -450,7 +444,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				bestLCS = lcs;
 			}
 		}
-		if(ic < 0)
+		if (ic < 0)
 			ic = 0d;
 		return new Object[] { bestLCS, ic };
 	}
@@ -883,22 +877,14 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	@Override
-	public List<Map<SimilarityMetricEnum, Double>> similarity(
-			List<ConceptPair> conceptPairs, Set<SimilarityMetricEnum> metrics,
-			Map<String, Double> conceptFilter, List<SimilarityInfo> simInfos) {
-		List<Map<SimilarityMetricEnum, Double>> conceptSimMap = new ArrayList<Map<SimilarityMetricEnum, Double>>(
+	public List<ConceptPairSimilarity> similarity(
+			List<ConceptPair> conceptPairs, List<SimilarityMetricEnum> metrics,
+			Map<String, Double> conceptFilter, boolean lcs) {
+		List<ConceptPairSimilarity> conceptSimMap = new ArrayList<ConceptPairSimilarity>(
 				conceptPairs.size());
 		for (ConceptPair conceptPair : conceptPairs) {
-			SimilarityInfo simInfo = null;
-			if (simInfos != null) {
-				simInfo = new SimilarityInfo();
-				simInfo.setLcsPaths(new ArrayList<LCSPath>());
-			}
 			conceptSimMap.add(similarity(metrics, conceptPair.getConcept1(),
-					conceptPair.getConcept2(), conceptFilter, simInfo));
-			if (simInfos != null) {
-				simInfos.add(simInfo);
-			}
+					conceptPair.getConcept2(), conceptFilter, lcs));
 		}
 		return conceptSimMap;
 	}
@@ -907,23 +893,26 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * 
 	 */
 	@Override
-	public Map<SimilarityMetricEnum, Double> similarity(
-			Set<SimilarityMetricEnum> metrics, String concept1,
-			String concept2, Map<String, Double> conceptFilter,
-			SimilarityInfo simInfo) {
+	public ConceptPairSimilarity similarity(List<SimilarityMetricEnum> metrics,
+			String concept1, String concept2,
+			Map<String, Double> conceptFilter, boolean lcs) {
 		// allocate simInfo if this isn't provided
-		if (simInfo == null)
-			simInfo = new SimilarityInfo();
+		SimilarityInfo simInfo = new SimilarityInfo();
+		if (lcs)
+			simInfo.setLcsPaths(new ArrayList<LCSPath>(1));
 		// allocate result map
-		Map<SimilarityMetricEnum, Double> metricSimMap = new HashMap<SimilarityMetricEnum, Double>(
-				metrics.size());
+		List<Double> similarities = new ArrayList<Double>(metrics.size());
 		// iterate over metrics, compute, stuff in map
 		for (SimilarityMetricEnum metric : metrics) {
 			double sim = this.similarityMetricMap.get(metric).similarity(
 					concept1, concept2, conceptFilter, simInfo);
-			metricSimMap.put(metric, sim);
+			similarities.add(sim);
 		}
-		return metricSimMap;
+		ConceptPairSimilarity csim = new ConceptPairSimilarity();
+		csim.setConceptPair(new ConceptPair(concept1, concept2));
+		csim.setSimilarities(similarities);
+		csim.setSimilarityInfo(simInfo);
+		return csim;
 	}
 
 	/**

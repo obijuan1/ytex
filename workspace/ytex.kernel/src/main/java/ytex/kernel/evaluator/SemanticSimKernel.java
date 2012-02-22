@@ -1,7 +1,9 @@
 package ytex.kernel.evaluator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,8 +11,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import ytex.kernel.ConceptSimilarityService;
-import ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum;
+import ytex.kernel.metric.ConceptPairSimilarity;
+import ytex.kernel.metric.ConceptSimilarityService;
+import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 
 public class SemanticSimKernel extends CacheKernel implements InitializingBean {
 	private static final Log log = LogFactory.getLog(LinKernel.class);
@@ -19,7 +22,7 @@ public class SemanticSimKernel extends CacheKernel implements InitializingBean {
 	private double cutoff = 0;
 	private String label = null;
 	private String metricNames;
-	private Set<SimilarityMetricEnum> metrics;
+	private List<SimilarityMetricEnum> metrics;
 	private Integer rankCutoff = null;
 
 	@Override
@@ -94,9 +97,9 @@ public class SemanticSimKernel extends CacheKernel implements InitializingBean {
 				d = 1;
 			} else {
 				d = 1;
-				Map<SimilarityMetricEnum, Double> sim = conceptSimilarityService
-						.similarity(metrics, c1, c2, conceptFilter, null);
-				for (Double simVal : sim.values()) {
+				ConceptPairSimilarity csim = conceptSimilarityService
+						.similarity(metrics, c1, c2, conceptFilter, false);
+				for (Double simVal : csim.getSimilarities()) {
 					d *= simVal;
 				}
 			}
@@ -119,7 +122,7 @@ public class SemanticSimKernel extends CacheKernel implements InitializingBean {
 
 	public void setMetricNames(String metricNames) {
 		this.metricNames = metricNames;
-		this.metrics = new HashSet<SimilarityMetricEnum>();
+		this.metrics = new ArrayList<SimilarityMetricEnum>();
 		for(String metricName : metricNames.split(",")) {
 			SimilarityMetricEnum s = SimilarityMetricEnum.valueOf(metricName);
 			if(s == null) {

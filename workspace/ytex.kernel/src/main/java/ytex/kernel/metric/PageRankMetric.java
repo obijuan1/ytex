@@ -2,7 +2,6 @@ package ytex.kernel.metric;
 
 import java.util.Map;
 
-import ytex.kernel.ConceptSimilarityService;
 import ytex.kernel.pagerank.PageRankService;
 
 public class PageRankMetric extends BaseSimilarityMetric {

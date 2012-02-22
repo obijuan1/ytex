@@ -11,7 +11,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import ytex.kernel.ConceptSimilarityService;
+import ytex.kernel.metric.ConceptSimilarityService;
 
 /**
  * Before comparing semantic distance, use this kernel to filter by semantic

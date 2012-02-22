@@ -1,5 +1,6 @@
 package ytex.kernel.wsd;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -7,8 +8,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import ytex.kernel.ConceptSimilarityService;
-import ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum;
+import ytex.kernel.metric.ConceptPairSimilarity;
+import ytex.kernel.metric.ConceptSimilarityService;
+import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 
 public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 	ConceptSimilarityService conceptSimilarityService;
@@ -90,14 +92,13 @@ public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 
 	private double scoreConcept(String concept,
 			Set<String> windowContextConcepts, SimilarityMetricEnum metric) {
-		Set<SimilarityMetricEnum> metrics = new HashSet<SimilarityMetricEnum>();
+		List<SimilarityMetricEnum> metrics = Arrays.asList(metric);
 		metrics.add(metric);
 		double score = 0d;
 		for (String windowConcept : windowContextConcepts) {
-			Map<SimilarityMetricEnum, Double> sim = conceptSimilarityService
-					.similarity(metrics, concept, windowConcept, null, null);
-			if (sim.containsKey(metric))
-				score += sim.get(metric);
+			ConceptPairSimilarity csim = conceptSimilarityService
+					.similarity(metrics, concept, windowConcept, null, false);
+			score += csim.getSimilarities().get(0);
 		}
 		return score;
 	}

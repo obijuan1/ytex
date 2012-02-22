@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import ytex.kernel.metric.ConceptSimilarityService;
 import ytex.kernel.metric.LCSPath;
 import ytex.kernel.model.ConceptGraph;
 

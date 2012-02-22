@@ -2,7 +2,6 @@ package ytex.kernel.metric;
 
 import java.util.Map;
 
-import ytex.kernel.ConceptSimilarityService;
 
 public class PathMetric extends BaseSimilarityMetric {
 

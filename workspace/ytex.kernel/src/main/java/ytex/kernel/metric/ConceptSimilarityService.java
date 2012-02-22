@@ -1,12 +1,10 @@
-package ytex.kernel;
+package ytex.kernel.metric;
 
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ytex.kernel.metric.LCSPath;
-import ytex.kernel.metric.SimilarityInfo;
 import ytex.kernel.model.ConceptGraph;
 
 public interface ConceptSimilarityService {
@@ -139,10 +137,10 @@ public interface ConceptSimilarityService {
 	 *            the lcsPathMap to get paths through lcs
 	 * @return similarities
 	 */
-	public abstract Map<SimilarityMetricEnum, Double> similarity(
-			Set<SimilarityMetricEnum> metrics, String concept1,
+	public abstract ConceptPairSimilarity similarity(
+			List<SimilarityMetricEnum> metrics, String concept1,
 			String concept2, Map<String, Double> conceptFilter,
-			SimilarityInfo simInfo);
+			boolean lcs);
 
 	/**
 	 * compute similarity for a list of concept pairs
@@ -159,7 +157,7 @@ public interface ConceptSimilarityService {
 	 *            similarity info for each concept pair.
 	 * @return similarities
 	 */
-	public List<Map<SimilarityMetricEnum, Double>> similarity(
-			List<ConceptPair> conceptPairs, Set<SimilarityMetricEnum> metrics,
-			Map<String, Double> conceptFilter, List<SimilarityInfo> simInfos);
+	public List<ConceptPairSimilarity> similarity(
+			List<ConceptPair> conceptPairs, List<SimilarityMetricEnum> metrics,
+			Map<String, Double> conceptFilter, boolean lcs);
 }

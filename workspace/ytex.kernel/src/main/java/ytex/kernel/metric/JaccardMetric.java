@@ -2,7 +2,6 @@ package ytex.kernel.metric;
 
 import java.util.Map;
 
-import ytex.kernel.ConceptSimilarityService;
 
 /**
  * Jaccard metric as in eqn 13 from http://dx.doi.org/10.1016/j.jbi.2011.03.013

@@ -2,7 +2,6 @@ package ytex.kernel.metric;
 
 import java.util.Map;
 
-import ytex.kernel.ConceptSimilarityService;
 
 /**
  * compute Intrinsic rada distance as in eqn 23 from

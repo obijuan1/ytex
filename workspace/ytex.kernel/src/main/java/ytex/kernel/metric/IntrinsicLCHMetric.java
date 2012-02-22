@@ -2,7 +2,6 @@ package ytex.kernel.metric;
 
 import java.util.Map;
 
-import ytex.kernel.ConceptSimilarityService;
 
 /**
  * compute intrinsic LCH as in eqn 28 from
