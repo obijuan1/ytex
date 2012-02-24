@@ -20,9 +20,9 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
-import ytex.kernel.ConceptSimilarityService;
-import ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.SimSvcContextHolder;
+import ytex.kernel.metric.ConceptSimilarityService;
+import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.wsd.WordSenseDisambiguator;
 
 /**

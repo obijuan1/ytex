@@ -2,11 +2,36 @@
 	<property environment="env" />
 	<property name="ytex.home" value=".." />
 	<property name="maxMemory" value="1500m" />
-	<property name="choices.home" value="E:/Downloads/text mining/nlm wsd/NLM-WSD.target_word.choices_v0.3/NLM-WSD.target_word.choices_v0.3/choices/2007" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
-
-	<target name="choices.all">
+	<target name="all" depends="build,load.all,RunCPE,eval.wsd.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
+	<target name="build" description="compile java source">
+		<mkdir dir="${basedir}/bin" />
+		<javac srcdir="${basedir}/main/java/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
+	</target>
+	<target name="load.all" depends="load.create,load.abstract,load.choices.all,load.word" />
+	<target name="load.create">
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/create_table.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/v_wsd_fword_lookup.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
+	</target>
+	<target name="load.abstract" description="load nlm_wsd table">
+		<java classname="ytex.wsd.nlm.WSDLoader">
+			<classpath>
+				<dirset dir="${basedir}">
+					<include name="bin" />
+				</dirset>
+				<path refid="${kernel.cp}" />
+			</classpath>
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+			<arg value="${nlm.wsd.home}" />
+		</java>
+	</target>
+	<target name="load.word" description="load nlm_wsd_word table">
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/select_words.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
+	</target>
+	<target name="load.choices.all" description="load choices into nlm_wsd_cui table">
 		<antcall target="init.conn">
 			<param name="basedir" value="${ytex.home}/data" />
 		</antcall>
@@ -19,7 +44,6 @@
 			</sequential>
 		</for>
 	</target>
-
 	<target name="choices.jdl" description="load choices data with java data loader">
 		<property name="jdl.data" value="${choices.home}/adjustment.choices" />
 		<basename file="${jdl.data}" property="word" suffix=".choices" />
@@ -41,40 +65,38 @@
 			<arg value="${jdl.format.file}" />
 		</java>
 	</target>
-
-	<target name="setup.generateConceptGraph" description="generate concept graph, compute intrinsic infogain">
+	<target name="setup.conceptGraph" description="generate concept graph, compute intrinsic infogain">
 		<mkdir dir="${ytex.conceptGraphDir}" />
+		<copy file="data/${ytex.conceptGraphName}.template.xml" tofile="data/${ytex.conceptGraphName}.xml" overwrite="yes">
+			<filterset>
+				<filter token="umls.schema" value="${umls.schema}" />
+			</filterset>
+		</copy>
 		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
 			<arg value="-prop" />
-			<arg value="nlm.wsd.xml" />
+			<arg value="${ytex.conceptGraphName}.xml" />
 			<jvmarg value="-Xmx${maxMemory}" />
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
 		</java>
-	</target>
-	<target name="setup.ic">
 		<java classname="ytex.kernel.IntrinsicInfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
 			<jvmarg value="-Xmx${maxMemory}" />
-			<jvmarg value="-Dytex.conceptGraphName=nlm.wsd" />
+			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
 		</java>
 	</target>
 	<target name="RunCPE">
 		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
 		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
-		<!--
 		<copy file="desc/cpe.template.xml" tofile="desc/cpe.xml.${kernel.slice}" overwrite="yes">
-			<filterset id="exp.filter">
+			<filterset>
 				<filter token="collectionreader.url" value="${collectionreader.url}" />
 				<filter token="pipeline.url" value="${pipeline.url}" />
-				<filter token="kernel.slice" value="${kernel.slice}" />
-				<filter token="kernel.threads" value="${kernel.threads}" />
 			</filterset>
 		</copy>
-		-->
 		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
 			<classpath>
 				<dirset dir="${basedir}">
@@ -89,7 +111,7 @@
 		</java>
 	</target>
 	<target name="eval.wsd.all">
-		<for list="LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" param="metric">
+		<for list="RADA,INTRINSIC_RADA,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" param="metric">
 			<sequential>
 				<antcall target="eval.wsd.metric">
 					<param name="metric" value="@{metric}" />

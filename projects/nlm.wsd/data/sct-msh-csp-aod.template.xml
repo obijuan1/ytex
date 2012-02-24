@@ -4,9 +4,9 @@
 	<entry key="ytex.conceptGraphName">agirre.hier.2011ab</entry>
 	<entry key="ytex.conceptGraphQuery"><![CDATA[
 	select distinct cui1, cui2 
-	from umls2011ab.MRREL 
+	from @umls.schema@.MRREL 
 	where sab in ('SNOMEDCT', 'MSH' , 'CSP', 'AOD')
 	and rel in ('PAR', 'RB')
-	order by cui1
+	order by cui1, cui2
 	]]></entry>
 </properties>
