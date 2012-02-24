@@ -7,8 +7,9 @@
 	desc2012.xml from http://www.nlm.nih.gov/mesh/termscon.html
 	http://www.nlm.nih.gov/mesh/2012/download/desc2012.dtd
 	-->
-	<property name="mesh.desc" value="C:/Temp/desc2012.xml" />
-	<property name="mesh.supp" value="C:/Temp/supp2012.xml" />
+	<property name="mesh.home" value="C:/Temp/mesh" />
+	<property name="mesh.desc" value="${mesh.home}/desc2012.xml" />
+	<property name="mesh.supp" value="${mesh.home}/supp2012.xml" />
 
 	<property name="maxMemory" value="2g" />
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
