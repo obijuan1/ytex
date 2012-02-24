@@ -19,7 +19,7 @@ import edu.mayo.bmi.uima.core.ae.type.NamedEntity;
 import edu.mayo.bmi.uima.core.ae.type.OntologyConcept;
 import edu.mayo.bmi.uima.core.sentence.type.Sentence;
 
-import ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum;
+import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.wsd.WordSenseDisambiguator;
 
