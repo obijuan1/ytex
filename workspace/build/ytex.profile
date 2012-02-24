@@ -40,7 +40,7 @@ CATALINA_BASE=${YTEX_HOME}/web
 export CATALINA_BASE
 
 # ytex libraries and jdbc drivers
-YTEX_LIB_SYS_HOME=${YTEX_LIB_SYS_HOME}/libs.system
+YTEX_LIB_SYS_HOME=${YTEX_HOME}/libs.system
 
 # jdbc driver classpath
 JDBC_CP=${YTEX_LIB_SYS_HOME}/mysql-connector-java-5.1.17/mysql-connector-java-5.1.17-bin.jar
