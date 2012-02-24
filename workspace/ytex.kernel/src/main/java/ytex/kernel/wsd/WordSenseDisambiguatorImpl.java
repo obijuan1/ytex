@@ -93,7 +93,6 @@ public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 	private double scoreConcept(String concept,
 			Set<String> windowContextConcepts, SimilarityMetricEnum metric) {
 		List<SimilarityMetricEnum> metrics = Arrays.asList(metric);
-		metrics.add(metric);
 		double score = 0d;
 		for (String windowConcept : windowContextConcepts) {
 			ConceptPairSimilarity csim = conceptSimilarityService
