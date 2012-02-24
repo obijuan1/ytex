@@ -106,3 +106,29 @@ select count(*) from ytex.mesh_hier;
 granularity:
 D051437	M0025974	C0035078	Kidney Failure
 D051437	M0480487	C1565489	Renal Insufficiency
+
+-- counts
+select count(*)
+from sct2_concept r
+inner join (
+    select id, max(effectiveTime) effectiveTime
+    from sct2_concept
+    group by id
+) rd on rd.id = r.id and rd.effectiveTime = r.effectiveTime
+where active = 1;
+    
+select count(*)
+from sct2_relationship r
+inner join (
+    select id, max(effectiveTime) effectiveTime
+    from sct2_relationship
+    group by id
+) rd on rd.id = r.id and rd.effectiveTime = r.effectiveTime
+where typeId = 116680003 and active = 1;
+-- 440649
+
+select count(distinct descriptorUI) from mesh_concept;
+-- 232291
+
+select count(*) from mesh_hier;
+-- 331240
