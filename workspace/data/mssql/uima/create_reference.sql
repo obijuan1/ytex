@@ -32,3 +32,9 @@ CREATE UNIQUE NONCLUSTERED INDEX NK_ref_uima_type ON $(db_schema).ref_uima_type
 	uima_type_name
 )
 ;
+
+
+CREATE TABLE $(db_schema).ref_stopword (
+	stopword varchar(50) not null primary key
+)
+;

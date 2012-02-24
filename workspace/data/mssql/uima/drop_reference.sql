@@ -10,3 +10,7 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema)
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[ref_segment_regex]') AND type in (N'U'))
 	drop table $(db_schema).ref_segment_regex
 ;
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[ref_stopword]') AND type in (N'U'))
+	drop table $(db_schema).ref_stopword
+;

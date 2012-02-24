@@ -41,6 +41,7 @@ Database connection parameters are taken from ytex.properties.
 	<!-- SU is in a different format -->
 	<property name="net.tables" value="SRDEF,SRFIL,SRFLD,SRSTR,SRSTRE1,SRSTRE2" />
 	<property name="sct.home" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Snapshot/Terminology" />
+	<property name="sctf.home" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology" />
 	<property name="sct.version" value="20110731" />
 
 
@@ -465,50 +466,39 @@ ${sql.delimiter}
 			<param name="sqlcmd.script" value="create_tables.sql" />
 		</antcall>
 	</target>
-	<target name="sct.all" depends="sct.drop,sct.create,sct.load" description="import snomed-ct tables" />
-	<target name="sct.drop" description="drop snomed-ct tables">
-		<antcall target="jdbc.sqlcmd">
-			<param name="sqlcmd.dir" value="snomedct" />
-			<param name="sqlcmd.script" value="drop_tables.sql" />
+	<target name="sct.all" depends="sct.create,sct.load" description="import snomed-ct snapshot tables" />
+	<target name="sctf.all" description="import snomed-ct full tables">
+		<antcall target="sct.all">
+			<param name="prefix" value="sct2f" />
+			<param name="suffix" value="full" />
+			<param name="sct.home" value="${sctf.home}" />
 		</antcall>
 	</target>
 	<target name="sct.create" description="create snomed-ct tables">
+		<property name="suffix" value="" />
 		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="snomedct" />
-			<param name="sqlcmd.script" value="create_tables.sql" />
+			<param name="sqlcmd.script" value="create_tables${suffix}.sql" />
 		</antcall>
 	</target>
 	<target name="sct.load" depends="init.conn" description="load snomed-ct tables">
+		<property name="suffix" value="" />
+		<property name="prefix" value="sct2" />
 		<antcall target="jdl">
-			<param name="jdl.data" value="${sct.home}/sct2_Concept_Snapshot_INT_${sct.version}.txt" />
-			<param name="jdl.format" value="${basedir}/snomedct/sct2_concept.xml" />
+			<param name="jdl.data" value="${sct.home}/${prefix}_Concept_Snapshot_INT_${sct.version}.txt" />
+			<param name="jdl.format" value="${basedir}/snomedct/${prefix}_concept.xml" />
 		</antcall>
 		<antcall target="jdl">
-			<param name="jdl.data" value="${sct.home}/sct2_Relationship_Snapshot_INT_${sct.version}.txt" />
-			<param name="jdl.format" value="${basedir}/snomedct/sct2_relationship.xml" />
+			<param name="jdl.data" value="${sct.home}/${prefix}_Relationship_Snapshot_INT_${sct.version}.txt" />
+			<param name="jdl.format" value="${basedir}/snomedct/${prefix}_relationship.xml" />
 		</antcall>
 		<antcall target="jdl">
-			<param name="jdl.data" value="${sct.home}/sct2_Description_Snapshot-en_INT_${sct.version}.txt" />
-			<param name="jdl.format" value="${basedir}/snomedct/sct2_description.xml" />
+			<param name="jdl.data" value="${sct.home}/${prefix}_Description_Snapshot-en_INT_${sct.version}.txt" />
+			<param name="jdl.format" value="${basedir}/snomedct/${prefix}_description.xml" />
 		</antcall>
 		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="snomedct" />
-			<param name="sqlcmd.script" value="index_tables.sql" />
+			<param name="sqlcmd.script" value="index_tables${suffix}.sql" />
 		</antcall>
 	</target>
-	<target name="sctf.load" depends="init.conn" description="load snomed-ct tables">
-		<antcall target="jdl">
-			<param name="jdl.data" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology/sct2_Concept_Full_INT_${sct.version}.txt" />
-			<param name="jdl.format" value="${basedir}/snomedct/sct2f_concept.xml" />
-		</antcall>
-		<antcall target="jdl">
-			<param name="jdl.data" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology/sct2_Relationship_Full_INT_${sct.version}.txt" />
-			<param name="jdl.format" value="${basedir}/snomedct/sct2f_relationship.xml" />
-		</antcall>
-		<antcall target="jdl">
-			<param name="jdl.data" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology/sct2_Description_Full-en_INT_${sct.version}.txt" />
-			<param name="jdl.format" value="${basedir}/snomedct/sct2f_description.xml" />
-		</antcall>
-	</target>
-
 </project>

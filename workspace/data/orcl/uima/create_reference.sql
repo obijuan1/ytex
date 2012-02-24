@@ -35,3 +35,12 @@ CREATE UNIQUE  INDEX NK_ref_uima_type ON ref_uima_type
 	uima_type_name
 )
 ;
+
+CREATE TABLE ref_stopword (
+	stopword varchar(50) not null,
+	constraint PK_ref_stopword primary key
+	(
+		stopword
+	)
+)
+;

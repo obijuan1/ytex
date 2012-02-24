@@ -1,12 +1,12 @@
 -- table definitions taken from SNOMED CT Technical Implementation Guide July 2011, section 7.2.1.3.2.
 -- modified active flag to use bit instead of tinyint
 -- modified effectiveTime to use date instead of datetime
+drop table if exists sct2f_concept;
+drop table if exists sct2f_description;
+drop table if exists sct2f_relationship;
+drop table if exists sct2f_relationship_snap;
 
-drop table if exists sct2_concept;
-drop table if exists sct2_description;
-drop table if exists sct2_relationship;
-
-CREATE TABLE `sct2_concept` (
+CREATE TABLE `sct2f_concept` (
 	`id` BIGINT NOT NULL DEFAULT 0,
 	`effectiveTime` DATE NOT NULL DEFAULT '0000-00-00',
 	`active` bit NOT NULL DEFAULT 0,
@@ -16,7 +16,7 @@ CREATE TABLE `sct2_concept` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-CREATE TABLE `sct2_description` (
+CREATE TABLE `sct2f_description` (
 	`id` BIGINT NOT NULL DEFAULT 0,
 	`effectiveTime` DATE NOT NULL DEFAULT '0000-00-00',
 	`active` bit NOT NULL DEFAULT 0,
@@ -26,10 +26,11 @@ CREATE TABLE `sct2_description` (
 	`typeId` BIGINT NOT NULL DEFAULT 0,
 	`term` VARCHAR(255) NOT NULL DEFAULT '',
 	`caseSignificanceId` BIGINT NOT NULL DEFAULT 0,
-	PRIMARY KEY (`id`,`effectiveTime`)
+	PRIMARY KEY (`id`,`effectiveTime`),
+	KEY `sct2f_description_concept` (`conceptId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE `sct2_relationship` (
+CREATE TABLE `sct2f_relationship` (
 	`id` BIGINT NOT NULL DEFAULT 0,
 	`effectiveTime` DATE NOT NULL DEFAULT '0000-00-00',
 	`active` bit NOT NULL DEFAULT 0,
@@ -40,5 +41,7 @@ CREATE TABLE `sct2_relationship` (
 	`typeId` BIGINT NOT NULL DEFAULT 0,
 	`characteristicTypeId` BIGINT NOT NULL DEFAULT 0,
 	`modifierId` BIGINT NOT NULL DEFAULT 0,
-	PRIMARY KEY (`id`,`effectiveTime`)
+	PRIMARY KEY (`id`,`effectiveTime`),
+	KEY `sct2f_relationship_source` (`sourceId`,`characteristicTypeId`,`typeId`,`destinationId`),
+	KEY `sct2f_relationship_dest` (`destinationId`,`characteristicTypeId`,`typeId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
