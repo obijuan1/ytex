@@ -491,6 +491,10 @@ ${sql.delimiter}
 			<param name="jdl.data" value="${sct.home}/sct2_Description_Snapshot-en_INT_${sct.version}.txt" />
 			<param name="jdl.format" value="${basedir}/snomedct/sct2_description.xml" />
 		</antcall>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="snomedct" />
+			<param name="sqlcmd.script" value="index_tables.sql" />
+		</antcall>
 	</target>
 	<target name="sctf.load" depends="init.conn" description="load snomed-ct tables">
 		<antcall target="jdl">
