@@ -292,6 +292,7 @@
 			<classpath>
 				<fileset dir="${ytex.dist.home}/libs.system">
 					<include name="ytex.model.jar" />
+					<include name="ytex.kernel.jar" />
 				</fileset>
 				<path refid="cp.ytex" />
 			</classpath>
