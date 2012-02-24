@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.conceptGraphName">msh</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+	select chdUI, parUI
+	from mesh_hier 
+	order by chdUI, parUI
+	]]></entry>
+</properties>

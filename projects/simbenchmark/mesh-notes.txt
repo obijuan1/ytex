@@ -1,0 +1,108 @@
+use umls2011ab;
+select * from mrrel where sab = 'MSH' and rel in ('RB', 'PAR') limit 100;
+-- C0000039	A0016515	SDUI	PAR	C1959616 -> from mesh hierarchy
+select * from mrconso where cui in ('C0000039', 'C1959616') and sab = 'MSH';
+-- C0000005	A7755565	SCUI	RB	C0036775 -> both mapped to mesh code D012711
+select * from mrconso where cui in ('C0000005', 'C0036775') and sab = 'MSH';
+-- C0000074	A7755569	SCUI	RB	C0031673	A0100987 -> both mapped to mesh code D010742
+select distinct cui, str, code from mrconso where cui in ('C0000074', 'C0031673') and sab = 'MSH';
+-- C0000340	A2362043	SDUI	PAR	C0038311 -> from mesh hierarchy
+select distinct cui, str, code from mrconso where cui in ('C0000340', 'C0038311') and sab = 'MSH';
+
+
+select distinct cui, str, code from mrconso where code in ('D019821') and sab = 'MSH';
+/*
+multiple cuis for a single code
+C0074554	Simvastatin
+C0074554	Synvinolin
+C0678181	Zocor
+C0733683	MK-733
+C0733683	MK 733
+C0733683	MK733
+*/
+
+select * from mrrel where sab = 'MSH' and cui1 = 'C0074554' limit 100;
+-- C0074554	A0795905	SCUI	RN	C0678181 -> zocor narrower
+-- C0074554	A0795905	SCUI	RN	C0733683 -> MK733 narrower
+
+select distinct cui, str, code from mrconso where sab = 'MSH'
+and cui in (
+'C0024027',
+'C0003277',
+'C0086440',
+'C0360714',
+'C0246012',
+'C0647468',
+'C1436550',
+'C1622008',
+'C2605354',
+'C2607008')
+order by code, str;
+/*
+pharmacological actions: 
+Pharm. Action	Anticholesteremic Agents
+Pharm. Action	Hydroxymethylglutaryl-CoA Reductase Inhibitors
+Pharm. Action	Hypolipidemic Agents
+*/
+
+select * from mrconso where code = 'C038491' and sab = 'MSH';
+/*
+C0051235
+C0051235
+C0051235
+C1802750
+*/
+select * from mrrel where cui1 = 'C0051235' and sab = 'MSH';
+/*
+RO	C1802750
+RB	C0002156
+RB	C0003402
+RB	C0038739
+RB	C0085169
+*/
+select distinct cui, str, code from mrconso where sab = 'MSH'
+and cui in (
+'C1802750',
+'C0002156',
+'C0003402',
+'C0038739',
+'C0085169'
+);
+/*
+Heading mapped to
+pharmalogical action
+*/
+
+select sab, count(distinct cui)
+from mrconso where sab in ('msh', 'snomedct', 'csp', 'aod')
+group by sab;
+/*
+concepts
+AOD	15900
+CSP	16666
+MSH	321367
+SNOMEDCT	324494
+*/
+
+select sab, count(distinct cui1, cui2)
+from umls2011ab.mrrel 
+where sab in ('msh', 'snomedct', 'csp', 'aod')
+and rel in ('PAR', 'RB')
+group by sab;
+/*
+relations
+AOD	18426
+CSP	11416
+MSH	419510
+SNOMEDCT	623132
+*/
+
+select count(distinct descriptorUI) from ytex.mesh_concept;
+-- msh concepts 232291
+
+select count(*) from ytex.mesh_hier;
+-- mesh relationships 331240
+
+granularity:
+D051437	M0025974	C0035078	Kidney Failure
+D051437	M0480487	C1565489	Renal Insufficiency

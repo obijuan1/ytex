@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.conceptGraphName">sct</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+	select sourceId, destinationId
+	from sct2_relationship r
+	inner join (
+		select id, max(effectiveTime) effectiveTime
+		from sct2_relationship
+		group by id
+	) rd on rd.id = r.id and rd.effectiveTime = r.effectiveTime
+	where typeId = 116680003 and active = 1
+	]]></entry>
+</properties>
