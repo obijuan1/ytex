@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
@@ -46,6 +49,7 @@ import ytex.kernel.wsd.WordSenseDisambiguator;
  * 
  */
 public class WSDDisambiguator {
+	private static final Log log = LogFactory.getLog(WSDDisambiguator.class);
 
 	/**
 	 * @param args
@@ -345,8 +349,10 @@ public class WSDDisambiguator {
 		this.loadWords();
 		this.loadSentences();
 		this.loadTitleConcepts();
+		
 		PrintStream ps = null;
 		try {
+			log.info("disambiguate start: " + (new Date()));
 			ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(
 					metric.name() + ".txt")));
 			for (Map.Entry<Long, Sentence> sentEntry : sentences.entrySet()) {
@@ -368,6 +374,7 @@ public class WSDDisambiguator {
 				ps.print("\t");
 				ps.println(scoreMap);
 			}
+			log.info("disambiguate end: " + (new Date()));
 		} finally {
 			if (ps != null) {
 				try {

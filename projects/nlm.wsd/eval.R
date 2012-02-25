@@ -1,3 +1,4 @@
+library(plyr)
 metrics = c("LCH", "INTRINSIC_LCH", "INTRINSIC_LIN", "PATH", "INTRINSIC_PATH", "JACCARD", "SOKAL")
 words.common =  c("degree", "growth", "man", "mosaic", "nutrition", "repair", "scale", "weight", "white")
 words.unsup = c("adjustment", "blood_pressure", "degree", "evaluation", "growth", "immunosuppression", "mosaic", "nutrition", "radiation", "repair", "scale", "sensitivity", "white")
@@ -19,4 +20,4 @@ res = res[,-1]
 colnames(res) = c("all", "common", "unsup")
 rownames(res) = metrics
 res = res[order(res$all, decreasing=T),]
-write.csv(res, file="wsd-results.txt", sep="\t")
+write.csv(res, file="wsd-results.csv")

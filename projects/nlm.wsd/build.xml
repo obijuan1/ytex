@@ -4,12 +4,12 @@
 	<property name="maxMemory" value="1500m" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
-	<target name="all" depends="build,load.all,RunCPE,eval.wsd.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
+	<target name="all" depends="build,load.all,RunCPE,eval.wsd.all,eval.R" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
 	<target name="build" description="compile java source">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/main/java/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
 	</target>
-	<target name="load.all" depends="load.create,load.abstract,load.choices.all,load.word" />
+	<target name="load.all" depends="load.create,load.abstract,load.choices.all,load.word,load.lookup" />
 	<target name="load.create">
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/create_table.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/v_wsd_fword_lookup.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
@@ -30,6 +30,9 @@
 	</target>
 	<target name="load.word" description="load nlm_wsd_word table">
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/select_words.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
+	</target>
+	<target name="load.lookup">
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/v_wsd_fword_lookup.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 	</target>
 	<target name="load.choices.all" description="load choices into nlm_wsd_cui table">
 		<antcall target="init.conn">
@@ -139,4 +142,10 @@
 			<arg value="${window}" />
 		</java>
 	</target>
+	<target name="eval.R" description="compute accuracy">
+		<property name="window" value="10" />
+		<exec executable="${R.bin}/R" dir="${basedir}/eval/${ytex.conceptGraphName}-${window}">
+			<arg line="--slave --file=${basedir}/eval.R" />
+		</exec>
+	</target>	
 </project>
