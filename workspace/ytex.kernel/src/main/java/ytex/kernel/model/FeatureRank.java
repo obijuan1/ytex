@@ -96,6 +96,13 @@ public class FeatureRank implements Serializable {
 		this.featureName = featureName;
 		this.evaluation = evaluation;
 	}
+	public FeatureRank(FeatureEvaluation featureEval, String featureName,
+			double evaluation, int rank) {
+		this.featureEval = featureEval;
+		this.featureName = featureName;
+		this.evaluation = evaluation;
+		this.rank = rank;
+	}	
 
 	public double getEvaluation() {
 		return evaluation;

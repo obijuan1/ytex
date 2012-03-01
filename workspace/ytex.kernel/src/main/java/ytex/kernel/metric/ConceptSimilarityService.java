@@ -12,13 +12,34 @@ public interface ConceptSimilarityService {
 	public enum SimilarityMetricEnum {
 		LCH(false, false), INTRINSIC_LCH(true, false), LIN(false, true), INTRINSIC_LIN(
 				true, false), PATH(false, false), INTRINSIC_PATH(true, false), JACCARD(
-				true, false), SOKAL(true, false), PAGERANK(false, false);
+				true, false), SOKAL(true, false), RADA(false, false), INTRINSIC_RADA(
+				true, false), WUPALMER(false, false), PAGERANK(false, false);
 		boolean intrinsicIC = false;
 		boolean corpusIC = false;
 
+		/**
+		 * is this measure taxonomy based?
+		 * 
+		 * @return
+		 */
+		public boolean isTaxonomy() {
+			return !intrinsicIC && !corpusIC;
+		}
+
+		/**
+		 * is this measure based on intrinsic IC?
+		 * 
+		 * @return
+		 */
 		public boolean isIntrinsicIC() {
 			return intrinsicIC;
 		}
+
+		/**
+		 * is this measure based on corpus IC?
+		 * 
+		 * @return
+		 */
 		public boolean isCorpusIC() {
 			return corpusIC;
 		}
@@ -30,13 +51,12 @@ public interface ConceptSimilarityService {
 	}
 
 	public String getConceptGraphName();
-	
-//	public abstract double lch(String concept1, String concept2);
 
-	//	public abstract double lin(String concept1, String concept2);
+	// public abstract double lch(String concept1, String concept2);
 
-	public int lcs(String concept1, String concept2,
-			List<LCSPath> lcsPath);
+	// public abstract double lin(String concept1, String concept2);
+
+	public int lcs(String concept1, String concept2, List<LCSPath> lcsPath);
 
 	public abstract ConceptGraph getConceptGraph();
 
@@ -48,19 +68,19 @@ public interface ConceptSimilarityService {
 	 */
 	public abstract Map<String, BitSet> getCuiTuiMap();
 
-//	/**
-//	 * supervised lin measure.
-//	 * 
-//	 * @param concept1
-//	 * @param concept2
-//	 * @param conceptFilter
-//	 *            map of concept id to imputed infogain. if the concept isn't in
-//	 *            this map, the concepts won't be compared. null for
-//	 *            unsupervised lin.
-//	 * @return
-//	 */
-//	public abstract double filteredLin(String concept1, String concept2,
-//			Map<String, Double> conceptFilter);
+	// /**
+	// * supervised lin measure.
+	// *
+	// * @param concept1
+	// * @param concept2
+	// * @param conceptFilter
+	// * map of concept id to imputed infogain. if the concept isn't in
+	// * this map, the concepts won't be compared. null for
+	// * unsupervised lin.
+	// * @return
+	// */
+	// public abstract double filteredLin(String concept1, String concept2,
+	// Map<String, Double> conceptFilter);
 
 	/**
 	 * list of tuis that corresponds to bitset indices
@@ -101,6 +121,7 @@ public interface ConceptSimilarityService {
 	 */
 	public int getLCS(String concept1, String concept2, Set<String> lcses,
 			List<LCSPath> lcsPaths);
+
 	/**
 	 * get the best lcs
 	 * 
@@ -139,8 +160,7 @@ public interface ConceptSimilarityService {
 	 */
 	public abstract ConceptPairSimilarity similarity(
 			List<SimilarityMetricEnum> metrics, String concept1,
-			String concept2, Map<String, Double> conceptFilter,
-			boolean lcs);
+			String concept2, Map<String, Double> conceptFilter, boolean lcs);
 
 	/**
 	 * compute similarity for a list of concept pairs
@@ -160,4 +180,6 @@ public interface ConceptSimilarityService {
 	public List<ConceptPairSimilarity> similarity(
 			List<ConceptPair> conceptPairs, List<SimilarityMetricEnum> metrics,
 			Map<String, Double> conceptFilter, boolean lcs);
+
+	public abstract int getDepth(String concept);
 }

@@ -228,7 +228,7 @@
 		and featureEval.evaluationType = :evaluationType
 		and featureEval.label = :label
 		and featureName in (:featureNames)
-	]]></query>
+	]]></query>	
  	<query name="deleteFeatureRank"><![CDATA[
 		delete from FeatureRank r
 		where featureEval.featureEvaluationId = :featureEvaluationId
@@ -273,4 +273,15 @@
 		and featureEval.evaluationType = :evaluationType
 		and featureEval.label = :label
 	]]></query>
+	<query name="getMaxFeatureRank"><![CDATA[
+		select max(rank)
+		from FeatureRank
+		where featureEval.corpusName = :corpusName
+		and featureEval.featureSetName = :featureSetName
+		and featureEval.param1 = :param1
+		and featureEval.param2 = :param2
+		and featureEval.crossValidationFoldId = :crossValidationFoldId
+		and featureEval.evaluationType = :evaluationType
+		and featureEval.label = :label
+	]]></query>	
 </hibernate-mapping>

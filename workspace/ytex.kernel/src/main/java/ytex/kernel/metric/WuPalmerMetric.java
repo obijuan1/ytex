@@ -1,0 +1,28 @@
+package ytex.kernel.metric;
+
+import java.util.Map;
+
+public class WuPalmerMetric extends BaseSimilarityMetric {
+	@Override
+	public double similarity(String concept1, String concept2,
+			Map<String, Double> conceptFilter, SimilarityInfo simInfo) {
+		initLCSes(concept1, concept2, simInfo);
+		if (simInfo.getLcses().size() > 0) {
+			int lcsDepth = 1;
+			for (String lcs : simInfo.getLcses()) {
+				int d = simSvc.getDepth(lcs);
+				if (d > lcsDepth)
+					lcsDepth = d;
+			}
+			int c1d = simSvc.getDepth(concept1);
+			int c2d = simSvc.getDepth(concept2);
+			return ((double) 2 * lcsDepth) / (double) (c1d + c2d);
+		}
+		return 0d;
+	}
+
+	public WuPalmerMetric(ConceptSimilarityService simSvc) {
+		super(simSvc);
+	}
+
+}

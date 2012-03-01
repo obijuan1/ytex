@@ -68,13 +68,18 @@ public interface ClassifierEvaluationDao {
 			String label, String evaluationType, Integer foldId, double param1,
 			String param2);
 
+	public abstract Map<String, FeatureRank> getFeatureRanks(
+			Set<String> featureNames, String corpusName, String featureSetName,
+			String label, String evaluationType, Integer foldId, double param1,
+			String param2);
+
 	public abstract List<Object[]> getCorpusCuiTuis(String corpusName,
 			String conceptGraphName, String conceptSetName);
 
 	public abstract Map<String, Double> getInfoContent(String corpusName,
 			String conceptGraphName, String conceptSet);
 
-	public abstract Map<String, Double> getIntrinsicInfoContent(
+	public abstract Map<String, FeatureRank> getIntrinsicInfoContent(
 			String conceptGraphName);
 
 	public abstract void saveFeatureParentChild(FeatureParentChild parchd);
@@ -88,4 +93,5 @@ public interface ClassifierEvaluationDao {
 			String featureSetName, String label, String evaluationType,
 			Integer foldId, double param1, String param2);
 
+	public abstract Integer getMaxDepth(String conceptGraphName);
 }

@@ -4,16 +4,18 @@ import java.util.Map;
 
 
 /**
- * compute Intrinsic path distance. Scale the distance to the unit
- * interval using max IC.
+ * compute Intrinsic rada distance as in eqn 23 from
+ * http://dx.doi.org/10.1016/j.jbi.2011.03.013. Scale the distance to the unit
+ * interval using max IC. Convert to similarity metric by taking
+ * 1-scaled_distance.
  * 
  * @author vijay
  * 
  */
-public class IntrinsicPathMetric extends BaseSimilarityMetric {
+public class IntrinsicRadaMetric extends BaseSimilarityMetric {
 	Double maxIC;
 
-	public IntrinsicPathMetric(ConceptSimilarityService simSvc, Double maxIC) {
+	public IntrinsicRadaMetric(ConceptSimilarityService simSvc, Double maxIC) {
 		super(simSvc);
 		this.maxIC = maxIC;
 	}
@@ -29,7 +31,7 @@ public class IntrinsicPathMetric extends BaseSimilarityMetric {
 		double ic1 = simSvc.getIC(concept1, true);
 		double ic2 = simSvc.getIC(concept2, true);
 		// scale to unit interval
-		return 1d/(ic1 + ic2 - (2 * lcsIC) + 1);
+		return 1d - (ic1 + ic2 - (2 * lcsIC)) / (2 * maxIC);
 	}
 
 }

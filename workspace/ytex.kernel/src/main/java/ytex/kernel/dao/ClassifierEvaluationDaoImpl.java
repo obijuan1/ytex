@@ -279,15 +279,34 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 		}
 	}
 
-	public Map<String,Double> getFeatureRankEvaluations(Set<String> featureNames,
+	public Map<String, FeatureRank> getFeatureRanks(Set<String> featureNames,
 			String corpusName, String featureSetName, String label,
 			String evaluationType, Integer foldId, double param1, String param2) {
 		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
-				label, evaluationType, foldId, param1, param2, "getFeatureRankEvaluations");
+				label, evaluationType, foldId, param1, param2,
+				"getFeatureRankEvaluations");
+		q.setParameterList("featureNames", featureNames);
+		@SuppressWarnings("unchecked")
+		List<FeatureRank> featureRanks = q.list();
+		Map<String, FeatureRank> frMap = new HashMap<String, FeatureRank>(
+				featureRanks.size());
+		for (FeatureRank fr : featureRanks)
+			frMap.put(fr.getFeatureName(), fr);
+		return frMap;
+	}
+
+	public Map<String, Double> getFeatureRankEvaluations(
+			Set<String> featureNames, String corpusName, String featureSetName,
+			String label, String evaluationType, Integer foldId, double param1,
+			String param2) {
+		Query q = prepareUniqueFeatureEvalQuery(corpusName, featureSetName,
+				label, evaluationType, foldId, param1, param2,
+				"getFeatureRankEvaluations");
 		q.setParameterList("featureNames", featureNames);
 		List<FeatureRank> featureRanks = q.list();
-		Map<String,Double> evalMap = new HashMap<String,Double>(featureRanks.size());
-		for(FeatureRank fr : featureRanks)
+		Map<String, Double> evalMap = new HashMap<String, Double>(
+				featureRanks.size());
+		for (FeatureRank fr : featureRanks)
 			evalMap.put(fr.getFeatureName(), fr.getEvaluation());
 		return evalMap;
 	}
@@ -326,10 +345,25 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	}
 
 	@Override
-	public Map<String, Double> getIntrinsicInfoContent(String conceptGraphName) {
-		return getFeatureRankEvaluations(null, null, null,
-				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, 0, 0,
-				conceptGraphName);
+	public Map<String, FeatureRank> getIntrinsicInfoContent(
+			String conceptGraphName) {
+		Query q = prepareUniqueFeatureEvalQuery(null, null, null,
+				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, null, null,
+				conceptGraphName, "getTopFeatures");
+		@SuppressWarnings("unchecked")
+		List<FeatureRank> listFeatureRank = q.list();
+		Map<String, FeatureRank> mapFeatureEval = new HashMap<String, FeatureRank>(
+				listFeatureRank.size());
+		for (FeatureRank r : listFeatureRank) {
+			mapFeatureEval.put(r.getFeatureName(), r);
+		}
+		return mapFeatureEval;
+	}
+	public Integer getMaxDepth(String conceptGraphName) {
+		Query q = prepareUniqueFeatureEvalQuery(null, null, null,
+				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, null, null,
+				conceptGraphName, "getMaxFeatureRank");
+		return (Integer)q.uniqueResult();
 	}
 
 	@Override

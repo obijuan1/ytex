@@ -171,9 +171,9 @@ public class ConceptDaoImpl implements ConceptDao {
 				}
 			}
 			cg.setRoot(rootId);
-			// can't get the maximum depth unless we're sure there are no cycles
-			if (checkCycle)
-				cg.setDepthMax(calculateDepthMax(rootId, cg.getConceptMap()));
+//			// can't get the maximum depth unless we're sure there are no cycles
+//			if (checkCycle)
+//				cg.setDepthMax(calculateDepthMax(rootId, cg.getConceptMap()));
 			writeConceptGraph(name, cg);
 			writeConceptGraphProps(name, query, checkCycle);
 			return cg;

@@ -44,10 +44,8 @@ import ytex.kernel.InfoContentEvaluator;
 import ytex.kernel.IntrinsicInfoContentEvaluator;
 import ytex.kernel.OrderedPair;
 import ytex.kernel.SimSvcContextHolder;
-import ytex.kernel.ImputedFeatureEvaluator.MeasureType;
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.ConceptDao;
-import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
 import ytex.kernel.model.FeatureRank;
@@ -125,8 +123,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 								ConceptSimilarityService.class);
 				List<SimilarityInfo> simInfos = lcs ? new ArrayList<SimilarityInfo>(
 						conceptPairs.size()) : null;
-				List<ConceptPairSimilarity> conceptSimMap = simSvc
-						.similarity(conceptPairs, metricList, null, lcs);
+				List<ConceptPairSimilarity> conceptSimMap = simSvc.similarity(
+						conceptPairs, metricList, null, lcs);
 				printSimilarities(conceptPairs, conceptSimMap, metricList,
 						simInfos, lcs, os);
 			} finally {
@@ -192,8 +190,8 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 
 	private static void printSimilarities(List<ConceptPair> conceptPairs,
 			List<ConceptPairSimilarity> conceptSimList,
-			List<SimilarityMetricEnum> metricList, List<SimilarityInfo> simInfos, boolean lcs,
-			PrintStream os) {
+			List<SimilarityMetricEnum> metricList,
+			List<SimilarityInfo> simInfos, boolean lcs, PrintStream os) {
 		// print header
 		os.print("Concept 1\tConcept 2");
 		for (SimilarityMetricEnum metric : metricList) {
@@ -250,19 +248,21 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 
 	private String conceptSetName;
 
-	/**
-	 * information concept cache
-	 */
-	private Map<String, Double> corpusICMap = null;
+	// /**
+	// * information concept cache
+	// */
+	// private Map<String, Double> corpusICMap = null;
 
 	private String corpusName;
 
 	private Map<String, BitSet> cuiTuiMap;
 
-	/**
-	 * 
-	 */
-	private Map<String, Double> intrinsicICMap = null;
+	// /**
+	// *
+	// */
+	// private Map<String, Double> intrinsicICMap = null;
+
+	private Map<String, ConceptInfo> conceptInfoMap = null;
 
 	/**
 	 * cache to hold lcs's
@@ -382,11 +382,25 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	@Override
 	public Object[] getBestLCS(Set<String> lcses, boolean intrinsicIC,
 			Map<String, Double> conceptFilter) {
-		Map<String, Double> lcsICMap = null;
+		Map<String, Double> lcsICMap = new HashMap<String, Double>(lcses.size());
 		if (isPreload()) {
-			lcsICMap = intrinsicIC ? this.intrinsicICMap : this.corpusICMap;
+			// look in conceptInfoMap for info content
+			for (String lcs : lcses) {
+				ConceptInfo ci = this.conceptInfoMap.get(lcs);
+				if (ci != null) {
+					lcsICMap.put(
+							lcs,
+							intrinsicIC ? ci.getIntrinsicIC() : ci
+									.getCorpusIC());
+				}
+			}
 		} else {
-			lcsICMap = getICOnDemand(lcses, intrinsicIC);
+			// load info content on demand
+			Map<String, FeatureRank> frMap = getICOnDemand(lcses, intrinsicIC);
+			for (Map.Entry<String, FeatureRank> frMapEntry : frMap.entrySet()) {
+				lcsICMap.put(frMapEntry.getKey(), frMapEntry.getValue()
+						.getEvaluation());
+			}
 		}
 		if (conceptFilter != null) {
 			double currentBest = -1;
@@ -417,13 +431,13 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		}
 	}
 
-	private Map<String, Double> getICOnDemand(Set<String> lcses,
+	private Map<String, FeatureRank> getICOnDemand(Set<String> lcses,
 			boolean intrinsicIC) {
 		if (lcses == null || lcses.isEmpty())
-			return new HashMap<String, Double>(0);
-		Map<String, Double> lcsICMap;
+			return new HashMap<String, FeatureRank>(0);
+		Map<String, FeatureRank> lcsICMap;
 		lcsICMap = this.classifierEvaluationDao
-				.getFeatureRankEvaluations(
+				.getFeatureRanks(
 						lcses,
 						intrinsicIC ? null : this.corpusName,
 						intrinsicIC ? null : this.conceptSetName,
@@ -519,17 +533,35 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 
 	@Override
 	public double getIC(String concept, boolean intrinsicICMap) {
-		Map<String, Double> icMap = null;
 		if (isPreload()) {
-			icMap = intrinsicICMap ? this.intrinsicICMap : this.corpusICMap;
+			ConceptInfo ci = this.conceptInfoMap.get(concept);
+			if (ci != null)
+				return intrinsicICMap ? ci.getIntrinsicIC() : ci.getCorpusIC();
 		} else {
-			icMap = getICOnDemand(new HashSet<String>(Arrays.asList(concept)),
-					intrinsicICMap);
+			Map<String, FeatureRank> frMap = getICOnDemand(new HashSet<String>(
+					Arrays.asList(concept)), intrinsicICMap);
+			if (frMap.containsKey(concept))
+				return frMap.get(concept).getEvaluation();
 		}
-		if (icMap.containsKey(concept))
-			return icMap.get(concept);
-		else
-			return 0d;
+		return 0d;
+	}
+
+	@Override
+	public int getDepth(String concept) {
+		if (isPreload()) {
+			// preloaded all concept info - depth should be there
+			ConceptInfo ci = this.conceptInfoMap.get(concept);
+			if (ci != null)
+				return ci.getDepth();
+		} else {
+			// get the feature ranks for the intrinsic infocontent -
+			// rank = depth
+			Map<String, FeatureRank> frMap = getICOnDemand(new HashSet<String>(
+					Arrays.asList(concept)), true);
+			if (frMap.containsKey(concept))
+				return frMap.get(concept).getRank();
+		}
+		return 0;
 	}
 
 	public int getLCS(String concept1, String concept2, Set<String> lcses,
@@ -673,10 +705,45 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 * ids from conceptGraph to save memory
 	 */
 	private void initInfoContent() {
-		this.corpusICMap = classifierEvaluationDao.getInfoContent(corpusName,
-				conceptGraphName, this.conceptSetName);
-		this.intrinsicICMap = classifierEvaluationDao
+		log.info("loading intrinsic infocontent for concept graph: "
+				+ conceptGraphName);
+		// fill intrinsicIC
+		Map<String, FeatureRank> intrinsicICMap = classifierEvaluationDao
 				.getIntrinsicInfoContent(conceptGraphName);
+		this.conceptInfoMap = new HashMap<String, ConceptInfo>(
+				intrinsicICMap.size());
+		for (Map.Entry<String, FeatureRank> icMapEntry : intrinsicICMap
+				.entrySet()) {
+			FeatureRank r = icMapEntry.getValue();
+			ConcRel cr = cg.getConceptMap().get(r.getFeatureName());
+			if (cr != null) {
+				ConceptInfo ci = new ConceptInfo();
+				ci.setConceptId(cr.getConceptID());
+				ci.setDepth(r.getRank());
+				ci.setIntrinsicIC(r.getEvaluation());
+				conceptInfoMap.put(ci.getConceptId(), ci);
+			}
+		}
+		// fill corpusIC
+		log.info("loading corpus infocontent for concept graph: "
+				+ conceptGraphName);
+		Map<String, Double> corpusICMap = classifierEvaluationDao
+				.getInfoContent(corpusName, conceptGraphName,
+						this.conceptSetName);
+		for (Map.Entry<String, Double> corpusICEntry : corpusICMap.entrySet()) {
+			ConceptInfo ci = this.conceptInfoMap.get(corpusICEntry.getKey());
+			if (ci == null) {
+				ConcRel cr = cg.getConceptMap().get(corpusICEntry.getKey());
+				if (cr != null) {
+					ci = new ConceptInfo();
+					ci.setConceptId(cr.getConceptID());
+					conceptInfoMap.put(ci.getConceptId(), ci);
+				}
+			}
+			if (ci != null) {
+				ci.setCorpusIC(corpusICEntry.getValue());
+			}
+		}
 	}
 
 	/**
@@ -687,10 +754,12 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				null, null, null,
 				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, 0, 0,
 				conceptGraphName);
+		Integer maxDepth = this.classifierEvaluationDao
+				.getMaxDepth(conceptGraphName);
 		this.similarityMetricMap = new HashMap<SimilarityMetricEnum, SimilarityMetric>(
 				SimilarityMetricEnum.values().length);
 		this.similarityMetricMap.put(SimilarityMetricEnum.LCH, new LCHMetric(
-				this));
+				this, maxDepth));
 		this.similarityMetricMap.put(SimilarityMetricEnum.LIN, new LinMetric(
 				this, false));
 		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_LIN,
@@ -701,13 +770,18 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 				this));
 		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_PATH,
 				new IntrinsicPathMetric(this, maxIC));
+		this.similarityMetricMap.put(SimilarityMetricEnum.RADA, new RadaMetric(
+				this, maxDepth));
+		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_RADA,
+				new IntrinsicRadaMetric(this, maxIC));
 		this.similarityMetricMap.put(SimilarityMetricEnum.SOKAL,
 				new SokalSneathMetric(this));
 		this.similarityMetricMap.put(SimilarityMetricEnum.JACCARD,
 				new JaccardMetric(this));
+		this.similarityMetricMap.put(SimilarityMetricEnum.WUPALMER,
+				new WuPalmerMetric(this));
 		this.similarityMetricMap.put(SimilarityMetricEnum.PAGERANK,
 				new PageRankMetric(this, this.getPageRankService()));
-
 	}
 
 	public boolean isPreload() {

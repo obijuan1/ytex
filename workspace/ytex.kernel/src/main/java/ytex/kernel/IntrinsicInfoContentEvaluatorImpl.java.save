@@ -1,8 +1,9 @@
 package ytex.kernel;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -156,12 +158,12 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 * @param w
 	 * @throws IOException
 	 */
-	private void computeSubsumerCount(ConcRel concept,
+	private void computeSubsumerCount(ConceptGraph cg, ConcRel concept,
 			Map<String, IntrinsicICInfo> icInfoMap,
-			Map<String, Set<String>> subsumerMap, int[] depthArray,
+			Map<Integer, Set<Integer>> subsumerMap, int[] depthArray,
 			BufferedWriter w) throws IOException {
 		// see if we already computed this
-		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
+		IntrinsicICInfo icInfo = icInfoMap.get(concept.getNodeIndex());
 		if (icInfo != null && icInfo.getSubsumerCount() > 0) {
 			return;
 		}
@@ -170,20 +172,23 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			icInfo = new IntrinsicICInfo(concept);
 			icInfoMap.put(concept.getConceptID(), icInfo);
 		}
-		Set<String> subsumers = this.getSubsumers(concept, subsumerMap,
+		Set<Integer> subsumers = this.getSubsumers(concept, subsumerMap,
 				depthArray);
 		if (w != null) {
 			w.write(concept.getConceptID());
 			w.write("\t");
 			w.write(Integer.toString(subsumers.size()));
 			w.write("\t");
-			w.write(subsumers.toString());
+			for (int nodeIndex : subsumers) {
+				w.write(cg.getConceptList().get(nodeIndex).getConceptID());
+				w.write(" ");
+			}
 			w.newLine();
 		}
 		icInfo.setSubsumerCount(subsumers.size());
 		// recursively compute the children's subsumer counts
 		for (ConcRel child : concept.getChildren()) {
-			computeSubsumerCount(child, icInfoMap, subsumerMap, depthArray, w);
+			computeSubsumerCount(cg, child, icInfoMap, subsumerMap, depthArray, w);
 		}
 	}
 
@@ -205,13 +210,14 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		log.info("computing subsumer counts");
 		// compute the subsumer count
 		Map<String, IntrinsicICInfo> icInfoMap = new HashMap<String, IntrinsicICInfo>();
-		Map<String, Set<String>> subsumerMap = new WeakHashMap<String, Set<String>>();
+		Map<Integer, Set<Integer>> subsumerMap = new WeakHashMap<Integer, Set<Integer>>();
 		int[] depthArray = new int[cg.getConceptList().size()];
+		Arrays.fill(depthArray, 0);
 		BufferedWriter w = null;
 		try {
 			w = this.getOutputFile(conceptGraphName, conceptGraphDir,
 					"subsumer");
-			computeSubsumerCount(cg.getConceptMap().get(cg.getRoot()),
+			computeSubsumerCount(cg, cg.getConceptMap().get(cg.getRoot()),
 					icInfoMap, subsumerMap, depthArray, w);
 		} finally {
 			if (w != null) {
@@ -260,8 +266,9 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 
 	private BufferedWriter getOutputFile(final String conceptGraphName,
 			final String conceptGraphDir, String type) throws IOException {
-		return new BufferedWriter(new FileWriter(FileUtil.addFilenameToDir(
-				conceptGraphDir, conceptGraphName + "-" + type + ".txt")));
+		return new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(
+				new FileOutputStream(FileUtil.addFilenameToDir(conceptGraphDir,
+						conceptGraphName + "-" + type + ".txt.gz")))));
 	}
 
 	public Set<String> getAllLeaves(ConceptGraph cg, BufferedWriter w)
@@ -317,13 +324,13 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 * @param subsumerMap
 	 * @return
 	 */
-	private Set<String> getSubsumers(ConcRel concept,
-			Map<String, Set<String>> subsumerMap, int depthArray[]) {
+	private Set<Integer> getSubsumers(ConcRel concept,
+			Map<Integer, Set<Integer>> subsumerMap, int depthArray[]) {
 		// look in cache
-		if (subsumerMap.containsKey(concept.getConceptID()))
-			return subsumerMap.get(concept.getConceptID());
+		if (subsumerMap.containsKey(concept.getNodeIndex()))
+			return subsumerMap.get(concept.getNodeIndex());
 		// not in cache - compute recursively
-		Set<String> subsumers = new HashSet<String>();
+		Set<Integer> subsumers = new HashSet<Integer>();
 		boolean calcDepth = depthArray[concept.getNodeIndex()] == 0;
 		int parentMaxDepth = 0;
 		if (concept.getParents() != null && !concept.getParents().isEmpty()) {
@@ -331,20 +338,18 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			for (ConcRel parent : concept.getParents()) {
 				subsumers.addAll(getSubsumers(parent, subsumerMap, depthArray));
 				// get the deepest parent
-				if (calcDepth) {
-					int parentDepth = depthArray[parent.getNodeIndex()];
-					if (parentDepth > parentMaxDepth)
-						parentMaxDepth = parentDepth;
-				}
+				if (calcDepth
+						&& depthArray[parent.getNodeIndex()] > parentMaxDepth)
+					parentMaxDepth = depthArray[parent.getNodeIndex()];
 			}
 		}
 		if (calcDepth)
 			depthArray[concept.getNodeIndex()] = parentMaxDepth + 1;
 		// add the concept itself to the set of subsumers
-		subsumers.add(concept.getConceptID());
+		subsumers.add(concept.getNodeIndex());
 		// add this to the cache - copy the key so that this can be gc'ed as
 		// needed
-		subsumerMap.put(new String(concept.getConceptID()), subsumers);
+		subsumerMap.put(concept.getNodeIndex(), subsumers);
 		return subsumers;
 	}
 
