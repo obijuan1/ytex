@@ -1,8 +1,11 @@
+library(plyr)
 # results
 eval.con = function(cg, con) {
 	gold = read.delim(paste(con, ".csv", sep=""), header=T, stringsAsFactors=F, sep=",")
 	sim = read.delim(paste(cg, "/", con, "_id_sim.txt", sep=""), sep="\t", header=T, stringsAsFactors=F)
-	sim = sim[,-c(1,2,12:15)]
+	simCol = ncol(sim)
+	# skip the 1st 2 (concept ids) and last 3 columns (lcs info)
+	sim = sim[,-c(1,2,(simCol-3):simCol)]
 	res.m = data.frame(spearman=apply(sim, 2, function(x) { cor.test(gold$Mean, x, method="spearman")$estimate } ), p.value=apply(sim, 2, function(x) { cor.test(gold$Mean, x, method="spearman")$p.value } ))
 	res.m = cbind(cg = rep(cg, nrow(res.m)), metric=rownames(res.m), con = rep(con, nrow(res.m)), res.m)
 	return(res.m)
@@ -11,7 +14,9 @@ eval.con = function(cg, con) {
 eval.mini = function(cg, prefix="MiniMayoSRS") {
 	gold = read.delim("MiniMayoSRS.csv", header=T, stringsAsFactors=F, sep=",")
 	sim = read.delim(paste(cg, "/", prefix, "_id_sim.txt", sep=""), sep="\t", header=T, stringsAsFactors=F)
-	sim = sim[,-c(1,2,12:15)]
+	simCol = ncol(sim)
+	# skip the 1st 2 (concept ids) and last 3 columns (lcs info)
+	sim = sim[,-c(1,2,(simCol-3):simCol)]
 	res.m1 = data.frame(
 		con=rep("MiniMayoSRS_Physicians", ncol(sim)),
 		spearman=apply(sim, 2, function(x) { cor.test(gold$Physicians, x, method="spearman")$estimate } ), 
@@ -36,7 +41,7 @@ eval.mini = function(cg, prefix="MiniMayoSRS") {
 # main
 res = data.frame(cg=c(), file=c(), spearman=c(),p.value=c())
 
-cgs = c("sct-umls", "sct-msh", "sct-msh-csp-aod") 
+cgs = c("sct-umls", "sct-msh", "sct-msh-csp-aod", "sct-msh-mth-csp-aod") 
 cons = c("UMNSRS_similarity", "UMNSRS_relatedness", "MayoSRS")
 
 for(cg in cgs) {
@@ -52,3 +57,16 @@ res = rbind(res, eval.mini("msh", prefix="MiniMayoSRS_mesh"))
 res = rbind(res, eval.mini("msh-umls", prefix="MiniMayoSRS_mesh_umls"))
 
 write.csv(res, file="spearman.csv", row.names=F)
+
+# consolidate results
+res.sum = ddply(res, .(cg, con), function(x) {
+	data.frame(
+		WUPALMER=x[x$metric=="WUPALMER","spearman"], 
+		PATH=x[x$metric=="PATH","spearman"], 
+		INTRINSIC_LIN=x[x$metric=="INTRINSIC_LIN","spearman"], 
+		INTRINSIC_PATH=x[x$metric=="INTRINSIC_PATH","spearman"], 
+		INTRINSIC_LCH=x[x$metric=="INTRINSIC_LCH","spearman"])
+	})
+write.csv(res.sum, file="spearman-summary.csv", row.names=F)
+
+	
