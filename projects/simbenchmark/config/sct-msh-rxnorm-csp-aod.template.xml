@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.conceptGraphName">sct-msh-rxnorm-csp-aod</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+	select distinct cui1, cui2 
+	from @umls.schema@.MRREL 
+	where sab in ('SNOMEDCT', 'MSH', 'RXNORM', 'CSP', 'AOD')
+	and rel in ('PAR', 'RB')
+	order by cui1, cui2
+	]]></entry>
+</properties>

@@ -81,7 +81,7 @@
 		</java>
 	</target>
 	<target name="umls.eval.sim" description="evaluate all umls concept graphs">
-		<property name="cgs" value="sct-umls,sct-msh,sct-msh-csp-aod" />
+		<property name="cgs" value="sct-umls,sct-msh,sct-msh-csp-aod,sct-msh-mth-csp-aod" />
 		<for param="cg" list="${cgs}">
 			<sequential>
 				<antcall target="umls.eval.sim.cg">
@@ -114,7 +114,7 @@
 			<arg value="-concepts" />
 			<arg value="../${eval.concepts}" />
 			<arg value="-metrics" />
-			<arg value="LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,RADA,INTRINSIC_RADA,JACCARD,SOKAL" />
+			<arg value="LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,RADA,INTRINSIC_RADA,JACCARD,SOKAL,WUPALMER" />
 			<arg value="-out" />
 			<arg value="${eval.out}" />
 			<arg value="-lcs" />
