@@ -31,7 +31,12 @@
 	<target name="load.word" description="load nlm_wsd_word table">
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/select_words.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 	</target>
-	<target name="load.lookup">
+	<target name="load.lookup" description="create v_wsd_fword_lookup table">
+		<copy file="${basedir}/data/v_wsd_fword_lookup.template.sql" tofile="${basedir}/data/v_wsd_fword_lookup.sql" overwrite="yes">
+			<filterset>
+				<filter token="UMLS_SCHEMA" value="${umls.schema}" />
+			</filterset>
+		</copy>		
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/v_wsd_fword_lookup.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 	</target>
 	<target name="load.choices.all" description="load choices into nlm_wsd_cui table">

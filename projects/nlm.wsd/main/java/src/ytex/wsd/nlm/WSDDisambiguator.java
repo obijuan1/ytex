@@ -61,6 +61,13 @@ public class WSDDisambiguator {
 		wsd.disambiguate(metric, windowSize);
 	}
 
+	/**
+	 * The abstract, represented as a list of named entities, which in turn are
+	 * a list of cuis
+	 * 
+	 * @author vijay
+	 * 
+	 */
 	public static class Sentence {
 		long instanceId = -1;
 		int index = -1;
@@ -96,6 +103,12 @@ public class WSDDisambiguator {
 		}
 	}
 
+	/**
+	 * the word that maps to multiple cuis that needs to be disambiguated.
+	 * 
+	 * @author vijay
+	 * 
+	 */
 	public static class Word {
 		public long getInstanceId() {
 			return instanceId;
@@ -154,10 +167,23 @@ public class WSDDisambiguator {
 		int spanEnd;
 	}
 
+	/**
+	 * map of word to the cuis for the word
+	 */
 	Map<String, Set<String>> wordCuis;
+	/**
+	 * map of abstract id to title concepts
+	 */
 	Map<Long, Set<String>> titleConcepts;
+	/**
+	 * map of abstract id to word
+	 */
 	Map<Long, Word> words;
+
 	JdbcTemplate jdbcTemplate;
+	/**
+	 * the abstracts
+	 */
 	SortedMap<Long, Sentence> sentences;
 	WordSenseDisambiguator wordSenseDisambiguator;
 
@@ -194,7 +220,7 @@ public class WSDDisambiguator {
 	public Map<Long, Set<String>> loadTitleConcepts() {
 		titleConcepts = new HashMap<Long, Set<String>>();
 		jdbcTemplate
-				.query("select uid, code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id  where d.analysis_batch = 'wsd-title' order by uid",
+				.query("select uid, code from document d inner join anno_base abt on abt.document_id = d.document_id inner join anno_segment s on s.anno_base_id = abt.anno_base_id and s.segment_id = 'nlm.wsd.TI' inner join anno_contain ac on ac.parent_anno_base_id = abt.anno_base_id inner join anno_ontology_concept c on c.anno_base_id = ac.child_anno_base_id where d.analysis_batch = 'nlm.wsd' order by uid",
 						new RowCallbackHandler() {
 							long wordCurrent = -1;
 							Set<String> cuisCurrent = null;
@@ -349,7 +375,7 @@ public class WSDDisambiguator {
 		this.loadWords();
 		this.loadSentences();
 		this.loadTitleConcepts();
-		
+
 		PrintStream ps = null;
 		try {
 			log.info("disambiguate start: " + (new Date()));

@@ -1,7 +1,7 @@
 delete from ref_segment_regex where segment_id in ('nlm.wsd.UI', 'nlm.wsd.TI', 'nlm.wsd.AB');
-insert into ref_segment_regex (regex, segment_id) values ('UI - ', 'nlm.wsd.UI');
-insert into ref_segment_regex (regex, segment_id) values ('TI - ', 'nlm.wsd.TI');
-insert into ref_segment_regex (regex, segment_id) values ('AB - ', 'nlm.wsd.AB');
+insert into ref_segment_regex (regex, segment_id) values ('UI\\s+-\\s', 'nlm.wsd.UI');
+insert into ref_segment_regex (regex, segment_id) values ('TI\\s+-\\s', 'nlm.wsd.TI');
+insert into ref_segment_regex (regex, segment_id) values ('AB\\s+-\\s', 'nlm.wsd.AB');
 
 
 drop table if exists nlm_wsd;

@@ -12,7 +12,7 @@ create table v_wsd_fword_lookup (
 -- these are the 'defaults'
 create temporary table tmp_tui
 as
-select ui from umls2011ab.SRDEF where ui in 
+select ui from @UMLS_SCHEMA@.SRDEF where ui in 
   (
 	'T017' /* Anatomical Structure */,
 	'T021','T022','T023','T024','T025','T026','T029','T030','T031',
@@ -24,7 +24,7 @@ select ui from umls2011ab.SRDEF where ui in
 -- get additional tuis from the concepts for wsd
 insert into tmp_tui
 select tui
-from umls2011ab.MRSTY sty
+from @UMLS_SCHEMA@.MRSTY sty
 inner join nlm_wsd_cui c on c.cui = sty.cui
 inner join nlm_wsd_word w on w.word = c.word
 ;
@@ -33,12 +33,12 @@ inner join nlm_wsd_word w on w.word = c.word
 insert into v_wsd_fword_lookup
 select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
 from umls_aui_fword c
-inner join umls2011ab.MRCONSO mrc on c.aui = mrc.aui
+inner join @UMLS_SCHEMA@.MRCONSO mrc on c.aui = mrc.aui
 where  mrc.SAB in ('SNOMEDCT', 'MSH', 'MEDCIN', 'LNC', 'MTH', 'CSP', 'AOD')
 and exists
 (
     select *
-    from umls2011ab.MRSTY sty
+    from @UMLS_SCHEMA@.MRSTY sty
     inner join (select distinct ui from tmp_tui) tt on sty.tui = tt.ui
     where sty.cui = mrc.cui
 )

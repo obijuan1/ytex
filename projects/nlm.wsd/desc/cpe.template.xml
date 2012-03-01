@@ -64,6 +64,8 @@
                             <string>ytex.uima.types.Date</string>
                             <string>edu.mayo.bmi.uima.chunker.type.NP</string>
                             <string>edu.mayo.bmi.uima.chunker.type.VP</string>
+                            <string>ytex.uima.types.WordToken</string>
+                            <string>edu.mayo.bmi.uima.core.ae.type.NumToken</string>
                         </array>
                     </value>
                 </nameValuePair>                
