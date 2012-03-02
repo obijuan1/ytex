@@ -4,7 +4,7 @@
 -- treenumber parent substring of child
 -- child treenumber length = parent treenumber length + 4
 -- child <> parent
-insert into mesh_hier (parUI, chdUI)
+insert into mesh_hier (parUI, chdUI, rel)
 select parUI, chdUI, 'tree'
 from
 (
