@@ -16,8 +16,6 @@ CREATE TABLE `mesh_treenumber` (
 	PRIMARY KEY (`descriptorUI`,`treeNumber`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-drop table if exists mesh_hier;
-
 create table mesh_hier (
     parUI char(7) not null,
     chdUI char(7) not null,
