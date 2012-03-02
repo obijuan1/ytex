@@ -1,0 +1,61 @@
+refer to code.google.com for the latest install instructions
+
+= Prerequisities =
+== UMLS Install ==
+As documented in [http://www.nlm.nih.gov/research/umls/implementation_resources/metamorphosys/help.html MetamorphoSys Help], 
+and in [http://www.nlm.nih.gov/research/umls/implementation_resources/scripts/index.html Load Scripts].
+
+== CRAN R ==
+Used for statistical analysis (computing spearman correlation)
+
+== SNOMED-CT download ==
+  * download and extract SNOMED-CT from http://www.nlm.nih.gov/research/umls/licensedcontent/snomedctfiles.html (we used 20110731, available from http://download.nlm.nih.gov/umls/kss/IHTSDO20110731/SnomedCT_RF2Release_INT_20110731.zip)
+  
+== MeSH download ==
+place all files in ${mesh.home}.  download following files, and extract the zip files to ${mesh.home}:
+  * [http://www.nlm.nih.gov/mesh/termscon.html desc2012.zip]  (extract desc2012.xml from this file) 
+  * [http://www.nlm.nih.gov/mesh/termscon.html supp2012.zip]  (extract supp2012.xml from this file) 
+  * [http://www.nlm.nih.gov/mesh/2012/download/desc2012.dtd desc2012.dtd]
+  * [http://www.nlm.nih.gov/mesh/2012/download/supp2012.dtd supp2012.dtd]
+
+= Running the Benchmark =
+Setup some properties in ytex, run a couple scripts, and you're done.
+
+== YTEX Properties == 
+In YTEX_HOME/config/desc/ytex.properties 
+  * set sct.home property to full path of the Snapshot/Terminology directory, and sct.version to the version date.
+  * set mesh.home to directory containing desc2012.xml, desc2012.dtd, supp2012.xml, and supp2012.dtd. 
+  * set R.bin to directory that contains R executable
+{{{
+sct.home=E:/temp/SnomedCT_RF2Release_INT_20110731/Snapshot/Terminology
+sct.version=20110731
+mesh.home=c:/temp/mesh
+R.bin=C:/Program Files/R/R-2.13.1/bin/x64
+}}}
+  
+== YTEX Kernel Installation ==
+Setup ytex kernel tables and snomed ct tables
+{{{
+. ${HOME}/ytex.profile
+cd ${YTEX_HOME}/data
+ant -Dytex.home=${YTEX_HOME} kernel.drop kernel.create sct.all > kernel.out 2>&1 &
+}}}
+
+== Sim Benchmark ==
+{{{
+cd ${YTEX_HOME}
+unzip simbenchmark-v0.6.zip
+cd simbenchmark
+nohup ant -Dytex.home=${YTEX_HOME} all > simbenchmark.out 2>&1 &  
+}}}
+
+What this script does (list by ant target):
+  * build - build classes needed to parse mesh and load into db
+  * mesh.all - load mesh into db
+  * cg.all - generate all the concept graphs, compute intrinsic info content and concept depths
+  * eval.all - evaluate semantic similarity measures for each concept graph and benchmark, compute spearman correlation
+  
+When you are finished, you will have the following files:
+  * data/<concept graph>/<benchmark>_id.txt has the similarity measures for each concept pair for the given concept graph/benchmark combination.
+  * data/spearman.csv has the correlation and p-value for each benchmark/concept graph/measure combination.
+  * data/spearman-summary.csv has the same data, but summarized to simplify viewing.
