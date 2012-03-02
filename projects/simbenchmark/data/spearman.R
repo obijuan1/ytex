@@ -41,7 +41,7 @@ eval.mini = function(cg, prefix="MiniMayoSRS") {
 # main
 res = data.frame(cg=c(), file=c(), spearman=c(),p.value=c())
 
-cgs = c("sct-umls", "sct-msh", "sct-msh-csp-aod", "sct-msh-mth-csp-aod") 
+cgs = c("sct-umls", "sct-msh", "sct-msh-csp-aod", "sct-msh-mth-csp-aod", "sct-msh-rxnorm-csp-aod", "sct-msh-mth-rxnorm-csp-aod") 
 cons = c("UMNSRS_similarity", "UMNSRS_relatedness", "MayoSRS")
 
 for(cg in cgs) {
@@ -59,7 +59,7 @@ res = rbind(res, eval.mini("msh-umls", prefix="MiniMayoSRS_mesh_umls"))
 write.csv(res, file="spearman.csv", row.names=F)
 
 # consolidate results
-res.sum = ddply(res, .(cg, con), function(x) {
+res.sum = ddply(res, .(con, cg), function(x) {
 	data.frame(
 		WUPALMER=x[x$metric=="WUPALMER","spearman"], 
 		PATH=x[x$metric=="PATH","spearman"], 
