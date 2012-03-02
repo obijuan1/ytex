@@ -26,7 +26,7 @@ public class ConceptDaoTest extends TestCase {
 		ConceptGraph cg = conceptDao
 				.createConceptGraph("snomed",
 						"select cui1, cui2 from umls.MRREL where sab = 'SNOMEDCT' and rel = 'PAR'");
-		System.out.println("depth:" + cg.getDepthMax());
+//		System.out.println("depth:" + cg.getDepthMax());
 		System.out.println("concepts:" + cg.getConceptMap().size());
 		System.out.println("root:" + cg.getRoot());
 		// System.out.println("roots:"+cg.getRoots());

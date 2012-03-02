@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -138,6 +138,9 @@ public class ConceptDaoImpl implements ConceptDao {
 			// Integer>();
 			final ConceptGraph cg = new ConceptGraph();
 			final Set<String> roots = new HashSet<String>();
+			// final Map<Integer, Set<Integer>> ancestorCache = new
+			// WeakHashMap<Integer, Set<Integer>>();
+			final Map<Integer, Set<Integer>> ancestorCache = null;
 			this.jdbcTemplate.query(query, new RowCallbackHandler() {
 				int nRowsProcessed = 0;
 
@@ -145,7 +148,8 @@ public class ConceptDaoImpl implements ConceptDao {
 				public void processRow(ResultSet rs) throws SQLException {
 					String child = rs.getString(1);
 					String parent = rs.getString(2);
-					addRelation(cg, roots, child, parent, checkCycle);
+					addRelation(cg, roots, child, parent, checkCycle,
+							ancestorCache);
 					nRowsProcessed++;
 					if (nRowsProcessed % 10000 == 0) {
 						log.debug("processed " + nRowsProcessed + " edges");
@@ -171,9 +175,10 @@ public class ConceptDaoImpl implements ConceptDao {
 				}
 			}
 			cg.setRoot(rootId);
-//			// can't get the maximum depth unless we're sure there are no cycles
-//			if (checkCycle)
-//				cg.setDepthMax(calculateDepthMax(rootId, cg.getConceptMap()));
+			// // can't get the maximum depth unless we're sure there are no
+			// cycles
+			// if (checkCycle)
+			// cg.setDepthMax(calculateDepthMax(rootId, cg.getConceptMap()));
 			writeConceptGraph(name, cg);
 			writeConceptGraphProps(name, query, checkCycle);
 			return cg;
@@ -266,7 +271,8 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * @param conceptPair
 	 */
 	private void addRelation(ConceptGraph cg, Set<String> roots,
-			String childCUI, String parentCUI, boolean checkCycle) {
+			String childCUI, String parentCUI, boolean checkCycle,
+			Map<Integer, Set<Integer>> ancestorCache) {
 		if (forbiddenConcepts.contains(childCUI)
 				|| forbiddenConcepts.contains(parentCUI)) {
 			// ignore relationships to useless concepts
@@ -296,7 +302,7 @@ public class ConceptDaoImpl implements ConceptDao {
 			// else check for cycles
 			// @TODO: this is very inefficient. implement feedback arc algo
 			boolean bCycle = !parNull && crChild != null && checkCycle
-					&& crPar.hasAncestor(childCUI);
+					&& hasAncestor(crPar, crChild, ancestorCache);
 			if (bCycle) {
 				log.warn("skipping relation that induces cycle: par="
 						+ parentCUI + ", child=" + childCUI);
@@ -308,6 +314,9 @@ public class ConceptDaoImpl implements ConceptDao {
 					// remove the cui from the list of candidate roots
 					if (roots.contains(childCUI))
 						roots.remove(childCUI);
+					// adding a parent to an existing child - add that parent to
+					// all the descendants
+					updateDescendants(crPar, crChild, ancestorCache);
 				}
 				// link child to parent and vice-versa
 				crPar.children.add(crChild);
@@ -317,16 +326,71 @@ public class ConceptDaoImpl implements ConceptDao {
 	}
 
 	/**
-	 * get maximum depth of graph.
+	 * add parent to all descendants of crChild
 	 * 
-	 * @param roots
-	 * @param conceptMap
+	 * @param crPar
+	 * @param crChild
+	 * @param ancestorCache
+	 */
+	private void updateDescendants(ConcRel crPar, ConcRel crChild,
+			Map<Integer, Set<Integer>> ancestorCache) {
+		if (ancestorCache != null) {
+			Set<Integer> ancestors = ancestorCache.get(crChild.nodeIndex);
+			if (ancestors != null)
+				ancestors.add(crPar.getNodeIndex());
+			// recurse
+			for (ConcRel crD : crChild.getChildren()) {
+				updateDescendants(crPar, crD, ancestorCache);
+			}
+		}
+	}
+
+	private boolean hasAncestor(ConcRel crPar, ConcRel crChild,
+			Map<Integer, Set<Integer>> ancestorCache) {
+		if (ancestorCache == null) {
+			return crPar.hasAncestor(crChild.getConceptID());
+		} else {
+			Set<Integer> ancestors = getAncestors(crPar, ancestorCache);
+			return ancestors.contains(crChild.getNodeIndex());
+		}
+	}
+
+	/**
+	 * get ancestors from cache. if not in cache, get ancestors recursively
+	 * 
+	 * @param cr
+	 * @param ancestorCache
 	 * @return
 	 */
-	private int calculateDepthMax(String rootId, Map<String, ConcRel> conceptMap) {
-		ConcRel crRoot = conceptMap.get(rootId);
-		return crRoot.depthMax();
+	private Set<Integer> getAncestors(ConcRel cr,
+			Map<Integer, Set<Integer>> ancestorCache) {
+		Set<Integer> ancestors = ancestorCache.get(cr.getNodeIndex());
+		if (ancestors == null) {
+			// not in cache - add it
+			ancestors = new HashSet<Integer>();
+			ancestorCache.put(new Integer(cr.getNodeIndex()), ancestors);
+			// add self
+			ancestors.add(cr.getNodeIndex());
+			// recurse
+			for (ConcRel crPar : cr.getParents()) {
+				ancestors.addAll(getAncestors(crPar, ancestorCache));
+			}
+		}
+		return ancestors;
 	}
+
+	// /**
+	// * get maximum depth of graph.
+	// *
+	// * @param roots
+	// * @param conceptMap
+	// * @return
+	// */
+	// private int calculateDepthMax(String rootId, Map<String, ConcRel>
+	// conceptMap) {
+	// ConcRel crRoot = conceptMap.get(rootId);
+	// return crRoot.depthMax();
+	// }
 
 	private String getConceptGraphFileName(String name) {
 		return getConceptGraphDir() + File.separator + name + ".gz";

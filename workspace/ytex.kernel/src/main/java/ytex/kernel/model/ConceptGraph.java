@@ -19,7 +19,7 @@ public class ConceptGraph implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private transient List<ConcRel> conceptList = new ArrayList<ConcRel>();
 	private Map<String, ConcRel> conceptMap = new HashMap<String, ConcRel>();
-	private int depthMax = 0;
+//	private int depthMax = 0;
 	private String root = null;
 
 	public List<ConcRel> getConceptList() {
@@ -30,9 +30,9 @@ public class ConceptGraph implements Serializable {
 		return conceptMap;
 	}
 
-	public int getDepthMax() {
-		return depthMax;
-	}
+//	public int getDepthMax() {
+//		return depthMax;
+//	}
 
 	public String getRoot() {
 		return root;
@@ -46,9 +46,9 @@ public class ConceptGraph implements Serializable {
 		this.conceptMap = conceptMap;
 	}
 
-	public void setDepthMax(int depthMax) {
-		this.depthMax = depthMax;
-	}
+//	public void setDepthMax(int depthMax) {
+//		this.depthMax = depthMax;
+//	}
 
 	public void setRoot(String root) {
 		this.root = root;
