@@ -2,9 +2,10 @@
 	<property environment="env" />
 	<property name="ytex.home" value=".." />
 	<property name="maxMemory" value="1500m" />
+	<property name="window" value="10" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
-	<target name="all" depends="build,load.all,RunCPE,eval.wsd.all,eval.R" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
+	<target name="all" depends="build,load.all,RunCPE,eval.wsd.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
 	<target name="build" description="compile java source">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/main/java/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
@@ -36,7 +37,7 @@
 			<filterset>
 				<filter token="UMLS_SCHEMA" value="${umls.schema}" />
 			</filterset>
-		</copy>		
+		</copy>
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/v_wsd_fword_lookup.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 	</target>
 	<target name="load.choices.all" description="load choices into nlm_wsd_cui table">
@@ -118,19 +119,20 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	<target name="eval.wsd.all">
-		<for list="RADA,INTRINSIC_RADA,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" param="metric">
+	<target name="eval.wsd.all" description="perform wsd for all concept graphs">
+		<for param="cg" list="sct-msh-csp-aod,sct-msh-mth-csp-aod,sct-msh-rxnorm-csp-aod">
 			<sequential>
-				<antcall target="eval.wsd.metric">
-					<param name="metric" value="@{metric}" />
+				<antcall target="eval.wsd">
+					<param name="ytex.conceptGraphName" value="@{cg}" />
 				</antcall>
+				<antcall target="eval.R">
+					<param name="ytex.conceptGraphName" value="@{cg}" />
+				</antcall>				
 			</sequential>
 		</for>
 	</target>
-	<target name="eval.wsd.metric">
-		<property name="metric" value="PATH" />
-		<property name="window" value="10" />
-		<property name="ytex.conceptGraphName" value="nlm.wsd" />
+	<target name="eval.wsd" description="perform wsd">
+		<property name="metrics" value="WUPALMER,RADA,INTRINSIC_RADA,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" />
 		<mkdir dir="${basedir}/eval/${ytex.conceptGraphName}-${window}" />
 		<java classname="ytex.wsd.nlm.WSDDisambiguator" fork="yes" dir="${basedir}/eval/${ytex.conceptGraphName}-${window}">
 			<classpath>
@@ -143,14 +145,13 @@
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
-			<arg value="${metric}" />
+			<arg value="${metrics}" />
 			<arg value="${window}" />
 		</java>
 	</target>
 	<target name="eval.R" description="compute accuracy">
-		<property name="window" value="10" />
 		<exec executable="${R.bin}/R" dir="${basedir}/eval/${ytex.conceptGraphName}-${window}">
 			<arg line="--slave --file=${basedir}/eval.R" />
 		</exec>
-	</target>	
+	</target>
 </project>
