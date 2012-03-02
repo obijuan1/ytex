@@ -1,11 +1,12 @@
 drop table if exists mesh_concept;
 drop table if exists mesh_treenumber;
+drop table if exists mesh_hier;
 
 CREATE TABLE `mesh_concept` (
 	descriptorUI CHAR(7) NOT NULL,
 	conceptUI CHAR(8) NOT NULL,
 	conceptUMLSUI CHAR(8) NULL,
-	conceptString varchar(200) NOT NULL,
+	conceptString varchar(300) NOT NULL,
 	PRIMARY KEY (`descriptorUI`,`conceptUI`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
