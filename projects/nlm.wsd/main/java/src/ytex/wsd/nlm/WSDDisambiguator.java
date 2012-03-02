@@ -55,10 +55,14 @@ public class WSDDisambiguator {
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
-		SimilarityMetricEnum metric = SimilarityMetricEnum.valueOf(args[0]);
+		String[] metrics = args[0].split(",");
 		int windowSize = Integer.parseInt(args[1]);
 		WSDDisambiguator wsd = new WSDDisambiguator();
-		wsd.disambiguate(metric, windowSize);
+		wsd.load();
+		for (String metricName : metrics) {
+			SimilarityMetricEnum metric = SimilarityMetricEnum.valueOf(metricName);
+			wsd.disambiguate(metric, windowSize);
+		}
 	}
 
 	/**
@@ -371,11 +375,6 @@ public class WSDDisambiguator {
 	public void disambiguate(
 			ConceptSimilarityService.SimilarityMetricEnum metric, int windowSize)
 			throws IOException {
-		this.loadWordCuis();
-		this.loadWords();
-		this.loadSentences();
-		this.loadTitleConcepts();
-
 		PrintStream ps = null;
 		try {
 			log.info("disambiguate start: " + (new Date()));
@@ -409,5 +408,12 @@ public class WSDDisambiguator {
 				}
 			}
 		}
+	}
+
+	private void load() {
+		this.loadWordCuis();
+		this.loadWords();
+		this.loadSentences();
+		this.loadTitleConcepts();
 	}
 }
