@@ -1,8 +1,15 @@
 package ytex.kernel;
 
+import gnu.trove.iterator.TIntIterator;
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,7 +122,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 */
 	private void computeLeafCount(ConcRel concept,
 			Map<String, IntrinsicICInfo> icInfoMap,
-			Map<Integer, Set<Integer>> leafMap, ConceptGraph cg,
+			SoftReference<TIntSet>[] leafCache, ConceptGraph cg,
 			BufferedWriter w) throws IOException {
 		// see if we already computed this
 		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
@@ -129,15 +136,16 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		}
 		// for leaves the default (0) is correct
 		if (!concept.isLeaf()) {
-			Set<Integer> leaves = this.getLeaves(concept, leafMap);
+			TIntSet leaves = this.getLeaves(concept, leafCache);
 			icInfo.setLeafCount(leaves.size());
 			if (w != null) {
 				w.write(concept.getConceptID());
 				w.write("\t");
 				w.write(Integer.toString(leaves.size()));
 				w.write("\t");
-				for (int index : leaves) {
-					w.write(cg.getConceptList().get(index).getConceptID());
+				TIntIterator iter = leaves.iterator();
+				while(iter.hasNext()) {
+					w.write(cg.getConceptList().get(iter.next()).getConceptID());
 					w.write(" ");
 				}
 				w.newLine();
@@ -145,7 +153,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		}
 		// recurse to parents
 		for (ConcRel parent : concept.getParents()) {
-			computeLeafCount(parent, icInfoMap, leafMap, cg, w);
+			computeLeafCount(parent, icInfoMap, leafCache, cg, w);
 		}
 	}
 
@@ -244,13 +252,16 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			}
 		}
 		log.info("computing leaf counts");
-		Map<Integer, Set<Integer>> leafMap = new WeakHashMap<Integer, Set<Integer>>();
+		@SuppressWarnings("unchecked")
+		SoftReference<TIntSet>[] leafCache = (SoftReference<TIntSet>[]) Array
+				.newInstance((new SoftReference<TIntSet>(new TIntHashSet()))
+						.getClass(), cg.getConceptList().size());
 		// compute leaf count of all concepts in this graph
 		try {
 			w = this.getOutputFile(conceptGraphName, conceptGraphDir, "leaf");
 			for (String leaf : leafSet) {
 				computeLeafCount(cg.getConceptMap().get(leaf), icInfoMap,
-						leafMap, cg, w);
+						leafCache, cg, w);
 			}
 		} finally {
 			if (w != null) {
@@ -260,7 +271,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 				}
 			}
 		}
-		leafMap = null;
+		leafCache = null;
 		log.info("storing intrinsic ic");
 		storeIntrinsicIC(conceptGraphName, leafSet.size(), icInfoMap,
 				depthArray);
@@ -302,25 +313,25 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		return conceptDao;
 	}
 
-	private Set<Integer> getLeaves(ConcRel concept,
-			Map<Integer, Set<Integer>> leafMap) {
+	private TIntSet getLeaves(ConcRel concept,
+			SoftReference<TIntSet>[] leafCache) {
 		// look in cache
-		Set<Integer> leaves = leafMap.get(concept.getNodeIndex());
-		if (leaves != null)
-			return leaves;
+		SoftReference<TIntSet> refLeaves = leafCache[concept.getNodeIndex()];
+		if(refLeaves != null && refLeaves.get() != null) {
+			return refLeaves.get();
+		}
 		// not in cache - compute recursively
-		leaves = new HashSet<Integer>();
+		TIntSet leaves = new TIntHashSet();
+		leafCache[concept.getNodeIndex()] = new SoftReference<TIntSet>(leaves);
 		if (concept.isLeaf()) {
 			// for leaves, just add the concept id
 			leaves.add(concept.getNodeIndex());
 		} else {
 			// for inner nodes, recurse
 			for (ConcRel child : concept.getChildren()) {
-				leaves.addAll(getLeaves(child, leafMap));
+				leaves.addAll(getLeaves(child, leafCache));
 			}
 		}
-		// add this to the cache - copy the key so that it can be gc'ed
-		leafMap.put(new Integer(concept.getNodeIndex()), leaves);
 		return leaves;
 	}
 
