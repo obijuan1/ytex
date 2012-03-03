@@ -72,13 +72,6 @@
 			<arg value="-prop" />
 			<arg value="${basedir}/config/${cg.name}.xml" />
 		</java>
-		<java classname="ytex.kernel.IntrinsicInfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
-			<syspropertyset>
-				<propertyset refid="ytex.jvm.props" />
-			</syspropertyset>
-			<jvmarg value="-Xmx${maxMemory}" />
-			<jvmarg value="-Dytex.conceptGraphName=${cg.name}" />
-		</java>
 	</target>
 	<target name="umls.eval.sim" description="evaluate all umls concept graphs">
 		<property name="cgs" value="sct-umls,sct-msh,sct-msh-csp-aod,sct-msh-mth-csp-aod" />
