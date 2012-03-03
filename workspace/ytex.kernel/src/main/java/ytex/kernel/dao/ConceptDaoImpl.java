@@ -50,19 +50,31 @@ public class ConceptDaoImpl implements ConceptDao {
 	 */
 	private static final String DEFAULT_ROOT_ID = "C0000000";
 	/**
-	 * ignore forbidden concepts. list Taken from umls-interface
+	 * ignore forbidden concepts. list Taken from umls-interface.
+	 * 	f concept is one of the following just return #C1274012|Ambiguous
+	 * concept (inactive concept) if($concept=~/C1274012/) { return 1; }
+	 * #C1274013|Duplicate concept (inactive concept) if($concept=~/C1274013/) {
+	 * return 1; } #C1276325|Reason not stated concept (inactive concept)
+	 * if($concept=~/C1276325/) { return 1; } #C1274014|Outdated concept
+	 * (inactive concept) if($concept=~/C1274014/) { return 1; }
+	 * #C1274015|Erroneous concept (inactive concept) if($concept=~/C1274015/) {
+	 * return 1; } #C1274021|Moved elsewhere (inactive concept)
+	 * if($concept=~/C1274021/) { return 1; } #C1443286|unapproved attribute
+	 * if($concept=~/C1443286/) { return 1; } #C1274012|non-current concept -
+	 * ambiguous if($concept=~/C1274012/) { return 1; } #C2733115|limited status
+	 * concept if($concept=~/C2733115/) { return 1; }
 	 */
 	private static final String forbiddenConceptArr[] = new String[] {
 			"C1274012", "C1274013", "C1276325", "C1274014", "C1274015",
 			"C1274021", "C1443286", "C1274012", "C2733115" };
 	private static Set<String> forbiddenConcepts;
 	private static final Log log = LogFactory.getLog(ConceptDaoImpl.class);
-	
+
 	static {
 		forbiddenConcepts = new HashSet<String>();
 		forbiddenConcepts.addAll(Arrays.asList(forbiddenConceptArr));
 	}
-	
+
 	/**
 	 * create a concept graph. 1st param - name of concept graph. 2nd param -
 	 * query to retrieve parent-child pairs.
@@ -131,8 +143,7 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * @param conceptPair
 	 */
 	private void addRelation(ConceptGraph cg, Set<String> roots,
-			String childCUI, String parentCUI, boolean checkCycle,
-			Map<Integer, Set<Integer>> ancestorCache) {
+			String childCUI, String parentCUI, boolean checkCycle) {
 		if (forbiddenConcepts.contains(childCUI)
 				|| forbiddenConcepts.contains(parentCUI)) {
 			// ignore relationships to useless concepts
@@ -162,7 +173,7 @@ public class ConceptDaoImpl implements ConceptDao {
 			// else check for cycles
 			// @TODO: this is very inefficient. implement feedback arc algo
 			boolean bCycle = !parNull && crChild != null && checkCycle
-					&& hasAncestor(crPar, crChild, ancestorCache);
+					&& checkCycle(crPar, crChild);
 			if (bCycle) {
 				log.warn("skipping relation that induces cycle: par="
 						+ parentCUI + ", child=" + childCUI);
@@ -174,10 +185,6 @@ public class ConceptDaoImpl implements ConceptDao {
 					// remove the cui from the list of candidate roots
 					if (roots.contains(childCUI))
 						roots.remove(childCUI);
-					// adding a parent to an existing child - add that parent to
-					// all the descendants
-//					updateDescendants(this.getAncestors(crPar, ancestorCache),
-//							crChild, ancestorCache, 0);
 				}
 				// link child to parent and vice-versa
 				crPar.children.add(crChild);
@@ -208,9 +215,6 @@ public class ConceptDaoImpl implements ConceptDao {
 			// Integer>();
 			final ConceptGraph cg = new ConceptGraph();
 			final Set<String> roots = new HashSet<String>();
-			// final Map<Integer, Set<Integer>> ancestorCache = new
-			// WeakHashMap<Integer, Set<Integer>>();
-			final Map<Integer, Set<Integer>> ancestorCache = null;
 			this.jdbcTemplate.query(query, new RowCallbackHandler() {
 				int nRowsProcessed = 0;
 
@@ -218,8 +222,7 @@ public class ConceptDaoImpl implements ConceptDao {
 				public void processRow(ResultSet rs) throws SQLException {
 					String child = rs.getString(1);
 					String parent = rs.getString(2);
-					addRelation(cg, roots, child, parent, checkCycle,
-							ancestorCache);
+					addRelation(cg, roots, child, parent, checkCycle);
 					nRowsProcessed++;
 					if (nRowsProcessed % 10000 == 0) {
 						log.info("processed " + nRowsProcessed + " edges");
@@ -252,36 +255,16 @@ public class ConceptDaoImpl implements ConceptDao {
 			log.info("writing concept graph: " + name);
 			writeConceptGraph(name, cg);
 			writeConceptGraphProps(name, query, checkCycle);
-			if(checkCycle) {
+			if (checkCycle) {
 				log.info("computing intrinsic info for concept graph: " + name);
-				this.intrinsicInfoContentEvaluator.evaluateIntrinsicInfoContent(name, getConceptGraphDir(), cg);
+				this.intrinsicInfoContentEvaluator
+						.evaluateIntrinsicInfoContent(name,
+								getConceptGraphDir(), cg);
 			}
-			
+
 		}
 	}
-	/**
-	 * get ancestors from cache. if not in cache, get ancestors recursively
-	 * 
-	 * @param cr
-	 * @param ancestorCache
-	 * @return
-	 */
-	private Set<Integer> getAncestors(ConcRel cr,
-			Map<Integer, Set<Integer>> ancestorCache) {
-		Set<Integer> ancestors = ancestorCache.get(cr.getNodeIndex());
-		if (ancestors == null) {
-			// not in cache - add it
-			ancestors = new HashSet<Integer>();
-			ancestorCache.put(new Integer(cr.getNodeIndex()), ancestors);
-			// add self
-			ancestors.add(cr.getNodeIndex());
-			// recurse
-			for (ConcRel crPar : cr.getParents()) {
-				ancestors.addAll(getAncestors(crPar, ancestorCache));
-			}
-		}
-		return ancestors;
-	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -301,21 +284,6 @@ public class ConceptDaoImpl implements ConceptDao {
 			return null;
 		}
 	}
-
-	/*
-	 * # if concept is one of the following just return #C1274012|Ambiguous
-	 * concept (inactive concept) if($concept=~/C1274012/) { return 1; }
-	 * #C1274013|Duplicate concept (inactive concept) if($concept=~/C1274013/) {
-	 * return 1; } #C1276325|Reason not stated concept (inactive concept)
-	 * if($concept=~/C1276325/) { return 1; } #C1274014|Outdated concept
-	 * (inactive concept) if($concept=~/C1274014/) { return 1; }
-	 * #C1274015|Erroneous concept (inactive concept) if($concept=~/C1274015/) {
-	 * return 1; } #C1274021|Moved elsewhere (inactive concept)
-	 * if($concept=~/C1274021/) { return 1; } #C1443286|unapproved attribute
-	 * if($concept=~/C1443286/) { return 1; } #C1274012|non-current concept -
-	 * ambiguous if($concept=~/C1274012/) { return 1; } #C2733115|limited status
-	 * concept if($concept=~/C2733115/) { return 1; }
-	 */
 
 	public String getConceptGraphDir() {
 		return ytexProperties.getProperty("ytex.conceptGraphDir",
@@ -342,16 +310,9 @@ public class ConceptDaoImpl implements ConceptDao {
 		return ytexProperties;
 	}
 
-	private boolean hasAncestor(ConcRel crPar, ConcRel crChild,
-			Map<Integer, Set<Integer>> ancestorCache) {
-		if (ancestorCache == null) {
-			Set<Integer> visitedNodes = new HashSet<Integer>();
-			return hasAncestor(crPar, crChild, visitedNodes);
-			// return crPar.hasAncestor(crChild.getConceptID());
-		} else {
-			Set<Integer> ancestors = getAncestors(crPar, ancestorCache);
-			return ancestors.contains(crChild.getNodeIndex());
-		}
+	private boolean checkCycle(ConcRel crPar, ConcRel crChild) {
+		Set<Integer> visitedNodes = new HashSet<Integer>();
+		return hasAncestor(crPar, crChild, visitedNodes);
 	}
 
 	/**

@@ -134,12 +134,12 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			if (w != null) {
 				w.write(concept.getConceptID());
 				w.write("\t");
+				w.write(Integer.toString(leaves.size()));
+				w.write("\t");
 				for(int index : leaves) {
 					w.write(cg.getConceptList().get(index).getConceptID());
 					w.write(" ");
 				}
-				w.write("\t");
-				w.write(leaves.toString());
 				w.newLine();
 			}
 		}
