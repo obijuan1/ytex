@@ -200,28 +200,28 @@ public class SemanticTypeKernel extends CacheKernel {
 	private Map<String, BitSet> cuiTuiMap = null;
 	private List<String> tuiList = null;
 	private String cuiTuiQuery;
-//	private DataSource dataSource;
+	// private DataSource dataSource;
 	// private SimpleJdbcTemplate simpleJdbcTemplate;
-//	private JdbcTemplate jdbcTemplate;
+	// private JdbcTemplate jdbcTemplate;
 
 	private String mode = "MAINSUI";
 
-//	private PlatformTransactionManager transactionManager;
+	// private PlatformTransactionManager transactionManager;
 
-//	private void addCuiTuiToMap(Map<String, String> tuiMap, String cui,
-//			String tui) {
-//		// get 'the' tui string
-//		if (tuiMap.containsKey(tui))
-//			tui = tuiMap.get(tui);
-//		else
-//			tuiMap.put(tui, tui);
-//		Set<String> tuis = cuiTuiMap.get(cui);
-//		if (tuis == null) {
-//			tuis = new HashSet<String>();
-//			cuiTuiMap.put(cui, tuis);
-//		}
-//		tuis.add(tui);
-//	}
+	// private void addCuiTuiToMap(Map<String, String> tuiMap, String cui,
+	// String tui) {
+	// // get 'the' tui string
+	// if (tuiMap.containsKey(tui))
+	// tui = tuiMap.get(tui);
+	// else
+	// tuiMap.put(tui, tui);
+	// Set<String> tuis = cuiTuiMap.get(cui);
+	// if (tuis == null) {
+	// tuis = new HashSet<String>();
+	// cuiTuiMap.put(cui, tuis);
+	// }
+	// tuis.add(tui);
+	// }
 
 	/**
 	 * concepts have overlapping semantic types? yes return 1, else return 0
@@ -253,58 +253,63 @@ public class SemanticTypeKernel extends CacheKernel {
 	public String getCuiTuiQuery() {
 		return cuiTuiQuery;
 	}
-//
-//	public DataSource getDataSource() {
-//		return dataSource;
-//	}
+
+	//
+	// public DataSource getDataSource() {
+	// return dataSource;
+	// }
 
 	public String getMode() {
 		return mode;
 	}
 
-//	public PlatformTransactionManager getTransactionManager() {
-//		return transactionManager;
-//	}
+	// public PlatformTransactionManager getTransactionManager() {
+	// return transactionManager;
+	// }
 
 	public void init() {
-//		TransactionTemplate t = new TransactionTemplate(this.transactionManager);
-//		t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
-//		t.execute(new TransactionCallback<Object>() {
-//			@Override
-//			public Object doInTransaction(TransactionStatus arg0) {
-				cuiTuiMap = conceptSimilarityService.getCuiTuiMap();
-				tuiList = conceptSimilarityService.getTuiList();
-				initCuiMainSuiMap();
-//				return null;
-//			}
-//		});
+		// TransactionTemplate t = new
+		// TransactionTemplate(this.transactionManager);
+		// t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
+		// t.execute(new TransactionCallback<Object>() {
+		// @Override
+		// public Object doInTransaction(TransactionStatus arg0) {
+		cuiTuiMap = conceptSimilarityService.getCuiTuiMap();
+		tuiList = conceptSimilarityService.getTuiList();
+		initCuiMainSuiMap();
+		// return null;
+		// }
+		// });
 	}
 
 	/**
 	 * init the cui -> 'main sui' map.
 	 */
 	private void initCuiMainSuiMap() {
-		for (Map.Entry<String, BitSet> cuiTui : cuiTuiMap.entrySet()) {
-			cuiMainSuiMap.put(cuiTui.getKey(), tuiToMainSui(cuiTui.getValue()));
+		if (cuiTuiMap != null) {
+			for (Map.Entry<String, BitSet> cuiTui : cuiTuiMap.entrySet()) {
+				cuiMainSuiMap.put(cuiTui.getKey(),
+						tuiToMainSui(cuiTui.getValue()));
+			}
 		}
 	}
 
-//	/**
-//	 * init cui-tui map from query
-//	 */
-//	public void initCuiTuiMapFromQuery() {
-//		this.jdbcTemplate.query(this.cuiTuiQuery, new RowCallbackHandler() {
-//			// don't duplicate tui strings to save memory
-//			Map<String, String> tuiMap = new HashMap<String, String>();
-//
-//			@Override
-//			public void processRow(ResultSet rs) throws SQLException {
-//				String cui = rs.getString(1);
-//				String tui = rs.getString(2);
-//				addCuiTuiToMap(tuiMap, cui, tui);
-//			}
-//		});
-//	}
+	// /**
+	// * init cui-tui map from query
+	// */
+	// public void initCuiTuiMapFromQuery() {
+	// this.jdbcTemplate.query(this.cuiTuiQuery, new RowCallbackHandler() {
+	// // don't duplicate tui strings to save memory
+	// Map<String, String> tuiMap = new HashMap<String, String>();
+	//
+	// @Override
+	// public void processRow(ResultSet rs) throws SQLException {
+	// String cui = rs.getString(1);
+	// String tui = rs.getString(2);
+	// addCuiTuiToMap(tuiMap, cui, tui);
+	// }
+	// });
+	// }
 
 	/**
 	 * 
@@ -340,20 +345,20 @@ public class SemanticTypeKernel extends CacheKernel {
 		this.cuiTuiQuery = cuiTuiQuery;
 	}
 
-//	public void setDataSource(DataSource dataSource) {
-//		this.dataSource = dataSource;
-//		// this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
-//		this.jdbcTemplate = new JdbcTemplate(dataSource);
-//	}
+	// public void setDataSource(DataSource dataSource) {
+	// this.dataSource = dataSource;
+	// // this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
+	// this.jdbcTemplate = new JdbcTemplate(dataSource);
+	// }
 
 	public void setMode(String mode) {
 		this.mode = mode;
 	}
 
-//	public void setTransactionManager(
-//			PlatformTransactionManager transactionManager) {
-//		this.transactionManager = transactionManager;
-//	}
+	// public void setTransactionManager(
+	// PlatformTransactionManager transactionManager) {
+	// this.transactionManager = transactionManager;
+	// }
 
 	/**
 	 * 
@@ -364,10 +369,11 @@ public class SemanticTypeKernel extends CacheKernel {
 	 * @return concepts have overlapping tuis, return 1, else return 0
 	 */
 	private double tuiCheck(Object o1, Object o2) {
+		if(cuiTuiMap == null)
+			return 0;
 		BitSet tuis1 = this.cuiTuiMap.get((String) o1);
 		BitSet tuis2 = this.cuiTuiMap.get((String) o2);
-		if (tuis1 != null && tuis2 != null
-				&& tuis1.intersects(tuis2)) {
+		if (tuis1 != null && tuis2 != null && tuis1.intersects(tuis2)) {
 			return 1;
 		} else {
 			return 0;
@@ -376,8 +382,8 @@ public class SemanticTypeKernel extends CacheKernel {
 
 	public Set<Integer> tuiToMainSui(BitSet tuis) {
 		Set<Integer> mainSui = new HashSet<Integer>(tuis.size());
-		for(int i=tuis.nextSetBit(0); i>=0; i=tuis.nextSetBit(i+1)) { 
-			String tui = this.tuiList.get(i); 
+		for (int i = tuis.nextSetBit(0); i >= 0; i = tuis.nextSetBit(i + 1)) {
+			String tui = this.tuiList.get(i);
 			mainSui.add(getMainSem(Integer.parseInt(tui.substring(1))));
 		}
 		return mainSui;

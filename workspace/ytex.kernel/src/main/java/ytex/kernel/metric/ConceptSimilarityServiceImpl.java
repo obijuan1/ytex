@@ -648,16 +648,16 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	public void init() {
-		if (this.cg == null) {
-			log.warn("concept graph null, name: " + this.getConceptGraphName());
-			return;
-		}
 		TransactionTemplate t = new TransactionTemplate(this.transactionManager);
 		t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 		t.execute(new TransactionCallback<Object>() {
 			@Override
 			public Object doInTransaction(TransactionStatus arg0) {
 				cg = conceptDao.getConceptGraph(conceptGraphName);
+				if (cg == null) {
+					log.warn("concept graph null, name: " + conceptGraphName);
+					return null;
+				}
 				if (isPreload()) {
 					initInfoContent();
 					initCuiTuiMapFromCorpus();
