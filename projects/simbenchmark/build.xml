@@ -69,6 +69,7 @@
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
+			<jvmarg value="-Xms${maxMemory}" />
 			<jvmarg value="-Xmx${maxMemory}" />
 			<arg value="-prop" />
 			<arg value="${basedir}/config/${cg.name}.xml" />
