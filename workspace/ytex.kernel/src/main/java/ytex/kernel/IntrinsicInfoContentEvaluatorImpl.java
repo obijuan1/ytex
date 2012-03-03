@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -116,7 +115,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 */
 	private void computeLeafCount(ConcRel concept,
 			Map<String, IntrinsicICInfo> icInfoMap,
-			Map<String, Set<String>> leafMap, BufferedWriter w)
+			Map<Integer, Set<Integer>> leafMap, ConceptGraph cg, BufferedWriter w)
 			throws IOException {
 		// see if we already computed this
 		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
@@ -130,12 +129,15 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		}
 		// for leaves the default (0) is correct
 		if (!concept.isLeaf()) {
-			Set<String> leaves = this.getLeaves(concept, leafMap);
+			Set<Integer> leaves = this.getLeaves(concept, leafMap);
 			icInfo.setLeafCount(leaves.size());
 			if (w != null) {
 				w.write(concept.getConceptID());
 				w.write("\t");
-				w.write(Integer.toString(leaves.size()));
+				for(int index : leaves) {
+					w.write(cg.getConceptList().get(index).getConceptID());
+					w.write(" ");
+				}
 				w.write("\t");
 				w.write(leaves.toString());
 				w.newLine();
@@ -143,7 +145,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		}
 		// recurse to parents
 		for (ConcRel parent : concept.getParents()) {
-			computeLeafCount(parent, icInfoMap, leafMap, w);
+			computeLeafCount(parent, icInfoMap, leafMap, cg, w);
 		}
 	}
 
@@ -201,7 +203,12 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		String conceptGraphDir = props.getProperty("ytex.conceptGraphDir",
 				System.getProperty("java.io.tmpdir"));
 		ConceptGraph cg = this.conceptDao.getConceptGraph(conceptGraphName);
-		log.info("computing max leaves");
+		evaluateIntrinsicInfoContent(conceptGraphName, conceptGraphDir, cg);
+	}
+
+	@Override
+	public void evaluateIntrinsicInfoContent(String conceptGraphName,
+			String conceptGraphDir, ConceptGraph cg) throws IOException {
 		log.info("computing subsumer counts");
 		// compute the subsumer count
 		Map<String, IntrinsicICInfo> icInfoMap = new HashMap<String, IntrinsicICInfo>();
@@ -222,6 +229,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			}
 		}
 		subsumerMap = null;
+		log.info("computing max leaves");
 		// get the leaves in this concept graph
 		Set<String> leafSet = null;
 		try {
@@ -236,13 +244,13 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			}
 		}
 		log.info("computing leaf counts");
-		Map<String, Set<String>> leafMap = new WeakHashMap<String, Set<String>>();
+		Map<Integer, Set<Integer>>  leafMap = new WeakHashMap<Integer, Set<Integer>>();
 		// compute leaf count of all concepts in this graph
 		try {
 			w = this.getOutputFile(conceptGraphName, conceptGraphDir, "leaf");
 			for (String leaf : leafSet) {
 				computeLeafCount(cg.getConceptMap().get(leaf), icInfoMap,
-						leafMap, w);
+						leafMap, cg, w);
 			}
 		} finally {
 			if (w != null) {
@@ -256,6 +264,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		log.info("storing intrinsic ic");
 		storeIntrinsicIC(conceptGraphName, leafSet.size(), icInfoMap,
 				depthArray);
+		log.info("finished computing intrinsic ic");
 	}
 
 	private BufferedWriter getOutputFile(final String conceptGraphName,
@@ -289,16 +298,17 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		return conceptDao;
 	}
 
-	private Set<String> getLeaves(ConcRel concept,
-			Map<String, Set<String>> leafMap) {
+	private Set<Integer> getLeaves(ConcRel concept,
+			Map<Integer, Set<Integer>> leafMap) {
 		// look in cache
-		if (leafMap.containsKey(concept.getConceptID()))
-			return leafMap.get(concept.getConceptID());
+		Set<Integer> leaves = leafMap.get(concept.getNodeIndex());
+		if (leaves != null)
+			return leaves;
 		// not in cache - compute recursively
-		Set<String> leaves = new HashSet<String>();
+		leaves = new HashSet<Integer>();
 		if (concept.isLeaf()) {
 			// for leaves, just add the concept id
-			leaves.add(concept.getConceptID());
+			leaves.add(concept.getNodeIndex());
 		} else {
 			// for inner nodes, recurse
 			for (ConcRel child : concept.getChildren()) {
@@ -306,7 +316,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			}
 		}
 		// add this to the cache - copy the key so that it can be gc'ed
-		leafMap.put(new String(concept.getConceptID()), leaves);
+		leafMap.put(new Integer(concept.getNodeIndex()), leaves);
 		return leaves;
 	}
 

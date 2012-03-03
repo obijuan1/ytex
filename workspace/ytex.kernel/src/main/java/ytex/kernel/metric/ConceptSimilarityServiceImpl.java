@@ -648,6 +648,10 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	}
 
 	public void init() {
+		if (this.cg == null) {
+			log.warn("concept graph null, name: " + this.getConceptGraphName());
+			return;
+		}
 		TransactionTemplate t = new TransactionTemplate(this.transactionManager);
 		t.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 		t.execute(new TransactionCallback<Object>() {
@@ -976,11 +980,13 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 			simInfo.setLcsPaths(new ArrayList<LCSPath>(1));
 		// allocate result map
 		List<Double> similarities = new ArrayList<Double>(metrics.size());
-		// iterate over metrics, compute, stuff in map
-		for (SimilarityMetricEnum metric : metrics) {
-			double sim = this.similarityMetricMap.get(metric).similarity(
-					concept1, concept2, conceptFilter, simInfo);
-			similarities.add(sim);
+		if (cg != null) {
+			// iterate over metrics, compute, stuff in map
+			for (SimilarityMetricEnum metric : metrics) {
+				double sim = this.similarityMetricMap.get(metric).similarity(
+						concept1, concept2, conceptFilter, simInfo);
+				similarities.add(sim);
+			}
 		}
 		ConceptPairSimilarity csim = new ConceptPairSimilarity();
 		csim.setConceptPair(new ConceptPair(concept1, concept2));

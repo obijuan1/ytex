@@ -39,6 +39,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	<bean id="conceptDao" class="ytex.kernel.dao.ConceptDaoImpl">
 		<property name="ytexProperties" ref="ytexProperties" />
 		<property name="dataSource" ref="dataSource" />
+		<property name="intrinsicInfoContentEvaluator" ref="intrinsicInfoContentEvaluator" />
 	</bean>
 	<bean id="umlsDao" class="ytex.umls.dao.UMLSDaoImpl">
 		<property name="sessionFactory" ref="sessionFactory" />

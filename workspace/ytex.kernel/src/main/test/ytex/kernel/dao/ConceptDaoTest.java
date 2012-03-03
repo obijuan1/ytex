@@ -1,5 +1,6 @@
 package ytex.kernel.dao;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,11 +23,14 @@ public class ConceptDaoTest extends TestCase {
 				.getBean("conceptDao");
 	}
 
-	public void testInitializeConceptGraph() {
-		ConceptGraph cg = conceptDao
-				.createConceptGraph("snomed",
-						"select cui1, cui2 from umls.MRREL where sab = 'SNOMEDCT' and rel = 'PAR'");
-//		System.out.println("depth:" + cg.getDepthMax());
+	public void testInitializeConceptGraph() throws IOException {
+		conceptDao
+				.createConceptGraph(
+						"snomed",
+						"select cui1, cui2 from umls.MRREL where sab = 'SNOMEDCT' and rel = 'PAR'",
+						true);
+		ConceptGraph cg = conceptDao.getConceptGraph("snomed");
+		// System.out.println("depth:" + cg.getDepthMax());
 		System.out.println("concepts:" + cg.getConceptMap().size());
 		System.out.println("root:" + cg.getRoot());
 		// System.out.println("roots:"+cg.getRoots());

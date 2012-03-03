@@ -1,5 +1,7 @@
 package ytex.kernel.dao;
 
+import java.io.IOException;
+
 import ytex.kernel.model.ConceptGraph;
 
 /**
@@ -13,6 +15,16 @@ import ytex.kernel.model.ConceptGraph;
 public interface ConceptDao {
 
 	/**
+	 * retrieve an existing concept graph.
+	 * 
+	 * @param name
+	 *            name of concept graph. Will retrieve from file system. @see
+	 *            #createConceptGraph
+	 * @return
+	 */
+	public abstract ConceptGraph getConceptGraph(String name);
+
+	/**
 	 * create the concept graph with specified name using specified query.
 	 * 
 	 * @param name
@@ -23,19 +35,7 @@ public interface ConceptDao {
 	 *            column is the parent concept.
 	 * @return ConceptGraph the concept graph generated using this query.
 	 */
-	public abstract ConceptGraph createConceptGraph(String name, String query);
-
-	/**
-	 * retrieve an existing concept graph.
-	 * 
-	 * @param name
-	 *            name of concept graph. Will retrieve from file system. @see
-	 *            #createConceptGraph
-	 * @return
-	 */
-	public abstract ConceptGraph getConceptGraph(String name);
-
-	public abstract ConceptGraph createConceptGraph(String name, String query,
-			final boolean checkCycle);
+	public abstract void createConceptGraph(String name, String query,
+			final boolean checkCycle) throws IOException;
 
 }
