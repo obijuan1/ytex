@@ -115,8 +115,8 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 */
 	private void computeLeafCount(ConcRel concept,
 			Map<String, IntrinsicICInfo> icInfoMap,
-			Map<Integer, Set<Integer>> leafMap, ConceptGraph cg, BufferedWriter w)
-			throws IOException {
+			Map<Integer, Set<Integer>> leafMap, ConceptGraph cg,
+			BufferedWriter w) throws IOException {
 		// see if we already computed this
 		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
 		if (icInfo != null && icInfo.getLeafCount() > 0) {
@@ -136,7 +136,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 				w.write("\t");
 				w.write(Integer.toString(leaves.size()));
 				w.write("\t");
-				for(int index : leaves) {
+				for (int index : leaves) {
 					w.write(cg.getConceptList().get(index).getConceptID());
 					w.write(" ");
 				}
@@ -244,7 +244,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			}
 		}
 		log.info("computing leaf counts");
-		Map<Integer, Set<Integer>>  leafMap = new WeakHashMap<Integer, Set<Integer>>();
+		Map<Integer, Set<Integer>> leafMap = new WeakHashMap<Integer, Set<Integer>>();
 		// compute leaf count of all concepts in this graph
 		try {
 			w = this.getOutputFile(conceptGraphName, conceptGraphDir, "leaf");
@@ -269,8 +269,12 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 
 	private BufferedWriter getOutputFile(final String conceptGraphName,
 			final String conceptGraphDir, String type) throws IOException {
-		return new BufferedWriter(new FileWriter(FileUtil.addFilenameToDir(
-				conceptGraphDir, conceptGraphName + "-" + type + ".txt")));
+		if ("true".equalsIgnoreCase(System
+				.getProperty("ytex.ic.debug", "false"))) {
+			return new BufferedWriter(new FileWriter(FileUtil.addFilenameToDir(
+					conceptGraphDir, conceptGraphName + "-" + type + ".txt")));
+		} else
+			return null;
 	}
 
 	public Set<String> getAllLeaves(ConceptGraph cg, BufferedWriter w)
