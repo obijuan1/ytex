@@ -10,6 +10,7 @@
 	<property name="mesh.home" value="C:/Temp/mesh" />
 	<property name="mesh.desc" value="${mesh.home}/desc2012.xml" />
 	<property name="mesh.supp" value="${mesh.home}/supp2012.xml" />
+	<property name="ytex.mx" value="1500m" />
 
 	<property name="maxMemory" value="2g" />
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
@@ -74,7 +75,7 @@
 		</java>
 	</target>
 	<target name="umls.eval.sim" description="evaluate all umls concept graphs">
-		<property name="cgs" value="sct-umls,sct-msh,sct-msh-csp-aod,sct-msh-mth-csp-aod" />
+		<property name="cgs" value="sct-umls,sct-msh,sct-msh-csp-aod,sct-msh-mth-csp-aod,sct-msh-mth-rxnorm-csp-aod,sct-msh-rxnorm-csp-aod" />
 		<for param="cg" list="${cgs}">
 			<sequential>
 				<antcall target="umls.eval.sim.cg">
@@ -102,7 +103,7 @@
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
-			<jvmarg value="-Xmx1500m" />
+			<jvmarg value="-Xmx${ytex.mx}" />
 			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
 			<arg value="-concepts" />
 			<arg value="../${eval.concepts}" />
