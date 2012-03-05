@@ -11,10 +11,8 @@ package ytex.kernel.metric;
 public class ConceptInfo {
 	private String conceptId;
 	private short depth;
-//	private float corpusIC;
-//	private float intrinsicIC;
-	private double corpusIC;
-	private double intrinsicIC;
+	private float corpusIC;
+	private float intrinsicIC;
 
 	public ConceptInfo() {
 		super();
@@ -25,10 +23,8 @@ public class ConceptInfo {
 		super();
 		this.conceptId = conceptId;
 		this.depth = (short) depth;
-//		this.corpusIC = (float) corpusIC;
-//		this.intrinsicIC = (float) intrinsicIC;
-		this.corpusIC = corpusIC;
-		this.intrinsicIC = intrinsicIC;
+		this.corpusIC = (float) corpusIC;
+		this.intrinsicIC = (float) intrinsicIC;
 	}
 
 	public String getConceptId() {
@@ -52,8 +48,7 @@ public class ConceptInfo {
 	}
 
 	public void setCorpusIC(double corpusIC) {
-//		this.corpusIC = (float) corpusIC;
-		this.corpusIC = (double) corpusIC;
+		this.corpusIC = (float) corpusIC;
 	}
 
 	public double getIntrinsicIC() {
@@ -61,8 +56,7 @@ public class ConceptInfo {
 	}
 
 	public void setIntrinsicIC(double intrinsicIC) {
-//		this.intrinsicIC = (float) intrinsicIC;
-		this.intrinsicIC = (double) intrinsicIC;
+		this.intrinsicIC = (float) intrinsicIC;
 	}
 
 }
