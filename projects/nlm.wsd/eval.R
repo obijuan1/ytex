@@ -19,7 +19,6 @@ evalMetricWord = function(metric) {
 
 evalMetric = function(metric) {
 	lch = loadMetric(metric)
-	lch.common = merge(data.frame(word=words.common), lch)
 	lch.unsup  = merge(data.frame(word=words.unsup), lch)
 	words.sim = unique(lch$word)
 	for(word in words.notsim) {
@@ -34,7 +33,6 @@ evalMetric = function(metric) {
 }
 countMetric = function(metric) {
 	lch = loadMetric(metric)
-	lch.common = merge(data.frame(word=words.common), lch)
 	lch.unsup  = merge(data.frame(word=words.unsup), lch)
 	words.sim = unique(lch$word)
 	for(word in words.notsim) {
@@ -70,25 +68,27 @@ write.csv(res, file="wsd-results.csv")
 
 sim = res[,"sim"]
 sim.p = sim[-length(sim)]
+sim.p = sim.p[order(sim.p, decreasing=T)]
 sim.n = sim["n"]
 
 sim.metrics = names(sim.p)
 
-pvals = matrix(nrow=length(sim.metrics), ncol=(length(sim.metrics)-1), data=0)
+pvals = matrix(nrow=(length(sim.metrics)-1), ncol=(length(sim.metrics)-1), data=NA)
 colnames(pvals) = sim.metrics[-1]
-rownames(pvals) = sim.metrics
+rownames(pvals) = sim.metrics[-length(sim.metrics)]
 
-for(i in 1:length(sim.metrics)) {
-	if(i<length(sim.metrics)) {
-		for(j in (i+1):length(sim.metrics)) {
-			print(j)
-			metric1 = sim.metrics[i]
-			metric2 = sim.metrics[j]
-			print(metric1)
-			print(metric2)
-			pvals[metric1, metric2] = z.test(sim.p[metric1], sim.p[metric2], n)
-		}
+for(i in 1:(length(sim.metrics)-1)) {
+	for(j in (i+1):length(sim.metrics)) {
+		#print(j)
+		metric1 = sim.metrics[i]
+		metric2 = sim.metrics[j]
+		#print(metric1)
+		#print(metric2)
+		#print(sim.p[metric1])
+		#print(sim.p[metric2])
+		#print(z.test(as.numeric(sim.p[metric1]), as.numeric(sim.p[metric2]), as.numeric(sim.n)))
+		pvals[metric1, metric2] = z.test(as.numeric(sim.p[metric1]), as.numeric(sim.p[metric2]), as.numeric(sim.n))
 	}
 }
-write.csv(pvals, file="wsd-pvals.csv")
+write.csv(pvals, file="wsd-pvals.csv", na="")
 
