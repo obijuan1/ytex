@@ -13,7 +13,6 @@
 	<target name="load.all" depends="load.create,load.abstract,load.choices.all,load.word,load.lookup" />
 	<target name="load.create">
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/create_table.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
-		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/v_wsd_fword_lookup.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 	</target>
 	<target name="load.abstract" description="load nlm_wsd table">
 		<java classname="ytex.wsd.nlm.WSDLoader">
