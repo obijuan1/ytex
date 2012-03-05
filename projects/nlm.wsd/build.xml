@@ -121,11 +121,9 @@
 	<target name="eval.wsd.all" description="perform wsd for all concept graphs">
 		<for param="cg" list="sct-msh-csp-aod,sct-msh-mth-csp-aod,sct-msh-rxnorm-csp-aod,sct-msh-mth-rxnorm-csp-aod">
 			<sequential>
-				<!--
 				<antcall target="eval.wsd">
 					<param name="ytex.conceptGraphName" value="@{cg}" />
 				</antcall>
-				-->
 				<antcall target="eval.R">
 					<param name="ytex.conceptGraphName" value="@{cg}" />
 				</antcall>				
