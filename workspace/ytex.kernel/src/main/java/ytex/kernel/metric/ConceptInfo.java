@@ -1,10 +1,31 @@
 package ytex.kernel.metric;
 
+/**
+ * we run into out of memory errors when preloading the intrinsic ic for large
+ * concept graphs. 'compress' the intrinsic ic by using short/float instead of
+ * int/double.
+ * 
+ * @author vijay
+ * 
+ */
 public class ConceptInfo {
 	private String conceptId;
-	private int depth;
-	private double corpusIC;
-	private double intrinsicIC;
+	private short depth;
+	private float corpusIC;
+	private float intrinsicIC;
+
+	public ConceptInfo() {
+		super();
+	}
+
+	public ConceptInfo(String conceptId, int depth, double corpusIC,
+			double intrinsicIC) {
+		super();
+		this.conceptId = conceptId;
+		this.depth = (short) depth;
+		this.corpusIC = (float) corpusIC;
+		this.intrinsicIC = (float) intrinsicIC;
+	}
 
 	public String getConceptId() {
 		return conceptId;
@@ -15,27 +36,27 @@ public class ConceptInfo {
 	}
 
 	public int getDepth() {
-		return depth;
+		return (int) depth;
 	}
 
 	public void setDepth(int depth) {
-		this.depth = depth;
+		this.depth = (short) depth;
 	}
 
 	public double getCorpusIC() {
-		return corpusIC;
+		return (double) corpusIC;
 	}
 
 	public void setCorpusIC(double corpusIC) {
-		this.corpusIC = corpusIC;
+		this.corpusIC = (float) corpusIC;
 	}
 
 	public double getIntrinsicIC() {
-		return intrinsicIC;
+		return (double) intrinsicIC;
 	}
 
 	public void setIntrinsicIC(double intrinsicIC) {
-		this.intrinsicIC = intrinsicIC;
+		this.intrinsicIC = (float) intrinsicIC;
 	}
 
 }

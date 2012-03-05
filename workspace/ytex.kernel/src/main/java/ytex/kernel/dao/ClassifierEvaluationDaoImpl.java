@@ -15,6 +15,7 @@ import org.hibernate.type.Type;
 import ytex.dao.DBUtil;
 import ytex.kernel.InfoContentEvaluator;
 import ytex.kernel.IntrinsicInfoContentEvaluator;
+import ytex.kernel.metric.ConceptInfo;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.ClassifierEvaluationIRStat;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
@@ -345,19 +346,12 @@ public class ClassifierEvaluationDaoImpl implements ClassifierEvaluationDao {
 	}
 
 	@Override
-	public Map<String, FeatureRank> getIntrinsicInfoContent(
+	public List<ConceptInfo> getIntrinsicInfoContent(
 			String conceptGraphName) {
 		Query q = prepareUniqueFeatureEvalQuery(null, null, null,
 				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, null, null,
-				conceptGraphName, "getTopFeatures");
-		@SuppressWarnings("unchecked")
-		List<FeatureRank> listFeatureRank = q.list();
-		Map<String, FeatureRank> mapFeatureEval = new HashMap<String, FeatureRank>(
-				listFeatureRank.size());
-		for (FeatureRank r : listFeatureRank) {
-			mapFeatureEval.put(r.getFeatureName(), r);
-		}
-		return mapFeatureEval;
+				conceptGraphName, "getIntrinsicInfoContent");
+		return (List<ConceptInfo>)q.list();
 	}
 	public Integer getMaxDepth(String conceptGraphName) {
 		Query q = prepareUniqueFeatureEvalQuery(null, null, null,

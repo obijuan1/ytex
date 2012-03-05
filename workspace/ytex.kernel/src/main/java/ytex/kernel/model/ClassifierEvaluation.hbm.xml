@@ -284,4 +284,17 @@
 		and featureEval.evaluationType = :evaluationType
 		and featureEval.label = :label
 	]]></query>	
+	<query name="getIntrinsicInfoContent"><![CDATA[
+		select new ytex.kernel.metric.ConceptInfo(featureName, rank, 0d, evaluation)
+		from FeatureRank
+		where featureEval.corpusName = :corpusName
+		and featureEval.featureSetName = :featureSetName
+		and featureEval.param1 = :param1
+		and featureEval.param2 = :param2
+		and featureEval.crossValidationFoldId = :crossValidationFoldId
+		and featureEval.evaluationType = :evaluationType
+		and featureEval.label = :label
+		order by evaluation desc
+	]]></query>
+	
 </hibernate-mapping>

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ytex.kernel.metric.ConceptInfo;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.CrossValidationFold;
 import ytex.kernel.model.FeatureEvaluation;
@@ -79,7 +80,7 @@ public interface ClassifierEvaluationDao {
 	public abstract Map<String, Double> getInfoContent(String corpusName,
 			String conceptGraphName, String conceptSet);
 
-	public abstract Map<String, FeatureRank> getIntrinsicInfoContent(
+	public abstract List<ConceptInfo> getIntrinsicInfoContent(
 			String conceptGraphName);
 
 	public abstract void saveFeatureParentChild(FeatureParentChild parchd);
