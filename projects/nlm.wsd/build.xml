@@ -15,7 +15,7 @@
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/create_table.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 	</target>
 	<target name="load.abstract" description="load nlm_wsd table">
-		<java classname="ytex.wsd.nlm.WSDLoader">
+		<java classname="ytex.wsd.nlm.WSDLoader" fork="yes" failonerror="yes">
 			<classpath>
 				<dirset dir="${basedir}">
 					<include name="bin" />
