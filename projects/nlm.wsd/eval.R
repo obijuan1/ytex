@@ -25,7 +25,7 @@ evalMetric = function(metric) {
 	for(word in words.notsim) {
 		words.sim = words.sim[words.sim != word]
 	}
-	lch.sim = merge(data.frame(word=words.sim), lch)hist
+	lch.sim = merge(data.frame(word=words.sim), lch)
 	res = c(sum(lch$target==lch$pred)/nrow(lch)
 		, sum(lch.unsup$target==lch.unsup$pred)/nrow(lch.unsup)
 		, sum(lch.sim$target==lch.sim$pred)/nrow(lch.sim))
