@@ -7,14 +7,19 @@ loadMetric = function(metric) {
 	lch = read.table(paste(metric, ".txt", sep=""), 
 		col.names = c("instanceId", "word", "target", "pred", "scores"), 
 		sep="\t", 
-		stringsAsFactors=F)
+		stringsAsFactors=F,
+		header = FALSE)
 	lch = lch[lch$target != "None",]
 	return(lch)
 }
 
+evalAcc = function(lch) {
+	return(sum(apply(lch, 1, function(x) { x["target"] == x["pred"] }))/nrow(lch))
+}
+
 evalMetricWord = function(metric) {
 	lch = loadMetric(metric)
-	return(daply(lch, .(word), function(x) {sum(x$target==x$pred)/nrow(x)}))
+	return(daply(lch, .(word), evalAcc))
 }
 
 evalMetric = function(metric) {
@@ -25,12 +30,11 @@ evalMetric = function(metric) {
 		words.sim = words.sim[words.sim != word]
 	}
 	lch.sim = merge(data.frame(word=words.sim), lch)
-	res = c(sum(lch$target==lch$pred)/nrow(lch)
-		, sum(lch.unsup$target==lch.unsup$pred)/nrow(lch.unsup)
-		, sum(lch.sim$target==lch.sim$pred)/nrow(lch.sim))
+	res = c(evalAcc(lch), evalAcc(lch.unsup), evalAcc(lch.sim))
 	names(res) = c("all", "mcinnes", "sim")
 	return(res)
 }
+
 countMetric = function(metric) {
 	lch = loadMetric(metric)
 	lch.unsup  = merge(data.frame(word=words.unsup), lch)
