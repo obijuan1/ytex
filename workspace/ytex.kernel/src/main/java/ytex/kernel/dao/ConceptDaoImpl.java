@@ -1,5 +1,8 @@
 package ytex.kernel.dao;
 
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -311,7 +314,7 @@ public class ConceptDaoImpl implements ConceptDao {
 	}
 
 	private boolean checkCycle(ConcRel crPar, ConcRel crChild) {
-		Set<Integer> visitedNodes = new HashSet<Integer>();
+		TIntSet visitedNodes = new TIntHashSet();
 		return hasAncestor(crPar, crChild, visitedNodes);
 	}
 
@@ -328,7 +331,7 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * @return true if crChild is an ancestor of crPar
 	 */
 	private boolean hasAncestor(ConcRel crPar, ConcRel crChild,
-			Set<Integer> visitedNodes) {
+			TIntSet visitedNodes) {
 		// see if we've already visited this node - if yes then no need to redo
 		// this
 		if (visitedNodes.contains(crPar.getNodeIndex()))
@@ -416,25 +419,25 @@ public class ConceptDaoImpl implements ConceptDao {
 		this.ytexProperties = ytexProperties;
 	}
 
-	/**
-	 * add parent to all descendants of crChild
-	 * 
-	 * @param crPar
-	 * @param crChild
-	 * @param ancestorCache
-	 */
-	private void updateDescendants(Set<Integer> ancestorsPar, ConcRel crChild,
-			Map<Integer, Set<Integer>> ancestorCache, int depth) {
-		if (ancestorCache != null) {
-			Set<Integer> ancestors = ancestorCache.get(crChild.nodeIndex);
-			if (ancestors != null)
-				ancestors.addAll(ancestorsPar);
-			// recurse
-			for (ConcRel crD : crChild.getChildren()) {
-				updateDescendants(ancestorsPar, crD, ancestorCache, depth + 1);
-			}
-		}
-	}
+//	/**
+//	 * add parent to all descendants of crChild
+//	 * 
+//	 * @param crPar
+//	 * @param crChild
+//	 * @param ancestorCache
+//	 */
+//	private void updateDescendants(Set<Integer> ancestorsPar, ConcRel crChild,
+//			Map<Integer, Set<Integer>> ancestorCache, int depth) {
+//		if (ancestorCache != null) {
+//			Set<Integer> ancestors = ancestorCache.get(crChild.nodeIndex);
+//			if (ancestors != null)
+//				ancestors.addAll(ancestorsPar);
+//			// recurse
+//			for (ConcRel crD : crChild.getChildren()) {
+//				updateDescendants(ancestorsPar, crD, ancestorCache, depth + 1);
+//			}
+//		}
+//	}
 
 	/**
 	 * write the concept graph, create parent directories as required

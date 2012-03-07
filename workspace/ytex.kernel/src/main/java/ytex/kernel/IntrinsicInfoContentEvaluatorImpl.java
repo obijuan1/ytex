@@ -144,7 +144,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 				w.write(Integer.toString(leaves.size()));
 				w.write("\t");
 				TIntIterator iter = leaves.iterator();
-				while(iter.hasNext()) {
+				while (iter.hasNext()) {
 					w.write(cg.getConceptList().get(iter.next()).getConceptID());
 					w.write(" ");
 				}
@@ -317,7 +317,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			SoftReference<TIntSet>[] leafCache) {
 		// look in cache
 		SoftReference<TIntSet> refLeaves = leafCache[concept.getNodeIndex()];
-		if(refLeaves != null && refLeaves.get() != null) {
+		if (refLeaves != null && refLeaves.get() != null) {
 			return refLeaves.get();
 		}
 		// not in cache - compute recursively
@@ -329,7 +329,11 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		} else {
 			// for inner nodes, recurse
 			for (ConcRel child : concept.getChildren()) {
-				leaves.addAll(getLeaves(child, leafCache));
+				if (!leaves.contains(child.getNodeIndex())) {
+					// don't bother revisiting nodes we've already added to the
+					// leaf set
+					leaves.addAll(getLeaves(child, leafCache));
+				}
 			}
 		}
 		return leaves;
