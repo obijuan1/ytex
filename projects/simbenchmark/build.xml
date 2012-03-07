@@ -76,7 +76,7 @@
 		</java>
 	</target>
 	<target name="umls.eval.sim" description="evaluate all umls concept graphs">
-		<property name="cgs" value="sct-umls,sct-msh,sct-msh-csp-aod,sct-msh-mth-csp-aod,sct-msh-mth-rxnorm-csp-aod,sct-msh-rxnorm-csp-aod" />
+		<property name="cgs" value="sct-umls,sct-msh,sct-msh-csp-aod,sct-msh-mth-csp-aod,sct-msh-mth-rxnorm-csp-aod,sct-msh-rxnorm-csp-aod,umls" />
 		<for param="cg" list="${cgs}">
 			<sequential>
 				<antcall target="umls.eval.sim.cg">
@@ -106,6 +106,7 @@
 			</syspropertyset>
 			<jvmarg value="-Xmx${ytex.mx}" />
 			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
+			<jvmarg value="-Dytex.conceptPreload=false" />
 			<arg value="-concepts" />
 			<arg value="../${eval.concepts}" />
 			<arg value="-metrics" />
