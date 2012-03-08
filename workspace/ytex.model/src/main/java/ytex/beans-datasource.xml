@@ -10,6 +10,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
+				<value>classpath:ytex/ytex-default.properties</value>
 				<value>classpath:ytex.properties</value>
 			</list>
 		</property>
@@ -30,6 +31,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<prop key="hibernate.default_schema">${db.schema}</prop>
 				<prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>
 				<prop key="hibernate.cache.use_query_cache">true</prop>
+				<!-- <prop key="hibernate.connection.isolation">1</prop>  -->
 			</props>
 		</property>
 	</bean>
@@ -39,6 +41,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="url" value="${db.url}" />
 		<property name="username" value="${db.username}" />
 		<property name="password" value="${db.password}" />
+		<!-- <property name="defaultTransactionIsolation" value="1" /> -->
 	</bean>
 	<!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean 
 		below) we use read uncommitted because when we annotate documents in parallel, 
