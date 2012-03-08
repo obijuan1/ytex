@@ -133,7 +133,7 @@
 		</java>
 	</target>	
 	<target name="eval.msh.wsd.all" description="perform wsd for all concept graphs">
-		<for param="cg" list="sct-msh-csp-aod,sct-msh-mth-csp-aod,sct-msh-rxnorm-csp-aod,sct-msh-mth-rxnorm-csp-aod">
+		<for param="cg" list="sct-msh-csp-aod,umls">
 			<sequential>
 				<antcall target="eval.msh.wsd">
 					<param name="ytex.conceptGraphName" value="@{cg}" />
