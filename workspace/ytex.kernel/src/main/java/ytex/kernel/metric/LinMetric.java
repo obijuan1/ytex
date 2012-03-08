@@ -27,7 +27,7 @@ public class LinMetric extends BaseSimilarityMetric {
 	@Override
 	public double similarity(String concept1, String concept2,
 			Map<String, Double> conceptFilter, SimilarityInfo simInfo) {
-		double lcsIC = initLcsIC(conceptFilter, simInfo, this.intrinsicIC);
+		double lcsIC = initLcsIC(concept1, concept2, conceptFilter, simInfo, this.intrinsicIC);
 		if (lcsIC == 0d) {
 			return 0d;
 		}
