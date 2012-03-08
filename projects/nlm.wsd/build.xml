@@ -5,7 +5,7 @@
 	<property name="window" value="10" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
-	<target name="all" depends="build,load.all,RunCPE,eval.wsd.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
+	<target name="all" depends="build,load.all,RunCPE.all,eval.wsd.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
 	<target name="build" description="compile java source">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/main/java/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
@@ -88,29 +88,15 @@
 			<arg value="${msh.wsd.home}" />
 		</java>
 	</target>
-	<target name="RunCPE">
-		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
-		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
-		<copy file="desc/cpe.template.xml" tofile="desc/cpe.xml" overwrite="yes">
-			<filterset>
-				<filter token="collectionreader.url" value="${collectionreader.url}" />
-				<filter token="pipeline.url" value="${pipeline.url}" />
-			</filterset>
-		</copy>
-		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
-			<classpath>
-				<dirset dir="${basedir}">
-					<include name="${basedir}/desc" />
-				</dirset>
-				<path refid="${kernel.cp}" />
-			</classpath>
-			<arg value="cpe.xml" />
-			<jvmarg value="-Xmx1g" />
-			<jvmarg value="${log4j.arg}" />
-			<jvmarg value="${java.log.arg}" />
-		</java>
+	<target name="RunCPE.all">
+		<antcall target="RunCPE.threads">
+			<param name="prefix" value="nlm-wsd" />
+		</antcall>
+		<antcall target="RunCPE.threads">
+			<param name="prefix" value="msh-wsd" />
+		</antcall>
 	</target>
-	<target name="RunCPE.all" description="annotate i2b2 2008 corpus in parallel">
+	<target name="RunCPE.threads" description="annotate i2b2 2008 corpus in parallel">
 		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.threads}">
 			<sequential>
 				<antcall target="RunCPE.slice">
