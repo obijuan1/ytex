@@ -13,6 +13,13 @@ evalAcc = function(wsd) {
 	return(sum(apply(wsd, 1, function(x) { x["target"] == x["pred"] }))/nrow(wsd))
 }
 
+z.test = function(p1, p2, n) {
+	p = (p1 * n + p2 * n) / (2*n)
+	SE = sqrt(p * ( 1 - p ) * (2/n))
+	z = (p1 - p2) / SE
+	return(pnorm(z))
+}
+
 acc = daply(wsd, .(metric), evalAcc)
 acc = cbind(all=acc, abbreviation=daply(merge(wsd, data.frame(word=words.A)), .(metric), evalAcc))
 acc = cbind(acc, term=daply(merge(wsd, data.frame(word=words.T)), .(metric), evalAcc))
