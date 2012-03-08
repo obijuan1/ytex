@@ -1,3 +1,4 @@
+-- nlm wsd tables
 delete from ref_segment_regex where segment_id in ('nlm.wsd.UI', 'nlm.wsd.TI', 'nlm.wsd.AB');
 insert into ref_segment_regex (regex, segment_id) values ('UI\\s+-\\s', 'nlm.wsd.UI');
 insert into ref_segment_regex (regex, segment_id) values ('TI\\s+-\\s', 'nlm.wsd.TI');
@@ -46,3 +47,18 @@ create table nlm_wsd_word (
     word varchar(20) not null primary key
 ) engine=myisam;  
 
+-- msh wsd tables
+delete from ref_segment_regex where segment_id in ('msh.wsd.target');
+insert into ref_segment_regex (regex, segment_id, limit_to_regex) values ('<e>(.*)<\\/e>', 'msh.wsd.target', 1);
+
+drop table if exists msh_wsd;
+
+create table msh_wsd (
+    instance_id int auto_increment primary key,
+    pmid int,
+    word varchar(50),
+    cui char(8),
+    abs text
+) engine = myisam;
+
+create index IX_msh_wsd on msh_wsd(pmid, word);

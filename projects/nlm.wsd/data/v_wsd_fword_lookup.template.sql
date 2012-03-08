@@ -21,14 +21,21 @@ select ui from @UMLS_SCHEMA@.SRDEF where ui in
 	'T033','T034','T040','T041','T042','T043','T044','T045','T046','T056','T057','T184','T121'
   )
 ;
--- get additional tuis from the concepts for wsd
+-- get additional tuis from the concepts from mesh wsd
 insert into tmp_tui
-select tui
+select distinct tui
 from @UMLS_SCHEMA@.MRSTY sty
 inner join nlm_wsd_cui c on c.cui = sty.cui
 inner join nlm_wsd_word w on w.word = c.word
 ;
 
+-- get additional tuis from the concepts from nlm wsd
+insert into tmp_tui
+select distinct tui
+from @UMLS_SCHEMA@.MRSTY sty
+inner join nlm_wsd_cui c on c.cui = sty.cui
+inner join nlm_wsd_word w on w.word = c.word
+;
 -- do the insert
 insert into v_wsd_fword_lookup
 select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
@@ -46,4 +53,3 @@ and exists
 
 -- create indices
 create index idx_fword on v_wsd_fword_lookup (fword);
-create index idx_fstem on v_wsd_fword_lookup (fstem);
