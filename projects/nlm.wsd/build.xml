@@ -1,7 +1,7 @@
 <project name="nlm.wsd">
 	<property environment="env" />
 	<property name="ytex.home" value=".." />
-	<property name="maxMemory" value="1500m" />
+	<property name="ytex.mx" value="1500m" />
 	<property name="window" value="10" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
@@ -88,29 +88,6 @@
 			<arg value="${msh.wsd.home}" />
 		</java>
 	</target>
-	<target name="setup.conceptGraph" description="generate concept graph, compute intrinsic infogain">
-		<mkdir dir="${ytex.conceptGraphDir}" />
-		<copy file="data/${ytex.conceptGraphName}.template.xml" tofile="data/${ytex.conceptGraphName}.xml" overwrite="yes">
-			<filterset>
-				<filter token="umls.schema" value="${umls.schema}" />
-			</filterset>
-		</copy>
-		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
-			<arg value="-prop" />
-			<arg value="${ytex.conceptGraphName}.xml" />
-			<jvmarg value="-Xmx${maxMemory}" />
-			<syspropertyset>
-				<propertyset refid="ytex.jvm.props" />
-			</syspropertyset>
-		</java>
-		<java classname="ytex.kernel.IntrinsicInfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
-			<syspropertyset>
-				<propertyset refid="ytex.jvm.props" />
-			</syspropertyset>
-			<jvmarg value="-Xmx${maxMemory}" />
-			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
-		</java>
-	</target>
 	<target name="RunCPE">
 		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
 		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
@@ -169,8 +146,20 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>	
-	<target name="eval.wsd.all" description="perform wsd for all concept graphs">
+	<target name="eval.msh.wsd.all" description="perform wsd for all concept graphs">
 		<for param="cg" list="sct-msh-csp-aod,sct-msh-mth-csp-aod,sct-msh-rxnorm-csp-aod,sct-msh-mth-rxnorm-csp-aod">
+			<sequential>
+				<antcall target="eval.msh.wsd">
+					<param name="ytex.conceptGraphName" value="@{cg}" />
+				</antcall>
+				<antcall target="eval.msh.R">
+					<param name="ytex.conceptGraphName" value="@{cg}" />
+				</antcall>				
+			</sequential>
+		</for>
+	</target>	
+	<target name="eval.wsd.all" description="perform wsd for all concept graphs">
+		<for param="cg" list="sct-msh-csp-aod,umls">
 			<sequential>
 				<antcall target="eval.wsd">
 					<param name="ytex.conceptGraphName" value="@{cg}" />
@@ -191,7 +180,25 @@
 				</dirset>
 				<path refid="${kernel.cp}" />
 			</classpath>
-			<jvmarg value="-Xmx1500m" />
+			<jvmarg value="-Xmx${ytex.mx}" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
+			<arg value="${metrics}" />
+			<arg value="${window}" />
+		</java>
+	</target>
+	<target name="eval.msh.wsd" description="perform wsd">
+		<property name="metrics" value="WUPALMER,RADA,INTRINSIC_RADA,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" />
+		<mkdir dir="${basedir}/eval/msh/${ytex.conceptGraphName}-${window}" />
+		<java classname="ytex.wsd.msh.MshWSDDisambiguator" fork="yes" dir="${basedir}/eval/msh/${ytex.conceptGraphName}-${window}">
+			<classpath>
+				<dirset dir="${basedir}">
+					<include name="bin" />
+				</dirset>
+				<path refid="${kernel.cp}" />
+			</classpath>
+			<jvmarg value="-Xmx${ytex.mx}" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
@@ -202,6 +209,11 @@
 	<target name="eval.R" description="compute accuracy">
 		<exec executable="${R.bin}/R" dir="${basedir}/eval/${ytex.conceptGraphName}-${window}">
 			<arg line="--slave --file=${basedir}/eval.R" />
+		</exec>
+	</target>
+	<target name="eval.msh.R" description="compute accuracy">
+		<exec executable="${R.bin}/R" dir="${basedir}/eval/msh/${ytex.conceptGraphName}-${window}">
+			<arg line="--slave --file=${basedir}/eval-msh.R" />
 		</exec>
 	</target>
 </project>
