@@ -11,6 +11,8 @@
 	<property name="mesh.desc" value="${mesh.home}/desc2012.xml" />
 	<property name="mesh.supp" value="${mesh.home}/supp2012.xml" />
 	<property name="ytex.mx" value="1500m" />
+	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh-csp-aod,umls"/>
+	<property name="cg.list" value="sct,msh,${cg.umls.list}"/>
 
 	<property name="maxMemory" value="2g" />
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
@@ -52,18 +54,20 @@
 		</copy>
 	</target>
 	<target name="cg.setup.all" description="generate all concept graphs">
-		<for param="cg">
+		<for param="cg.name" list="${cg.list}">
+			<!--
 			<fileset dir="${basedir}/config" includes="*.xml" excludes="*.template.xml" />
+			-->
 			<sequential>
 				<echo>@{cg}</echo>
 				<antcall target="cg.setup">
-					<param name="cg" value="@{cg}" />
+					<param name="cg.name" value="@{cg.name}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
 	<target name="cg.setup" description="setup concept graph ${cg}, compute intrinsic info content">
-		<basename property="cg.name" file="${cg}" suffix=".xml" />
+		<property name="cg.name" value="${ytex.conceptGraphName}" />
 		<echo>${cg.name}</echo>
 		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
 			<syspropertyset>
@@ -76,8 +80,7 @@
 		</java>
 	</target>
 	<target name="umls.eval.sim" description="evaluate all umls concept graphs">
-		<property name="cgs" value="sct-umls,sct-msh,sct-msh-csp-aod,sct-msh-mth-csp-aod,sct-msh-mth-rxnorm-csp-aod,sct-msh-rxnorm-csp-aod,umls" />
-		<for param="cg" list="${cgs}">
+		<for param="cg" list="${cg.umls.list}">
 			<sequential>
 				<antcall target="umls.eval.sim.cg">
 					<param name="ytex.conceptGraphName" value="@{cg}" />
