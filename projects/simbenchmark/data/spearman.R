@@ -41,7 +41,7 @@ eval.mini = function(cg, prefix="MiniMayoSRS") {
 # main
 res = data.frame(cg=c(), file=c(), spearman=c(),p.value=c())
 
-cgs = c("sct-umls", "sct-msh", "sct-msh-csp-aod", "sct-msh-mth-csp-aod", "sct-msh-rxnorm-csp-aod", "sct-msh-mth-rxnorm-csp-aod", "umls") 
+cgs = c("sct-umls", "sct-msh", "sct-msh-csp-aod", "umls") 
 cons = c("UMNSRS_similarity", "UMNSRS_relatedness", "MayoSRS")
 
 for(cg in cgs) {
