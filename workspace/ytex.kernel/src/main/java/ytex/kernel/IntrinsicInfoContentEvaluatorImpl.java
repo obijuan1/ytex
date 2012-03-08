@@ -8,7 +8,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,50 +111,139 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	}
 
 	/**
-	 * add/update icInfoMap entry for concept with the concept's leaf count
+	 * recursively compute the number of leaves. fill in the icInfoMap as we go
+	 * along
 	 * 
 	 * @param concept
+	 *            concept for which we should get the leaves
+	 * @param leafCache
+	 *            cache of concept's leaves
 	 * @param icInfoMap
+	 *            to be updated with leaf counts
+	 * @param cg
 	 * @param w
-	 * @param subsumerMap
+	 * @param visitedNodes
+	 *            list of nodes that have already been visited - we don't need
+	 *            to revisit them when getting the leaves
+	 * @return
 	 * @throws IOException
 	 */
-	private void computeLeafCount(ConcRel concept,
-			Map<String, IntrinsicICInfo> icInfoMap,
-			SoftReference<TIntSet>[] leafCache, ConceptGraph cg,
-			BufferedWriter w) throws IOException {
-		// see if we already computed this
-		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
-		if (icInfo != null && icInfo.getLeafCount() > 0) {
-			return;
+	private TIntSet getLeaves(ConcRel concept,
+			SoftReference<TIntSet>[] leafCache,
+			Map<String, IntrinsicICInfo> icInfoMap, ConceptGraph cg,
+			BufferedWriter w, TIntSet visitedNodes) throws IOException {
+		// look in cache
+		SoftReference<TIntSet> refLeaves = leafCache[concept.getNodeIndex()];
+		if (refLeaves != null && refLeaves.get() != null) {
+			return refLeaves.get();
 		}
-		// if not, figure it out
-		if (icInfo == null) {
-			icInfo = new IntrinsicICInfo(concept);
-			icInfoMap.put(concept.getConceptID(), icInfo);
-		}
-		// for leaves the default (0) is correct
-		if (!concept.isLeaf()) {
-			TIntSet leaves = this.getLeaves(concept, leafCache);
-			icInfo.setLeafCount(leaves.size());
-			if (w != null) {
-				w.write(concept.getConceptID());
-				w.write("\t");
-				w.write(Integer.toString(leaves.size()));
-				w.write("\t");
-				TIntIterator iter = leaves.iterator();
-				while (iter.hasNext()) {
-					w.write(cg.getConceptList().get(iter.next()).getConceptID());
-					w.write(" ");
+		// not in cache - compute recursively
+		TIntSet leaves = new TIntHashSet();
+		leafCache[concept.getNodeIndex()] = new SoftReference<TIntSet>(leaves);
+		if (concept.isLeaf()) {
+			// for leaves, just add the concept id
+			leaves.add(concept.getNodeIndex());
+		} else {
+			IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
+			// have we already computed the leaf count for this node?
+			// if yes, then we can ignore previously visited nodes
+			// if no, then compute it now and revisit previously visited nodes
+			// if we have to
+			boolean needLeaves = (icInfo != null && icInfo.getLeafCount() == 0);
+			TIntSet visitedNodesLocal = visitedNodes;
+			if (needLeaves || visitedNodesLocal == null) {
+				// allocate a set to keep track of nodes we've already visited
+				// so that we don't revisit them. if we have already computed
+				// this node's leaf count then we reuse whatever the caller gave
+				// us if non null, else allocate a new one.
+				// if we haven't already computed this node's leaf count,
+				// allocate a new set to avoid duplications in the traversal for
+				// this node
+				visitedNodesLocal = new TIntHashSet();
+			}
+			// for inner nodes, recurse
+			for (ConcRel child : concept.getChildren()) {
+				// if we've already visited a node, then don't bother adding
+				// that node's leaves - we already have them
+				if (!visitedNodesLocal.contains(child.getNodeIndex())) {
+					leaves.addAll(getLeaves(child, leafCache, icInfoMap, cg, w,
+							visitedNodesLocal));
 				}
-				w.newLine();
+			}
+			// add this node to the set of visited nodes so we know not to
+			// revisit. This is only of importance if the caller gave us
+			// a non-empty set.
+			if (visitedNodes != null && visitedNodes != visitedNodesLocal) {
+				visitedNodes.add(concept.getNodeIndex());
+				visitedNodes.addAll(visitedNodesLocal);
+			}
+			// update the leaf count if we haven't done so already
+			if (needLeaves) {
+				icInfo.setLeafCount(leaves.size());
+				// output leaves if desired
+				if (w != null) {
+					w.write(concept.getConceptID());
+					w.write("\t");
+					w.write(Integer.toString(leaves.size()));
+					w.write("\t");
+					TIntIterator iter = leaves.iterator();
+					while (iter.hasNext()) {
+						w.write(cg.getConceptList().get(iter.next())
+								.getConceptID());
+						w.write(" ");
+					}
+					w.newLine();
+				}
 			}
 		}
-		// recurse to parents
-		for (ConcRel parent : concept.getParents()) {
-			computeLeafCount(parent, icInfoMap, leafCache, cg, w);
-		}
+		return leaves;
 	}
+
+//	/**
+//	 * add/update icInfoMap entry for concept with the concept's leaf count
+//	 * 
+//	 * @param concept
+//	 * @param icInfoMap
+//	 * @param w
+//	 * @param subsumerMap
+//	 * @throws IOException
+//	 */
+//	private void computeLeafCount(ConcRel concept,
+//			Map<String, IntrinsicICInfo> icInfoMap,
+//			SoftReference<TIntSet>[] leafCache, ConceptGraph cg,
+//			BufferedWriter w) throws IOException {
+//		// see if we already computed this
+//		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
+//		if (icInfo != null && icInfo.getLeafCount() > 0) {
+//			return;
+//		}
+//		// if not, figure it out
+//		if (icInfo == null) {
+//			icInfo = new IntrinsicICInfo(concept);
+//			icInfoMap.put(concept.getConceptID(), icInfo);
+//		}
+//		// for leaves the default (0) is correct
+//		if (!concept.isLeaf()) {
+//			TIntSet leaves = this.getLeaves(concept, leafCache);
+//			icInfo.setLeafCount(leaves.size());
+//			if (w != null) {
+//				w.write(concept.getConceptID());
+//				w.write("\t");
+//				w.write(Integer.toString(leaves.size()));
+//				w.write("\t");
+//				TIntIterator iter = leaves.iterator();
+//				while (iter.hasNext()) {
+//					w.write(cg.getConceptList().get(iter.next()).getConceptID());
+//					w.write(" ");
+//				}
+//				w.newLine();
+//			}
+//		}
+//		// recurse to parents
+//		for (ConcRel parent : concept.getParents()) {
+//			computeLeafCount(parent, icInfoMap, leafCache, cg, w);
+//		}
+//	}
 
 	/**
 	 * add/update icInfoMap entry for concept with the concept's subsumer count
@@ -259,10 +347,12 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		// compute leaf count of all concepts in this graph
 		try {
 			w = this.getOutputFile(conceptGraphName, conceptGraphDir, "leaf");
-			for (String leaf : leafSet) {
-				computeLeafCount(cg.getConceptMap().get(leaf), icInfoMap,
-						leafCache, cg, w);
-			}
+			// for (String leaf : leafSet) {
+			// computeLeafCount(cg.getConceptMap().get(leaf), icInfoMap,
+			// leafCache, cg, w);
+			// }
+			this.getLeaves(cg.getConceptMap().get(cg.getRoot()), leafCache,
+					icInfoMap, cg, w, null);
 		} finally {
 			if (w != null) {
 				try {
@@ -313,31 +403,27 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		return conceptDao;
 	}
 
-	private TIntSet getLeaves(ConcRel concept,
-			SoftReference<TIntSet>[] leafCache) {
-		// look in cache
-		SoftReference<TIntSet> refLeaves = leafCache[concept.getNodeIndex()];
-		if (refLeaves != null && refLeaves.get() != null) {
-			return refLeaves.get();
-		}
-		// not in cache - compute recursively
-		TIntSet leaves = new TIntHashSet();
-		leafCache[concept.getNodeIndex()] = new SoftReference<TIntSet>(leaves);
-		if (concept.isLeaf()) {
-			// for leaves, just add the concept id
-			leaves.add(concept.getNodeIndex());
-		} else {
-			// for inner nodes, recurse
-			for (ConcRel child : concept.getChildren()) {
-				if (!leaves.contains(child.getNodeIndex())) {
-					// don't bother revisiting nodes we've already added to the
-					// leaf set
-					leaves.addAll(getLeaves(child, leafCache));
-				}
-			}
-		}
-		return leaves;
-	}
+//	private TIntSet getLeaves(ConcRel concept,
+//			SoftReference<TIntSet>[] leafCache) {
+//		// look in cache
+//		SoftReference<TIntSet> refLeaves = leafCache[concept.getNodeIndex()];
+//		if (refLeaves != null && refLeaves.get() != null) {
+//			return refLeaves.get();
+//		}
+//		// not in cache - compute recursively
+//		TIntSet leaves = new TIntHashSet();
+//		leafCache[concept.getNodeIndex()] = new SoftReference<TIntSet>(leaves);
+//		if (concept.isLeaf()) {
+//			// for leaves, just add the concept id
+//			leaves.add(concept.getNodeIndex());
+//		} else {
+//			// for inner nodes, recurse
+//			for (ConcRel child : concept.getChildren()) {
+//				leaves.addAll(getLeaves(child, leafCache));
+//			}
+//		}
+//		return leaves;
+//	}
 
 	/**
 	 * recursively compute the subsumers of a concept

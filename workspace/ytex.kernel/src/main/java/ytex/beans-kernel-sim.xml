@@ -16,6 +16,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="corpusName" value="${ytex.corpusName}" />
 		<property name="conceptGraphName" value="${ytex.conceptGraphName}" />
 		<property name="conceptSetName" value="${ytex.conceptSetName}" />
+		<property name="preload" value="${ytex.conceptPreload}" />
 	</bean>
 	<bean id="abstractConceptKernel" class="ytex.kernel.evaluator.ConceptKernel"
 		abstract="true" init-method="init">
