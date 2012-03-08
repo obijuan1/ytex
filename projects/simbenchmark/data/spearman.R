@@ -41,7 +41,7 @@ eval.mini = function(cg, prefix="MiniMayoSRS") {
 # main
 res = data.frame(cg=c(), file=c(), spearman=c(),p.value=c())
 
-cgs = c("sct-umls", "sct-msh", "sct-msh-csp-aod", "umls") 
+cgs = c("sct-umls", "msh-umls", "sct-msh-csp-aod", "umls") 
 cons = c("UMNSRS_similarity", "UMNSRS_relatedness", "MayoSRS")
 
 for(cg in cgs) {
@@ -110,7 +110,7 @@ pvals.res = function(x) {
 	}
 	return(pvals)
 }
-res.sum.p = adply(res.sum, 1, pvals.res)
+res.sum.p = cbind(res.sum, adply(res.sum, 1, pvals.res))
 write.csv(res.sum.p, file="simbenchmark-summary.csv", row.names=F)
 
 # concept graph p-value comparison
