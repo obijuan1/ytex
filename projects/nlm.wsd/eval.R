@@ -52,7 +52,7 @@ z.test = function(p1, p2, n) {
 	p = (p1 * n + p2 * n) / (2*n)
 	SE = sqrt(p * ( 1 - p ) * (2/n))
 	z = (p1 - p2) / SE
-	return(dnorm(z))
+	return(min(pnorm(z), pnorm(-z))*2)
 }
 
 res.word = aaply(metrics, 1, evalMetricWord)
