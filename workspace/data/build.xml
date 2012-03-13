@@ -33,17 +33,14 @@ Database connection parameters are taken from ytex.properties.
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 
 	<!-- by default umls in same database/catalog as ytex -->
-	<property name="umls.catalog" value="${db.name}" />
-	<property name="umls.schema" value="${db.schema}" />
 	<property name="sql.dir" value="./${db.type}" />
 	<property name="umls.zip" value="${ytex.home}/../umls.zip" />
-	<property name="meta.tables" value="MRDOC,MRSAB,MRSTY,MRCONSO,MRREL,MRXNS_ENG,MRXNW_ENG" />
+	<property name="meta.tables" value="MRDOC,MRSAB,MRSTY,MRCONSO,MRREL" />
 	<!-- SU is in a different format -->
 	<property name="net.tables" value="SRDEF,SRFIL,SRFLD,SRSTR,SRSTRE1,SRSTRE2" />
 	<property name="sct.home" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Snapshot/Terminology" />
 	<property name="sctf.home" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology" />
 	<property name="sct.version" value="20110731" />
-
 
 	<target name="all" depends="umls.all,uima.all" description="call umls.all and uima.all" />
 	<target name="init" description="initialize flags indicating which db is in use">
@@ -160,7 +157,7 @@ Database connection parameters are taken from ytex.properties.
 				<antcall target="jdbc.sqlcmd">
 					<param name="sqlcmd.dir" value="umls" />
 					<param name="db.name" value="${umls.catalog}" />
-					<param name="db.schema" value="${umls.schema}" />
+					<param name="db.schema" value="${umls.prefix}" />
 					<param name="sqlcmd.script" value="@{sqlcmd.script}" />
 				</antcall>
 			</sequential>
@@ -369,10 +366,8 @@ ${sql.delimiter}
 	<target name="jdl" description="load data with java data loader.  used instead of native database utilities.">
 		<echo>jdl.format ${jdl.format}</echo>
 		<echo>jdl.data ${jdl.data}</echo>
+		<echo>umls.prefix ${umls.prefix}</echo>
 		<tempfile property="jdl.format.file" suffix=".xml" deleteonexit="true" />
-		<condition property="umls.prefix" value="${umls.catalog}.${umls.schema}" else="${umls.schema}">
-			<isset property="mssql" />
-		</condition>
 		<copy file="${jdl.format}" tofile="${jdl.format.file}" overwrite="true">
 			<filterset>
 				<filter token="umls.prefix" value="${umls.prefix}" />
