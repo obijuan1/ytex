@@ -62,8 +62,12 @@ public class SemanticSimBean implements Serializable {
 	transient String intrinsicLcsTerm;
 	transient Map<String, String> lcsPathMap = new TreeMap<String, String>();
 	transient List<SimilarityMetricEnum> metrics = new ArrayList<SimilarityMetricEnum>();
-	transient String[] metricSelect;
+	transient String[] metricSelectCorpusIC;
+	transient String[] metricSelectIntrinsicIC;
+	transient String[] metricSelectTaxonomy;
+
 	transient SemanticSimRegistryBean semanticSimRegistryBean;
+
 	/**
 	 * when doing similarity for multiple concept pairs
 	 */
@@ -75,10 +79,8 @@ public class SemanticSimBean implements Serializable {
 	 * when doing similarity for a single concept pair
 	 */
 	transient SimilarityInfo simInfo = new SimilarityInfo();
-
 	public SemanticSimBean() {
 	}
-
 	public ConceptLookupBean getConcept1() {
 		return concept1;
 	}
@@ -115,8 +117,16 @@ public class SemanticSimBean implements Serializable {
 		return metrics;
 	}
 
-	public String[] getMetricSelect() {
-		return metricSelect;
+	public String[] getMetricSelectCorpusIC() {
+		return metricSelectCorpusIC;
+	}
+
+	public String[] getMetricSelectIntrinsicIC() {
+		return metricSelectIntrinsicIC;
+	}
+
+	public String[] getMetricSelectTaxonomy() {
+		return metricSelectTaxonomy;
 	}
 
 	public SemanticSimRegistryBean getSemanticSimRegistryBean() {
@@ -137,7 +147,13 @@ public class SemanticSimBean implements Serializable {
 
 	private void initMetrics() {
 		this.metrics.clear();
-		for (String metric : this.metricSelect) {
+		for (String metric : this.metricSelectTaxonomy) {
+			metrics.add(SimilarityMetricEnum.valueOf(metric));
+		}
+		for (String metric : this.metricSelectCorpusIC) {
+			metrics.add(SimilarityMetricEnum.valueOf(metric));
+		}
+		for (String metric : this.metricSelectIntrinsicIC) {
 			metrics.add(SimilarityMetricEnum.valueOf(metric));
 		}
 	}
@@ -198,8 +214,16 @@ public class SemanticSimBean implements Serializable {
 		this.metrics = metrics;
 	}
 
-	public void setMetricSelect(String[] metricSelect) {
-		this.metricSelect = metricSelect;
+	public void setMetricSelectCorpusIC(String[] metricSelectCorpusIC) {
+		this.metricSelectCorpusIC = metricSelectCorpusIC;
+	}
+
+	public void setMetricSelectIntrinsicIC(String[] metricSelectIntrinsicIC) {
+		this.metricSelectIntrinsicIC = metricSelectIntrinsicIC;
+	}
+
+	public void setMetricSelectTaxonomy(String[] metricSelectTaxonomy) {
+		this.metricSelectTaxonomy = metricSelectTaxonomy;
 	}
 
 	public void setSemanticSimRegistryBean(
@@ -266,16 +290,6 @@ public class SemanticSimBean implements Serializable {
 		}
 	}
 
-	private Map<SimilarityMetricEnum, Double> toSimMap(
-			ConceptPairSimilarity csim) {
-		Map<SimilarityMetricEnum, Double> simMap = new TreeMap<SimilarityMetricEnum, Double>();
-		for (int i = 0; i < metrics.size(); i++) {
-			simMap.put(metrics.get(i), csim.getSimilarities()
-					.get(i));
-		}
-		return simMap;
-	}
-
 	public void simMultiListen(ActionEvent event) throws IOException {
 		this.similarityList = new ArrayList<SimilarityEntry>();
 		if (conceptPairText != null) {
@@ -309,6 +323,16 @@ public class SemanticSimBean implements Serializable {
 			}
 		}
 
+	}
+
+	private Map<SimilarityMetricEnum, Double> toSimMap(
+			ConceptPairSimilarity csim) {
+		Map<SimilarityMetricEnum, Double> simMap = new TreeMap<SimilarityMetricEnum, Double>();
+		for (int i = 0; i < metrics.size(); i++) {
+			simMap.put(metrics.get(i), csim.getSimilarities()
+					.get(i));
+		}
+		return simMap;
 	}
 
 	/**
