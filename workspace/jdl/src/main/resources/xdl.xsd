@@ -24,7 +24,6 @@
   </xs:simpleType>
   <xs:simpleType name="xpathExpressionType">
     <xs:restriction base="xs:token">
-      <xs:maxLength value="30" />
     </xs:restriction>
   </xs:simpleType>
   <xs:complexType name="columnCsvLoadType">

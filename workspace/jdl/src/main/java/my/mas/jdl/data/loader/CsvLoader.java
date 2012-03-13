@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 public class CsvLoader extends Loader {
 	private CSVParser parser;
 	private CsvLoadType loader;
+	static final char DISABLED = '\ufffe';
 
 	private Map<String, Format> formatMap;
 
@@ -50,7 +51,10 @@ public class CsvLoader extends Loader {
 		Reader reader = new InputStreamReader(inputStrem);
 		CSVStrategy strategy = CSVStrategy.DEFAULT_STRATEGY;
 		strategy.setDelimiter(CharUtils.toChar(loader.getDelimiter()));
-		strategy.setEncapsulator(CharUtils.toChar(loader.getEncapsulator()));
+		if(loader.getEncapsulator() == null || loader.getEncapsulator().length() == 0)
+			strategy.setEncapsulator(DISABLED);
+		else
+			strategy.setEncapsulator(CharUtils.toChar(loader.getEncapsulator()));
 		parser = new CSVParser(reader, strategy);
 		this.loader = loader;
 		formatMap = new HashMap<String, Format>();
