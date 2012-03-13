@@ -1,5 +1,5 @@
 library(plyr)
-metrics = c("LCH", "INTRINSIC_LCH", "INTRINSIC_LIN", "PATH", "INTRINSIC_PATH", "JACCARD", "SOKAL", "WUPALMER", "RADA")
+metrics = c("LCH", "INTRINSIC_LCH", "INTRINSIC_LIN", "PATH", "INTRINSIC_PATH", "INTRINSIC_RADA", "JACCARD", "SOKAL", "WUPALMER", "RADA")
 words.notsim =  c("extraction", "failure", "radiation", "transport")
 words.unsup = c("adjustment", "blood_pressure", "degree", "evaluation", "growth", "immunosuppression", "mosaic", "nutrition", "radiation", "repair", "scale", "sensitivity", "white")
 
@@ -70,7 +70,7 @@ res = rbind(res, n=countMetric("LCH"))
 write.csv(res, file="wsd-results.csv")
 
 
-sim = res[,"sim"]
+sim = res[,"all"]
 sim.p = sim[-length(sim)]
 sim.p = sim.p[order(sim.p, decreasing=T)]
 sim.n = sim["n"]
