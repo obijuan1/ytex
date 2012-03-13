@@ -47,20 +47,7 @@
 						<table border="0">
 							<tr>
 								<td valign="top">Metrics:</td>
-								<td><h:selectManyCheckbox
-									value="#{semanticSimBean.metricSelect}" layout="pageDirection">
-									<f:selectItem itemValue="PATH" itemLabel="#{msg.PATH}" />
-									<f:selectItem itemValue="LCH" itemLabel="#{msg.LCH}" />
-									<f:selectItem itemValue="LIN" itemLabel="#{msg.LIN}" />
-									<f:selectItem itemValue="INTRINSIC_PATH"
-										itemLabel="#{msg.INTRINSIC_PATH}" />
-									<f:selectItem itemValue="INTRINSIC_LCH"
-										itemLabel="#{msg.INTRINSIC_LCH}" />
-									<f:selectItem itemValue="INTRINSIC_LIN"
-										itemLabel="#{msg.INTRINSIC_LIN}" />
-									<f:selectItem itemValue="JACCARD" itemLabel="#{msg.JACCARD}" />
-									<f:selectItem itemValue="SOKAL" itemLabel="#{msg.SOKAL}" />
-								</h:selectManyCheckbox></td>
+								<td><ui:include src="metricCheckboxes.xhtml" /></td>
 							</tr>
 							<tr>
 								<td valign="top">Concept Pairs:</td>

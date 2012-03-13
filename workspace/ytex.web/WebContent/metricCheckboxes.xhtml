@@ -1,0 +1,41 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ice="http://www.icesoft.com/icefaces/component">
+	<table>
+		<tr>
+			<th align="left">Taxonomy</th>
+			<th align="left">Intrinsic InfoContent</th>
+			<th align="left">Corpus InfoContent</th>
+		</tr>
+		<tr>
+			<td valign="top"><h:selectManyCheckbox
+					value="#{semanticSimBean.metricSelectTaxonomy}"
+					layout="pageDirection">
+					<f:selectItem itemValue="WUPALMER" itemLabel="Wu-Palmer" />
+					<f:selectItem itemValue="PATH" itemLabel="Path" />
+					<f:selectItem itemValue="LCH" itemLabel="Leacock &amp; Chodorow" />
+					<f:selectItem itemValue="RADA" itemLabel="Rada" />
+				</h:selectManyCheckbox>
+			</td>
+			<td valign="top"><h:selectManyCheckbox
+					value="#{semanticSimBean.metricSelectIntrinsicIC}"
+					layout="pageDirection">
+					<f:selectItem itemValue="INTRINSIC_LIN" itemLabel="Lin" />
+					<f:selectItem itemValue="INTRINSIC_PATH" itemLabel="Path" />
+					<f:selectItem itemValue="INTRINSIC_LCH"
+						itemLabel="Leacock &amp; Chodorow" />
+					<f:selectItem itemValue="INTRINSIC_RADA" itemLabel="Rada" />
+					<f:selectItem itemValue="JACCARD" itemLabel="Jaccard" />
+					<f:selectItem itemValue="SOKAL" itemLabel="Sokal &amp; Sneath" />
+				</h:selectManyCheckbox>
+			</td>
+			<td valign="top"><h:selectManyCheckbox
+					value="#{semanticSimBean.metricSelectCorpusIC}"
+					layout="pageDirection">
+					<f:selectItem itemValue="LIN" itemLabel="Lin" />
+				</h:selectManyCheckbox>
+			</td>
+		</tr>
+	</table>
+</div>
