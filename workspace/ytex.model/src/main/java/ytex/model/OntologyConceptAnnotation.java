@@ -17,6 +17,15 @@ public class OntologyConceptAnnotation implements Serializable {
 	String code;
 	String oid;
 	NamedEntityAnnotation namedEntityAnnotation;
+	boolean disambiguated;
+
+	public boolean isDisambiguated() {
+		return disambiguated;
+	}
+
+	public void setDisambiguated(boolean disambiguated) {
+		this.disambiguated = disambiguated;
+	}
 
 	public int getOntologyConceptAnnotationID() {
 		return ontologyConceptAnnotationID;

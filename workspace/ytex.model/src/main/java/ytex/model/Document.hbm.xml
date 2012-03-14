@@ -42,6 +42,7 @@
 		<property name="codingScheme" column="coding_scheme" />
 		<property name="code" column="code" />
 		<property name="oid" column="oid" />
+		<property name="disambiguated" column="disambiguated" />
 		<many-to-one name="namedEntityAnnotation" class="NamedEntityAnnotation"
 			column="anno_base_id" not-null="true" />
 		<joined-subclass name="UmlsConceptAnnotation" table="anno_umls_concept">
