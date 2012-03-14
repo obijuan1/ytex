@@ -13,7 +13,7 @@
 	<property name="ytex.mx" value="1500m" />
 	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh-csp-aod,umls"/>
 	<property name="cg.list" value="sct,msh,${cg.umls.list}"/>
-
+	<property name="ytex.conceptPreload" value="false" />
 	<property name="maxMemory" value="2g" />
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
 	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier" description="load mesh into db" />
@@ -49,7 +49,7 @@
 			<fileset dir="${basedir}/config" includes="*.template.xml" />
 			<globmapper from="*.template.xml" to="*.xml" />
 			<filterset>
-				<filter token="umls.schema" value="${umls.schema}" />
+				<filter token="umls.schema" value="${umls.prefix}" />
 			</filterset>
 		</copy>
 	</target>
@@ -109,7 +109,7 @@
 			</syspropertyset>
 			<jvmarg value="-Xmx${ytex.mx}" />
 			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
-			<jvmarg value="-Dytex.conceptPreload=false" />
+			<jvmarg value="-Dytex.conceptPreload=${ytex.conceptPreload}" />
 			<arg value="-concepts" />
 			<arg value="../${eval.concepts}" />
 			<arg value="-metrics" />
