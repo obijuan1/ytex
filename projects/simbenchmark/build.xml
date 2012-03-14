@@ -176,10 +176,10 @@
 			<param name="cg" value="sct-umls" />
 		</antcall>
 		<antcall target="concat.cg">
-			<param name="cg" value="sct-msh" />
+			<param name="cg" value="sct-msh-csp-aod" />
 		</antcall>
 		<antcall target="concat.cg">
-			<param name="cg" value="sct-msh-csp-aod" />
+			<param name="cg" value="umls" />
 		</antcall>
 	</target>
 </project>
