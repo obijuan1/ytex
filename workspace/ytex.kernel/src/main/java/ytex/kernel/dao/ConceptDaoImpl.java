@@ -163,8 +163,9 @@ public class ConceptDaoImpl implements ConceptDao {
 		if (forbiddenConcepts.contains(childCUI)
 				|| forbiddenConcepts.contains(parentCUI)) {
 			// ignore relationships to useless concepts
-			log.warn("skipping relation because of forbidden concept: par="
-					+ parentCUI + " child=" + childCUI);
+			if (log.isDebugEnabled())
+				log.debug("skipping relation because of forbidden concept: par="
+						+ parentCUI + " child=" + childCUI);
 			return;
 		}
 		// ignore self relations
