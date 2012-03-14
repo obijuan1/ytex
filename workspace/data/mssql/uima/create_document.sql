@@ -87,6 +87,7 @@ create table $(db_schema).anno_ontology_concept (
 	coding_scheme varchar(20),
 	code varchar(20),
 	oid varchar(10),
+	disambiguated bit not null default 0,
 	primary key (anno_ontology_concept_id),
 	foreign key (anno_base_id) references $(db_schema).anno_named_entity(anno_base_id)  ON DELETE CASCADE
 );

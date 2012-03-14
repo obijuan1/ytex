@@ -42,7 +42,7 @@ Database connection parameters are taken from ytex.properties.
 	<property name="sctf.home" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology" />
 	<property name="sct.version" value="20110731" />
 
-	<target name="all" depends="umls.all,uima.all" description="call umls.all and uima.all" />
+	<target name="all" depends="umls.all,uima.all,kernel.all" description="call umls.all and uima.all" />
 	<target name="init" description="initialize flags indicating which db is in use">
 		<condition property="mysql">
 			<equals arg1="${db.type}" arg2="mysql" />
@@ -449,6 +449,7 @@ ${sql.delimiter}
 			</filterset>
 		</copy>
 	</target>
+	<target name="kernel.all" description="drop and create tables for data mining" depends="kernel.drop,kernel.create"/>
 	<target name="kernel.drop" description="create tables for data mining">
 		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="kernel" />
