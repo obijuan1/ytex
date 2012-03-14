@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configure a SemanticSimServiceBean for each concept graph we would like 
+	to compute semantic similarity for. SemanticSimServiceBean references a conceptSimilarityService 
+	bean which computes similarity, and a conceptSearchService bean used to map 
+	words to concepts -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<!-- default SemanticSimServiceBean -->
+	<bean id="conceptSimilarityService" class="ytex.kernel.ConceptSimilarityServiceImpl"
+		init-method="init">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="conceptDao" ref="conceptDao" />
+		<property name="classifierEvaluationDao" ref="classifierEvaluationDao" />
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="corpusName" value="${ytex.corpusName}" />
+		<property name="conceptGraphName" value="${ytex.conceptGraphName}" />
+		<property name="conceptSetName" value="${ytex.conceptSetName}" />
+		<property name="preload" value="false" />
+	</bean>
+	<bean id="semanticSimBean" class="ytex.web.search.SemanticSimServiceBean">
+		<property name="conceptSearchService" ref="umlsFirstWordService" />
+		<property name="conceptSimilarityService" ref="conceptSimilarityService" />
+		<property name="description" value="SNOMED-CT from UMLS 2011AB" />
+	</bean>
+	<!-- snomed-ct SemanticSimServiceBean -->
+	<bean id="semanticSimRegistryBean" class="ytex.web.search.SemanticSimRegistryBean">
+		<property name="semanticSimServiceList">
+			<list>
+				<ref bean="semanticSimBean" />
+			</list>
+		</property>
+	</bean>
+</beans>

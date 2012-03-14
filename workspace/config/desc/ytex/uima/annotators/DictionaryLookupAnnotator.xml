@@ -34,6 +34,7 @@
         <import name="dictionary lookup.DictionaryLookupTypeSystem"/>
         <import name="NE contexts.NEContextTypeSystem"/>
         <import name="lookup.LookupWindowAnnotationTypeSystem"/>
+        <import name="ytex.uima.types.OntologyConceptTypeSystem"/>
       </imports>
     </typeSystemDescription>
     <typePriorities/>
@@ -119,8 +120,7 @@
                 <mandatory>false</mandatory>
               </configurationParameter>
             </configurationParameters>
-            <configurationParameterSettings>
-            </configurationParameterSettings>
+            <configurationParameterSettings/>
           </resourceMetaData>
         </configurableDataResourceSpecifier>
         <implementationName>ytex.uima.resource.InitableJdbcConnectionResourceImpl</implementationName>
