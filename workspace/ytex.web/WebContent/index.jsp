@@ -6,6 +6,6 @@ response.sendRedirect("semanticSearch.jsf");
 <html>
     <head> </head>
     <body>
-        <jsp:forward page="semanticSearch.jsf" />
+        <jsp:forward page="semanticSim.jsf" />
     </body>
 </html>
