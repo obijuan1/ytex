@@ -68,6 +68,7 @@ create table anno_ontology_concept (
 	coding_scheme varchar(20),
 	code varchar(20),
 	oid varchar(10),
+	disambiguated bit not null default 0,
 	primary key (anno_ontology_concept_id),
 	KEY `IX_anno_base_id` (`anno_base_id`),
 	KEY `IX_code` (`code`),
