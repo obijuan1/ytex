@@ -107,7 +107,7 @@ Call with option -projecthelp for more info.
 			</not>
 			<then>
 				<echo>Downloading ${lvg.filename} to ${lvg.download.dir} from nlm.  This may take a while!</echo>
-				<copy todir="${lvg.download.dir}" flatten="true">
+				<copy todir="${lvg.download.dir}" flatten="true" failonerror="false">
 					<resources>
 						<url url="http://lexsrv3.nlm.nih.gov/LexSysGroup/Projects/lvg/${lvg.basename}/release/${lvg.filename}" />
 					</resources>
@@ -116,14 +116,22 @@ Call with option -projecthelp for more info.
 		</if>
 	</target>
 	<target name="setup.lvg.unzip">
-		<untar src="${lvg.tgz}" compression="gzip" dest="${ytex.home}/maveric/resources/lvg">
-			<patternset>
-				<include name="${lvg.basename}/data/**/*.*" />
-				<exclude name="${lvg.basename}/data/**/lvg.properties" />
-			</patternset>
-		</untar>
-		<move file="${ytex.home}/maveric/resources/lvg/${lvg.basename}/data" todir="${ytex.home}/maveric/resources/lvg" />
-		<delete dir="${ytex.home}/maveric/resources/lvg/${lvg.basename}" />
+		<if>
+			<available file="${lvg.tgz}" />
+			<then>
+				<untar src="${lvg.tgz}" compression="gzip" dest="${ytex.home}/maveric/resources/lvg">
+					<patternset>
+						<include name="${lvg.basename}/data/**/*.*" />
+						<exclude name="${lvg.basename}/data/**/lvg.properties" />
+					</patternset>
+				</untar>
+				<move file="${ytex.home}/maveric/resources/lvg/${lvg.basename}/data" todir="${ytex.home}/maveric/resources/lvg" />
+				<delete dir="${ytex.home}/maveric/resources/lvg/${lvg.basename}" />
+			</then>
+			<else>
+				<echo>${lvg.tgz} not found and could not be downloaded.  Stemming will not be enabled</echo>
+			</else>
+		</if>
 	</target>
 	<target name="update.manifest" description="update the manifest">
 		<manifestclasspath property="ytex.classpath.man" jarfile="${ytex.home}/lib/ytex.model.jar">
