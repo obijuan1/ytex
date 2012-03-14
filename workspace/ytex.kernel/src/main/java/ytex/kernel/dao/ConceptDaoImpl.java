@@ -53,11 +53,11 @@ public class ConceptDaoImpl implements ConceptDao {
 	 */
 	private static final String DEFAULT_ROOT_ID = "C0000000";
 	/**
-	 * ignore forbidden concepts. list Taken from umls-interface.
-	 * 	f concept is one of the following just return #C1274012|Ambiguous
-	 * concept (inactive concept) if($concept=~/C1274012/) { return 1; }
-	 * #C1274013|Duplicate concept (inactive concept) if($concept=~/C1274013/) {
-	 * return 1; } #C1276325|Reason not stated concept (inactive concept)
+	 * ignore forbidden concepts. list Taken from umls-interface. f concept is
+	 * one of the following just return #C1274012|Ambiguous concept (inactive
+	 * concept) if($concept=~/C1274012/) { return 1; } #C1274013|Duplicate
+	 * concept (inactive concept) if($concept=~/C1274013/) { return 1; }
+	 * #C1276325|Reason not stated concept (inactive concept)
 	 * if($concept=~/C1276325/) { return 1; } #C1274014|Outdated concept
 	 * (inactive concept) if($concept=~/C1274014/) { return 1; }
 	 * #C1274015|Erroneous concept (inactive concept) if($concept=~/C1274015/) {
@@ -67,15 +67,16 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * ambiguous if($concept=~/C1274012/) { return 1; } #C2733115|limited status
 	 * concept if($concept=~/C2733115/) { return 1; }
 	 */
-	private static final String forbiddenConceptArr[] = new String[] {
+	private static final String defaultForbiddenConceptArr[] = new String[] {
 			"C1274012", "C1274013", "C1276325", "C1274014", "C1274015",
 			"C1274021", "C1443286", "C1274012", "C2733115" };
-	private static Set<String> forbiddenConcepts;
+	private static Set<String> defaultForbiddenConcepts;
 	private static final Log log = LogFactory.getLog(ConceptDaoImpl.class);
 
 	static {
-		forbiddenConcepts = new HashSet<String>();
-		forbiddenConcepts.addAll(Arrays.asList(forbiddenConceptArr));
+		defaultForbiddenConcepts = new HashSet<String>();
+		defaultForbiddenConcepts.addAll(Arrays
+				.asList(defaultForbiddenConceptArr));
 	}
 
 	/**
@@ -104,6 +105,16 @@ public class ConceptDaoImpl implements ConceptDao {
 			String conceptGraphQuery = props
 					.getProperty("ytex.conceptGraphQuery");
 			String strCheckCycle = props.getProperty("ytex.checkCycle", "true");
+			String forbiddenConceptList = props
+					.getProperty("ytex.forbiddenConcepts");
+			Set<String> forbiddenConcepts;
+			if (forbiddenConceptList != null) {
+				forbiddenConcepts = new HashSet<String>();
+				forbiddenConcepts.addAll(Arrays.asList(forbiddenConceptList
+						.split(",")));
+			} else {
+				forbiddenConcepts = defaultForbiddenConcepts;
+			}
 			boolean checkCycle = true;
 			if ("false".equalsIgnoreCase(strCheckCycle)
 					|| "no".equalsIgnoreCase(strCheckCycle))
@@ -113,7 +124,8 @@ public class ConceptDaoImpl implements ConceptDao {
 						.getApplicationContext()
 						.getBean(ConceptDao.class)
 						.createConceptGraph(conceptGraphName,
-								conceptGraphQuery, checkCycle);
+								conceptGraphQuery, checkCycle,
+								forbiddenConcepts);
 			} else {
 				printHelp(options);
 			}
@@ -146,10 +158,13 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * @param conceptPair
 	 */
 	private void addRelation(ConceptGraph cg, Set<String> roots,
-			String childCUI, String parentCUI, boolean checkCycle) {
+			String childCUI, String parentCUI, boolean checkCycle,
+			Set<String> forbiddenConcepts) {
 		if (forbiddenConcepts.contains(childCUI)
 				|| forbiddenConcepts.contains(parentCUI)) {
 			// ignore relationships to useless concepts
+			log.warn("skipping relation because of forbidden concept: par="
+					+ parentCUI + " child=" + childCUI);
 			return;
 		}
 		// ignore self relations
@@ -203,7 +218,8 @@ public class ConceptDaoImpl implements ConceptDao {
 	 */
 	@Override
 	public void createConceptGraph(String name, String query,
-			final boolean checkCycle) throws IOException {
+			final boolean checkCycle, final Set<String> forbiddenConcepts)
+			throws IOException {
 		ConceptGraph conceptGraph = getConceptGraph(name);
 		if (conceptGraph != null) {
 			if (log.isWarnEnabled())
@@ -225,7 +241,8 @@ public class ConceptDaoImpl implements ConceptDao {
 				public void processRow(ResultSet rs) throws SQLException {
 					String child = rs.getString(1);
 					String parent = rs.getString(2);
-					addRelation(cg, roots, child, parent, checkCycle);
+					addRelation(cg, roots, child, parent, checkCycle,
+							forbiddenConcepts);
 					nRowsProcessed++;
 					if (nRowsProcessed % 10000 == 0) {
 						log.info("processed " + nRowsProcessed + " edges");
@@ -419,25 +436,26 @@ public class ConceptDaoImpl implements ConceptDao {
 		this.ytexProperties = ytexProperties;
 	}
 
-//	/**
-//	 * add parent to all descendants of crChild
-//	 * 
-//	 * @param crPar
-//	 * @param crChild
-//	 * @param ancestorCache
-//	 */
-//	private void updateDescendants(Set<Integer> ancestorsPar, ConcRel crChild,
-//			Map<Integer, Set<Integer>> ancestorCache, int depth) {
-//		if (ancestorCache != null) {
-//			Set<Integer> ancestors = ancestorCache.get(crChild.nodeIndex);
-//			if (ancestors != null)
-//				ancestors.addAll(ancestorsPar);
-//			// recurse
-//			for (ConcRel crD : crChild.getChildren()) {
-//				updateDescendants(ancestorsPar, crD, ancestorCache, depth + 1);
-//			}
-//		}
-//	}
+	// /**
+	// * add parent to all descendants of crChild
+	// *
+	// * @param crPar
+	// * @param crChild
+	// * @param ancestorCache
+	// */
+	// private void updateDescendants(Set<Integer> ancestorsPar, ConcRel
+	// crChild,
+	// Map<Integer, Set<Integer>> ancestorCache, int depth) {
+	// if (ancestorCache != null) {
+	// Set<Integer> ancestors = ancestorCache.get(crChild.nodeIndex);
+	// if (ancestors != null)
+	// ancestors.addAll(ancestorsPar);
+	// // recurse
+	// for (ConcRel crD : crChild.getChildren()) {
+	// updateDescendants(ancestorsPar, crD, ancestorCache, depth + 1);
+	// }
+	// }
+	// }
 
 	/**
 	 * write the concept graph, create parent directories as required

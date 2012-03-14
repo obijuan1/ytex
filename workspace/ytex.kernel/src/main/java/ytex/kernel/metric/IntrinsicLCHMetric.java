@@ -19,7 +19,7 @@ public class IntrinsicLCHMetric extends BaseSimilarityMetric {
 	public IntrinsicLCHMetric(ConceptSimilarityService simSvc, Double maxIC) {
 		super(simSvc);
 		this.maxIC = maxIC;
-		this.logMaxIC2 = Math.log(2 * maxIC.doubleValue());
+		this.logMaxIC2 = Math.log(2 * maxIC.doubleValue()) + 1d;
 	}
 
 	@Override

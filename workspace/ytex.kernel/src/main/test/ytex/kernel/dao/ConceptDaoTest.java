@@ -3,7 +3,6 @@ package ytex.kernel.dao;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,7 +11,6 @@ import ytex.kernel.KernelContextHolder;
 import ytex.kernel.metric.LCSPath;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
-import ytex.kernel.model.ObjPair;
 
 public class ConceptDaoTest extends TestCase {
 	ConceptDao conceptDao = null;
@@ -28,7 +26,7 @@ public class ConceptDaoTest extends TestCase {
 				.createConceptGraph(
 						"snomed",
 						"select cui1, cui2 from umls.MRREL where sab = 'SNOMEDCT' and rel = 'PAR'",
-						true);
+						true, null);
 		ConceptGraph cg = conceptDao.getConceptGraph("snomed");
 		// System.out.println("depth:" + cg.getDepthMax());
 		System.out.println("concepts:" + cg.getConceptMap().size());

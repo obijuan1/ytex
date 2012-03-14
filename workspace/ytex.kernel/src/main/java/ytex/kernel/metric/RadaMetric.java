@@ -21,7 +21,7 @@ public class RadaMetric extends BaseSimilarityMetric {
 			Map<String, Double> conceptFilter, SimilarityInfo simInfo) {
 		this.initLCSes(concept1, concept2, simInfo);
 		if (simInfo.getLcsDist() > 0) {
-			return 1 - (((double) simInfo.getLcsDist()) / (double) (2 * depthMax));
+			return 1 - (((double) simInfo.getLcsDist()-1) / (double) (2 * depthMax));
 		} else {
 			return 0;
 		}

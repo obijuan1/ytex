@@ -1,6 +1,7 @@
 package ytex.kernel.dao;
 
 import java.io.IOException;
+import java.util.Set;
 
 import ytex.kernel.model.ConceptGraph;
 
@@ -36,6 +37,6 @@ public interface ConceptDao {
 	 * @return ConceptGraph the concept graph generated using this query.
 	 */
 	public abstract void createConceptGraph(String name, String query,
-			final boolean checkCycle) throws IOException;
+			final boolean checkCycle, final Set<String> forbiddenConcepts) throws IOException;
 
 }
