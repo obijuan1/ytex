@@ -12,4 +12,6 @@
 	) rd on rd.id = r.id and rd.effectiveTime = r.effectiveTime
 	where typeId = 116680003 and active = 1
 	]]></entry>
+	<!-- inactive concepts -->
+	<entry key="ytex.forbiddenConcepts">362955004,363662004,363664003,443559000,370126003,363663009,363661006,362955004</entry>
 </properties>
