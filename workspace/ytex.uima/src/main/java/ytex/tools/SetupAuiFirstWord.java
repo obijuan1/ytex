@@ -135,16 +135,6 @@ public class SetupAuiFirstWord {
 				isLvgAnno.close();
 		}
 
-		URL uri = this.getClass().getClassLoader()
-				.getResource("lvg/data/config/lvg.properties");
-		if (log.isInfoEnabled())
-			log.info("loading lvg.properties from:" + uri.getPath());
-		File f = new File(uri.getPath());
-		String configDir = f.getParentFile().getAbsolutePath();
-		String lvgDir = configDir.substring(0, configDir.length()
-				- "data/config".length());
-		System.setProperty("user.dir", lvgDir);
-
 		// See
 		// http://lexsrv2.nlm.nih.gov/SPECIALIST/Projects/lvg/2008/docs/userDoc/index.html
 		// See
@@ -153,7 +143,22 @@ public class SetupAuiFirstWord {
 		// f = using flow components (in this order)
 		// l = lower case
 		// b = uninflect a term
-		lvgCmd = new LvgCmdApi("-f:l:b", f.getAbsolutePath());
+		try {
+			URL uri = this.getClass().getClassLoader()
+					.getResource("lvg/data/config/lvg.properties");
+			if (log.isInfoEnabled())
+				log.info("loading lvg.properties from:" + uri.getPath());
+			File f = new File(uri.getPath());
+			String configDir = f.getParentFile().getAbsolutePath();
+			String lvgDir = configDir.substring(0, configDir.length()
+					- "data/config".length());
+			System.setProperty("user.dir", lvgDir);
+			lvgCmd = new LvgCmdApi("-f:l:b", f.getAbsolutePath());
+		} catch (Exception e) {
+			log.warn(
+					"could not initialize lvg - will not create a stemmed dictionary.",
+					e);
+		}
 
 	}
 
@@ -325,7 +330,7 @@ public class SetupAuiFirstWord {
 	 * @throws Exception
 	 */
 	private String getCanonicalForm(String word) throws Exception {
-		if (this.exclusionSet.contains(word))
+		if (lvgCmd == null || this.exclusionSet.contains(word))
 			return null;
 		String canonicalForm = null;
 		String out = lvgCmd.MutateToString(word);

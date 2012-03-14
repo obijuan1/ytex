@@ -14,14 +14,14 @@ import org.apache.uima.jcas.cas.FSArray;
 import edu.mayo.bmi.dictionary.MetaDataHit;
 import edu.mayo.bmi.lookup.vo.LookupHit;
 import edu.mayo.bmi.uima.core.ae.type.NamedEntity;
-import edu.mayo.bmi.uima.core.ae.type.OntologyConcept;
+import ytex.uima.types.OntologyConcept;
 import edu.mayo.bmi.uima.core.util.TypeSystemConst;
 import edu.mayo.bmi.uima.lookup.ae.BaseLookupConsumerImpl;
 import edu.mayo.bmi.uima.lookup.ae.LookupConsumer;
 
 /**
  * Based on cTAKES NamedEntityLookupConsumerImpl. Modified to filter out
- * duplicate concepts.
+ * duplicate concepts. Modified to use ytex OntologyConcept to support WSD.
  * 
  * @author vijay
  * 
@@ -55,9 +55,6 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 		while (hitsByOffsetItr.hasNext()) {
 			Collection hitsAtOffsetCol = (Collection) hitsByOffsetItr.next();
 
-			FSArray ocArr = new FSArray(jcas, hitsAtOffsetCol.size());
-			int ocArrIdx = 0;
-
 			// iterate over the LookupHit objects and create
 			// a corresponding JCas OntologyConcept object that will
 			// be placed in a FSArray
@@ -69,20 +66,19 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 				LookupHit lh = (LookupHit) lhAtOffsetItr.next();
 				neBegin = lh.getStartOffset();
 				neEnd = lh.getEndOffset();
-
 				MetaDataHit mdh = lh.getDictMetaDataHit();
 				String code = mdh.getMetaFieldValue(iv_props
 						.getProperty(CODE_MF_PRP_KEY));
-				if (!concepts.contains(code)) {
-					concepts.add(code);
-					OntologyConcept oc = new OntologyConcept(jcas);
-					oc.setCode(code);
-					oc.setCodingScheme(iv_props
-							.getProperty(CODING_SCHEME_PRP_KEY));
-
-					ocArr.set(ocArrIdx, oc);
-					ocArrIdx++;
-				}
+				concepts.add(code);
+			}
+			FSArray ocArr = new FSArray(jcas, concepts.size());
+			int ocArrIdx = 0;
+			for (String code : concepts) {
+				OntologyConcept oc = new OntologyConcept(jcas);
+				oc.setCode(code);
+				oc.setCodingScheme(iv_props.getProperty(CODING_SCHEME_PRP_KEY));
+				ocArr.set(ocArrIdx, oc);
+				ocArrIdx++;
 			}
 
 			NamedEntity neAnnot = new NamedEntity(jcas);
