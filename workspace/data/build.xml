@@ -449,11 +449,15 @@ ${sql.delimiter}
 			</filterset>
 		</copy>
 	</target>
-	<target name="kernel.all" description="drop and create tables for data mining" depends="kernel.drop,kernel.create"/>
+	<target name="kernel.all" description="drop and create tables for data mining" depends="kernel.drop,kernel.create" />
 	<target name="kernel.drop" description="create tables for data mining">
+		<condition property="drop.sql.onerror" value="continue" else="abort">
+			<equals arg1="${db.type}" arg2="orcl" />
+		</condition>
 		<antcall target="jdbc.sqlcmd">
 			<param name="sqlcmd.dir" value="kernel" />
 			<param name="sqlcmd.script" value="drop_tables.sql" />
+			<param name="sql.onerror" value="${drop.sql.onerror}" />
 		</antcall>
 	</target>
 	<target name="kernel.create" description="create tables for data mining">
@@ -461,6 +465,16 @@ ${sql.delimiter}
 			<param name="sqlcmd.dir" value="kernel" />
 			<param name="sqlcmd.script" value="create_tables.sql" />
 		</antcall>
+		<if>
+			<equals arg1="${db.type}" arg2="orcl" />
+			<then>
+				<antcall target="jdbc.sqlcmd">
+					<param name="sqlcmd.dir" value="kernel" />
+					<param name="sqlcmd.script" value="create_tables_trg.sql" />
+					<param name="sql.delimiter" value="/" />
+				</antcall>
+			</then>
+		</if>
 	</target>
 	<target name="sct.all" depends="sct.create,sct.load" description="import snomed-ct snapshot tables" />
 	<target name="sctf.all" description="import snomed-ct full tables">
@@ -496,5 +510,39 @@ ${sql.delimiter}
 			<param name="sqlcmd.dir" value="snomedct" />
 			<param name="sqlcmd.script" value="index_tables${suffix}.sql" />
 		</antcall>
+	</target>
+	<target name="ic.all">
+		<for list="sct-msh-csp-aod,umls" param="ic">
+			<sequential>
+				<antcall target="ic.load.cg">
+					<param name="ytex.conceptGraphName" value="@{ic}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="ic.load.cg" description="load ic for concept graph into db">
+		<condition property="drop.sql.onerror" value="continue" else="abort">
+			<equals arg1="${db.type}" arg2="orcl" />
+		</condition>
+		<delete dir="${basedir}/tmp" quiet="yes" />
+		<mkdir dir="${basedir}/tmp" />
+		<copy file="${basedir}/${db.type}/kernel/ic_copy.template.sql" tofile="${basedir}/tmp/ic_copy.sql" overwrite="yes">
+			<filterset>
+				<filter token="ytex.conceptGraphName" value="${ytex.conceptGraphName}" />
+			</filterset>
+		</copy>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sqlcmd.dir" value="kernel" />
+			<param name="sqlcmd.script" value="ic_create.sql" />
+			<param name="sql.onerror" value="${drop.sql.onerror}" />
+		</antcall>
+		<antcall target="jdl">
+			<param name="jdl.data" value="${ytex.conceptGraphDir}/${ytex.conceptGraphName}.txt" />
+			<param name="jdl.format" value="${basedir}/umls/tmp_ic.xml" />
+		</antcall>
+		<antcall target="jdbc.sqlcmd">
+			<param name="sql.file" value="${basedir}/tmp/ic_copy.sql" />
+		</antcall>
+		<delete dir="${basedir}/tmp" quiet="yes" />
 	</target>
 </project>

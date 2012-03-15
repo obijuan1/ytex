@@ -75,7 +75,7 @@ create table anno_ontology_concept (
 	coding_scheme varchar2(20),
 	code varchar2(20),
 	oid varchar2(10),
-	disambiguated numeric(1) not null default 0,
+	disambiguated numeric(1) default 0 not null,
 	primary key (anno_ontology_concept_id),
 	foreign key (anno_base_id) references anno_named_entity(anno_base_id)  ON DELETE CASCADE
 );
