@@ -109,7 +109,9 @@
 			</syspropertyset>
 			<jvmarg value="-Xmx${ytex.mx}" />
 			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
+			<!--
 			<jvmarg value="-Dytex.conceptPreload=${ytex.conceptPreload}" />
+			-->
 			<arg value="-concepts" />
 			<arg value="../${eval.concepts}" />
 			<arg value="-metrics" />
