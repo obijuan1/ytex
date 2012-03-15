@@ -2,7 +2,6 @@ package ytex.kernel.metric;
 
 import java.util.Map;
 
-
 /**
  * compute intrinsic LCH as in eqn 28 from
  * http://dx.doi.org/10.1016/j.jbi.2011.03.013
@@ -13,20 +12,19 @@ import java.util.Map;
  * 
  */
 public class IntrinsicLCHMetric extends BaseSimilarityMetric {
-	Double maxIC;
 	double logMaxIC2 = 0d;
 
 	public IntrinsicLCHMetric(ConceptSimilarityService simSvc, Double maxIC) {
 		super(simSvc);
-		this.maxIC = maxIC;
-		this.logMaxIC2 = Math.log(2 * maxIC.doubleValue()) + 1d;
+		if (maxIC != null)
+			this.logMaxIC2 = Math.log(2 * maxIC.doubleValue()) + 1d;
 	}
 
 	@Override
 	public double similarity(String concept1, String concept2,
 			Map<String, Double> conceptFilter, SimilarityInfo simInfo) {
 		double sim = 0d;
-		if (maxIC != null) {
+		if (logMaxIC2 != 0d) {
 			double ic1 = simSvc.getIC(concept1, true);
 			double ic2 = simSvc.getIC(concept2, true);
 			double lcsIC = initLcsIC(concept1, concept2, conceptFilter,
