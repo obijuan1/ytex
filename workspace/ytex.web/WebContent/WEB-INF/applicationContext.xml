@@ -6,7 +6,7 @@
 	<import resource="classpath:/ytex/beans.xml" />
 	<import resource="classpath:/ytex/beans-kernel.hbm.xml" />
 	<import resource="classpath:/ytex/beans-kernel.xml" />
-	<import resource="classpath:/ytex/beans-kernel-simweb.xml" />
+	<import resource="classpath:/ytex/web/beans-kernel-simweb.xml" />
 	<import resource="classpath:/ytex/web/beans-web.xml" />
 	<import resource="classpath:/ytex/web/beans-ws.xml" />
 	<import resource="classpath:/ytex/web/beans-security.xml" />
