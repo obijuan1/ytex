@@ -315,37 +315,48 @@
 		<copy todir="${ytex.web.dir}/WEB-INF/lib">
 			<fileset dir="${ytex.dist.home}/libs.system">
 				<include name="ytex.model.jar" />
+				<include name="ytex.kernel.jar" />
 			</fileset>
 		</copy>
 	</target>
-	<target name="update.manifest">
-		<manifestclasspath property="ytex.kernel.classpath" jarfile="${dist.home}/ytex/libs.system/ytex.kernel.jar">
+	<target name="build.ytex.jar">
+		<delete file="${dist.home}/ytex/libs.system/ytex.jar" quiet="yes" />
+		<manifestclasspath property="ytex.kernel.classpath" jarfile="${dist.home}/ytex/libs.system/ytex.jar">
 			<classpath>
-				<fileset dir="${dist.home}/ytex/libs.system" includes="**/*.jar" />
+				<fileset dir="${dist.home}/ytex/libs.system" includes="ctakes-patches.jar" />
+				<fileset dir="${dist.home}/ytex/libs.system" includes="**/*.jar" excludes="ctakes-patches.jar,ant-dependencies/**/*.*" />
 				<pathelement location="${dist.home}/ytex/maveric/dest" />
 				<pathelement location="${dist.home}/ytex/maveric/resources" />
 				<fileset dir="${dist.home}/ytex/maveric/ext" includes="**/*.jar" />
 				<fileset dir="${dist.home}/ytex/maveric/lib" includes="**/*.jar" />
 				<pathelement location="${dist.home}/ytex/config/desc" />
-				<fileset dir="${dist.home}/ytex/web/webapps/ytex.web/WEB-INF/lib" includes="**/*.jar" />
+				<fileset dir="${dist.home}/ytex/web/webapps/ytex.web/WEB-INF/lib" includes="*.jar" />
 			</classpath>
 		</manifestclasspath>
 		<manifest file="${dist.home}/MANIFEST.MF">
 			<attribute name="Implementation-Version" value="${ytex.version}" />
 			<attribute name="Class-Path" value="${ytex.kernel.classpath}" />
 		</manifest>
-		<jar destfile="${dist.home}/ytex/libs.system/ytex.kernel.jar" update="yes" manifest="${dist.home}/MANIFEST.MF" />
+		<jar destfile="${dist.home}/ytex/libs.system/ytex.jar" update="no" manifest="${dist.home}/MANIFEST.MF" />
 	</target>
 	<target name="zip.dist">
 		<delete dir="${dist.home}" includes="ytex*.zip" />
 		<zip destfile="${dist.home}/ytex-v${ytex.version}.zip" update="no">
-			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
+			<fileset dir="${dist.home}">
+				<include name="ytex/**/*.*"/>
+				<exclude name="ytex/libs.system/ytex.model.jar" />
+				<exclude name="ytex/libs.system/ytex.kernel.jar" />
+			</fileset>
 		</zip>
 		<zip destfile="${dist.home}/ytex-with-dependencies-v${ytex.version}.zip" update="no">
-			<fileset dir="${dist.home}" includes="ytex/**/*.*" excludes="ytex/lib/ytex.model.jar" />
+			<fileset dir="${dist.home}">
+				<include name="ytex/**/*.*" />
+				<exclude name="ytex/libs.system/ytex.model.jar" />
+				<exclude name="ytex/libs.system/ytex.kernel.jar" />
+			</fileset>
 			<zipfileset dir="${nlp.home}" includes="${tomcat.dir}/**/*.*" excludes="${tomcat.dir}/webapps/**/*.*" />
 			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*,${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
 		</zip>
 	</target>
-	<target name="build.all" depends="clean.dist,build.jdl,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,build.ctakes-patches,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,update.manifest,zip.dist" />
+	<target name="build.all" depends="clean.dist,build.jdl,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,build.ctakes-patches,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,build.ytex.jar,zip.dist" />
 </project>

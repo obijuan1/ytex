@@ -21,7 +21,6 @@ ANT_HOME=${YTEX_HOME}/../apache-ant-1.8.0
 export ANT_HOME
 
 # PATH variable
-# make sure mysql or oracle binaries are in this path
 # add java and ant to the front of the path
 PATH=${ANT_HOME}/bin:${JAVA_HOME}/bin:${PATH}
 export PATH
@@ -30,8 +29,6 @@ export PATH
 # if you installed from ytex-with-dependencies.zip,
 # you should not have to change anything below this line
 ################################
-
-
 CATALINA_HOME=${YTEX_HOME}/../apache-tomcat-7.0.25
 export CATALINA_HOME
 
@@ -50,4 +47,8 @@ JDBC_CP=${JDBC_CP}:${YTEX_LIB_SYS_HOME}/oracle11.2.0.1.0/ojdbc6.jar
 # tomcat classpath
 TOMCAT_CP=${JDBC_CP}:${YTEX_HOME}/config/desc
 export TOMCAT_CP
+
+# YTEX classpath
+CLASSPATH=%YTEX_LIB_SYS_HOME%\ctakes-patches.jar;%YTEX_LIB_SYS_HOME%\ytex.jar
+export CLASSPATH
 
