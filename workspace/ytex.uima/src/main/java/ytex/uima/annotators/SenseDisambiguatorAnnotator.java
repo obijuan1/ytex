@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -17,6 +19,7 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import ytex.kernel.metric.ConceptSimilarityService;
 import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.wsd.WordSenseDisambiguator;
 import ytex.uima.ApplicationContextHolder;
@@ -48,6 +51,8 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 	SimilarityMetricEnum metric;
 	WordSenseDisambiguator wsd;
 	Properties props;
+	boolean disabled = false;
+	private static final Log log = LogFactory.getLog(SenseDisambiguatorAnnotator.class);
 
 	@Override
 	public void initialize(UimaContext aContext)
@@ -60,10 +65,18 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 				"ytex.sense.metric", "INTRINSIC_PATH"));
 		wsd = ApplicationContextHolder.getSimApplicationContext().getBean(
 				WordSenseDisambiguator.class);
+		ConceptSimilarityService simSvc =  ApplicationContextHolder.getSimApplicationContext().getBean(
+				ConceptSimilarityService.class);
+		if(simSvc.getConceptGraph() == null) {
+			log.warn("Concept Graph was not loaded - word sense disambiguation disabled");
+			disabled = true;
+		}
 	}
 
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
+		if(disabled)
+			return;
 		// iterate through sentences
 		AnnotationIndex namedEntityIdx = jcas
 				.getAnnotationIndex(NamedEntity.type);

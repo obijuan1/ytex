@@ -22,6 +22,7 @@ public class DBPing {
 			props.load(is);
 			System.exit(ping(props));
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out
 					.println("DBPing: Connection to db failed - please check your settings and try again");
 			System.exit(1);
