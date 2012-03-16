@@ -1,6 +1,11 @@
 -- create a feature_eval record for the concept graph
-delete e, r
-from feature_eval e left join feature_rank r on e.feature_eval_id = r.feature_eval_id
+delete r
+from feature_eval e inner join feature_rank r on e.feature_eval_id = r.feature_eval_id
+where param2 = '@ytex.conceptGraphName@' 
+and type = 'intrinsic-infocontent';
+
+delete e
+from feature_eval e
 where param2 = '@ytex.conceptGraphName@' 
 and type = 'intrinsic-infocontent';
 

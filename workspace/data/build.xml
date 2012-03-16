@@ -42,7 +42,7 @@ Database connection parameters are taken from ytex.properties.
 	<property name="sctf.home" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology" />
 	<property name="sct.version" value="20110731" />
 
-	<target name="all" depends="umls.all,uima.all,kernel.all" description="call umls.all and uima.all" />
+	<target name="all" depends="umls.all,uima.all,kernel.all,ic.all" description="call umls.all and uima.all" />
 	<target name="init" description="initialize flags indicating which db is in use">
 		<condition property="mysql">
 			<equals arg1="${db.type}" arg2="mysql" />
@@ -67,6 +67,7 @@ Database connection parameters are taken from ytex.properties.
 		<java classname="ytex.tools.DBPing" fork="yes" classpathref="${kernel.cp}" failonerror="yes">
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
+			<jvmarg value="-Xmx64m" />
 			<arg value="${ytex.properties}" />
 		</java>
 	</target>
@@ -92,6 +93,7 @@ Database connection parameters are taken from ytex.properties.
 			</then>
 		</if>
 		<loadfile srcFile="${java.io.tmpdir}/mrconso-check.txt" property="mrconso.out" />
+		<echo>mrconso.out = ${mrconso.out}</echo>
 		<delete file="${java.io.tmpdir}/mrconso-check.txt" />
 		<condition property="mrconso.equals" value="mrconso" else="1">
 			<equals arg1="mysql" arg2="${db.type}" />
@@ -102,7 +104,7 @@ Database connection parameters are taken from ytex.properties.
 		<echo>mrconso.exists = ${mrconso.exists}</echo>
 	</target>
 
-	<target name="umls.all" depends="init,umls.mssql.setup,umls.check.mrconso" description="setup umls tables from dump or db, depending on existence of mrconso">
+	<target name="umls.all" depends="init,umls.check.mrconso" description="setup umls tables from dump or db, depending on existence of mrconso">
 		<echo>mrconso.exists = ${mrconso.exists}</echo>
 		<if>
 			<isset property="mrconso.exists" />
@@ -147,8 +149,6 @@ Database connection parameters are taken from ytex.properties.
 				<antcall target="umls.mssql.import" />
 			</then>
 		</if>
-		<!-- set the flag that says that mrconso table exists -->
-		<property name="mrconso.exists" value="yes" />
 	</target>
 	<target name="umls.mssql.import" description="create mssql umls tables, import from RRF files" depends="init.conn">
 		<echo>create umls tables</echo>
@@ -219,7 +219,12 @@ Database connection parameters are taken from ytex.properties.
 		</java>
 	</target>
 	<target name="umls.unpack" if="umls.zip.available" description="unpack umls from archive">
-		<unzip src="${umls.zip}" dest="${java.io.tmpdir}" />
+		<unzip src="${umls.zip}" dest="${java.io.tmpdir}">
+			<patternset>
+				<include name="**/*.*" />
+				<exclude name="conceptGraph/**/*.*" />
+			</patternset>
+		</unzip>
 	</target>
 	<target name="umls.cleanup" if="umls.zip.available" description="delete unpacked umls files">
 		<delete quiet="yes">
@@ -230,7 +235,7 @@ Database connection parameters are taken from ytex.properties.
 		<echo>import umls tables into ${umls.schema} schema.  Be patient, this can take a while.</echo>
 		<antcall target="jdl">
 			<param name="jdl.data" value="${umls.data}/umls_aui_fword.txt" />
-			<param name="jdl.format" value="umls_aui_fword.xml" />
+			<param name="jdl.format" value="${basedir}/umls/umls_aui_fword.xml" />
 		</antcall>
 	</target>
 	<target name="umls.init" description="drop and create umls tables">
@@ -376,6 +381,7 @@ ${sql.delimiter}
 		</copy>
 		<java classpathref="${kernel.cp}" classname="my.mas.AppMain" fork="yes" failonerror="yes">
 			<jvmarg value="-Dfile.encoding=UTF-8" />
+			<jvmarg value="-Xmx256m" />
 			<arg value="-c" />
 			<arg value="conn.xml" />
 			<arg value="-d" />
@@ -511,7 +517,15 @@ ${sql.delimiter}
 			<param name="sqlcmd.script" value="index_tables${suffix}.sql" />
 		</antcall>
 	</target>
-	<target name="ic.all">
+	<target name="cg.unpack" description="unpack concept graphs from archive" if="umls.zip.available">
+		<unzip src="${umls.zip}" dest="${ytex.home}">
+			<patternset>
+				<include name="conceptGraph/**/*.*" />
+			</patternset>
+		</unzip>
+	</target>
+	<target name="ic.all" depends="init">
+		<antcall target="cg.unpack" />
 		<for list="sct-msh-csp-aod,umls" param="ic">
 			<sequential>
 				<antcall target="ic.load.cg">
@@ -521,28 +535,34 @@ ${sql.delimiter}
 		</for>
 	</target>
 	<target name="ic.load.cg" description="load ic for concept graph into db">
-		<condition property="drop.sql.onerror" value="continue" else="abort">
-			<equals arg1="${db.type}" arg2="orcl" />
-		</condition>
-		<delete dir="${basedir}/tmp" quiet="yes" />
-		<mkdir dir="${basedir}/tmp" />
-		<copy file="${basedir}/${db.type}/kernel/ic_copy.template.sql" tofile="${basedir}/tmp/ic_copy.sql" overwrite="yes">
-			<filterset>
-				<filter token="ytex.conceptGraphName" value="${ytex.conceptGraphName}" />
-			</filterset>
-		</copy>
-		<antcall target="jdbc.sqlcmd">
-			<param name="sqlcmd.dir" value="kernel" />
-			<param name="sqlcmd.script" value="ic_create.sql" />
-			<param name="sql.onerror" value="${drop.sql.onerror}" />
-		</antcall>
-		<antcall target="jdl">
-			<param name="jdl.data" value="${ytex.conceptGraphDir}/${ytex.conceptGraphName}.txt" />
-			<param name="jdl.format" value="${basedir}/umls/tmp_ic.xml" />
-		</antcall>
-		<antcall target="jdbc.sqlcmd">
-			<param name="sql.file" value="${basedir}/tmp/ic_copy.sql" />
-		</antcall>
-		<delete dir="${basedir}/tmp" quiet="yes" />
+		<echo>loading ${ytex.conceptGraphDir}/${ytex.conceptGraphName}.txt</echo>
+		<if>
+			<available file="${ytex.conceptGraphDir}/${ytex.conceptGraphName}.txt" />
+			<then>
+				<condition property="drop.sql.onerror" value="continue" else="abort">
+					<equals arg1="${db.type}" arg2="orcl" />
+				</condition>
+				<delete dir="${basedir}/tmp" quiet="yes" />
+				<mkdir dir="${basedir}/tmp" />
+				<copy file="${basedir}/${db.type}/kernel/ic_copy.template.sql" tofile="${basedir}/tmp/ic_copy.sql" overwrite="yes">
+					<filterset>
+						<filter token="ytex.conceptGraphName" value="${ytex.conceptGraphName}" />
+					</filterset>
+				</copy>
+				<antcall target="jdbc.sqlcmd">
+					<param name="sqlcmd.dir" value="kernel" />
+					<param name="sqlcmd.script" value="ic_create.sql" />
+					<param name="sql.onerror" value="${drop.sql.onerror}" />
+				</antcall>
+				<antcall target="jdl">
+					<param name="jdl.data" value="${ytex.conceptGraphDir}/${ytex.conceptGraphName}.txt" />
+					<param name="jdl.format" value="${basedir}/umls/tmp_ic.xml" />
+				</antcall>
+				<antcall target="jdbc.sqlcmd">
+					<param name="sql.file" value="${basedir}/tmp/ic_copy.sql" />
+				</antcall>
+				<delete dir="${basedir}/tmp" quiet="yes" />
+			</then>
+		</if>
 	</target>
 </project>
