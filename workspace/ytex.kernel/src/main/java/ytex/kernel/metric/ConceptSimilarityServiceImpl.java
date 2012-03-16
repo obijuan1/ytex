@@ -127,6 +127,11 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 						conceptPairs, metricList, null, lcs);
 				printSimilarities(conceptPairs, conceptSimMap, metricList,
 						simInfos, lcs, os);
+//				try {
+//					Thread.sleep(60*1000);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
 			} finally {
 				if (out != null) {
 					try {

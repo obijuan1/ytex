@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.common.collect.ImmutableSet;
+
 import ytex.kernel.metric.LCSPath;
 
 public class ConcRel implements java.io.Serializable {
@@ -333,8 +335,8 @@ public class ConcRel implements java.io.Serializable {
 
 	public ConcRel(String cui, int nodeIndex) {
 		nodeCUI = cui;
-		parents = new HashSet<ConcRel>();
-		children = new HashSet<ConcRel>();
+		parents = ImmutableSet.of();
+		children = ImmutableSet.of();
 		parentsArray = null;
 		childrenArray = null;
 		this.nodeIndex = nodeIndex;
@@ -346,16 +348,16 @@ public class ConcRel implements java.io.Serializable {
 	 * @param db
 	 */
 	public void constructRel(Map<String, ConcRel> db) {
-		parents.clear();
-		children.clear();
+		ImmutableSet.Builder<ConcRel> pBuilder = new ImmutableSet.Builder<ConcRel>(); 
 		for (String c : parentsArray)
-			parents.add(db.get(c));
-		parents = Collections.unmodifiableSet(parents);
+			pBuilder.add(db.get(c));
+		parents = pBuilder.build();
 		parentsArray = null;
 
+		ImmutableSet.Builder<ConcRel> cBuilder = new ImmutableSet.Builder<ConcRel>(); 
 		for (String c : childrenArray)
-			children.add(db.get(c));
-		children = Collections.unmodifiableSet(children);
+			cBuilder.add(db.get(c));
+		children = cBuilder.build();
 		childrenArray = null;
 	}
 

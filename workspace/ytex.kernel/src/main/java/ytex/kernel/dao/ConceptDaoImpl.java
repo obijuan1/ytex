@@ -41,6 +41,9 @@ import org.hibernate.SessionFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
 import ytex.kernel.FileUtil;
 import ytex.kernel.IntrinsicInfoContentEvaluator;
 import ytex.kernel.KernelContextHolder;
@@ -307,8 +310,22 @@ public class ConceptDaoImpl implements ConceptDao {
 	}
 
 	public String getConceptGraphDir() {
-		return ytexProperties.getProperty("ytex.conceptGraphDir",
-				System.getProperty("java.io.tmpdir"));
+		String cdir = ytexProperties.getProperty("ytex.conceptGraphDir");
+		if(cdir == null || cdir.length() == 0) {
+			// see if ytex home is defined in ytex properties
+			String ytexHome = ytexProperties.getProperty("ytex.home");
+			if(ytexHome == null || ytexHome.length() == 0) {
+				// see if ytex home is defined in the environment
+				ytexHome = System.getenv().get("YTEX_HOME");
+			}
+			if(ytexHome == null || ytexHome.length() == 0) {
+				log.warn("none of ytex.conceptGraphDir, ytex.home, or YTEX_HOME are defined - assuming conceptGraphDir is ./conceptGraph");
+				// default to current directory
+				ytexHome = ".";
+			}
+			cdir = ytexHome + File.separator + "conceptGraph";
+		}
+		return cdir;
 	}
 
 	private String getConceptGraphFileName(String name) {
@@ -377,12 +394,13 @@ public class ConceptDaoImpl implements ConceptDao {
 	 */
 	private ConceptGraph initializeConceptGraph(ConceptGraph cg) {
 		Map<String, ConcRel> conceptMap = cg.getConceptMap();
-		SortedMap<Integer, ConcRel> conceptIndexMap = new TreeMap<Integer, ConcRel>();
+		cg.setConceptMap(ImmutableMap.copyOf(conceptMap));
+		ConcRel[] relArray = new ConcRel[conceptMap.size()];
 		for (ConcRel cr : conceptMap.values()) {
 			cr.constructRel(conceptMap);
-			conceptIndexMap.put(cr.getNodeIndex(), cr);
+			relArray[cr.getNodeIndex()] = cr;
 		}
-		cg.setConceptList(new ArrayList<ConcRel>(conceptIndexMap.values()));
+		cg.setConceptList(ImmutableList.copyOf(relArray));
 		return cg;
 	}
 
@@ -434,7 +452,8 @@ public class ConceptDaoImpl implements ConceptDao {
 	}
 
 	public void setYtexProperties(Properties ytexProperties) {
-		this.ytexProperties = ytexProperties;
+		this.ytexProperties = new Properties(ytexProperties);
+		this.ytexProperties.putAll(System.getProperties());
 	}
 
 	// /**

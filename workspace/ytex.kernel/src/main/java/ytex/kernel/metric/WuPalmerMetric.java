@@ -15,7 +15,7 @@ public class WuPalmerMetric extends BaseSimilarityMetric {
 					lcsDepth = d;
 			}
 			double lcsDepth2 = (double) (lcsDepth * 2);
-			return lcsDepth2 / (lcsDepth2 + (double) (simInfo.getLcsDist()));
+			return lcsDepth2 / (lcsDepth2 + (double) (simInfo.getLcsDist()-1));
 		}
 		return 0d;
 	}
