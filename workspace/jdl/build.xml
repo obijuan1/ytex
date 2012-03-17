@@ -12,7 +12,7 @@
 		<delete quiet="yes">
 			<fileset dir="src/main/java/my/mas/jdl/schema/xdl" includes="*.java" />
 		</delete>
-		<xjc schema="src/main/resources/xdl.xsd" package="my.mas.jdl.schema.xdl" destdir="src/main/java">
+		<xjc schema="src/main/java/xdl.xsd" package="my.mas.jdl.schema.xdl" destdir="src/main/java">
 		</xjc>
 	</target>
 </project>
