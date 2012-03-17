@@ -49,6 +49,6 @@ TOMCAT_CP=${JDBC_CP}:${YTEX_HOME}/config/desc
 export TOMCAT_CP
 
 # YTEX classpath
-CLASSPATH=%YTEX_LIB_SYS_HOME%\ctakes-patches.jar;%YTEX_LIB_SYS_HOME%\ytex.jar
+CLASSPATH=${YTEX_LIB_SYS_HOME}/ctakes-patches.jar:${YTEX_LIB_SYS_HOME}/ytex.jar
 export CLASSPATH
 
