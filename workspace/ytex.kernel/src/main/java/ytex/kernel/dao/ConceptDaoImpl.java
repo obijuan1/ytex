@@ -209,8 +209,8 @@ public class ConceptDaoImpl implements ConceptDao {
 						roots.remove(childCUI);
 				}
 				// link child to parent and vice-versa
-				crPar.children.add(crChild);
-				crChild.parents.add(crPar);
+				crPar.getChildren().add(crChild);
+				crChild.getParents().add(crPar);
 			}
 		}
 	}
@@ -276,16 +276,15 @@ public class ConceptDaoImpl implements ConceptDao {
 			// cycles
 			// if (checkCycle)
 			// cg.setDepthMax(calculateDepthMax(rootId, cg.getConceptMap()));
-			log.info("writing concept graph: " + name);
-			writeConceptGraph(name, cg);
-			writeConceptGraphProps(name, query, checkCycle);
 			if (checkCycle) {
 				log.info("computing intrinsic info for concept graph: " + name);
 				this.intrinsicInfoContentEvaluator
 						.evaluateIntrinsicInfoContent(name,
 								getConceptGraphDir(), cg);
 			}
-
+			log.info("writing concept graph: " + name);
+			writeConceptGraph(name, cg);
+			writeConceptGraphProps(name, query, checkCycle);
 		}
 	}
 
@@ -311,14 +310,14 @@ public class ConceptDaoImpl implements ConceptDao {
 
 	public String getConceptGraphDir() {
 		String cdir = ytexProperties.getProperty("ytex.conceptGraphDir");
-		if(cdir == null || cdir.length() == 0) {
+		if (cdir == null || cdir.length() == 0) {
 			// see if ytex home is defined in ytex properties
 			String ytexHome = ytexProperties.getProperty("ytex.home");
-			if(ytexHome == null || ytexHome.length() == 0) {
+			if (ytexHome == null || ytexHome.length() == 0) {
 				// see if ytex home is defined in the environment
 				ytexHome = System.getenv().get("YTEX_HOME");
 			}
-			if(ytexHome == null || ytexHome.length() == 0) {
+			if (ytexHome == null || ytexHome.length() == 0) {
 				log.warn("none of ytex.conceptGraphDir, ytex.home, or YTEX_HOME are defined - assuming conceptGraphDir is ./conceptGraph");
 				// default to current directory
 				ytexHome = ".";
@@ -393,14 +392,12 @@ public class ConceptDaoImpl implements ConceptDao {
 	 * @return
 	 */
 	private ConceptGraph initializeConceptGraph(ConceptGraph cg) {
-		Map<String, ConcRel> conceptMap = cg.getConceptMap();
-		cg.setConceptMap(ImmutableMap.copyOf(conceptMap));
-		ConcRel[] relArray = new ConcRel[conceptMap.size()];
-		for (ConcRel cr : conceptMap.values()) {
-			cr.constructRel(conceptMap);
-			relArray[cr.getNodeIndex()] = cr;
+		ImmutableMap.Builder<String, ConcRel> mb = new ImmutableMap.Builder<String, ConcRel>();
+		for (ConcRel cr : cg.getConceptList()) {
+			cr.constructRel(cg.getConceptList());
+			mb.put(cr.getConceptID(), cr);
 		}
-		cg.setConceptList(ImmutableList.copyOf(relArray));
+		cg.setConceptMap(mb.build());
 		return cg;
 	}
 
@@ -491,6 +488,8 @@ public class ConceptDaoImpl implements ConceptDao {
 		try {
 			os = new ObjectOutputStream(new BufferedOutputStream(
 					new GZIPOutputStream(new FileOutputStream(cgFile))));
+			//replace the writable list with an immutable list
+			cg.setConceptList(ImmutableList.copyOf(cg.getConceptList()));
 			os.writeObject(cg);
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);

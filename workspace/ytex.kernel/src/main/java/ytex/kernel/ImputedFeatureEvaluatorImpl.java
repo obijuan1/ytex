@@ -707,7 +707,7 @@ public class ImputedFeatureEvaluatorImpl implements ImputedFeatureEvaluator {
 			return conceptJointDistroMap.get(cr.getConceptID());
 		} else {
 			List<JointDistribution> distroList = new ArrayList<JointDistribution>(
-					cr.children.size() + 1);
+					cr.getChildren().size() + 1);
 			int distance = -1;
 			// if this concept is in the raw joint distro map, add it to the
 			// list of joint distributions to merge

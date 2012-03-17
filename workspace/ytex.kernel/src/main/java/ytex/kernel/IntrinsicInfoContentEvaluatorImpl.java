@@ -199,51 +199,51 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		return leaves;
 	}
 
-//	/**
-//	 * add/update icInfoMap entry for concept with the concept's leaf count
-//	 * 
-//	 * @param concept
-//	 * @param icInfoMap
-//	 * @param w
-//	 * @param subsumerMap
-//	 * @throws IOException
-//	 */
-//	private void computeLeafCount(ConcRel concept,
-//			Map<String, IntrinsicICInfo> icInfoMap,
-//			SoftReference<TIntSet>[] leafCache, ConceptGraph cg,
-//			BufferedWriter w) throws IOException {
-//		// see if we already computed this
-//		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
-//		if (icInfo != null && icInfo.getLeafCount() > 0) {
-//			return;
-//		}
-//		// if not, figure it out
-//		if (icInfo == null) {
-//			icInfo = new IntrinsicICInfo(concept);
-//			icInfoMap.put(concept.getConceptID(), icInfo);
-//		}
-//		// for leaves the default (0) is correct
-//		if (!concept.isLeaf()) {
-//			TIntSet leaves = this.getLeaves(concept, leafCache);
-//			icInfo.setLeafCount(leaves.size());
-//			if (w != null) {
-//				w.write(concept.getConceptID());
-//				w.write("\t");
-//				w.write(Integer.toString(leaves.size()));
-//				w.write("\t");
-//				TIntIterator iter = leaves.iterator();
-//				while (iter.hasNext()) {
-//					w.write(cg.getConceptList().get(iter.next()).getConceptID());
-//					w.write(" ");
-//				}
-//				w.newLine();
-//			}
-//		}
-//		// recurse to parents
-//		for (ConcRel parent : concept.getParents()) {
-//			computeLeafCount(parent, icInfoMap, leafCache, cg, w);
-//		}
-//	}
+	// /**
+	// * add/update icInfoMap entry for concept with the concept's leaf count
+	// *
+	// * @param concept
+	// * @param icInfoMap
+	// * @param w
+	// * @param subsumerMap
+	// * @throws IOException
+	// */
+	// private void computeLeafCount(ConcRel concept,
+	// Map<String, IntrinsicICInfo> icInfoMap,
+	// SoftReference<TIntSet>[] leafCache, ConceptGraph cg,
+	// BufferedWriter w) throws IOException {
+	// // see if we already computed this
+	// IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
+	// if (icInfo != null && icInfo.getLeafCount() > 0) {
+	// return;
+	// }
+	// // if not, figure it out
+	// if (icInfo == null) {
+	// icInfo = new IntrinsicICInfo(concept);
+	// icInfoMap.put(concept.getConceptID(), icInfo);
+	// }
+	// // for leaves the default (0) is correct
+	// if (!concept.isLeaf()) {
+	// TIntSet leaves = this.getLeaves(concept, leafCache);
+	// icInfo.setLeafCount(leaves.size());
+	// if (w != null) {
+	// w.write(concept.getConceptID());
+	// w.write("\t");
+	// w.write(Integer.toString(leaves.size()));
+	// w.write("\t");
+	// TIntIterator iter = leaves.iterator();
+	// while (iter.hasNext()) {
+	// w.write(cg.getConceptList().get(iter.next()).getConceptID());
+	// w.write(" ");
+	// }
+	// w.newLine();
+	// }
+	// }
+	// // recurse to parents
+	// for (ConcRel parent : concept.getParents()) {
+	// computeLeafCount(parent, icInfoMap, leafCache, cg, w);
+	// }
+	// }
 
 	/**
 	 * add/update icInfoMap entry for concept with the concept's subsumer count
@@ -256,7 +256,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 */
 	private void computeSubsumerCount(ConcRel concept,
 			Map<String, IntrinsicICInfo> icInfoMap,
-			Map<String, Set<String>> subsumerMap, int[] depthArray,
+			Map<String, Set<String>> subsumerMap, short[] depthArray,
 			BufferedWriter w) throws IOException {
 		// see if we already computed this
 		IntrinsicICInfo icInfo = icInfoMap.get(concept.getConceptID());
@@ -309,7 +309,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		// compute the subsumer count
 		Map<String, IntrinsicICInfo> icInfoMap = new HashMap<String, IntrinsicICInfo>();
 		Map<String, Set<String>> subsumerMap = new WeakHashMap<String, Set<String>>();
-		int[] depthArray = new int[cg.getConceptList().size()];
+		short[] depthArray = new short[cg.getConceptList().size()];
 		BufferedWriter w = null;
 		try {
 			w = this.getOutputFile(conceptGraphName, conceptGraphDir,
@@ -364,7 +364,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		leafCache = null;
 		log.info("storing intrinsic ic");
 		storeIntrinsicIC(conceptGraphName, leafSet.size(), icInfoMap,
-				depthArray);
+				depthArray, cg);
 		log.info("finished computing intrinsic ic");
 	}
 
@@ -403,27 +403,27 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		return conceptDao;
 	}
 
-//	private TIntSet getLeaves(ConcRel concept,
-//			SoftReference<TIntSet>[] leafCache) {
-//		// look in cache
-//		SoftReference<TIntSet> refLeaves = leafCache[concept.getNodeIndex()];
-//		if (refLeaves != null && refLeaves.get() != null) {
-//			return refLeaves.get();
-//		}
-//		// not in cache - compute recursively
-//		TIntSet leaves = new TIntHashSet();
-//		leafCache[concept.getNodeIndex()] = new SoftReference<TIntSet>(leaves);
-//		if (concept.isLeaf()) {
-//			// for leaves, just add the concept id
-//			leaves.add(concept.getNodeIndex());
-//		} else {
-//			// for inner nodes, recurse
-//			for (ConcRel child : concept.getChildren()) {
-//				leaves.addAll(getLeaves(child, leafCache));
-//			}
-//		}
-//		return leaves;
-//	}
+	// private TIntSet getLeaves(ConcRel concept,
+	// SoftReference<TIntSet>[] leafCache) {
+	// // look in cache
+	// SoftReference<TIntSet> refLeaves = leafCache[concept.getNodeIndex()];
+	// if (refLeaves != null && refLeaves.get() != null) {
+	// return refLeaves.get();
+	// }
+	// // not in cache - compute recursively
+	// TIntSet leaves = new TIntHashSet();
+	// leafCache[concept.getNodeIndex()] = new SoftReference<TIntSet>(leaves);
+	// if (concept.isLeaf()) {
+	// // for leaves, just add the concept id
+	// leaves.add(concept.getNodeIndex());
+	// } else {
+	// // for inner nodes, recurse
+	// for (ConcRel child : concept.getChildren()) {
+	// leaves.addAll(getLeaves(child, leafCache));
+	// }
+	// }
+	// return leaves;
+	// }
 
 	/**
 	 * recursively compute the subsumers of a concept
@@ -433,28 +433,28 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	 * @return
 	 */
 	private Set<String> getSubsumers(ConcRel concept,
-			Map<String, Set<String>> subsumerMap, int depthArray[]) {
+			Map<String, Set<String>> subsumerMap, short depthArray[]) {
 		// look in cache
 		if (subsumerMap.containsKey(concept.getConceptID()))
 			return subsumerMap.get(concept.getConceptID());
 		// not in cache - compute recursively
 		Set<String> subsumers = new HashSet<String>();
 		boolean calcDepth = depthArray[concept.getNodeIndex()] == 0;
-		int parentMaxDepth = 0;
+		short parentMaxDepth = 0;
 		if (concept.getParents() != null && !concept.getParents().isEmpty()) {
 			// parents - recurse
 			for (ConcRel parent : concept.getParents()) {
 				subsumers.addAll(getSubsumers(parent, subsumerMap, depthArray));
 				// get the deepest parent
 				if (calcDepth) {
-					int parentDepth = depthArray[parent.getNodeIndex()];
+					short parentDepth = depthArray[parent.getNodeIndex()];
 					if (parentDepth > parentMaxDepth)
 						parentMaxDepth = parentDepth;
 				}
 			}
 		}
 		if (calcDepth)
-			depthArray[concept.getNodeIndex()] = parentMaxDepth + 1;
+			depthArray[concept.getNodeIndex()] = (short)(parentMaxDepth + 1);
 		// add the concept itself to the set of subsumers
 		subsumers.add(concept.getConceptID());
 		// add this to the cache - copy the key so that this can be gc'ed as
@@ -473,20 +473,32 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	}
 
 	private void storeIntrinsicIC(String conceptGraphName, int maxLeaves,
-			Map<String, IntrinsicICInfo> icInfoMap, int depthArray[]) {
+			Map<String, IntrinsicICInfo> icInfoMap, short depthArray[], ConceptGraph cg) {
 		FeatureEvaluation fe = new FeatureEvaluation();
 		fe.setEvaluationType("intrinsic-infocontent");
 		fe.setParam2(conceptGraphName);
 		List<FeatureRank> listFeatureRank = new ArrayList<FeatureRank>(
 				icInfoMap.size());
+		double maxIC = 0d;
+		short maxDepth = 0;
 		for (IntrinsicICInfo icInfo : icInfoMap.values()) {
+			ConcRel cr = icInfo.getConcept();
+			short depth = depthArray[cr.getNodeIndex()];
+			cr.setDepth(depth);
+			if(depth > maxDepth)
+				maxDepth = depth;
 			double ic = computeIC(icInfo, maxLeaves);
+			cr.setIntrinsicInfoContent(ic);
+			if(ic > maxIC)
+				maxIC = ic;
 			if (log.isDebugEnabled())
 				log.debug(icInfo.getConcept().getConceptID() + "=" + ic);
 			listFeatureRank.add(new FeatureRank(fe, icInfo.getConcept()
 					.getConceptID(), ic, depthArray[icInfo.getConcept()
 					.getNodeIndex()]));
 		}
+		cg.setDepthMax(maxDepth);
+		cg.setIntrinsicICMax(maxIC);
 		this.classifierEvaluationDao.deleteFeatureEvaluation(null, null, null,
 				fe.getEvaluationType(), null, 0d, conceptGraphName);
 		this.classifierEvaluationDao.saveFeatureEvaluation(fe, listFeatureRank);

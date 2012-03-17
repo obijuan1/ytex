@@ -33,8 +33,8 @@ public class PageRankServiceTest extends TestCase {
 	}
 
 	protected void addRelationship(ConcRel source, ConcRel target) {
-		target.parents.add(source);
-		source.children.add(target);
+		target.getParents().add(source);
+		source.getChildren().add(target);
 	}
 
 	public void testPageRank() {

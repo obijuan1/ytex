@@ -1,7 +1,6 @@
 package ytex.kernel.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,9 +10,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.common.collect.ImmutableSet;
-
 import ytex.kernel.metric.LCSPath;
+
+import com.google.common.collect.ImmutableSet;
 
 public class ConcRel implements java.io.Serializable {
 	private static final Logger log = Logger.getLogger(ConcRel.class.getName());
@@ -21,6 +20,17 @@ public class ConcRel implements java.io.Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+
+	public static List<String> crListToString(List<ConcRel> crList) {
+		if (crList != null) {
+			List<String> path = new ArrayList<String>(crList.size());
+			for (ConcRel cr : crList)
+				path.add(cr.getConceptID());
+			return path;
+		} else {
+			return null;
+		}
+	}
 
 	/**
 	 * get least common subsumer of the specified concepts and its distance from
@@ -237,17 +247,6 @@ public class ConcRel implements java.io.Serializable {
 		}
 	}
 
-	public static List<String> crListToString(List<ConcRel> crList) {
-		if (crList != null) {
-			List<String> path = new ArrayList<String>(crList.size());
-			for (ConcRel cr : crList)
-				path.add(cr.getConceptID());
-			return path;
-		} else {
-			return null;
-		}
-	}
-
 	/**
 	 * remove the parents of candidate lcses from the list of parents we were
 	 * planning on looking at in the next iteration
@@ -311,56 +310,58 @@ public class ConcRel implements java.io.Serializable {
 	/**
 	 * children of this concept
 	 */
-	public Set<ConcRel> children;
+	private Set<ConcRel> children;
+	private int[] childrenArray;
+	
+	private short depth;
 
-	public String[] childrenArray;
+	private double intrinsicInfoContent;
 
 	/**
 	 * id of this concept
 	 */
-	public String nodeCUI;
+	private String nodeCUI;
 
-	public int nodeIndex;
+	private int nodeIndex;
+
 	/**
 	 * parents of this concept
 	 */
-	public Set<ConcRel> parents;
+	private Set<ConcRel> parents;
 
 	/**
 	 * for java object serialization, need to avoid default serializer behavior
 	 * of writing out entire object graph. just write the parent/children object
 	 * ids and resolve the connections after loading this object.
 	 */
-	public String[] parentsArray;
+	private int[] parentsArray;
 
 	public ConcRel(String cui, int nodeIndex) {
 		nodeCUI = cui;
-		parents = ImmutableSet.of();
-		children = ImmutableSet.of();
+		parents = new HashSet<ConcRel>();
+		children = new HashSet<ConcRel>();
 		parentsArray = null;
 		childrenArray = null;
 		this.nodeIndex = nodeIndex;
 	}
-
 	/**
 	 * reconstruct the relationships to other ConcRel objects
 	 * 
 	 * @param db
 	 */
-	public void constructRel(Map<String, ConcRel> db) {
+	public void constructRel(List<ConcRel> db) {
 		ImmutableSet.Builder<ConcRel> pBuilder = new ImmutableSet.Builder<ConcRel>(); 
-		for (String c : parentsArray)
+		for (int c : parentsArray)
 			pBuilder.add(db.get(c));
 		parents = pBuilder.build();
 		parentsArray = null;
 
 		ImmutableSet.Builder<ConcRel> cBuilder = new ImmutableSet.Builder<ConcRel>(); 
-		for (String c : childrenArray)
+		for (int c : childrenArray)
 			cBuilder.add(db.get(c));
 		children = cBuilder.build();
 		childrenArray = null;
 	}
-
 	public int depthMax() {
 		int d = 0;
 		for (Iterator<ConcRel> it = children.iterator(); it.hasNext();) {
@@ -378,6 +379,14 @@ public class ConcRel implements java.io.Serializable {
 
 	public String getConceptID() {
 		return nodeCUI;
+	}
+
+	public short getDepth() {
+		return depth;
+	}
+
+	public double getIntrinsicInfoContent() {
+		return intrinsicInfoContent;
 	}
 
 	public int getNodeIndex() {
@@ -437,6 +446,29 @@ public class ConcRel implements java.io.Serializable {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return nodeIndex;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ConcRel other = (ConcRel) obj;
+		if (nodeIndex != other.nodeIndex)
+			return false;
+		return true;
+	}
+
+	public boolean isLeaf() {
+		return children.isEmpty();
+	}
+
 	// public static ObjPair<ConcRel, Integer> getLeastCommonConcept(
 	// Vector<Vector<ConcRel>> allPaths1, Vector<Vector<ConcRel>> allPaths2) {
 	// ObjPair<ConcRel, Integer> res = new ObjPair<ConcRel, Integer>(null,
@@ -487,14 +519,6 @@ public class ConcRel implements java.io.Serializable {
 	// return common;
 	// }
 
-	public int hashCode() {
-		return nodeCUI.hashCode();
-	}
-
-	public boolean isLeaf() {
-		return children.isEmpty();
-	}
-
 	public boolean isRoot() {
 		return parents.isEmpty();
 	}
@@ -506,14 +530,24 @@ public class ConcRel implements java.io.Serializable {
 			throws java.io.IOException, ClassNotFoundException {
 		nodeCUI = (String) in.readObject();
 		this.nodeIndex = in.readInt();
-		parentsArray = (String[]) in.readObject();
-		childrenArray = (String[]) in.readObject();
+		this.intrinsicInfoContent = in.readDouble();
+		this.depth = in.readShort();
+		parentsArray = (int[]) in.readObject();
+		childrenArray = (int[]) in.readObject();
 		parents = new HashSet<ConcRel>(parentsArray.length);
 		children = new HashSet<ConcRel>(childrenArray.length);
 	}
 
 	public void setConceptID(String nodeCUI) {
 		this.nodeCUI = nodeCUI;
+	}
+
+	public void setDepth(short depth) {
+		this.depth = depth;
+	}
+
+	public void setIntrinsicInfoContent(double intrinsicInfoContent) {
+		this.intrinsicInfoContent = intrinsicInfoContent;
 	}
 
 	public void setNodeIndex(int nodeIndex) {
@@ -532,18 +566,19 @@ public class ConcRel implements java.io.Serializable {
 			throws java.io.IOException {
 		out.writeObject(nodeCUI);
 		out.writeInt(this.nodeIndex);
-
+		out.writeDouble(this.intrinsicInfoContent);
+		out.writeShort(this.depth);
 		if (parentsArray == null) {
-			parentsArray = new String[parents.size()];
+			parentsArray = new int[parents.size()];
 			int i = 0;
 			for (ConcRel c : parents)
-				parentsArray[i++] = c.nodeCUI;
+				parentsArray[i++] = c.getNodeIndex();
 		}
 		if (childrenArray == null) {
-			childrenArray = new String[children.size()];
+			childrenArray = new int[children.size()];
 			int i = 0;
 			for (ConcRel c : children)
-				childrenArray[i++] = c.nodeCUI;
+				childrenArray[i++] = c.getNodeIndex();
 		}
 
 		out.writeObject(parentsArray);

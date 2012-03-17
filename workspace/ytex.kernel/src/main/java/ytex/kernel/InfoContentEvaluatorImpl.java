@@ -230,7 +230,7 @@ public class InfoContentEvaluatorImpl implements InfoContentEvaluator {
 			dFreq = rawFreq.containsKey(parent.getConceptID()) ? rawFreq
 					.get(parent.getConceptID()) : 0d;
 			// recurse
-			for (ConcRel child : parent.children) {
+			for (ConcRel child : parent.getChildren()) {
 				dFreq += getFrequency(child, conceptFreq, rawFreq);
 			}
 			conceptFreq.put(parent.getConceptID(), dFreq);
