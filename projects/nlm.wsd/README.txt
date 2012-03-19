@@ -1,0 +1,1 @@
+see http://code.google.com/p/ytex/wiki/WSD_V06 for instructions on how to run the NLM WSD and MSH WSD examples.

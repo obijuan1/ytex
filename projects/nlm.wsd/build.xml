@@ -14,7 +14,7 @@
 	<target name="load.create">
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/create_table.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 	</target>
-	<target name="load.nlm.all" description="load nlm.wsd data" depends="load.nlm.abstract,load.nlm.word,load.nlm.choices.all"/>
+	<target name="load.nlm.all" description="load nlm.wsd data" depends="load.nlm.abstract,load.nlm.word,load.nlm.choices.all" />
 	<target name="load.nlm.abstract" description="load nlm_wsd table">
 		<java classname="ytex.wsd.nlm.WSDLoader" fork="yes" failonerror="yes">
 			<classpath>
@@ -131,7 +131,7 @@
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
-	</target>	
+	</target>
 	<target name="eval.msh.wsd.all" description="perform wsd for all concept graphs">
 		<for param="cg" list="sct-msh-csp-aod,umls">
 			<sequential>
@@ -140,10 +140,10 @@
 				</antcall>
 				<antcall target="eval.msh.R">
 					<param name="ytex.conceptGraphName" value="@{cg}" />
-				</antcall>				
+				</antcall>
 			</sequential>
 		</for>
-	</target>	
+	</target>
 	<target name="eval.wsd.all" description="perform wsd for all concept graphs">
 		<for param="cg" list="sct-msh-csp-aod,umls">
 			<sequential>
@@ -152,7 +152,7 @@
 				</antcall>
 				<antcall target="eval.R">
 					<param name="ytex.conceptGraphName" value="@{cg}" />
-				</antcall>				
+				</antcall>
 			</sequential>
 		</for>
 	</target>
@@ -201,5 +201,18 @@
 		<exec executable="${R.bin}/R" dir="${basedir}/eval/msh/${ytex.conceptGraphName}-${window}">
 			<arg line="--slave --file=${basedir}/eval-msh.R" />
 		</exec>
+	</target>
+	<target name="package" description="pack up nlm wsd for distribution">
+		<zip destfile="../nlm.wsd.zip">
+			<zipfileset dir="${basedir}" prefix="nlm.wsd">
+				<include name="build.xml" />
+				<include name="*.R" />
+				<include name="desc/*.template.xml" />
+				<include name="desc/ytex/**/*.*" />
+				<include name="main/src/**/*.*" />
+				<include name="data/*.*" />
+				<exclude name="**/.svn/**/*.*" />
+			</zipfileset>
+		</zip>
 	</target>
 </project>
