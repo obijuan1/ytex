@@ -207,6 +207,7 @@
 			<zipfileset dir="${basedir}" prefix="nlm.wsd">
 				<include name="build.xml" />
 				<include name="*.R" />
+				<include name="README.txt" />
 				<include name="desc/*.template.xml" />
 				<include name="desc/ytex/**/*.*" />
 				<include name="main/src/**/*.*" />
