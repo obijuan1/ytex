@@ -11,10 +11,10 @@
 	<property name="mesh.desc" value="${mesh.home}/desc2012.xml" />
 	<property name="mesh.supp" value="${mesh.home}/supp2012.xml" />
 	<property name="ytex.mx" value="1500m" />
-	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh-csp-aod,umls"/>
-	<property name="cg.list" value="sct,msh,${cg.umls.list}"/>
+	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh-csp-aod,umls" />
+	<property name="cg.list" value="sct,msh,${cg.umls.list}" />
 	<property name="ytex.conceptPreload" value="false" />
-	<property name="maxMemory" value="2g" />
+	<property name="maxMemory" value="1500m" />
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
 	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier" description="load mesh into db" />
 	<target name="cg.all" depends="cg.generateDesc,cg.setup.all" description="setup concept graphs" />
@@ -183,5 +183,16 @@
 		<antcall target="concat.cg">
 			<param name="cg" value="umls" />
 		</antcall>
+	</target>
+	<target name="package" description="pack up simbenchmark for distribution">
+		<zip destfile="../simbenchmark.zip">
+			<zipfileset dir="${basedir}" prefix="simbenchmark">
+				<include name="build.xml" />
+				<include name="data/*.*" />
+				<include name="config/**/*.*" />
+				<include name="src/**/*.*" />
+				<exclude name="**/.svn/**/*.*" />
+			</zipfileset>
+		</zip>
 	</target>
 </project>
