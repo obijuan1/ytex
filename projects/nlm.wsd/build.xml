@@ -210,7 +210,7 @@
 				<include name="README.txt" />
 				<include name="desc/*.template.xml" />
 				<include name="desc/ytex/**/*.*" />
-				<include name="main/src/**/*.*" />
+				<include name="main/java/**/*.*" />
 				<include name="data/*.*" />
 				<exclude name="**/.svn/**/*.*" />
 			</zipfileset>
