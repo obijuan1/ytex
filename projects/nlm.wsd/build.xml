@@ -5,7 +5,7 @@
 	<property name="window" value="10" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
-	<target name="all" depends="build,load.all,RunCPE.all,eval.wsd.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
+	<target name="all" depends="build,load.all,RunCPE.all,eval.wsd.all,eval.msh.wsd.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
 	<target name="build" description="compile java source">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/main/java/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
