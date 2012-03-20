@@ -4,6 +4,8 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,6 +24,7 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
 import ytex.kernel.SimSvcContextHolder;
@@ -227,6 +230,116 @@ public class MshWSDDisambiguator {
 		return words;
 	}
 
+	private class WSDRowCallbackHandler implements RowCallbackHandler {
+		int currentSpanBegin = -1;
+		int currentSpanEnd = -1;
+		Sentence currentSentence = null;
+		Set<String> currentConcepts = null;
+		int currentConceptIndex = -1;
+
+		public WSDRowCallbackHandler(Set<SimilarityMetricEnum> metrics,
+				int windowSize, PrintStream ps) {
+			super();
+			this.metrics = metrics;
+			this.windowSize = windowSize;
+			this.ps = ps;
+		}
+
+		private Set<ConceptSimilarityService.SimilarityMetricEnum> metrics;
+		private int windowSize;
+		private PrintStream ps;
+
+		@Override
+		public void processRow(ResultSet rs) throws SQLException {
+			long instanceId = rs.getLong(1);
+			int spanBegin = rs.getInt(2);
+			int spanEnd = rs.getInt(3);
+			String cui = rs.getString(4);
+			if (log.isDebugEnabled())
+				log.debug("processing instance " + instanceId);
+			if (currentSentence == null
+					|| currentSentence.getInstanceId() != instanceId) {
+				// new word
+				reset(instanceId);
+			}
+			if (currentConcepts == null || currentSpanBegin != spanBegin
+					|| currentSpanEnd != spanEnd) {
+				// new concept
+				resetCurrentConcepts(spanBegin, spanEnd);
+			}
+			// don't touch the concept that's supposed to
+			// be disambiguated
+			if (currentConceptIndex != currentSentence.getIndex()) {
+				currentConcepts.add(cui);
+			}
+			// if (rs.isLast())
+			// checkSentenceTargetIndex();
+		}
+
+		private void resetCurrentConcepts(int spanBegin, int spanEnd) {
+			// increment index
+			currentConceptIndex++;
+			// allocate new set for concepts
+			currentConcepts = new HashSet<String>();
+			// add the set to the sentence
+			if (currentSentence != null) {
+				currentSentence.getConcepts().add(currentConcepts);
+				Word w = words.get(currentSentence.getInstanceId());
+				if (currentSentence.getIndex() < 0 && w.spanBegin < spanBegin) {
+					// we didn't have the target concept
+					// annotated as a named entity, and we've
+					// passed the target concept.
+					// insert the target concept into the
+					// sentence
+					currentSentence.setIndex(currentConceptIndex);
+					currentConcepts.addAll(wordCuis.get(w.getWord()));
+					// reset again
+					resetCurrentConcepts(spanBegin, spanEnd);
+				}
+
+				if (w.getSpanBegin() == spanBegin && w.spanEnd == spanEnd) {
+					// this concept is the target for
+					// disambiguation
+					currentSentence.setIndex(currentConceptIndex);
+					currentConcepts.addAll(wordCuis.get(w.getWord()));
+				}
+			}
+		}
+
+		private void reset(long instanceId) {
+			checkSentenceTargetIndex();
+			currentSpanBegin = -1;
+			currentSpanEnd = -1;
+			currentSentence = new Sentence(instanceId);
+			currentConcepts = null;
+			currentConceptIndex = -1;
+		}
+
+		private void checkSentenceTargetIndex() {
+			if (currentSentence != null && currentSentence.getIndex() == -1) {
+				Word w = words.get(currentSentence.getInstanceId());
+				// we didn't have the target concept
+				// annotated as a named entity, and we've
+				// come to the end of the sentence.
+				// insert the target concept into the
+				// sentence.
+				// this would be a problem if
+				currentSentence.setIndex(currentConceptIndex + 1);
+				currentConcepts = new HashSet<String>();
+				currentConcepts.addAll(wordCuis.get(w.getWord()));
+				currentSentence.getConcepts().add(currentConcepts);
+			}
+			if (this.currentSentence != null) {
+				try {
+					disambiguateSentence(metrics, windowSize, currentSentence,
+							ps);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+	}
+
 	/**
 	 * process sentences as we read them from the database - there are 5.2
 	 * million cuis and this fills small heaps
@@ -238,118 +351,59 @@ public class MshWSDDisambiguator {
 	public void processSentences(
 			final Set<ConceptSimilarityService.SimilarityMetricEnum> metrics,
 			final int windowSize, final PrintStream ps) {
-		jdbcTemplate
-				.query("select d.uid instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'msh.wsd' order by d.uid, span_begin, span_end",
-						new RowCallbackHandler() {
-							int currentSpanBegin = -1;
-							int currentSpanEnd = -1;
-							Sentence currentSentence = null;
-							Set<String> currentConcepts = null;
-							int currentConceptIndex = -1;
-
-							@Override
-							public void processRow(ResultSet rs)
-									throws SQLException {
-								long instanceId = rs.getLong(1);
-								int spanBegin = rs.getInt(2);
-								int spanEnd = rs.getInt(3);
-								String cui = rs.getString(4);
-								if (currentSentence == null
-										|| currentSentence.getInstanceId() != instanceId) {
-									// new word
-									reset(instanceId);
-								}
-								if (currentConcepts == null
-										|| currentSpanBegin != spanBegin
-										|| currentSpanEnd != spanEnd) {
-									// new concept
-									resetCurrentConcepts(spanBegin, spanEnd);
-								}
-								// don't touch the concept that's supposed to
-								// be disambiguated
-								if (currentConceptIndex != currentSentence
-										.getIndex()) {
-									currentConcepts.add(cui);
-								}
-								if (rs.isLast())
-									checkSentenceTargetIndex();
-							}
-
-							private void resetCurrentConcepts(int spanBegin,
-									int spanEnd) {
-								// increment index
-								currentConceptIndex++;
-								// allocate new set for concepts
-								currentConcepts = new HashSet<String>();
-								// add the set to the sentence
-								currentSentence.getConcepts().add(
-										currentConcepts);
-								Word w = words.get(currentSentence
-										.getInstanceId());
-								if (currentSentence.getIndex() < 0
-										&& w.spanBegin < spanBegin) {
-									// we didn't have the target concept
-									// annotated as a named entity, and we've
-									// passed the target concept.
-									// insert the target concept into the
-									// sentence
-									currentSentence
-											.setIndex(currentConceptIndex);
-									currentConcepts.addAll(wordCuis.get(w
-											.getWord()));
-									// reset again
-									resetCurrentConcepts(spanBegin, spanEnd);
-								}
-
-								if (w.getSpanBegin() == spanBegin
-										&& w.spanEnd == spanEnd) {
-									// this concept is the target for
-									// disambiguation
-									currentSentence
-											.setIndex(currentConceptIndex);
-									currentConcepts.addAll(wordCuis.get(w
-											.getWord()));
-								}
-							}
-
-							private void reset(long instanceId) {
-								checkSentenceTargetIndex();
-								currentSpanBegin = -1;
-								currentSpanEnd = -1;
-								currentSentence = new Sentence(instanceId);
-								currentConcepts = null;
-								currentConceptIndex = -1;
-							}
-
-							private void checkSentenceTargetIndex() {
-								if (currentSentence != null
-										&& currentSentence.getIndex() == -1) {
-									Word w = words.get(currentSentence
-											.getInstanceId());
-									// we didn't have the target concept
-									// annotated as a named entity, and we've
-									// come to the end of the sentence.
-									// insert the target concept into the
-									// sentence.
-									// this would be a problem if
-									currentSentence
-											.setIndex(currentConceptIndex + 1);
-									currentConcepts = new HashSet<String>();
-									currentConcepts.addAll(wordCuis.get(w
-											.getWord()));
-									currentSentence.getConcepts().add(
-											currentConcepts);
-								}
-								if (this.currentSentence != null) {
-									try {
-										disambiguateSentence(metrics,
-												windowSize, currentSentence, ps);
-									} catch (IOException e) {
-										throw new RuntimeException(e);
-									}
-								}
-							}
-						});
+		WSDRowCallbackHandler ch = new WSDRowCallbackHandler(metrics,
+				windowSize, ps);
+		PreparedStatement s = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		try {
+			conn = this.jdbcTemplate.getDataSource().getConnection();
+			s = conn.prepareStatement(
+					"select d.uid instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'msh.wsd' order by d.uid, span_begin, span_end",
+					java.sql.ResultSet.TYPE_FORWARD_ONLY,
+					java.sql.ResultSet.CONCUR_READ_ONLY);
+			s.setFetchSize(Integer.MIN_VALUE);
+			rs = s.executeQuery();
+			while (rs.next()) {
+				ch.processRow(rs);
+			}
+			ch.checkSentenceTargetIndex();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+				}
+			}
+			if (s != null) {
+				try {
+					s.close();
+				} catch (SQLException e) {
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+				}
+			}
+		}
+//		jdbcTemplate.query(new PreparedStatementCreator() {
+//
+//			public PreparedStatement createPreparedStatement(Connection conn)
+//					throws SQLException {
+//				// do this so that the mysql driver doesn't read the entire
+//				// resultset into memory
+//				PreparedStatement s = conn.prepareStatement(
+//						"select d.uid instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'msh.wsd' order by d.uid, span_begin, span_end",
+//						java.sql.ResultSet.TYPE_FORWARD_ONLY,
+//						java.sql.ResultSet.CONCUR_READ_ONLY);
+//				s.setFetchSize(Integer.MIN_VALUE);
+//				return s;
+//			}
+//		}, ch);
 	}
 
 	public void disambiguate(
