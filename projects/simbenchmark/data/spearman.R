@@ -77,7 +77,7 @@ sigr = function(r1, r2, n) {
 	z1 = rtoz(r1)
 	z2 = rtoz(r2)
 	z = (z1-z2)/sqrt(2/(n-3))
-	return(min(pnorm(z), 1-pnorm(z)))
+	return(min(pnorm(z), 1-pnorm(z))*2)
 }
 
 nbenchmark = function(benchmark) {
