@@ -14,15 +14,11 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -41,14 +37,14 @@ import org.hibernate.SessionFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 import ytex.kernel.FileUtil;
 import ytex.kernel.IntrinsicInfoContentEvaluator;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.model.ConcRel;
 import ytex.kernel.model.ConceptGraph;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public class ConceptDaoImpl implements ConceptDao {
 	/**

@@ -454,7 +454,7 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			}
 		}
 		if (calcDepth)
-			depthArray[concept.getNodeIndex()] = (short)(parentMaxDepth + 1);
+			depthArray[concept.getNodeIndex()] = (short) (parentMaxDepth + 1);
 		// add the concept itself to the set of subsumers
 		subsumers.add(concept.getConceptID());
 		// add this to the cache - copy the key so that this can be gc'ed as
@@ -473,7 +473,8 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 	}
 
 	private void storeIntrinsicIC(String conceptGraphName, int maxLeaves,
-			Map<String, IntrinsicICInfo> icInfoMap, short depthArray[], ConceptGraph cg) {
+			Map<String, IntrinsicICInfo> icInfoMap, short depthArray[],
+			ConceptGraph cg) {
 		FeatureEvaluation fe = new FeatureEvaluation();
 		fe.setEvaluationType("intrinsic-infocontent");
 		fe.setParam2(conceptGraphName);
@@ -485,11 +486,11 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 			ConcRel cr = icInfo.getConcept();
 			short depth = depthArray[cr.getNodeIndex()];
 			cr.setDepth(depth);
-			if(depth > maxDepth)
+			if (depth > maxDepth)
 				maxDepth = depth;
 			double ic = computeIC(icInfo, maxLeaves);
 			cr.setIntrinsicInfoContent(ic);
-			if(ic > maxIC)
+			if (ic > maxIC)
 				maxIC = ic;
 			if (log.isDebugEnabled())
 				log.debug(icInfo.getConcept().getConceptID() + "=" + ic);
@@ -499,8 +500,12 @@ public class IntrinsicInfoContentEvaluatorImpl implements
 		}
 		cg.setDepthMax(maxDepth);
 		cg.setIntrinsicICMax(maxIC);
-		this.classifierEvaluationDao.deleteFeatureEvaluation(null, null, null,
-				fe.getEvaluationType(), null, 0d, conceptGraphName);
-		this.classifierEvaluationDao.saveFeatureEvaluation(fe, listFeatureRank);
+		if ("true".equalsIgnoreCase(System
+				.getProperty("ytex.ic.debug", "false"))) {
+			this.classifierEvaluationDao.deleteFeatureEvaluation(null, null,
+					null, fe.getEvaluationType(), null, 0d, conceptGraphName);
+			this.classifierEvaluationDao.saveFeatureEvaluation(fe,
+					listFeatureRank);
+		}
 	}
 }
