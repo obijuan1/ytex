@@ -42,7 +42,7 @@ Database connection parameters are taken from ytex.properties.
 	<property name="sctf.home" value="E:/temp/SnomedCT_RF2Release_INT_20110731/Full/Terminology" />
 	<property name="sct.version" value="20110731" />
 
-	<target name="all" depends="umls.all,uima.all,kernel.all,ic.all" description="call umls.all and uima.all" />
+	<target name="all" depends="umls.all,uima.all,kernel.all,cg.unpack" description="call umls.all and uima.all" />
 	<target name="init" description="initialize flags indicating which db is in use">
 		<condition property="mysql">
 			<equals arg1="${db.type}" arg2="mysql" />
@@ -523,46 +523,5 @@ ${sql.delimiter}
 				<include name="conceptGraph/**/*.*" />
 			</patternset>
 		</unzip>
-	</target>
-	<target name="ic.all" depends="init">
-		<antcall target="cg.unpack" />
-		<for list="sct-msh-csp-aod,umls" param="ic">
-			<sequential>
-				<antcall target="ic.load.cg">
-					<param name="ytex.conceptGraphName" value="@{ic}" />
-				</antcall>
-			</sequential>
-		</for>
-	</target>
-	<target name="ic.load.cg" description="load ic for concept graph into db">
-		<echo>loading ${ytex.conceptGraphDir}/${ytex.conceptGraphName}.txt</echo>
-		<if>
-			<available file="${ytex.conceptGraphDir}/${ytex.conceptGraphName}.txt" />
-			<then>
-				<condition property="drop.sql.onerror" value="continue" else="abort">
-					<equals arg1="${db.type}" arg2="orcl" />
-				</condition>
-				<delete dir="${basedir}/tmp" quiet="yes" />
-				<mkdir dir="${basedir}/tmp" />
-				<copy file="${basedir}/${db.type}/kernel/ic_copy.template.sql" tofile="${basedir}/tmp/ic_copy.sql" overwrite="yes">
-					<filterset>
-						<filter token="ytex.conceptGraphName" value="${ytex.conceptGraphName}" />
-					</filterset>
-				</copy>
-				<antcall target="jdbc.sqlcmd">
-					<param name="sqlcmd.dir" value="kernel" />
-					<param name="sqlcmd.script" value="ic_create.sql" />
-					<param name="sql.onerror" value="${drop.sql.onerror}" />
-				</antcall>
-				<antcall target="jdl">
-					<param name="jdl.data" value="${ytex.conceptGraphDir}/${ytex.conceptGraphName}.txt" />
-					<param name="jdl.format" value="${basedir}/umls/tmp_ic.xml" />
-				</antcall>
-				<antcall target="jdbc.sqlcmd">
-					<param name="sql.file" value="${basedir}/tmp/ic_copy.sql" />
-				</antcall>
-				<delete dir="${basedir}/tmp" quiet="yes" />
-			</then>
-		</if>
 	</target>
 </project>
