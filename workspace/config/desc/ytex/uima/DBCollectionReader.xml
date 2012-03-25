@@ -20,6 +20,20 @@
         <multiValued>false</multiValued>
         <mandatory>true</mandatory>
       </configurationParameter>
+      <configurationParameter>
+        <name>dbDriver</name>
+        <description>Fully qualified class name of jdbc driver to use to retrieve documents.  If null, will use db.driver from ytex.properties</description>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>false</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+        <name>dbURL</name>
+        <description>optional jdbc url to retrieve documents.  If not specified, will use default ytex jdbc url.  Only use this if your documents reside on a different database from the ytex database.  If needed, specify the username and password in the url.</description>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>false</mandatory>
+      </configurationParameter>
     </configurationParameters>
     <configurationParameterSettings>
       <nameValuePair>
