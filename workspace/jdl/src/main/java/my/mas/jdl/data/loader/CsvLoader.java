@@ -23,6 +23,8 @@ import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Loader of CSV file.
@@ -32,8 +34,12 @@ import org.apache.commons.lang.StringUtils;
 public class CsvLoader extends Loader {
 	private CSVParser parser;
 	private CsvLoadType loader;
+	/**
+	 *  copied from CSVStrategy
+	 */
 	static final char DISABLED = '\ufffe';
 
+	static final Log log = LogFactory.getLog(CsvLoader.class);
 	private Map<String, Format> formatMap;
 
 	/**
@@ -51,7 +57,8 @@ public class CsvLoader extends Loader {
 		Reader reader = new InputStreamReader(inputStrem);
 		CSVStrategy strategy = CSVStrategy.DEFAULT_STRATEGY;
 		strategy.setDelimiter(CharUtils.toChar(loader.getDelimiter()));
-		if(loader.getEncapsulator() == null || loader.getEncapsulator().length() == 0)
+		if (loader.getEncapsulator() == null
+				|| loader.getEncapsulator().length() == 0)
 			strategy.setEncapsulator(DISABLED);
 		else
 			strategy.setEncapsulator(CharUtils.toChar(loader.getEncapsulator()));
@@ -187,7 +194,7 @@ public class CsvLoader extends Loader {
 						preparedStatement.executeBatch();
 						jdlConnection.commitConnection();
 						leftoversToCommit = false;
-						System.out.println("inserted " + ncommit.intValue()
+						log.info("inserted " + ncommit.intValue()
 								+ " rows");
 					}
 				} catch (SQLException e) {
@@ -200,22 +207,16 @@ public class CsvLoader extends Loader {
 				jdlConnection.commitConnection();
 				leftoversToCommit = false;
 			}
-			System.out.println("inserted " + (r - rs) + " rows total");
+			log.info("inserted " + (r - rs) + " rows total");
 		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("", e);
 		} catch (SQLException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
 			throw new RuntimeException(e);
 		} finally {
 			if (preparedStatement != null) {
