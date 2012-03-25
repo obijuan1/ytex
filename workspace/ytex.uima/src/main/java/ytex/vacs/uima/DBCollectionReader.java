@@ -1,6 +1,7 @@
 package ytex.vacs.uima;
 
 import java.io.IOException;
+import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,6 +24,8 @@ import org.apache.uima.util.ProgressImpl;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.transaction.TransactionStatus;
@@ -90,12 +93,35 @@ public class DBCollectionReader extends CollectionReader_ImplBase {
 				.getParameterValue("queryGetDocument");
 		this.keyTypeName = (String) paramSettings
 				.getParameterValue("keyTypeName");
-		dataSource = (DataSource) ApplicationContextHolder
-				.getApplicationContext().getBean("collectionReaderDataSource");
+		String dbURL = (String) paramSettings.getParameterValue("dbURL");
+		if (dbURL != null && dbURL.length() > 0) {
+			try {
+				String dbDriver = (String) paramSettings
+						.getParameterValue("dbDriver");
+				if (dbDriver == null || dbDriver.length() == 0) {
+					dbDriver = ApplicationContextHolder.getYtexProperties()
+							.getProperty("db.driver");
+				}
+				dataSource = new SimpleDriverDataSource((Driver) Class.forName(
+						dbDriver).newInstance(), dbURL);
+				txTemplate = new TransactionTemplate(
+						new DataSourceTransactionManager(dataSource));
+			} catch (InstantiationException e) {
+				throw new ResourceInitializationException(e);
+			} catch (IllegalAccessException e) {
+				throw new ResourceInitializationException(e);
+			} catch (ClassNotFoundException e) {
+				throw new ResourceInitializationException(e);
+			}
+		} else {
+			txTemplate = (TransactionTemplate) ApplicationContextHolder
+					.getApplicationContext().getBean("txTemplate");
+			dataSource = (DataSource) ApplicationContextHolder
+					.getApplicationContext().getBean(
+							"collectionReaderDataSource");
+		}
 		simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
 		namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		txTemplate = (TransactionTemplate) ApplicationContextHolder
-				.getApplicationContext().getBean("txTemplate");
 	}
 
 	protected void loadDocumentIds() {
