@@ -27,7 +27,8 @@ CREATE TABLE `sct2f_description` (
 	`term` VARCHAR(255) NOT NULL DEFAULT '',
 	`caseSignificanceId` BIGINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`,`effectiveTime`),
-	KEY `sct2f_description_concept` (`conceptId`)
+	KEY `sct2f_description_concept` (`conceptId`),
+	KEY IX_term (term)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE `sct2f_relationship` (
