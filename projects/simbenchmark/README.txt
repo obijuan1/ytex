@@ -1,0 +1,1 @@
+See http://code.google.com/p/ytex/wiki/SemanticSim_V06
