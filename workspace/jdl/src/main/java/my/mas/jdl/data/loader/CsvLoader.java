@@ -35,7 +35,7 @@ public class CsvLoader extends Loader {
 	private CSVParser parser;
 	private CsvLoadType loader;
 	/**
-	 *  copied from CSVStrategy
+	 * copied from CSVStrategy
 	 */
 	static final char DISABLED = '\ufffe';
 
@@ -194,8 +194,7 @@ public class CsvLoader extends Loader {
 						preparedStatement.executeBatch();
 						jdlConnection.commitConnection();
 						leftoversToCommit = false;
-						log.info("inserted " + ncommit.intValue()
-								+ " rows");
+						log.info("inserted " + ncommit.intValue() + " rows");
 					}
 				} catch (SQLException e) {
 					// e.printStackTrace();
