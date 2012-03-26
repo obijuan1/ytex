@@ -26,6 +26,7 @@ SELECT
   o.code,
   substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text,
   substr(d.doc_text, s.span_begin+1, s.span_end-s.span_begin) sentence_text,
+  o.disambiguated,
   null patient_id,
   null doc_date,
   null doc_title,
@@ -42,7 +43,7 @@ INNER JOIN document d on da.document_id = d.document_id
 
 CREATE VIEW v_document_ontoanno
 AS
-SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.coding_scheme, o.code, d.analysis_batch
+SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.coding_scheme, o.code, d.analysis_batch, o.disambiguated
 FROM document AS d INNER JOIN
 anno_base AS da ON d.document_id = da.document_id INNER JOIN
 anno_named_entity AS ne ON da.anno_base_id = ne.anno_base_id INNER JOIN

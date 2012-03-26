@@ -26,6 +26,7 @@ SELECT
   o.code, 
   substring(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, 
   substring(d.doc_text, s.span_begin+1, s.span_end-s.span_begin) sentence_text,
+  o.disambiguated,
   d.patient_id,
   d.doc_date,
   d.doc_title,
@@ -48,7 +49,7 @@ go
 
 CREATE VIEW $(db_schema).[v_document_ontoanno]
 AS
-SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.coding_scheme, o.code, d.analysis_batch, substring(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text
+SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.coding_scheme, o.code, d.analysis_batch, substring(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, o.disambiguated
 FROM $(db_schema).v_document AS d INNER JOIN
 $(db_schema).anno_base AS da ON d.document_id = da.document_id INNER JOIN
 $(db_schema).anno_named_entity AS ne ON da.anno_base_id = ne.anno_base_id INNER JOIN

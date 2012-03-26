@@ -25,6 +25,7 @@ SELECT
   o.code, 
   substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, 
   substr(d.doc_text, s.span_begin+1, s.span_end-s.span_begin) sentence_text,
+  o.disambiguated,
   d.patient_id,
   d.doc_date,
   d.doc_title,
@@ -46,7 +47,7 @@ INNER JOIN v_document d on da.document_id = d.document_id
 
 CREATE VIEW v_document_ontoanno
 AS
-SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.coding_scheme, o.code, d.analysis_batch, substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, da.anno_base_id 
+SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.coding_scheme, o.code, d.analysis_batch, substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, da.anno_base_id, o.disambiguated 
 FROM v_document d INNER JOIN
 anno_base  da ON d.document_id = da.document_id INNER JOIN
 anno_named_entity  ne ON da.anno_base_id = ne.anno_base_id INNER JOIN
