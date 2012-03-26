@@ -24,7 +24,7 @@
     <casProcessors casPoolSize="3" processingUnitThreadCount="1">
         <casProcessor deployment="integrated" name="AggregateAllAnnotation">
             <descriptor>
-                <import location="../../config/desc/ytex/uima/YTEXPipeline.xml"/>
+                <import location="../../config/desc/ytex/uima/YTEXPipelineWSD.xml"/>
             </descriptor>
             <deploymentParameters/>
             <errorHandling>
