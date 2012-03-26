@@ -382,6 +382,8 @@ ${sql.delimiter}
 		<java classpathref="${kernel.cp}" classname="my.mas.AppMain" fork="yes" failonerror="yes">
 			<jvmarg value="-Dfile.encoding=UTF-8" />
 			<jvmarg value="-Xmx256m" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
 			<arg value="-c" />
 			<arg value="conn.xml" />
 			<arg value="-d" />
