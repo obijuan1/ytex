@@ -7,5 +7,5 @@ CLASSPATH=${TOMCAT_CP}
 export CLASSPATH
 CATALINA_OPTS=-Dorg.apache.el.parser.COERCE_TO_ZERO=false
 export CATALINA_OPTS
-JAVA_OPTS="-Xmx1g -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=128M"
+JAVA_OPTS="-Xmx1g -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256M"
 export JAVA_OPTS
