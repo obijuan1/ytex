@@ -34,10 +34,20 @@
 		</managed-bean-class>
 		<managed-bean-scope>view</managed-bean-scope>
 		<managed-property>
-			<property-name>documentDao</property-name>
+			<property-name>dataSource</property-name>
 			<property-class></property-class>
-			<value>#{documentDao}</value>
+			<value>#{dataSource}</value>
 		</managed-property>
+		<managed-property>
+			<property-name>searchProperties</property-name>
+			<property-class></property-class>
+			<value>#{searchProperties}</value>
+		</managed-property>
+		<managed-property>
+			<property-name>ytexProperties</property-name>
+			<property-class></property-class>
+			<value>#{ytexProperties}</value>
+		</managed-property>		
 	</managed-bean>
 	<managed-bean>
 		<managed-bean-name>concept1</managed-bean-name>
