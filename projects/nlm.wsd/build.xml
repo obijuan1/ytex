@@ -14,7 +14,7 @@
 	<target name="load.create">
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/create_table.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 	</target>
-	<target name="load.nlm.all" description="load nlm.wsd data" depends="load.nlm.abstract,load.nlm.word,load.nlm.choices.all" />
+	<target name="load.nlm.all" description="load nlm.wsd data" depends="load.nlm.abstract,load.nlm.choices.all,load.nlm.word" />
 	<target name="load.nlm.abstract" description="load nlm_wsd table">
 		<java classname="ytex.wsd.nlm.WSDLoader" fork="yes" failonerror="yes">
 			<classpath>
