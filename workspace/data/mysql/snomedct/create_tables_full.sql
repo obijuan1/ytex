@@ -4,7 +4,6 @@
 drop table if exists sct2f_concept;
 drop table if exists sct2f_description;
 drop table if exists sct2f_relationship;
-drop table if exists sct2f_relationship_snap;
 
 CREATE TABLE `sct2f_concept` (
 	`id` BIGINT NOT NULL DEFAULT 0,
@@ -27,8 +26,7 @@ CREATE TABLE `sct2f_description` (
 	`term` VARCHAR(255) NOT NULL DEFAULT '',
 	`caseSignificanceId` BIGINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`,`effectiveTime`),
-	KEY `sct2f_description_concept` (`conceptId`),
-	KEY IX_term (term)
+	KEY `sct2f_description_concept` (`conceptId`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE `sct2f_relationship` (
@@ -42,7 +40,5 @@ CREATE TABLE `sct2f_relationship` (
 	`typeId` BIGINT NOT NULL DEFAULT 0,
 	`characteristicTypeId` BIGINT NOT NULL DEFAULT 0,
 	`modifierId` BIGINT NOT NULL DEFAULT 0,
-	PRIMARY KEY (`id`,`effectiveTime`),
-	KEY `sct2f_relationship_source` (`sourceId`,`characteristicTypeId`,`typeId`,`destinationId`),
-	KEY `sct2f_relationship_dest` (`destinationId`,`characteristicTypeId`,`typeId`)
+	PRIMARY KEY (`id`,`effectiveTime`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
