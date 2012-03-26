@@ -54,7 +54,7 @@ Database connection parameters are taken from ytex.properties.
 			<equals arg1="${db.type}" arg2="orcl" />
 		</condition>
 		<available file="${umls.zip}" property="umls.zip.available" />
-		<condition property="umls.data" value="${java.io.tmpdir}" else="${basedir}">
+		<condition property="umls.data" value="${java.io.tmpdir}" else="${basedir}/umls">
 			<isset property="umls.zip.available" />
 		</condition>
 	</target>
