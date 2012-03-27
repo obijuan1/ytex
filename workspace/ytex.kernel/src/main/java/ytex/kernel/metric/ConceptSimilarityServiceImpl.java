@@ -398,7 +398,6 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		// if (isPreload()) {
 		// look in conceptInfoMap for info content
 		for (String lcs : lcses) {
-			double ic = 0d;
 			lcsICMap.put(lcs, getIC(lcs, intrinsicIC));
 			// }
 			// } else {
@@ -548,7 +547,18 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 			if (cr != null)
 				ic = cr.getIntrinsicInfoContent();
 		} else {
-			Double icC = this.corpusICMap.get(concept);
+			Double icC = null;
+			if (isPreload()) {
+				// we preloaded all ic - just look in the cache
+				icC = this.corpusICMap.get(concept);
+			} else {
+				// we need to load the ic from the database on demand
+				Map<String, FeatureRank> frMap = getICOnDemand(
+						new HashSet<String>(Arrays.asList(concept)),
+						false);
+				if (frMap.containsKey(concept))
+					return frMap.get(concept).getEvaluation();
+			}
 			if (icC != null)
 				ic = icC;
 		}
@@ -797,12 +807,12 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 	 */
 	private void initSimilarityMetricMap() {
 		log.info("initializing similarity measures");
-//		Double maxIC = this.classifierEvaluationDao.getMaxFeatureEvaluation(
-//				null, null, null,
-//				IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, 0, 0,
-//				conceptGraphName);
-//		Integer maxDepth = this.classifierEvaluationDao
-//				.getMaxDepth(conceptGraphName);
+		// Double maxIC = this.classifierEvaluationDao.getMaxFeatureEvaluation(
+		// null, null, null,
+		// IntrinsicInfoContentEvaluator.INTRINSIC_INFOCONTENT, 0, 0,
+		// conceptGraphName);
+		// Integer maxDepth = this.classifierEvaluationDao
+		// .getMaxDepth(conceptGraphName);
 		double maxIC = this.cg.getIntrinsicICMax();
 		int maxDepth = this.cg.getDepthMax();
 		this.similarityMetricMap = new HashMap<SimilarityMetricEnum, SimilarityMetric>(
