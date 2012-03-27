@@ -1,5 +1,6 @@
 package ytex.web.search;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -7,7 +8,7 @@ import java.util.Date;
  * @author vijay
  *
  */
-public class DocumentSearchResult {
+public class DocumentSearchResult implements Serializable {
 	@Override
 	public String toString() {
 		return "DocumentSearchResult [cuiText=" + cuiText + ", documentID="

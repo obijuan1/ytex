@@ -1,5 +1,6 @@
 package ytex.web.search;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 import javax.faces.context.FacesContext;
@@ -15,12 +16,16 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
  * @author vijay
  * 
  */
-public class DocumentViewBean {
+public class DocumentViewBean implements Serializable {
 
-	private DataSource dataSource;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private transient DataSource dataSource;
 	private String docText;
 	private int documentID;
-	private SimpleJdbcTemplate jdbcTemplate;
+	private transient SimpleJdbcTemplate jdbcTemplate;
 	private String rawText;
 
 	private Properties searchProperties;

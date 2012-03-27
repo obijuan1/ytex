@@ -1,0 +1,4 @@
+<Context>
+	<!-- turn off session persistence -->
+	<Manager pathname="" />
+</Context>

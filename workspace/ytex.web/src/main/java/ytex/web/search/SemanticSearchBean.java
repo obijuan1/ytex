@@ -1,5 +1,6 @@
 package ytex.web.search;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -23,11 +24,16 @@ import com.icesoft.faces.component.selectinputtext.SelectInputText;
  * @author vijay
  * 
  */
-public class SemanticSearchBean {
+public class SemanticSearchBean implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private static final Log log = LogFactory.getLog(SemanticSearchBean.class);
 
-	private ConceptSearchService umlsFirstWordService;
-	private DocumentSearchService documentSearchService;
+	private transient ConceptSearchService umlsFirstWordService;
+	private transient DocumentSearchService documentSearchService;
 	private Date dateFrom;
 	private Date dateTo;
 	private Integer patientId;
