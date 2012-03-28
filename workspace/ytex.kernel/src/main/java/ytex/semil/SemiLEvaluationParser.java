@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.common.collect.BiMap;
+
 import ytex.kernel.BaseClassifierEvaluationParser;
 import ytex.kernel.KernelContextHolder;
 import ytex.kernel.model.ClassifierEvaluation;
@@ -82,7 +84,7 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 			String classFileName = dataDir + File.separator
 					+ labelBase.substring(0, labelBase.length() - "label".length())
 					+ "class.txt";			
-			List<List<Long>> listClassInfo = super.loadClassInfo(dataDir,
+			List<InstanceClassInfo> listClassInfo = super.loadInstanceClassInfo(dataDir,
 					classFileName);
 			// process .output files
 			if (listClassInfo != null) {
@@ -93,7 +95,7 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 						return name.endsWith(".output");
 					}
 				})) {
-					parseSemiLOutput(labelBase, kernelProps, output,
+					parseSemiLOutput(dataDir, labelBase, kernelProps, output,
 							listClassInfo);
 				}
 			}
@@ -119,8 +121,8 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	 *            should the instance-level evaluations be saved?
 	 * @throws IOException
 	 */
-	private void parseSemiLOutput(String fileBaseName, Properties kernelProps,
-			File output, List<List<Long>> listClassInfo) throws IOException {
+	private void parseSemiLOutput(File dataDir, String fileBaseName, Properties kernelProps,
+			File output, List<InstanceClassInfo> listClassInfo) throws IOException {
 		BufferedReader outputReader = null;
 		try {
 			outputReader = new BufferedReader(new FileReader(output));
@@ -133,6 +135,8 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 				this.initClassifierEvaluation(fileBaseName, ce);
 				// set name, experiment
 				this.initClassifierEvaluationFromProperties(kernelProps, ce);
+				BiMap<Integer, String> classIdToNameMap = loadClassIdMap(
+						dataDir, ce.getLabel());
 				// parse options
 				parseOptions(ce, optionsLine, kernelProps, output.getName());
 				boolean storeUnlabeled = YES.equalsIgnoreCase(kernelProps
@@ -140,9 +144,9 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 								ParseOption.STORE_UNLABELED.getOptionKey(),
 								ParseOption.STORE_UNLABELED.getDefaultValue()));
 				parsePredictedClasses(ce, predictLine, listClassInfo,
-						storeUnlabeled);
+						storeUnlabeled, classIdToNameMap);
 				// save the classifier evaluation
-				this.storeSemiSupervised(kernelProps, ce, null);
+				this.storeSemiSupervised(kernelProps, ce, classIdToNameMap);
 			}
 		} finally {
 			if (outputReader != null) {
@@ -167,14 +171,15 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 	 *            stored?
 	 */
 	private void parsePredictedClasses(ClassifierEvaluation ce,
-			String predictLine, List<List<Long>> listClassInfo,
-			boolean storeUnlabeled) {
+			String predictLine, List<InstanceClassInfo> listClassInfo,
+			boolean storeUnlabeled, BiMap<Integer, String> classIdToNameMap) {
 		String strClassIds[] = predictLine.split("\\s");
-		int classIds[] = new int[strClassIds.length];
-		for (int i = 0; i < classIds.length; i++)
-			classIds[i] = Integer.parseInt(strClassIds[i]);
+		String classNames[] = new String[strClassIds.length];
+		for (int i = 0; i < strClassIds.length; i++) {
+			classNames[i] = classIdToNameMap.get(Integer.parseInt(strClassIds[i]));
+		}
 		updateSemiSupervisedPredictions(ce, listClassInfo, storeUnlabeled,
-				classIds);
+				classNames, classIdToNameMap.inverse());
 	}
 
 	/**

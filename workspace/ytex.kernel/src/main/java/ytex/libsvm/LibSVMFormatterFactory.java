@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 
+import com.google.common.collect.BiMap;
+
 import ytex.kernel.BaseSparseDataFormatter;
 import ytex.kernel.FileUtil;
 import ytex.kernel.InstanceData;
@@ -102,7 +104,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		protected void exportDataForLabel(String filename, String idFilename,
 				SparseData bagOfWordsData,
 				SortedMap<Long, String> instanceClassMap,
-				Map<String, Integer> classToIndexMap) throws IOException {
+				BiMap<String, Integer> classToIndexMap) throws IOException {
 			BufferedWriter wData = null;
 			BufferedWriter wId = null;
 			try {
@@ -136,7 +138,7 @@ public class LibSVMFormatterFactory implements SparseDataFormatterFactory {
 		 */
 		protected List<Long> exportDataForInstances(SparseData bagOfWordsData,
 				SortedMap<Long, String> instanceClassMap,
-				Map<String, Integer> classToIndexMap, BufferedWriter wData,
+				BiMap<String, Integer> classToIndexMap, BufferedWriter wData,
 				BufferedWriter wId) throws IOException {
 			List<Long> instanceIds = new ArrayList<Long>();
 			for (Map.Entry<Long, String> instanceClass : instanceClassMap

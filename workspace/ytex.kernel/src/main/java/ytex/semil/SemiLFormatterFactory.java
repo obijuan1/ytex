@@ -397,6 +397,11 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 			}
 		}
 
+		@Override
+		protected void fillLabelToClassIndexMap(Map<String, SortedSet<String>> labelToClassMap) {
+			kernelUtil.fillLabelToClassToIndexMap(labelToClassMap, this.labelToClassIndexMap);
+			updateLabelClassMapTransductive();
+		}		
 		// /**
 		// * round double to specified precision
 		// *
