@@ -169,21 +169,20 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 				for (Long instanceId : instanceIds) {
 					// for training default to unlabeled
 					int classIdTrain = 0;
+					String classNameTrain = "0";
 					if (trainInstanceClassMap.containsKey(instanceId)) {
 						// if the instance is in the training set, then use that
 						// label
+						classNameTrain = trainInstanceClassMap.get(instanceId);
 						classIdTrain = classToIndexMap
-								.get(trainInstanceClassMap.get(instanceId));
+								.get(classNameTrain);
 					}
 					mapInstanceIdToClass.put(instanceId, classIdTrain);
 					// check test set for gold class
-					int classIdGold = 0;
 					if (testInstanceClassMap != null
-							&& testInstanceClassMap.containsKey(instanceId))
-						classIdGold = classToIndexMap.get(testInstanceClassMap
-								.get(instanceId));
-					else
-						classIdGold = classIdTrain;
+							&& testInstanceClassMap.containsKey(instanceId)) {
+						classNameTrain = testInstanceClassMap.get(instanceId);
+					} 
 					// write instance id, if this is in the train set, and it's
 					// class
 					wId.write(Long.toString(instanceId));
@@ -191,7 +190,7 @@ public class SemiLFormatterFactory implements SparseDataFormatterFactory {
 					wId.write(trainInstanceClassMap.containsKey(instanceId) ? "1"
 							: "0");
 					wId.write("\t");
-					wId.write(Integer.toString(classIdGold));
+					wId.write(classNameTrain);
 					wId.write("\n");
 				}
 			} finally {

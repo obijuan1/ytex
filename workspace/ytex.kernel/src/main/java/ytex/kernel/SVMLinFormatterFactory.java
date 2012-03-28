@@ -16,6 +16,8 @@ import org.apache.commons.logging.LogFactory;
 
 import ytex.semil.SemiLFormatterFactory.SemiLDataFormatter;
 
+import com.google.common.base.Strings;
+
 /**
  * for each train/test pair create the following files:
  * <ul>
@@ -69,8 +71,8 @@ public class SVMLinFormatterFactory implements SparseDataFormatterFactory {
 		 * creates [scope]code.properties. file to write the codes to. When
 		 * parsing results, we will read this properties file.
 		 * <p>
-		 * creates [scope]code[n]_label.txt.  Class label files for one-against-all
-		 * classification.
+		 * creates [scope]code[n]_label.txt. Class label files for
+		 * one-against-all classification.
 		 * 
 		 * @param trainInstanceIdToClass
 		 *            map of training instance id to class id
@@ -78,8 +80,8 @@ public class SVMLinFormatterFactory implements SparseDataFormatterFactory {
 		 * @throws IOException
 		 */
 		private void exportOneAgainstAllCodes(String label, Integer run,
-				Integer fold, SortedMap<Long, Integer> trainInstanceIdToClass)
-				throws IOException {
+				Integer fold, SortedMap<Long, Integer> trainInstanceIdToClass,
+				Map<Integer, String> codeToClassNameMap) throws IOException {
 			// file to write the map between codes and classes
 			String classFileName = FileUtil.getScopedFileName(outdir, label,
 					run, fold, "code.properties");
@@ -98,6 +100,7 @@ public class SVMLinFormatterFactory implements SparseDataFormatterFactory {
 			Integer[] classIdArray = classIds.toArray(new Integer[0]);
 			for (int i = 0; i < classIdArray.length; i++) {
 				int classId = classIdArray[i];
+				String className = codeToClassNameMap.get(classId);
 				// recode the instances
 				SortedMap<Long, Integer> mapRecodedInstanceIdToClass = new TreeMap<Long, Integer>();
 				for (Map.Entry<Long, Integer> instanceIdToClassEntry : trainInstanceIdToClass
@@ -113,17 +116,26 @@ public class SVMLinFormatterFactory implements SparseDataFormatterFactory {
 							instanceIdToClassEntry.getKey(), codedClassId);
 				}
 				String labelFileBaseName = FileUtil.getScopedFileName(outdir,
-						label, run, fold, "code" + code + "_label");
-				exportLabel(labelFileBaseName+".txt", mapRecodedInstanceIdToClass);
+						label, run, fold,
+						"class" + codeToClassNameMap.get(classId) + ".txt");
+				exportLabel(labelFileBaseName, mapRecodedInstanceIdToClass);
 				// add the map from code to class
 				props.setProperty(labelFileBaseName + ".class",
 						Integer.toString(classId));
+				props.setProperty(labelFileBaseName + ".className", className);
+				// add the key to the classWeights.properties file that will
+				// have the positive class fraction.  the key is of the form 
+				// label<label>_class<class>
+				props.setProperty("classrel",
+						formatWeightKey(label, className));
 				// add the code to the list of codes
 				bCodeList.append(labelFileBaseName).append(",");
 				// if there are just 2 classes, stop here
 				if (classIdArray.length == 2) {
 					props.setProperty("classOther",
 							Integer.toString(classIdArray[1]));
+					props.setProperty("classOtherName",
+							codeToClassNameMap.get(classIdArray[1]));
 					break;
 				}
 				// increment the code
@@ -154,18 +166,17 @@ public class SVMLinFormatterFactory implements SparseDataFormatterFactory {
 				exportData(sparseData, label, run, fold);
 			}
 			String idFileName = FileUtil.getScopedFileName(outdir, label, run,
-					fold, "class.txt");
+					fold, "id.txt");
 			SortedMap<Long, Integer> trainInstanceIdToClass = super
 					.getTrainingClassMap(idFileName,
 							foldInstanceLabelMap.get(true),
 							foldInstanceLabelMap.get(false),
 							this.labelToClassIndexMap.get(label),
 							sparseData.getInstanceIds());
-			exportOneAgainstAllCodes(label, run, fold, trainInstanceIdToClass);
+			exportOneAgainstAllCodes(label, run, fold, trainInstanceIdToClass,
+					this.labelToClassIndexMap.get(label).inverse());
 		}
 	}
-
-
 
 	private KernelUtil kernelUtil;
 
@@ -173,12 +184,19 @@ public class SVMLinFormatterFactory implements SparseDataFormatterFactory {
 	public SparseDataFormatter getFormatter() {
 		return new SVMLinDataFormatter(kernelUtil);
 	}
+
 	public KernelUtil getKernelUtil() {
 		return kernelUtil;
 	}
 
 	public void setKernelUtil(KernelUtil kernelUtil) {
 		this.kernelUtil = kernelUtil;
+	}
+
+	public static String formatWeightKey(String label, String className) {
+		return (Strings.isNullOrEmpty(label) ? "" : "label" + label
+				+ "_")
+				+ "class" + className;
 	}
 
 }

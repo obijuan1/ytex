@@ -12,6 +12,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import com.google.common.collect.BiMap;
+
 public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 	protected KernelUtil kernelUtil;
 
@@ -31,7 +33,7 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 	/**
 	 * map of label - [class name - class index]
 	 */
-	protected Map<String, Map<String, Integer>> labelToClassIndexMap = new HashMap<String, Map<String, Integer>>();
+	protected Map<String, BiMap<String, Integer>> labelToClassIndexMap = new HashMap<String, BiMap<String, Integer>>();
 	/**
 	 * 1-based attribute index
 	 */

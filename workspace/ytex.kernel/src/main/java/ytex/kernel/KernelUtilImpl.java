@@ -31,6 +31,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.dao.KernelEvaluationDao;
 import ytex.kernel.model.CrossValidationFold;
@@ -301,11 +304,10 @@ public class KernelUtilImpl implements KernelUtil {
 	@Override
 	public void fillLabelToClassToIndexMap(
 			Map<String, SortedSet<String>> labelToClasMap,
-			Map<String, Map<String, Integer>> labelToClassIndexMap) {
+			Map<String, BiMap<String, Integer>> labelToClassIndexMap) {
 		for (Map.Entry<String, SortedSet<String>> labelToClass : labelToClasMap
 				.entrySet()) {
-			Map<String, Integer> classToIndexMap = new HashMap<String, Integer>(
-					labelToClass.getValue().size());
+			BiMap<String, Integer> classToIndexMap = HashBiMap.create();
 			labelToClassIndexMap.put(labelToClass.getKey(), classToIndexMap);
 			int nIndex = 1;
 			for (String className : labelToClass.getValue()) {

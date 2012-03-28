@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.common.collect.BiMap;
+
 import ytex.kernel.model.SVMClassifierEvaluation;
 
 public class SvmlinEvaluationParser extends BaseClassifierEvaluationParser {
@@ -46,8 +48,6 @@ public class SvmlinEvaluationParser extends BaseClassifierEvaluationParser {
 			eval.setAlgorithm("svmlin");
 			// parse results
 			parseResults(dataDir, outputDir, eval, props);
-			// save the classifier evaluation
-			storeSemiSupervised(props, eval);
 		}
 	}
 
@@ -70,12 +70,16 @@ public class SvmlinEvaluationParser extends BaseClassifierEvaluationParser {
 		}
 		// parse predictions
 		if (fileBaseName != null && fileBaseName.length() > 0) {
-			List<List<Long>> listClassInfo = loadClassInfo(dataDir,
-					fileBaseName + "class.txt");
+			List<InstanceClassInfo> listClassInfo = loadInstanceClassInfo(
+					dataDir, fileBaseName + "id.txt");
 			// process .output files
 			if (listClassInfo != null) {
+				BiMap<Integer, String> classIdToNameMap = loadClassIdMap(
+						dataDir, eval.getLabel());
 				parseSvmlinOutput(dataDir, outputDir, eval, fileBaseName,
-						props, listClassInfo);
+						props, listClassInfo, classIdToNameMap);
+				// save the classifier evaluation
+				storeSemiSupervised(props, eval, classIdToNameMap);
 			}
 		} else {
 			log.warn("couldn't parse directory; kernel.label.base not defined. Dir: "
@@ -98,47 +102,51 @@ public class SvmlinEvaluationParser extends BaseClassifierEvaluationParser {
 	 */
 	private void parseSvmlinOutput(File dataDir, File outputDir,
 			SVMClassifierEvaluation eval, String fileBaseName,
-			Properties props, List<List<Long>> listClassInfo)
-			throws IOException {
+			Properties props, List<InstanceClassInfo> listClassInfo,
+			BiMap<Integer, String> classIdToNameMap) throws IOException {
 		Properties codeProps = FileUtil.loadProperties(
 				dataDir.getAbsolutePath() + "/" + fileBaseName
 						+ "code.properties", false);
 		String[] codes = codeProps.getProperty("codes", "").split(",");
-		SortedMap<Integer, double[]> codeToPredictionMap = new TreeMap<Integer, double[]>();
+		SortedMap<String, double[]> codeToPredictionMap = new TreeMap<String, double[]>();
 		if (codes.length == 0) {
 			throw new IOException("invalid code.properties: " + fileBaseName);
 		}
-		int otherClassId = 0;
+		// int otherClassId = 0;
+		String otherClassName = null;
 		if (codes.length == 1) {
-			otherClassId = Integer
-					.parseInt(codeProps.getProperty("classOther"));
+			// otherClassId = Integer
+			// .parseInt(codeProps.getProperty("classOther"));
+			otherClassName = codeProps.getProperty("classOtherName");
 		}
 		for (String code : codes) {
 			// determine class for given code
-			String strClassId = codeProps.getProperty(code+".class");
-			if (strClassId == null) {
-				throw new IOException("invalid code.properties: "
-						+ fileBaseName);
-			}
-			int classId = Integer.parseInt(strClassId);
+			// String strClassId = codeProps.getProperty(code+".class");
+			// if (strClassId == null) {
+			// throw new IOException("invalid code.properties: "
+			// + fileBaseName);
+			// }
+			// int classId = Integer.parseInt(strClassId);
+			String className = codeProps.getProperty(code + ".className");
+			String codeBase = code.substring(0, code.length()-".txt".length());
 			// read predictions for given class
 			codeToPredictionMap.put(
-					classId,
-					readPredictions(outputDir.getAbsolutePath() + "/" + code
+					className,
+					readPredictions(outputDir.getAbsolutePath() + "/" + codeBase
 							+ ".outputs", listClassInfo.size()));
 		}
 		// iterate over predictions for each instance, figure out which class is
 		// the winner
-		int[] classPredictions = new int[listClassInfo.size()];
+		String[] classPredictions = new String[listClassInfo.size()];
 		for (int i = 0; i < listClassInfo.size(); i++) {
-			if (otherClassId != 0) {
-				Map.Entry<Integer, double[]> classToPred = codeToPredictionMap
+			if (otherClassName != null) {
+				Map.Entry<String, double[]> classToPred = codeToPredictionMap
 						.entrySet().iterator().next();
 				classPredictions[i] = classToPred.getValue()[i] > 0 ? classToPred
-						.getKey() : otherClassId;
+						.getKey() : otherClassName;
 			} else {
-				NavigableMap<Double, Integer> predToClassMap = new TreeMap<Double, Integer>();
-				for (Map.Entry<Integer, double[]> classToPred : codeToPredictionMap
+				NavigableMap<Double, String> predToClassMap = new TreeMap<Double, String>();
+				for (Map.Entry<String, double[]> classToPred : codeToPredictionMap
 						.entrySet()) {
 					predToClassMap.put(classToPred.getValue()[i],
 							classToPred.getKey());
@@ -150,7 +158,7 @@ public class SvmlinEvaluationParser extends BaseClassifierEvaluationParser {
 				ParseOption.STORE_UNLABELED.getOptionKey(),
 				ParseOption.STORE_UNLABELED.getDefaultValue()));
 		updateSemiSupervisedPredictions(eval, listClassInfo, storeUnlabeled,
-				classPredictions);
+				classPredictions, classIdToNameMap.inverse());
 	}
 
 	/**

@@ -18,6 +18,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 import ytex.kernel.dao.ClassifierEvaluationDao;
 import ytex.kernel.model.ClassifierEvaluation;
 import ytex.kernel.model.ClassifierInstanceEvaluation;
@@ -37,6 +40,48 @@ public abstract class BaseClassifierEvaluationParser implements
 	public static Pattern wsDotPattern = Pattern.compile("\\s|\\.|\\z");
 
 	private ClassifierEvaluationDao classifierEvaluationDao;
+
+	public static class InstanceClassInfo {
+		long instanceId;
+		boolean train;
+		String targetClassName;
+
+		public InstanceClassInfo() {
+			super();
+		}
+
+		public InstanceClassInfo(long instanceId, boolean train,
+				String targetClassName) {
+			super();
+			this.instanceId = instanceId;
+			this.train = train;
+			this.targetClassName = targetClassName;
+		}
+
+		public long getInstanceId() {
+			return instanceId;
+		}
+
+		public void setInstanceId(long instanceId) {
+			this.instanceId = instanceId;
+		}
+
+		public boolean isTrain() {
+			return train;
+		}
+
+		public void setTrain(boolean train) {
+			this.train = train;
+		}
+
+		public String getTargetClassName() {
+			return targetClassName;
+		}
+
+		public void setTargetClassName(String targetClassName) {
+			this.targetClassName = targetClassName;
+		}
+	}
 
 	public ClassifierEvaluationDao getClassifierEvaluationDao() {
 		return classifierEvaluationDao;
@@ -159,7 +204,7 @@ public abstract class BaseClassifierEvaluationParser implements
 	}
 
 	protected void storeSemiSupervised(Properties kernelProps,
-			ClassifierEvaluation ce) {
+			ClassifierEvaluation ce, BiMap<Integer, String> classIdToNameMap) {
 		boolean storeInstanceEval = YES.equalsIgnoreCase(kernelProps
 				.getProperty(ParseOption.STORE_INSTANCE_EVAL.getOptionKey(),
 						ParseOption.STORE_INSTANCE_EVAL.getDefaultValue()));
@@ -170,7 +215,7 @@ public abstract class BaseClassifierEvaluationParser implements
 				ParseOption.STORE_IRSTATS.getOptionKey(),
 				ParseOption.STORE_IRSTATS.getDefaultValue()));
 		// save the classifier evaluation
-		this.getClassifierEvaluationDao().saveClassifierEvaluation(ce, null,
+		this.getClassifierEvaluationDao().saveClassifierEvaluation(ce, classIdToNameMap,
 				storeInstanceEval || storeUnlabeled, storeIR, 0);
 	}
 
@@ -212,9 +257,32 @@ public abstract class BaseClassifierEvaluationParser implements
 		}
 	}
 
-	protected Map<Integer, String> loadClassIdMap(File dataDir, String label)
+	protected void updateSemiSupervisedPredictions(ClassifierEvaluation ce,
+			List<InstanceClassInfo> listClassInfo, boolean storeUnlabeled,
+			String[] predictedClassNames, Map<String, Integer> classNameToIdMap) {
+		for (int i = 0; i < predictedClassNames.length; i++) {
+			InstanceClassInfo classInfo = listClassInfo.get(i);
+			boolean train = classInfo.isTrain();
+			// if we are storing unlabeled instance ids, save this instance
+			// evaluation
+			// else only store it if this is a test instance id - save it
+			if (storeUnlabeled || !train) {
+				ClassifierInstanceEvaluation cie = new ClassifierInstanceEvaluation();
+				cie.setClassifierEvaluation(ce);
+				cie.setInstanceId(classInfo.getInstanceId());
+				cie.setPredictedClassId(classNameToIdMap.get(predictedClassNames[i]));
+				int targetClassId = classNameToIdMap.get(classInfo.getTargetClassName());
+				if (targetClassId != 0)
+					cie.setTargetClassId(targetClassId);
+				// add the instance eval to the parent
+				ce.getClassifierInstanceEvaluations().put(cie.getInstanceId(), cie);
+			}
+		}
+	}
+	
+	protected BiMap<Integer, String> loadClassIdMap(File dataDir, String label)
 			throws IOException {
-		Map<Integer, String> classIndexMap = new HashMap<Integer, String>();
+		BiMap<Integer, String> classIndexMap = HashBiMap.create();
 		String filename = FileUtil.getScopedFileName(dataDir.getPath(), label,
 				null, null, "class.properties");
 		File f = new File(filename);
@@ -236,6 +304,40 @@ public abstract class BaseClassifierEvaluationParser implements
 			}
 		}
 		return classIndexMap;
+	}
+
+	protected List<InstanceClassInfo> loadInstanceClassInfo(File dataDir,
+			String classFileName) throws IOException {
+		List<InstanceClassInfo> listClassInfo = null;
+		// load instance ids and their class ids
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(new FileReader(classFileName));
+			listClassInfo = new ArrayList<InstanceClassInfo>();
+			String line = null;
+			while ((line = r.readLine()) != null) {
+				if (line.trim().length() > 0) {
+					String classInfoToks[] = line.split("\\s");
+					if (classInfoToks.length != 3) {
+						log.error("error parsing line: " + line);
+						return null;
+					}
+					listClassInfo
+							.add(new InstanceClassInfo(Long
+									.parseLong(classInfoToks[0]), Integer
+									.parseInt(classInfoToks[1]) != 0,
+									classInfoToks[2]));
+				}
+			}
+		} catch (FileNotFoundException fe) {
+			log.warn("class.txt file not available: " + classFileName, fe);
+			listClassInfo = null;
+		} finally {
+			if (r != null) {
+				r.close();
+			}
+		}
+		return listClassInfo;
 	}
 
 	protected List<List<Long>> loadClassInfo(File dataDir, String classFileName)

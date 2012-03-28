@@ -150,20 +150,20 @@ public class ClassifierEvalUtil {
 				// determine the positive class fraction for each label file
 				Properties codeProps = FileUtil.loadProperties(
 						codeFile.getAbsolutePath(), false);
-				// iterate through the label files
+				// iterate through the code files
 				for (String labelfile : codeProps.getProperty("codes", "")
 						.split(",")) {
 					// get the class id for the given label file
-					String classId = codeProps
-							.getProperty(labelfile + ".class");
+					String className = codeProps
+							.getProperty(labelfile + ".className");
 					// figure out the key to look up the positive class fraction
 					// in the classWeights.properties file
 					// if a label is specified then the key is label.n.class.m,
 					// else just class.m
 					String label = FileUtil.parseLabelFromFileName(labelfile);
-					String key = label != null && label.length() > 0 ? "label."
-							+ label + "." : "";
-					key = key + "class." + classId;
+					String key = label != null && label.length() > 0 ? "label"
+							+ label + "_" : "";
+					key = key + "class" + className;
 					String posClassFrac = weightProps.getProperty(key);
 					if (posClassFrac != null) {
 						// set the class fraction property
@@ -174,6 +174,7 @@ public class ClassifierEvalUtil {
 			}
 		}
 	}
+	
 
 	// private void writeSvmlinEvalFile(File labelFile, File kernelDataDir)
 	// throws IOException {

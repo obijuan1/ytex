@@ -25,6 +25,8 @@ import org.apache.commons.cli.ParseException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import com.google.common.collect.BiMap;
+
 import ytex.kernel.FileUtil;
 import ytex.kernel.InstanceData;
 import ytex.kernel.KernelContextHolder;
@@ -186,7 +188,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 	private void exportGramMatrices(String name, String experiment,
 			double param1, String param2, String scope, String splitName,
 			String outdir, InstanceData instanceData,
-			Map<String, Map<String, Integer>> labelToClassIndexMap)
+			Map<String, BiMap<String, Integer>> labelToClassIndexMap)
 			throws IOException {
 		// the full, symmetric gram matrix
 		double[][] gramMatrix = null;
@@ -265,7 +267,7 @@ public class LibSVMGramMatrixExporterImpl implements LibSVMGramMatrixExporter {
 				props.getProperty("instanceClassQuery"));
 		String splitName = props.getProperty("ytex.splitName");
 		String outdir = props.getProperty("outdir");
-		Map<String, Map<String, Integer>> labelToClassIndexMap = new HashMap<String, Map<String, Integer>>();
+		Map<String, BiMap<String, Integer>> labelToClassIndexMap = new HashMap<String, BiMap<String, Integer>>();
 		kernelUtil.fillLabelToClassToIndexMap(
 				instanceData.getLabelToClassMap(), labelToClassIndexMap);
 		exportGramMatrices(name, experiment, param1, param2, scope, splitName,

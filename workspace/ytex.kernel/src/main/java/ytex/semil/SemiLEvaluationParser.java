@@ -142,7 +142,7 @@ public class SemiLEvaluationParser extends BaseClassifierEvaluationParser {
 				parsePredictedClasses(ce, predictLine, listClassInfo,
 						storeUnlabeled);
 				// save the classifier evaluation
-				this.storeSemiSupervised(kernelProps, ce);
+				this.storeSemiSupervised(kernelProps, ce, null);
 			}
 		} finally {
 			if (outputReader != null) {

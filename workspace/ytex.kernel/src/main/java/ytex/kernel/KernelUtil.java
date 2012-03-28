@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 
+import com.google.common.collect.BiMap;
+
 import ytex.kernel.model.KernelEvaluation;
 
 public interface KernelUtil {
@@ -61,7 +63,7 @@ public interface KernelUtil {
 
 	public abstract void fillLabelToClassToIndexMap(
 			Map<String, SortedSet<String>> labelToClasMap,
-			Map<String, Map<String, Integer>> labelToClassIndexMap);
+			Map<String, BiMap<String, Integer>> labelToClassIndexMap);
 
 	/**
 	 * export the class id to class name map.
