@@ -354,22 +354,20 @@
 			<arg line="${kernel.line} ${kernel.dist.file} ${kernel.label.filename}" />
 		</exec>
 	</target>
-	<!--
-	<target name="svmlin.process.dir" depends="init.dir,kernel.genParams,svm.iter.train" description="run svmlin" />
-	<target name="svmlin.evaluate" depends="init.dir" description="iterate over *label.txt, call semil.processLabelFile">
+	<target name="svmlin.process.dir" depends="init.dir,kernel.genParams,svm.iter.train,kernel.storeResults" description="run svmlin" />
+	<target name="svmlin.evaluate" depends="init.dir" description="iterate over *code.txt, call semil.processLabelFile">
 		<for param="kernel.label.file" parallel="${parallel.folds}" threadCount="${kernel.threads}">
-			<fileset dir="${kernel.data}" includes="*label.txt" />
+			<fileset dir="${kernel.data}" includes="*code.txt" />
 			<sequential>
-				<antcall target="svmlin.processLabelFile">
+				<antcall target="svmlin.processFile">
 					<param name="kernel.train.data" value="@{kernel.label.file}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-	-->
 	<target name="svmlin.processFile" depends="init.dir" description="for each label file, call svmlin.iter.evalLines">
 		<property file="${kernel.data}/parameters.properties" />
-		<property name="kernel.train.data" value="${kernel.data}/label8_run1_fold1_code.properties" />
+		<property name="kernel.train.data" value="${kernel.data}/labelAsthma_run1_fold1_code.properties" />
 		<basename file="${kernel.train.data}" property="kernel.label.filename" />
 		<basename file="${kernel.label.filename}" property="kernel.data.basename" suffix="code.properties" />
 		<!-- load properties kernel.distFiles and kernel.evalLines defined 
@@ -396,7 +394,7 @@
 		<!-- copy data file and label files to working directory -->
 		<copy todir="${kernel.label.dir}">
 			<fileset dir="${kernel.data}" includes="${kernel.dataFile}" />
-			<fileset dir="${kernel.data}" includes="${kernel.data.basename}code*_label.txt" />
+			<fileset dir="${kernel.data}" includes="${kernel.data.basename}class*.txt" />
 		</copy>
 		<!-- iterate over parameter grid -->
 		<for list="${kernel.evalLines}" param="kernel.train.line">
@@ -422,34 +420,34 @@
 				<propertyref prefix="kernel." />
 			</propertyset>
 		</echoproperties>
-		<for param="kernel.code.file">
-			<fileset dir="${kernel.label.dir}" includes="${kernel.data.basename}code*_label.txt" />
+		<for param="kernel.class.file">
+			<fileset dir="${kernel.label.dir}" includes="${kernel.data.basename}class*.txt" />
 			<sequential>
 				<antcall target="svmlin.eval.label">
-					<param name="kernel.code.file" value="@{kernel.code.file}" />
+					<param name="kernel.class.file" value="@{kernel.class.file}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
 	<target name="svmlin.eval.label" description="evaluate svmlin, copy results to timestamped dir under eval">
 		<!-- read the code file -->
-		<property file="${kernel.data}/${kernel.data.basename}code.properties" />
+		<property file="${kernel.data}/parameters.properties" />
 		<!-- chop off the directory -->
-		<basename property="kernel.code.name" file="${kernel.code.file}" />
+		<basename property="kernel.class.name" file="${kernel.class.file}" />
 		<!-- chop off the suffix -->
-		<basename property="kernel.code.basename" file="${kernel.code.name}" suffix=".txt" />
+		<basename property="kernel.class.basename" file="${kernel.class.name}" suffix=".txt" />
 		<!-- get the positive class fraction -->
-		<propertycopy property="param.R" from="${kernel.code.basename}.param.R" silent="yes" />
+		<propertycopy property="param.R" from="${kernel.class.name}.param.R" silent="yes" />
 		<!-- default the positive class fraction -->
 		<property name="param.R" value="0.5" />
 		<!-- run svmlin -->
-		<property name="svmlin.line" value="-R ${param.R} ${kernel.train.line} ${kernel.dataFile} ${kernel.code.name}" />
+		<property name="svmlin.line" value="-R ${param.R} ${kernel.train.line} ${kernel.dataFile} ${kernel.class.name}" />
 		<echo>svmlin.line ${svmlin.line}</echo>
 		<exec executable="${svmlin.bin}/svmlin" dir="${kernel.label.dir}" output="${kernel.label.dir}/svmlin.out">
 			<arg line="${svmlin.line}" />
 		</exec>
-		<move file="${kernel.label.dir}/${kernel.dataFile}.weights" tofile="${result.dir}/${kernel.code.basename}.weights" failonerror="false" />
-		<move file="${kernel.label.dir}/${kernel.dataFile}.outputs" tofile="${result.dir}/${kernel.code.basename}.outputs" failonerror="false" />
-		<move file="${kernel.label.dir}/svmlin.out" tofile="${result.dir}/${kernel.code.basename}.svmlin.out" failonerror="false" />
+		<move file="${kernel.label.dir}/${kernel.dataFile}.weights" tofile="${result.dir}/${kernel.class.basename}.weights" failonerror="false" />
+		<move file="${kernel.label.dir}/${kernel.dataFile}.outputs" tofile="${result.dir}/${kernel.class.basename}.outputs" failonerror="false" />
+		<move file="${kernel.label.dir}/svmlin.out" tofile="${result.dir}/${kernel.class.basename}.svmlin.out" failonerror="false" />
 	</target>
 </project>
