@@ -8,6 +8,7 @@ from classifier_eval_ir ir
 inner join classifier_eval e on ir.classifier_eval_id = e.classifier_eval_id
 where e.experiment = '@kernel.experiment@'
 and e.name = '@kernel.name@'
+and e.algorithm = '@kernel.algo@'
 and ir.ir_type <> ''
 and e.fold > 0
 and e.run > 0
@@ -118,6 +119,7 @@ inner join cv_fold f
 inner join classifier_eval e
     on e.name = f.corpus_name
     and e.experiment = '@kernel.experiment@'
+    and e.algorithm = '@kernel.algo@'
     and e.label = f.label
     and e.run = f.run
     and e.fold = f.fold
@@ -190,6 +192,7 @@ from
 			on ir.classifier_eval_id = e.classifier_eval_id
 			and e.experiment = '@kernel.experiment@'
 			and e.name = '@kernel.name@'
+			and e.algorithm = '@kernel.algo@'
 			and e.run > 0
 			and e.fold > 0
 		left join hzv_tt z
@@ -216,6 +219,7 @@ from
 	    inner join classifier_eval e on ir.classifier_eval_id = e.classifier_eval_id 
 	    where name = '@kernel.name@' 
 		and experiment = '@kernel.experiment@'
+		and e.algorithm = '@kernel.algo@'
 		and ir_type = 'zv'
 	    and run > 0
 	    and fold > 0
@@ -247,6 +251,7 @@ inner join
     and e.fold = cv.fold
 where e.experiment = '@kernel.experiment@'
 and e.name = '@kernel.name@' 
+and e.algorithm = '@kernel.algo@' 
 and e.run > 0
 and e.fold > 0
 and (tp+tn+fp+fn) <> fc
@@ -268,6 +273,7 @@ from
 	inner join classifier_eval_svm l on e.classifier_eval_id = l.classifier_eval_id
 	where experiment = '@kernel.experiment@'
 	and name = '@kernel.name@'
+	and e.algorithm = '@kernel.algo@'
 	and run > 0
 	and fold > 0
 	and t.ir_type = 'zv'
