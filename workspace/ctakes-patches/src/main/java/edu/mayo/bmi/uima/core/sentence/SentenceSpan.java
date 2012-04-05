@@ -1,3 +1,26 @@
+/*
+ * Copyright: (c) 2009   Mayo Foundation for Medical Education and 
+ * Research (MFMER). All rights reserved. MAYO, MAYO CLINIC, and the
+ * triple-shield Mayo logo are trademarks and service marks of MFMER.
+ *
+ * Except as contained in the copyright notice above, or as used to identify 
+ * MFMER as the author of this software, the trade names, trademarks, service
+ * marks, or product names of the copyright holder shall not be used in
+ * advertising, promotion or otherwise in connection with this software without
+ * prior written authorization of the copyright holder.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and 
+ * limitations under the License. 
+ */
 package edu.mayo.bmi.uima.core.sentence;
 
 import java.io.IOException;
@@ -11,30 +34,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A span of text and its offsets within some larger text VNG add function to
- * split at periods, avoid splitting at line breaks.
- * <p>
- * The default pattern used to split lines is:
- * <code>[^Dr|Ms|Mr|Mrs|Ms]\\.\\s+\\p{Upper}</code> You can override this by
- * setting <code>ytex.sentence.SplitPattern</code> in ytex.properties. You could
- * for example configure the old ctakes behavior and split at newlines if you
- * like.
+ * A span of text and its offsets within some larger text
  */
 public class SentenceSpan {
+
 	public static String LF = "\n";
 	public static String CR = "\r";
 	public static String CRLF = "\r\n";
-	private static final Logger log = Logger.getLogger(SentenceSpan.class
-			.getName());
-
 	private static Pattern periodPattern;
 	private static Pattern splitPattern;
+	private static final Logger log = Logger.getLogger(SentenceSpan.class
+			.getName());
 	/**
 	 * load split pattern from ytex.properties
 	 */
 	static {
 		String strPeriodPattern = "(?m)[^Dr|Ms|Mr|Mrs|Ms|\\p{Upper}]\\.\\s+\\p{Upper}";
-//		String strSplitPattern = "(?im)\\n[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]|[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]\\s*\\r{0,1}\\n|\\r{0,1}\\n{0,1}[^:\\r\\n]{3,20}\\:[^\\r\\n]{3,20}\\r{0,1}\\n|\\n\\d{1,2}\\.\\s+";
+		// String strSplitPattern =
+		// "(?im)\\n[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]|[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]\\s*\\r{0,1}\\n|\\r{0,1}\\n{0,1}[^:\\r\\n]{3,20}\\:[^\\r\\n]{3,20}\\r{0,1}\\n|\\n\\d{1,2}\\.\\s+";
 		String strSplitPattern = "(?im)\\n[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]|[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]\\s*\\r{0,1}\\n|^[^:\\r\\n]{3,20}\\:[^\\r\\n]{3,20}$";
 		InputStream ytexPropsIn = null;
 		try {
@@ -119,7 +136,7 @@ public class SentenceSpan {
 	// // subspans.add(this); //JZ: should trim as specified in the JavaDoc
 	// // return subspans;
 	// // }
-	//		
+	//
 	// int subspanStart = 0; //
 	// int relativeSpanEnd = end-start;
 	// int subspanEnd = -1;
@@ -160,6 +177,107 @@ public class SentenceSpan {
 	// return subspans;
 	// }
 
+	/**
+	 * Trim any leading or trailing whitespace. If there are any end-of-line
+	 * characters in what's left, split into multiple smaller sentences, and
+	 * trim each. If is entirely whitespace, return an empty list
+	 * 
+	 * @param separatorPattern
+	 *            CR LF or CRLF
+	 * @return
+	 */
+	public List<SentenceSpan> splitAtLineBreaksAndTrim(String separatorPattern) {
+
+		ArrayList<SentenceSpan> subspans = new ArrayList<SentenceSpan>();
+
+		// Validate input parameter
+		if (!separatorPattern.equals(LF) && !separatorPattern.equals(CR)
+				&& !separatorPattern.equals(CRLF)) {
+
+			int len = separatorPattern.length();
+			System.err.println("Invalid line break: " + len
+					+ " characters long.");
+
+			System.err.print("        line break character values: ");
+			for (int i = 0; i < len; i++) {
+				System.err.print(Integer.valueOf(separatorPattern.charAt(i)));
+				System.err.print(" "); // print a space between values
+			}
+			System.err.println();
+
+			// System.err.println("Invalid line break: \\0x" +
+			// Byte.parseByte(separatorPattern.getBytes("US-ASCII").toString(),16));
+			subspans.add(this);
+			return subspans;
+		}
+
+		// Check first if contains only whitespace, in which case return an
+		// empty list
+		String coveredText = text.substring(0, end - start);
+		String trimmedText = coveredText.trim();
+		int trimmedLen = trimmedText.length();
+		if (trimmedLen == 0) {
+			return subspans;
+		}
+
+//		// Split into multiple sentences if contains end-of-line characters
+//		// or return just one sentence if no end-of-line characters are within
+//		// the trimmed string
+//		String spans[] = coveredText.split(separatorPattern);
+//		int position = start;
+//		for (String s : spans) {
+//			String t = s.trim();
+//			if (t.length() > 0) {
+//				positionOfNonWhiteSpace = s.indexOf(t.charAt(0));
+//			} else {
+//				positionOfNonWhiteSpace = 0;
+//			}
+//			// Might have trimmed off some at the beginning of the sentences
+//			// other than the 1st (#0)
+//			position += positionOfNonWhiteSpace; // sf Bugs artifact 3083903:
+//													// For _each_ sentence,
+//													// advance past any spaces
+//													// at beginning of line
+//			subspans.add(new SentenceSpan(position, position + t.length(), t));
+//			position += (s.length() - positionOfNonWhiteSpace + separatorPattern
+//					.length());
+//		}
+//
+//		return subspans;
+		// If there is any leading or trailing whitespace, determine position of
+		// the trimmed section
+		int trimmedStart = start;
+		// int trimmedEnd = end;
+		int positionOfNonWhiteSpace = 0;
+		if (trimmedLen != coveredText.length()) {
+			// Use indexOf to skip past the white space.
+			// Consider looking through looking characters using
+			// Character.isWhiteSpace(ch)
+			positionOfNonWhiteSpace = coveredText.indexOf(trimmedText);
+			trimmedStart = start + positionOfNonWhiteSpace;
+			// trimmedEnd = trimmedStart + trimmedLen;
+		}
+
+		// Split into multiple sentences if contains end-of-line characters
+		// or return just one sentence if no end-of-line characters are within
+		// the trimmed string
+		// String spans[] = trimmedText.split(separatorPattern);
+		String spans[] = new String[] { trimmedText };
+		int position = trimmedStart;
+		for (String s : spans) {
+			String t = s.trim();
+			subspans.add(new SentenceSpan(position, position + t.length(), t));
+			position += s.length() + separatorPattern.length();
+		}
+
+		return subspans;
+	}
+
+	/**
+	 * vng added
+	 * 
+	 * @return
+	 */
 	public List<SentenceSpan> splitAtPeriodAndTrim() {
 		ArrayList<SentenceSpan> subspans = new ArrayList<SentenceSpan>();
 		// Check first if contains only whitespace, in which case return an
@@ -211,6 +329,11 @@ public class SentenceSpan {
 		return splitSubspans(subspans);
 	}
 
+	/**
+	 * vng added
+	 * 
+	 * @return
+	 */
 	public List<SentenceSpan> splitSubspans(List<SentenceSpan> subspans) {
 		List<SentenceSpan> splitSubspans = new ArrayList<SentenceSpan>();
 		// Split into multiple sentences if contains end-of-line characters
@@ -225,8 +348,8 @@ public class SentenceSpan {
 			while (matcher.find()) {
 				bSplit = true;
 				if (matcher.start() > currentStartPos) {
-					String t = trimmedText.substring(currentStartPos, matcher
-							.start());
+					String t = trimmedText.substring(currentStartPos,
+							matcher.start());
 					splitSubspans.add(new SentenceSpan(position
 							+ currentStartPos, position + currentStartPos
 							+ t.length(), t));
@@ -236,8 +359,9 @@ public class SentenceSpan {
 			if (bSplit) {
 				if (currentStartPos < trimmedText.length()) {
 					String t = trimmedText.substring(currentStartPos);
-					splitSubspans.add(new SentenceSpan(position + currentStartPos,
-							position + currentStartPos + t.length(), t));
+					splitSubspans.add(new SentenceSpan(position
+							+ currentStartPos, position + currentStartPos
+							+ t.length(), t));
 				}
 			} else
 				splitSubspans.add(span);
@@ -245,83 +369,9 @@ public class SentenceSpan {
 		return splitSubspans;
 	}
 
-	/**
-	 * Trim any leading or trailing whitespace. If there are any end-of-line
-	 * characters in what's left, split into multiple smaller sentences, and
-	 * trim each. If is entirely whitespace, return an empty list
-	 * 
-	 * ESLD Changes - just trim whitespace - don't split sentences on newline
-	 * 
-	 * @param separatorPattern
-	 *            CR LF or CRLF
-	 * @return
-	 */
-	public List<SentenceSpan> splitAtLineBreaksAndTrim(String separatorPattern) {
-
-		ArrayList<SentenceSpan> subspans = new ArrayList<SentenceSpan>();
-
-		// Validate input parameter
-		if (!separatorPattern.equals(LF) && !separatorPattern.equals(CR)
-				&& !separatorPattern.equals(CRLF)) {
-
-			int len = separatorPattern.length();
-			System.err.println("Invalid line break: " + len
-					+ " characters long.");
-
-			System.err.print("        line break character values: ");
-			for (int i = 0; i < len; i++) {
-				System.err.print(Integer.valueOf(separatorPattern.charAt(i)));
-				System.err.print(" "); // print a space between values
-			}
-			System.err.println("");
-
-			// System.err.println("Invalid line break: \\0x" +
-			// Byte.parseByte(separatorPattern.getBytes("US-ASCII").toString(),16));
-			subspans.add(this);
-			return subspans;
-		}
-
-		// Check first if contains only whitespace, in which case return an
-		// empty list
-		String coveredText = text.substring(0, end - start);
-		String trimmedText = coveredText.trim();
-		int trimmedLen = trimmedText.length();
-		if (trimmedLen == 0) {
-			return subspans;
-		}
-
-		// If there is any leading or trailing whitespace, determine position of
-		// the trimmed section
-		int trimmedStart = start;
-		// int trimmedEnd = end;
-		int positionOfNonWhiteSpace = 0;
-		if (trimmedLen != coveredText.length()) {
-			// Use indexOf to skip past the white space.
-			// Consider looking through looking characters using
-			// Character.isWhiteSpace(ch)
-			positionOfNonWhiteSpace = coveredText.indexOf(trimmedText);
-			trimmedStart = start + positionOfNonWhiteSpace;
-			// trimmedEnd = trimmedStart + trimmedLen;
-		}
-
-		// Split into multiple sentences if contains end-of-line characters
-		// or return just one sentence if no end-of-line characters are within
-		// the trimmed string
-		// String spans[] = trimmedText.split(separatorPattern);
-		String spans[] = new String[] { trimmedText };
-		int position = trimmedStart;
-		for (String s : spans) {
-			String t = s.trim();
-			subspans.add(new SentenceSpan(position, position + t.length(), t));
-			position += s.length() + separatorPattern.length();
-		}
-
-		return subspans;
-
-	}
-
 	public String toString() {
 		String s = "(" + start + ", " + end + ") " + text;
 		return s;
 	}
+
 }

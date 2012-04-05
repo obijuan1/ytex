@@ -76,25 +76,24 @@ public class CustomBooleanType implements UserType {
 
 	}
 
-	@Override
+//	@Override
 	public Object assemble(Serializable arg0, Object arg1)
 			throws HibernateException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
+//	@Override
 	public Serializable disassemble(Object arg0) throws HibernateException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
+//	@Override
 	public int hashCode(Object arg0) throws HibernateException {
 		return arg0.hashCode();
 	}
 
-	@Override
 	public Object replace(Object arg0, Object arg1, Object arg2)
 			throws HibernateException {
 		// TODO Auto-generated method stub

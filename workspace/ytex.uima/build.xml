@@ -1,0 +1,20 @@
+<project name="ytex.uima">
+	<property name="ictakes.home" value="C:/java/icTAKES-1.3.2" />
+	<path id="ictakes.cp">
+		<pathelement location="${ictakes.home}/cTAKESdesc" />
+		<pathelement location="${ictakes.home}/resources" />
+		<fileset dir="${ictakes.home}" includes="cTAKES.jar" />
+	</path>
+	<target name="jcasgen">
+		<delete dir="${java.io.tmpdir}/jcasgen" quiet="yes" />
+		<java classname="org.apache.uima.tools.jcasgen.Jg" classpathref="ictakes.cp">
+			<arg value="-jcasgeninput" />
+			<arg value="src/main/java/ytex/uima/types/YTEXTypes.xml" />
+			<arg value="-jcasgenoutput" />
+			<arg value="${java.io.tmpdir}/jcasgen" />
+		</java>
+		<copy todir="src/main/java/ytex/uima/types">
+			<fileset dir="${java.io.tmpdir}/jcasgen/ytex/uima/types" includes="*.java" />
+		</copy>
+	</target>
+</project>

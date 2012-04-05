@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Fri Jul 30 15:21:01 EDT 2010 */
+/* First created by JCasGen Wed Apr 04 22:02:31 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas;
@@ -14,7 +14,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Fri Jul 30 15:21:01 EDT 2010
+ * Updated by JCasGen Wed Apr 04 22:02:31 EDT 2012
  * @generated */
 public class Date_Type extends Annotation_Type {
   /** @generated */

@@ -5,9 +5,10 @@ import java.util.Map;
 
 import org.apache.uima.jcas.tcas.Annotation;
 
+import ytex.tools.SetupAuiFirstWord;
 import edu.mayo.bmi.lookup.vo.LookupAnnotation;
 import edu.mayo.bmi.lookup.vo.LookupToken;
-import edu.mayo.bmi.uima.core.ae.type.WordToken;
+import edu.mayo.bmi.uima.core.type.WordToken;
 
 /**
  * allow dictionary lookup with stemmed words

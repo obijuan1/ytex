@@ -1,7 +1,5 @@
 package ytex.uima.annotators;
 
-import edu.mayo.bmi.uima.core.ae.type.Segment;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,6 +20,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 import ytex.dao.SegmentRegexDao;
 import ytex.model.SegmentRegex;
 import ytex.uima.ApplicationContextHolder;
+import edu.mayo.bmi.uima.core.type.Segment;
 
 /**
  * Annotate segments (i.e. sections). Use regexs to find segments. Read the
@@ -97,7 +96,7 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 			// sort the segments by begin
 			Collections.sort(segmentsAdded, new Comparator<Segment>() {
 
-				@Override
+//				@Override
 				public int compare(Segment o1, Segment o2) {
 					return o1.getBegin() < o2.getBegin() ? -1
 							: o1.getBegin() > o2.getBegin() ? 1 : 0;

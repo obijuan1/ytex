@@ -6,9 +6,11 @@
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
 </listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.kernel.ImputedFeatureEvaluatorImpl"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-prop corpus.properties.xml"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ytex.kernel"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g &#13;&#10;-Dlog4j.configuration=file:///E:/projects/ytex/config/desc/log4j.properties &#13;&#10;-Djava.util.logging.config.file=E:\projects\ytex\config\desc\Logger.properties"/>
 <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:i2b2.2008/data}"/>
 </launchConfiguration>

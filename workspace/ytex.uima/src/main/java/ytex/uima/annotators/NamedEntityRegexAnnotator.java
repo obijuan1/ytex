@@ -17,12 +17,14 @@ import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import edu.mayo.bmi.uima.core.type.NamedEntity;
+import edu.mayo.bmi.uima.core.type.Segment;
+
 import ytex.dao.NamedEntityRegexDao;
 import ytex.model.NamedEntityRegex;
 import ytex.uima.ApplicationContextHolder;
-import edu.mayo.bmi.uima.core.ae.type.NamedEntity;
-import edu.mayo.bmi.uima.core.ae.type.OntologyConcept;
-import edu.mayo.bmi.uima.core.ae.type.Segment;
+import ytex.uima.types.OntologyConcept;
+
 
 /**
  * Create NamedEntity annotations.

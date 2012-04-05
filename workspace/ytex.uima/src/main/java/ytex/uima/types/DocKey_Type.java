@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Mon Sep 12 12:32:58 EDT 2011 */
+/* First created by JCasGen Wed Apr 04 22:02:31 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas;
@@ -14,7 +14,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Mon Sep 12 12:32:58 EDT 2011
+ * Updated by JCasGen Wed Apr 04 22:02:31 EDT 2012
  * @generated */
 public class DocKey_Type extends Annotation_Type {
   /** @generated */

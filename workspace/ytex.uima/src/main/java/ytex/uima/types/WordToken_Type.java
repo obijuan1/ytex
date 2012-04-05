@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Mon Oct 03 21:17:26 EDT 2011 */
+/* First created by JCasGen Wed Apr 04 22:02:31 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas;
@@ -13,9 +13,9 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** Negatable Word Token
- * Updated by JCasGen Mon Oct 03 21:17:26 EDT 2011
+ * Updated by JCasGen Wed Apr 04 22:02:31 EDT 2012
  * @generated */
-public class WordToken_Type extends edu.mayo.bmi.uima.core.ae.type.WordToken_Type {
+public class WordToken_Type extends edu.mayo.bmi.uima.core.type.WordToken_Type {
   /** @generated */
   protected FSGenerator getFSGenerator() {return fsGenerator;}
   /** @generated */

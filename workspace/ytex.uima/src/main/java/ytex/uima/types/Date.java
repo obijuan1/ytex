@@ -1,6 +1,6 @@
 
 
-/* First created by JCasGen Fri Jul 30 15:21:01 EDT 2010 */
+/* First created by JCasGen Wed Apr 04 22:02:31 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas; 
@@ -11,8 +11,8 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Fri Jul 30 15:21:01 EDT 2010
- * XML source: C:/Users/vhacongarlav/projects/ytex/ytex.uima/src/main/java/ytex/uima/types/DateTypeSystem.xml
+ * Updated by JCasGen Wed Apr 04 22:02:31 EDT 2012
+ * XML source: src/main/java/ytex/uima/types/YTEXTypes.xml
  * @generated */
 public class Date extends Annotation {
   /** @generated
@@ -64,7 +64,6 @@ public class Date extends Annotation {
 
   /** getter for date - gets ISO 8601 Formatted Timestamp: 
 yyyy-MM-dd'T'HH:mm:ssZ
-
    * @generated */
   public String getDate() {
     if (Date_Type.featOkTst && ((Date_Type)jcasType).casFeat_date == null)
@@ -72,8 +71,7 @@ yyyy-MM-dd'T'HH:mm:ssZ
     return jcasType.ll_cas.ll_getStringValue(addr, ((Date_Type)jcasType).casFeatCode_date);}
     
   /** setter for date - sets ISO 8601 Formatted Timestamp: 
-yyyy-MM-dd'T'HH:mm:ssZ
- 
+yyyy-MM-dd'T'HH:mm:ssZ 
    * @generated */
   public void setDate(String v) {
     if (Date_Type.featOkTst && ((Date_Type)jcasType).casFeat_date == null)

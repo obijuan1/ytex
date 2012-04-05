@@ -17,14 +17,15 @@ import org.apache.uima.cas.FSIterator;
 import org.apache.uima.cas.text.AnnotationIndex;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
+import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import ytex.kernel.metric.ConceptSimilarityService;
 import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.wsd.WordSenseDisambiguator;
 import ytex.uima.ApplicationContextHolder;
-import edu.mayo.bmi.uima.core.ae.type.NamedEntity;
-import edu.mayo.bmi.uima.core.ae.type.OntologyConcept;
+import ytex.uima.types.OntologyConcept;
+import edu.mayo.bmi.uima.core.type.NamedEntity;
 
 /**
  * Disambiguate named entities via adapated Lesk algorithm with semantic
@@ -78,7 +79,7 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 		if(disabled)
 			return;
 		// iterate through sentences
-		AnnotationIndex namedEntityIdx = jcas
+		AnnotationIndex<Annotation> namedEntityIdx = jcas
 				.getAnnotationIndex(NamedEntity.type);
 		// disambiguate the named entities
 		disambiguate(jcas, namedEntityIdx.iterator());
@@ -88,7 +89,7 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 	 * 
 	 * @param neIter
 	 */
-	private void disambiguate(JCas jcas, FSIterator neIter) {
+	private void disambiguate(JCas jcas, FSIterator<Annotation> neIter) {
 		// allocate list to hold concepts in each named entity
 		List<Set<String>> listConcept = new ArrayList<Set<String>>();
 		// allocate corresponding named entity list

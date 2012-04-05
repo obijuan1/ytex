@@ -35,14 +35,14 @@ public class YtexSMO extends SMO implements AdditionalMeasureProducer {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Override
+//	@Override
 	public Enumeration enumerateMeasures() {
 		Vector newVector = new Vector(1);
 		newVector.addElement("measureNumSupportVectors");
 		return newVector.elements();
 	}
 
-	@Override
+//	@Override
 	public double getMeasure(String measureName) {
 		if ("measureNumSupportVectors".equals(measureName))
 			return getNumSupportVectors();

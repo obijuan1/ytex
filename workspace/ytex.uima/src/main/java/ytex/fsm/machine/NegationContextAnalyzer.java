@@ -7,7 +7,7 @@ import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.jcas.tcas.Annotation;
 
 import edu.mayo.bmi.uima.context.ContextHit;
-import edu.mayo.bmi.uima.core.ae.type.NewlineToken;
+import edu.mayo.bmi.uima.core.type.NewlineToken;
 
 /**
  * Modified cTAKES NegationContextAnalyzer to filter out newline tokens.

@@ -1,6 +1,6 @@
 
 
-/* First created by JCasGen Mon Sep 12 12:32:58 EDT 2011 */
+/* First created by JCasGen Wed Apr 04 22:02:31 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas; 
@@ -12,8 +12,8 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Mon Sep 12 12:32:58 EDT 2011
- * XML source: E:/projects/ytex/ytex.uima/src/main/java/ytex/uima/types/DocKeyTypeSystem.xml
+ * Updated by JCasGen Wed Apr 04 22:02:31 EDT 2012
+ * XML source: src/main/java/ytex/uima/types/YTEXTypes.xml
  * @generated */
 public class DocKey extends Annotation {
   /** @generated

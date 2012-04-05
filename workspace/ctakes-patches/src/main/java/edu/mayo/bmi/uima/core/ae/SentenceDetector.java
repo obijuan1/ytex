@@ -1,18 +1,33 @@
-package edu.mayo.bmi.uima.core.sentence;
+/*
+ * Copyright: (c) 2009   Mayo Foundation for Medical Education and 
+ * Research (MFMER). All rights reserved. MAYO, MAYO CLINIC, and the
+ * triple-shield Mayo logo are trademarks and service marks of MFMER.
+ *
+ * Except as contained in the copyright notice above, or as used to identify 
+ * MFMER as the author of this software, the trade names, trademarks, service
+ * marks, or product names of the copyright holder shall not be used in
+ * advertising, promotion or otherwise in connection with this software without
+ * prior written authorization of the copyright holder.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and 
+ * limitations under the License. 
+ */
+package edu.mayo.bmi.uima.core.ae;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.BreakIterator;
-import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Set;
-
-import opennlp.maxent.GISModel;
-import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
-import opennlp.tools.sentdetect.DefaultSDContextGenerator;
-import opennlp.tools.sentdetect.SentenceDetectorME;
 
 import org.apache.log4j.Logger;
 import org.apache.uima.analysis_engine.ResultSpecification;
@@ -24,133 +39,103 @@ import org.apache.uima.analysis_engine.annotator.AnnotatorProcessException;
 import org.apache.uima.analysis_engine.annotator.JTextAnnotator_ImplBase;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JFSIndexRepository;
-import org.apache.uima.jcas.tcas.Annotation;
 
+import opennlp.maxent.GISModel;
+import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
+import opennlp.tools.sentdetect.DefaultSDContextGenerator;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import edu.mayo.bmi.uima.core.sentence.SentenceSpan;
 import edu.mayo.bmi.uima.core.resource.MaxentModelResource;
-import edu.mayo.bmi.uima.core.sentence.type.Sentence;
+import edu.mayo.bmi.uima.core.sentence.EndOfSentenceScannerImpl;
+import edu.mayo.bmi.uima.core.type.Segment;
+import edu.mayo.bmi.uima.core.type.Sentence;
 import edu.mayo.bmi.uima.core.util.ParamUtil;
-import gov.va.maveric.uima.section.type.Paragraph;
 
 /**
- * An example annotator that annotates Sentences.
- * VNG: modified to split at periods using regular expression.
+ * Wraps the OpenNLP sentence detector in a UIMA annotator
+ * 
+ * @author Mayo Clinic
  */
-public class SentenceAnnotator extends JTextAnnotator_ImplBase{
-  static abstract class Maker {
-    abstract Annotation newAnnotation(JCas jcas, int start, int end);
-  }
-
-  JCas jcas;
-
-  String input;
-
-  ParsePosition pp = new ParsePosition(0);
-  
+public class SentenceDetector extends JTextAnnotator_ImplBase {
+	/**
+	 * Value is "SegmentsToSkip". This parameter specifies which sections to
+	 * skip. The parameter should be of type String, should be multi-valued and
+	 * optional.
+	 */
 	public static final String PARAM_SEGMENTS_TO_SKIP = "SegmentsToSkip";
-	
+
 	// LOG4J logger based on class name
 	private Logger logger = Logger.getLogger(getClass().getName());
-	
+
 	private final String MAXENT_MODEL_RESRC_KEY = "MaxentModel";
-	
+
 	private AnnotatorContext context;
-	
+
 	private Set<?> skipSegmentsSet;
-	
+
 	private SentenceDetectorME sentenceDetector;
-	
+
 	private String NEWLINE = "\n";
-	
+
 	private int sentenceCount = 0;
 
-
-  // ****************************************
-  // * Static vars holding break iterators
-  // ****************************************
-  static final BreakIterator sentenceBreak = BreakIterator.getSentenceInstance(Locale.US);
-
-  static final BreakIterator wordBreak = BreakIterator.getWordInstance(Locale.US);
-
-  // *********************************************
-  // * function pointers for new instances *
-  // *********************************************
-  static final Maker sentenceAnnotationMaker = new Maker() {
-    Annotation newAnnotation(JCas jcas, int start, int end) {
-      return new Sentence(jcas, start, end);
-    }
-  };
-  
-  public void initialize(AnnotatorContext aContext) throws AnnotatorConfigurationException,
+	public void initialize(AnnotatorContext aContext) throws AnnotatorConfigurationException,
 	AnnotatorInitializationException {
 
-	super.initialize(aContext);
-	
-	context = aContext;
-	try {
-		configInit();
-	} catch (AnnotatorContextException ace) {
-		throw new AnnotatorConfigurationException(ace);
-	}
-}
-  
-  /**
-   * Reads configuration parameters.
-   */
-  private void configInit() throws AnnotatorContextException {
-	MaxentModelResource mmResrc = (MaxentModelResource) context.getResourceObject(MAXENT_MODEL_RESRC_KEY);
-    // <code>SuffixMaxentModelResourceImpl</code> will log the name of the resource at load() time
-	// logger.info("Sentence detector resource: " + mmResrc.getModel().toString());
+		super.initialize(aContext);
 
-	if (mmResrc == null) {
-		// TODO Consider throwing an exception here
-		logger.warn("Unable to locate resource with key=" + MAXENT_MODEL_RESRC_KEY + ".");
-	} else {
-		EndOfSentenceScannerImpl eoss = new EndOfSentenceScannerImpl();
-		char [] eosc = eoss.getEndOfSentenceCharacters();
-		//SentenceDContextGenerator cg = new SentenceDContextGenerator();
-		DefaultSDContextGenerator cg = new DefaultSDContextGenerator(eosc);
-		sentenceDetector = new SentenceDetectorME(mmResrc.getModel(), cg, eoss);
+		context = aContext;
+		try {
+			configInit();
+		} catch (AnnotatorContextException ace) {
+			throw new AnnotatorConfigurationException(ace);
+		}
 	}
 
-	skipSegmentsSet = ParamUtil.getStringParameterValuesSet(PARAM_SEGMENTS_TO_SKIP, context);
-}
-  
-  /**
-   * process
-   */
-//  public void process(JCas aJCas, ResultSpecification resultSpec) throws AnnotatorProcessException {
-//    jcas = aJCas;
-//    input = jcas.getDocumentText();
-//
-//    // Create Annotations
-//    makeAnnotations(sentenceAnnotationMaker, sentenceBreak);
-////    makeAnnotations(tokenAnnotationMaker, wordBreak);
-//  }
-  
-   /**
-	* Entry point for processing.
-    */
+	/**
+	 * Reads configuration parameters.
+	 */
+	private void configInit() throws AnnotatorContextException {
+		MaxentModelResource mmResrc = (MaxentModelResource) context.getResourceObject(MAXENT_MODEL_RESRC_KEY);
+		// <code>SuffixMaxentModelResourceImpl</code> will log the name of the resource at load() time
+		// logger.info("Sentence detector resource: " + mmResrc.getModel().toString());
+
+		if (mmResrc == null) {
+			// TODO Consider throwing an exception here
+			logger.warn("Unable to locate resource with key=" + MAXENT_MODEL_RESRC_KEY + ".");
+		} else {
+			EndOfSentenceScannerImpl eoss = new EndOfSentenceScannerImpl();
+			char [] eosc = eoss.getEndOfSentenceCharacters();
+			//SentenceDContextGenerator cg = new SentenceDContextGenerator();
+			DefaultSDContextGenerator cg = new DefaultSDContextGenerator(eosc);
+			sentenceDetector = new SentenceDetectorME(mmResrc.getModel(), cg, eoss);
+		}
+
+		skipSegmentsSet = ParamUtil.getStringParameterValuesSet(PARAM_SEGMENTS_TO_SKIP, context);
+	}
+
+	/**
+	 * Entry point for processing.
+	 */
 	public void process(JCas jcas, ResultSpecification resultSpec) throws AnnotatorProcessException {
-	
-	logger.info("Starting processing.");
-	
+
+		logger.info("Starting processing.");
+
 		sentenceCount = 0;
-	
+
 		String text = jcas.getDocumentText();
-	
+
 		JFSIndexRepository indexes = jcas.getJFSIndexRepository();
-		Iterator<?> sectionItr = indexes.getAnnotationIndex(Paragraph.type).iterator();
+		Iterator<?> sectionItr = indexes.getAnnotationIndex(Segment.type).iterator();
 		while (sectionItr.hasNext()) {
-			Paragraph sa = (Paragraph) sectionItr.next();
+			Segment sa = (Segment) sectionItr.next();
 			String sectionID = sa.getId();
 			if (!skipSegmentsSet.contains(sectionID)) {
-//					System.out.println("sectionID: " + sectionID);
 				sentenceCount = annotateRange(jcas, text, sa, sentenceCount);
-//					makeAnnotations(sentenceAnnotationMaker, sentenceBreak);
 			}
 		}
 	}
-	
+
 	/**
 	 * Detect sentences within a section of the text and add annotations to the CAS.
 	 * Uses OpenNLP sentence detector, and then additionally forces sentences to 
@@ -166,10 +151,10 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 	 * annotations added to the CAS for this section
 	 * @throws AnnotatorProcessException
 	 */
-	protected int annotateRange(JCas jcas, String text, Paragraph section, int sentenceCount) 
+	protected int annotateRange(JCas jcas, String text, Segment section, int sentenceCount) 
 		throws AnnotatorProcessException {
 
-		
+
 		int b = section.getBegin();
 		int e = section.getEnd();
 
@@ -181,7 +166,7 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 		int numSentences = sentenceBreaks.length;
 		// There might be text after the last sentence-ending found by detector, so +1
 		SentenceSpan[] potentialSentSpans = new SentenceSpan[numSentences+1];
-		
+
 		int sentStart = b;
 		int sentEnd = b;
 		// Start by filling in sentence spans from what OpenNLP tools detected
@@ -192,7 +177,7 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 			potentialSentSpans[i] = new SentenceSpan(sentStart, sentEnd, coveredText);
 			sentStart = sentEnd;
 		}
-		
+
 		// If detector didn't find any sentence-endings, 
 		// or there was text after the last sentence-ending found,
 		// create a sentence from what's left, as long as it's not all whitespace.
@@ -204,14 +189,14 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 				numSentences++;
 			}
 		}
-		
-		
+
+
 		// Copy potentialSentSpans into sentenceSpans,
 		// ignoring any that are entirely whitespace,
 		// trimming the rest,
 		// and splitting any of those that contain an end-of-line character.
 		// Then trim any leading or trailing whitespace of ones that were split.
-		ArrayList<SentenceSpan> sentenceSpans1 = new ArrayList<SentenceSpan>(0);
+		ArrayList<SentenceSpan> sentenceSpans1 = new ArrayList<SentenceSpan>(0); 
 		for (int i=0; i < potentialSentSpans.length; i++) {
 			if (potentialSentSpans[i]!=null) {
 				sentenceSpans1.addAll(potentialSentSpans[i].splitAtLineBreaksAndTrim(NEWLINE)); //TODO Determine line break type
@@ -224,30 +209,33 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 				sentenceSpans.addAll(span.splitAtPeriodAndTrim());
 			}
 		}
-		
+
+
 		// Add sentence annotations to the CAS
 		int previousEnd = -1;
 		for (int i = 0; i < sentenceSpans.size(); i++) {
 			SentenceSpan span = sentenceSpans.get(i);
-			Sentence sa = new Sentence(jcas);
-			sa.setBegin(span.getStart());
-			sa.setEnd(span.getEnd());
-			if (previousEnd<=sa.getBegin()) {
-				// System.out.println("Adding Sentence Annotation for " + span.toString());
-				sa.setSentenceNumber(sentenceCount);
-				sa.addToIndexes();
-				sentenceCount++;
-				previousEnd = span.getEnd();
-			}
-			else {
-				logger.error("Skipping sentence from " + span.getStart() + " to " + span.getEnd());
-				logger.error("Overlap with previous sentence that ended at " + previousEnd);
+			if (span.getStart()!=span.getEnd()) { // skip empty lines
+				Sentence sa = new Sentence(jcas);
+				sa.setBegin(span.getStart());
+				sa.setEnd(span.getEnd());
+				if (previousEnd<=sa.getBegin()) {
+					// System.out.println("Adding Sentence Annotation for " + span.toString());
+					sa.setSentenceNumber(sentenceCount);
+					sa.addToIndexes();
+					sentenceCount++;
+					previousEnd = span.getEnd();
+				}
+				else {
+					logger.error("Skipping sentence from " + span.getStart() + " to " + span.getEnd());
+					logger.error("Overlap with previous sentence that ended at " + previousEnd);
+				}
 			}
 		}
 		return sentenceCount;
 	}
-  
-  /**
+
+	/**
 	 * Train a new sentence detector from the training data in the first file
 	 * and write the model to the second file.<br>
 	 * The training data file is expected to have one sentence per line.
@@ -256,7 +244,7 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 	 * @throws IOException
 	 */
 	public static void main(String [] args) throws IOException {
-		final Logger logger = Logger.getLogger(SentenceAnnotator.class.getName()+".main()");
+		final Logger logger = Logger.getLogger(SentenceDetector.class.getName()+".main()");
 
 
 		// Handle arguments 
@@ -264,9 +252,9 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 			usage(logger);
 			System.exit(-1);
 		}
-		
+
 		File inFile = getReadableFile(args[0]);
-		
+
 		File outFile = getFileInExistingDir(args[1]);
 		//File outFile = new File(args[1]);
 
@@ -274,29 +262,30 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 		if (args.length > 2) {
 			iters = parseInt(args[2], logger);
 		}
-		
+
 		int cut = 5;
 		if (args.length > 3) {
 			cut = parseInt(args[3], logger);
 		}
-		
+
 		// Now, do the actual training
 		EndOfSentenceScannerImpl scanner = new EndOfSentenceScannerImpl();
 		int numEosc = scanner.getEndOfSentenceCharacters().length;
-		
+
 		logger.info("Training new model from " + inFile.getAbsolutePath());  
 		logger.info("Using " + numEosc + " end of sentence characters.");
 		GISModel mod = SentenceDetectorME.train(inFile, iters, cut, scanner);			
 		SuffixSensitiveGISModelWriter ssgmw = new SuffixSensitiveGISModelWriter(mod, outFile);
 		logger.info("Saving the model as: " + outFile.getAbsolutePath());
-		ssgmw.persist();	
+		ssgmw.persist();
+
 	}
-	
+
 	public static void usage(Logger log) {
-		log.info("Usage: java " + SentenceAnnotator.class.getName() + 
-				" training_data_filename name_of_model_to_create <iters> <cut>");
+		log.info("Usage: java " + SentenceDetector.class.getName() + 
+					" training_data_filename name_of_model_to_create <iters> <cut>");
 	}
-	
+
 	public static int parseInt(String s, Logger log) {
 		try {
 			return Integer.parseInt(s);
@@ -305,7 +294,7 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 			throw(nfe);
 		}
 	}
-	
+
 	public static File getReadableFile(String fn) throws IOException {
 		File f = new File(fn);
 		if (!f.canRead()) {
@@ -313,7 +302,7 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 		}
 		return f;
 	}
-	
+
 	public static File getFileInExistingDir(String fn) throws IOException {
 		File f = new File(fn);
 		if (!f.getParentFile().isDirectory()) {
@@ -322,24 +311,4 @@ public class SentenceAnnotator extends JTextAnnotator_ImplBase{
 		return f;
 	}
 
-  // *************************************************************
-  // * Helper Methods *
-  // *************************************************************
-  void makeAnnotations(Maker m, BreakIterator b) {
-    b.setText(input);
-    for (int end = b.next(), start = b.first(); end != BreakIterator.DONE; start = end, end = b
-            .next()) {
-      // eliminate all-whitespace tokens
-      boolean isWhitespace = true;
-      for (int i = start; i < end; i++) {
-        if (!Character.isWhitespace(input.charAt(i))) {
-          isWhitespace = false;
-          break;
-        }
-      }
-      if (!isWhitespace) {
-        m.newAnnotation(jcas, start, end).addToIndexes();
-      }
-    }
-  }
 }

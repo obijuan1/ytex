@@ -11,10 +11,10 @@ import org.apache.uima.analysis_engine.annotator.AnnotatorProcessException;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 
+import ytex.uima.types.OntologyConcept;
 import edu.mayo.bmi.dictionary.MetaDataHit;
 import edu.mayo.bmi.lookup.vo.LookupHit;
-import edu.mayo.bmi.uima.core.ae.type.NamedEntity;
-import ytex.uima.types.OntologyConcept;
+import edu.mayo.bmi.uima.core.type.NamedEntity;
 import edu.mayo.bmi.uima.core.util.TypeSystemConst;
 import edu.mayo.bmi.uima.lookup.ae.BaseLookupConsumerImpl;
 import edu.mayo.bmi.uima.lookup.ae.LookupConsumer;

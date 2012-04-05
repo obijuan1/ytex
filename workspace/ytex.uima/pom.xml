@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<relativePath>../build/pom.xml</relativePath>
+		<version>0.0.1-SNAPSHOT</version>
+		<groupId>ytex</groupId>
+		<artifactId>parent</artifactId>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>ytex</groupId>
+	<artifactId>ytex.uima</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<dependencies>
+		<dependency>
+			<groupId>ictakes</groupId>
+			<artifactId>ctakes</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+		<dependency>
+			<groupId>ytex</groupId>
+			<artifactId>ytex.model</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>ytex</groupId>
+			<artifactId>ytex.kernel</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>1.8.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.rubiconproject.oss</groupId>
+			<artifactId>jchronic</artifactId>
+			<version>0.2.6</version>
+		</dependency>
+	</dependencies>
+</project>
