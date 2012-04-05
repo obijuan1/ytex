@@ -8,5 +8,7 @@
   	<module>../ytex.model</module>
   	<module>../ytex.kernel</module>
   	<module>../ytex.uima</module>
+  	<module>../ytex.negex</module>
+  	<module>../ctakes-patches</module>
   </modules>
 </project>
