@@ -22,16 +22,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.cas.FSIterator;
-import org.apache.uima.cas.Feature;
-import org.apache.uima.cas.Type;
 import org.apache.uima.cas.text.AnnotationIndex;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 
-import edu.mayo.bmi.uima.context.type.NEContext;
-import edu.mayo.bmi.uima.core.ae.type.NamedEntity;
-import edu.mayo.bmi.uima.core.sentence.type.Sentence;
+import edu.mayo.bmi.uima.context.type.ContextAnnotation;
+import edu.mayo.bmi.uima.core.type.NamedEntity;
+import edu.mayo.bmi.uima.core.type.Sentence;
 
 /**
  * Negex adapted to cTAKES. Checks negation status of named entities. Loads
@@ -795,7 +793,7 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 				log.error("error negating annotation", e);
 			}
 		}
-		NEContext nec = new NEContext(aJCas);
+		ContextAnnotation nec = new ContextAnnotation(aJCas);
 		nec.setBegin(s.getBegin() + t.getStart() - 1);
 		nec.setEnd(s.getBegin() + t.getEnd() - 1);
 		nec.setScope(t.getTag());
