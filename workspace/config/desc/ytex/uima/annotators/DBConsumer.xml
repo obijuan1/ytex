@@ -93,7 +93,7 @@
     </configurationParameterSettings>
     <typeSystemDescription>
       <imports>
-        <import name="ytex.uima.types.DocKeyTypeSystem"/>
+        <import name="ytex.uima.YTEXTypes"/>
       </imports>
     </typeSystemDescription>
     <typePriorities/>
