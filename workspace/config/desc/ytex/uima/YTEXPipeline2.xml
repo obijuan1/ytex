@@ -13,7 +13,7 @@
       <import name="necontextdesc.analysis_engine.StatusAnnotator"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="NegationAnnotator">
-      <import name="necontextdesc.analysis_engine.NegationAnnotator"/>
+      <import name="ytex.uima.annotators.NegexAnnotator"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="SentenceDetectorAnnotator">
       <import name="coredesc.analysis_engine.SentenceDetectorAnnotator"/>
@@ -27,6 +27,9 @@
     <delegateAnalysisEngine key="SimpleSegmentAnnotator">
       <import name="cdpdesc.analysis_engine.SimpleSegmentAnnotator"/>
     </delegateAnalysisEngine>
+    <delegateAnalysisEngine key="SegmentRegexAnnotator">
+      <import name="ytex.uima.annotators.SegmentRegexAnnotator"/>
+    </delegateAnalysisEngine>    
     <delegateAnalysisEngine key="POSTagger">
       <import name="posdesc.analysis_engine.POSTagger"/>
     </delegateAnalysisEngine>
@@ -34,7 +37,7 @@
       <import name="chunkerdesc.analysis_engine.Chunker"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="DictionaryLookupAnnotatorDB">
-      <import name="lookupdesc.analysis_engine.DictionaryLookupAnnotatorUMLS"/>
+      <import name="ytex.uima.annotators.DictionaryLookupAnnotatorDB"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="ExtractionPrepAnnotator">
       <import name="cdpdesc.analysis_engine.ExtractionPrepAnnotator"/>
@@ -157,17 +160,17 @@ and requires an UMLS license.  Please update DictionaryLookupAnnotatorUMLS.xml f
         <name>typesToIgnore</name>
         <value>
           <array>
-            <string>edu.mayo.bmi.uima.core.ae.type.ContractionToken</string>
-            <string>edu.mayo.bmi.uima.core.ae.type.NewlineToken</string>
-            <string>edu.mayo.bmi.uima.core.ae.type.PunctuationToken</string>
-            <string>edu.mayo.bmi.uima.core.ae.type.SymbolToken</string>
-            <string>edu.mayo.bmi.uima.cdt.ae.type.RomanNumeralAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.ae.type.DateAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.ae.type.FractionAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.ae.type.MeasurementAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.ae.type.PersonTitleAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.ae.type.RangeAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.ae.type.TimeAnnotation</string>
+            <string>edu.mayo.bmi.uima.core.type.ContractionToken</string>
+            <string>edu.mayo.bmi.uima.core.type.NewlineToken</string>
+            <string>edu.mayo.bmi.uima.core.type.PunctuationToken</string>
+            <string>edu.mayo.bmi.uima.core.type.SymbolToken</string>
+            <string>edu.mayo.bmi.uima.cdt.type.RomanNumeralAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.type.DateAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.type.FractionAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.type.MeasurementAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.type.PersonTitleAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.type.RangeAnnotation</string>
+            <string>edu.mayo.bmi.uima.cdt.type.TimeAnnotation</string>
             <string>ytex.uima.types.Date</string>
             <string>edu.mayo.bmi.uima.chunker.type.NP</string>
             <string>edu.mayo.bmi.uima.chunker.type.VP</string>
@@ -177,7 +180,10 @@ and requires an UMLS license.  Please update DictionaryLookupAnnotatorUMLS.xml f
     </configurationParameterSettings>
     <flowConstraints>
       <fixedFlow>
+      	<!--
         <node>SimpleSegmentAnnotator</node>
+        -->
+        <node>SegmentRegexAnnotator</node>
         <node>SentenceDetectorAnnotator</node>
         <node>TokenizerAnnotator</node>
         <node>LvgAnnotator</node>

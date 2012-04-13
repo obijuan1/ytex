@@ -38,10 +38,7 @@
     </configurationParameterSettings>
     <typeSystemDescription>
       <imports>
-        <import name="sentence.SentenceTypeSystem"/>
-        <import name="tokenizer.NamedEntity"/>
-        <import name="NE contexts.NEContextTypeSystem"/>
-        <import name="ytex.uima.types.WordTokenTypeSystem"/>
+        <import name="ytex.uima.YTEXTypes"/>
       </imports>
     </typeSystemDescription>
     <typePriorities/>

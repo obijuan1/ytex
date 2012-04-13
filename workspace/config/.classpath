@@ -3,7 +3,6 @@
 	<classpathentry exported="true" kind="lib" path="desc"/>
 	<classpathentry exported="true" kind="var" path="ICTAKES_HOME/cTAKESdesc"/>
 	<classpathentry exported="true" kind="var" path="ICTAKES_HOME/resources"/>
-	<classpathentry exported="true" kind="var" path="ICTAKES_HOME/cTAKES.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ytex.uima"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
