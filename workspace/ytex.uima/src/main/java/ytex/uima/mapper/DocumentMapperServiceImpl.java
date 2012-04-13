@@ -163,11 +163,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	private String dialectClassName;
 	private CaseInsensitiveMap docTableCols = new CaseInsensitiveMap();
 
-	/**
-	 * map of uima annotation class name to mapper class name
-	 */
-	private Map<String, String> documentAnnotationMappers;
-
 	private String formattedTableName = null;
 
 	private JdbcTemplate jdbcTemplate;
@@ -211,7 +206,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 */
 	@SuppressWarnings("unchecked")
 	public void afterPropertiesSet() {
-		documentAnnotationMappers = new HashMap<String, String>();
 		TransactionTemplate txTemplate = new TransactionTemplate(
 				this.getTransactionManager());
 		txTemplate
@@ -224,8 +218,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 						.getNamedQuery("getUimaTypes");
 				List<UimaType> uimaTypes = q.list();
 				for (UimaType uimaType : uimaTypes) {
-					documentAnnotationMappers.put(uimaType.getUimaTypeName(),
-							uimaType.getMapperName());
 					uimaTypeMap.put(uimaType.getUimaTypeName(), uimaType);
 				}
 				initDocKeyMapping();
@@ -260,8 +252,9 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	}
 
 	private void extractAndSaveDocKey(JCas jcas, Document doc) {
-		AnnotationIndex idx = jcas.getAnnotationIndex(DocKey.typeIndexID);
-		FSIterator annoIterator = idx.iterator();
+		AnnotationIndex<Annotation> idx = jcas
+				.getAnnotationIndex(DocKey.typeIndexID);
+		FSIterator<Annotation> annoIterator = idx.iterator();
 		if (annoIterator.hasNext())
 			this.saveDocKey(doc, (DocKey) annoIterator.next());
 	}
@@ -302,37 +295,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			this.tl_mapAnnoMappingInfo.get().put(className, mapInfo);
 		}
 		return mapInfo;
-	}
-
-	/**
-	 * instantiate/get mapper for given uima annotation
-	 * 
-	 * @param uimaClassName
-	 *            uima annotation
-	 * @return mapper or null if not mapped
-	 */
-	@SuppressWarnings("unchecked")
-	private DocumentAnnotationMapper<? extends DocumentAnnotation> getMapperForAnnotation(
-			String uimaClassName) {
-		DocumentAnnotationMapper<? extends DocumentAnnotation> mapper = null;
-		String mapperClassName = this.documentAnnotationMappers
-				.get(uimaClassName);
-		if (mapperClassName != null) {
-			mapper = mappers.get().get(mapperClassName);
-			if (mapper == null) {
-				try {
-					mapper = (DocumentAnnotationMapper<? extends DocumentAnnotation>) Class
-							.forName(mapperClassName).newInstance();
-					mappers.get().put(mapperClassName, mapper);
-				} catch (Exception e) {
-					log.error("Error instantiating mapper: " + mapperClassName,
-							e);
-					throw new RuntimeException(e);
-				}
-			}
-		}
-		return mapper;
-
 	}
 
 	public SessionFactory getSessionFactory() {
@@ -413,6 +375,15 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		if (Strings.isNullOrEmpty(mapInfo.getTableName()))
 			mapInfo.setTableName("anno_" + annoName);
 		List<Feature> features = type.getFeatures();
+		// get the non primitive fields
+		for (Feature f : features) {
+			if (f.getRange().isArray()
+					&& !f.getRange().getComponentType().isPrimitive()) {
+				// add this field to the list of fields to store
+				this.tl_mapFieldInfo.get()
+						.put(type.getName(), f.getShortName());
+			}
+		}
 		Connection conn = null;
 		ResultSet rs = null;
 		try {
@@ -422,25 +393,39 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			rs = dmd.getColumns(null, null, mapInfo.getTableName(), null);
 			while (rs.next()) {
 				String colName = rs.getString("COLUMN_NAME");
+				int colSize = rs.getInt("COLUMN_SIZE");
 				if (!"anno_base_id".equals(colName)) {
-					// iterate through features, see which match the column
-					for (Feature f : features) {
-						String annoFieldName = f.getShortName();
-						if (f.getRange().isPrimitive()
-								&& annoFieldName.equalsIgnoreCase(colName)
-								&& !mapInfo.getMapField().containsKey(
-										annoFieldName)) {
-							FieldMappingInfo fmap = new FieldMappingInfo();
-							fmap.setAnnoFieldName(annoFieldName);
-							fmap.setTableFieldName(colName);
-							mapInfo.getMapField().put(annoFieldName, fmap);
-							break;
-						} else if (f.getRange().isArray()
-								&& !f.getRange().getComponentType()
-										.isPrimitive()) {
-							// add this field to the list of fields to store
-							this.tl_mapFieldInfo.get().put(type.getName(),
-									f.getShortName());
+					// possibility 1: the column is already mapped to the field
+					// if so, then just set the size
+					if (!updateSize(mapInfo, colName, colSize)) {
+						// // possibility 2: the column is not mapped - see if
+						// it
+						// // matches a field
+						// for (Feature f : features) {
+						// String annoFieldName = f.getShortName();
+						// if (annoFieldName.equalsIgnoreCase(colName)) {
+						// // create new field mapping info
+						// FieldMappingInfo fmap = new FieldMappingInfo();
+						// fmap.setAnnoFieldName(annoFieldName);
+						// fmap.setSize(colSize);
+						// fmap.setTableFieldName(colName);
+						// mapInfo.getMapField().put(annoFieldName, fmap);
+						// }
+						// }
+						// iterate through features, see which match the column
+						for (Feature f : features) {
+							String annoFieldName = f.getShortName();
+							if (f.getRange().isPrimitive()
+									&& annoFieldName.equalsIgnoreCase(colName)
+									&& !mapInfo.getMapField().containsKey(
+											annoFieldName)) {
+								FieldMappingInfo fmap = new FieldMappingInfo();
+								fmap.setAnnoFieldName(annoFieldName);
+								fmap.setTableFieldName(colName);
+								fmap.setSize(colSize);
+								mapInfo.getMapField().put(annoFieldName, fmap);
+								break;
+							}
 						}
 					}
 				}
@@ -471,6 +456,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 					log.info("sql insert for type " + type.getName() + ": "
 							+ mapInfo.getSql());
 			}
+			if (log.isDebugEnabled())
+				log.debug("initMapInfo(" + annoName + "): " + mapInfo);
 			return mapInfo;
 		} catch (SQLException sqe) {
 			throw new RuntimeException(sqe);
@@ -490,14 +477,34 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		}
 	}
 
+	/**
+	 * update column size for given column, if the column has been mapped
+	 * 
+	 * @param mapInfo
+	 * @param colName
+	 * @param colSize
+	 * @return true column is mapped to a field
+	 */
+	private boolean updateSize(AnnoMappingInfo mapInfo, String colName,
+			int colSize) {
+		for (FieldMappingInfo fi : mapInfo.getMapField().values()) {
+			if (colName.equalsIgnoreCase(fi.getTableFieldName())) {
+				if (fi.getSize() <= 0)
+					fi.setSize(colSize);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private BiMap<TOP, Integer> saveAnnoBase(JCas jcas,
 			Set<String> setTypesToIgnore, Set<String> typesStoreCoveredText,
 			int coveredTextMaxLen, Document doc) {
-		AnnotationIndex annoIdx = jcas
+		AnnotationIndex<Annotation> annoIdx = jcas
 				.getAnnotationIndex(Annotation.typeIndexID);
 		List<TOP> listAnno = new ArrayList<TOP>(annoIdx.size());
 		BiMap<TOP, Integer> mapAnnoToId = HashBiMap.create();
-		FSIterator annoIterator = annoIdx.iterator();
+		FSIterator<Annotation> annoIterator = annoIdx.iterator();
 		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -603,11 +610,21 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				} else if ("uima.cas.Boolean".equals(feat.getRange().getName())) {
 					ps.setBoolean(argIdx, anno.getBooleanValue(feat));
 				} else if ("uima.cas.String".equals(feat.getRange().getName())) {
-					ps.setString(argIdx, anno.getStringValue(feat));
+					String trunc = truncateString(anno.getStringValue(feat),
+							fieldMapInfo.getSize());
+					ps.setString(argIdx, trunc);
 				}
 			}
 			argIdx++;
 		}
+	}
+
+	private String truncateString(String val, int size) {
+		String trunc = val;
+		if (!Strings.isNullOrEmpty(val) && val.length() > size) {
+			trunc = val.substring(0, size);
+		}
+		return trunc;
 	}
 
 	/**
@@ -655,11 +672,14 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 							if (feat.getRange().isArray()) {
 								FSArray arr = (FSArray) anno
 										.getFeatureValue(feat);
-								for (int i = 0; i < arr.size(); i++) {
-									FeatureStructure fs = arr.get(i);
-									mapAnnoToFS.put(fs.getType().getName(),
-											new AnnoFSAttribute(annoId, fs, i));
+								if (arr != null) {
+									for (int i = 0; i < arr.size(); i++) {
+										FeatureStructure fs = arr.get(i);
+										mapAnnoToFS.put(fs.getType().getName(),
+												new AnnoFSAttribute(annoId, fs,
+														i));
 
+									}
 								}
 							} else {
 								mapAnnoToFS.put(
@@ -711,23 +731,12 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	}
 
 	private void saveAnnotations(JCas jcas, Set<String> setTypesToIgnore,
-			Document doc) {
-		AnnotationIndex annoIdx = jcas
-				.getAnnotationIndex(Annotation.typeIndexID);
-		FSIterator annoIterator = annoIdx.iterator();
-		while (annoIterator.hasNext()) {
-			saveDocumentAnnotation((Annotation) annoIterator.next(), doc,
-					setTypesToIgnore);
-		}
-	}
-
-	private void saveAnnotations2(JCas jcas, Set<String> setTypesToIgnore,
 			Set<String> typesStoreCoveredText, int coveredTextMaxLen,
 			Document doc) {
 		BiMap<TOP, Integer> mapAnnoToId = saveAnnoBase(jcas, setTypesToIgnore,
 				typesStoreCoveredText, coveredTextMaxLen, doc);
 		// split the annotations up by type
-		// create a map of class name to anno type id
+		// create a map of class name to anno id
 		SetMultimap<String, Integer> mapTypeToAnnoId = HashMultimap.create();
 		for (Map.Entry<TOP, Integer> annoEntry : mapAnnoToId.entrySet()) {
 			mapTypeToAnnoId.put(annoEntry.getKey().getClass().getName(),
@@ -828,7 +837,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			this.sessionFactory.getCurrentSession().save(doc);
 			extractAndSaveDocKey(jcas, doc);
 			this.sessionFactory.getCurrentSession().flush();
-			saveAnnotations2(jcas, setTypesToIgnore, typesStoreCoveredText,
+			saveAnnotations(jcas, setTypesToIgnore, typesStoreCoveredText,
 					coveredTextMaxLen, doc);
 			Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
 					"insertAnnotationContainmentLinks");
@@ -838,33 +847,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		} finally {
 			MapperConfig.unsetConfig();
 		}
-	}
-
-	/**
-	 * save an annotation.
-	 * 
-	 * @param annotation
-	 *            uima annotation
-	 * @param document
-	 *            document to which it belongs
-	 * @return null if the annotation is not mapped
-	 */
-	private DocumentAnnotation saveDocumentAnnotation(Annotation annotation,
-			Document document, Set<String> setTypesToIgnore) {
-		if (annotation instanceof DocKey) {
-			saveDocKey(document, (DocKey) annotation);
-		} else if (setTypesToIgnore != null
-				&& !setTypesToIgnore.contains(annotation.getClass().getName())) {
-			DocumentAnnotationMapper<? extends DocumentAnnotation> mapper = this
-					.getMapperForAnnotation(annotation.getClass().getName());
-			if (mapper != null) {
-				DocumentAnnotation docAnno = (DocumentAnnotation) mapper
-						.mapAnnotation(annotation, document,
-								this.getSessionFactory());
-				return docAnno;
-			}
-		}
-		return null;
 	}
 
 	public void setDataSource(DataSource dataSource) {

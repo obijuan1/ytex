@@ -17,6 +17,8 @@ import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import com.google.common.base.Strings;
+
 import ytex.dao.SegmentRegexDao;
 import ytex.model.SegmentRegex;
 import ytex.uima.ApplicationContextHolder;
@@ -34,6 +36,7 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 			.getLog(SegmentRegexAnnotator.class);
 	private SegmentRegexDao segmentRegexDao;
 	private Map<SegmentRegex, Pattern> regexMap;
+	private String defaultSegmentId = null;
 
 	/**
 	 * Load the regex-segment map from the database using the segmentRegexDao.
@@ -49,6 +52,11 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 				log.debug(regex);
 			Pattern pat = Pattern.compile(regex.getRegex());
 			regexMap.put(regex, pat);
+		}
+		defaultSegmentId = (String) aContext
+				.getConfigParameterValue("SegmentID");
+		if (Strings.isNullOrEmpty(defaultSegmentId)) {
+			defaultSegmentId = "DEFAULT";
 		}
 	}
 
@@ -96,7 +104,7 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 			// sort the segments by begin
 			Collections.sort(segmentsAdded, new Comparator<Segment>() {
 
-//				@Override
+				// @Override
 				public int compare(Segment o1, Segment o2) {
 					return o1.getBegin() < o2.getBegin() ? -1
 							: o1.getBegin() > o2.getBegin() ? 1 : 0;
@@ -114,7 +122,7 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 						seg.setEnd(segNext.getBegin() - 1);
 					} else {
 						// set end to doc end
-						seg.setEnd(strDocText.length() - 1);
+						seg.setEnd(strDocText.length());
 					}
 				} else {
 					// segments shouldn't overlap
@@ -130,5 +138,25 @@ public class SegmentRegexAnnotator extends JCasAnnotator_ImplBase {
 				seg.addToIndexes();
 			}
 		}
+		// ctakes 1.3.2 - anything not in a segment will not be annotated - add
+		// text outside segments to the 'default' segment
+		int end = 0;
+		for (Segment seg : segmentsAdded) {
+			if ((seg.getBegin() - 1) > end) {
+				addGapSegment(aJCas, end, seg.getBegin() - 1);
+			}
+			end = seg.getEnd();
+		}
+		if (end < strDocText.length()) {
+			addGapSegment(aJCas, end, strDocText.length());
+		}
+	}
+
+	private void addGapSegment(JCas aJCas, int begin, int end) {
+		Segment segGap = new Segment(aJCas);
+		segGap.setBegin(begin);
+		segGap.setEnd(end);
+		segGap.addToIndexes();
+		segGap.setId(defaultSegmentId);
 	}
 }

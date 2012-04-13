@@ -9,7 +9,7 @@
 		<delete dir="${java.io.tmpdir}/jcasgen" quiet="yes" />
 		<java classname="org.apache.uima.tools.jcasgen.Jg" classpathref="ictakes.cp">
 			<arg value="-jcasgeninput" />
-			<arg value="src/main/java/ytex/uima/types/YTEXTypes.xml" />
+			<arg value="../config/desc/ytex/uima/types/YTEXTypes.xml" />
 			<arg value="-jcasgenoutput" />
 			<arg value="${java.io.tmpdir}/jcasgen" />
 		</java>

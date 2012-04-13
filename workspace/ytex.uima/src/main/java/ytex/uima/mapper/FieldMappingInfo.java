@@ -5,13 +5,9 @@ import org.apache.commons.beanutils.Converter;
 public class FieldMappingInfo {
 	private String annoFieldName;
 	private Converter converter;
+	private int size;
 	private String tableFieldName;
 	private Class<?> targetType;
-
-	@Override
-	public String toString() {
-		return "FieldMappingInfo [tableFieldName=" + tableFieldName + "]";
-	}
 
 	private String targetTypeName;
 
@@ -36,6 +32,10 @@ public class FieldMappingInfo {
 		return converter;
 	}
 
+	public int getSize() {
+		return size;
+	}
+
 	public String getTableFieldName() {
 		return tableFieldName;
 	}
@@ -56,6 +56,10 @@ public class FieldMappingInfo {
 		this.converter = converter;
 	}
 
+	public void setSize(int size) {
+		this.size = size;
+	}
+
 	public void setTableFieldName(String tableFieldName) {
 		this.tableFieldName = tableFieldName;
 	}
@@ -67,6 +71,11 @@ public class FieldMappingInfo {
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "FieldMappingInfo [tableFieldName=" + tableFieldName + "]";
 	}
 
 }
