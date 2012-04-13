@@ -134,6 +134,11 @@
 			<artifactId>solr-commons-csv</artifactId>
 			<version>1.4.0</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+		</dependency>
 	</dependencies>
 	<properties>
 		<!-- <env>local</env> -->
