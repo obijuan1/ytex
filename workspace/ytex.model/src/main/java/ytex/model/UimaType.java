@@ -19,7 +19,6 @@ public class UimaType implements Serializable {
 
 	private int uimaTypeID;
 	private String uimaTypeName;
-	private String mapperName;
 	public int getUimaTypeID() {
 		return uimaTypeID;
 	}
@@ -31,12 +30,6 @@ public class UimaType implements Serializable {
 	}
 	public void setUimaTypeName(String uimaTypeName) {
 		this.uimaTypeName = uimaTypeName;
-	}
-	public void setMapperName(String mapperName) {
-		this.mapperName = mapperName;
-	}
-	public String getMapperName() {
-		return mapperName;
 	}
 	
 	@Override
@@ -66,10 +59,9 @@ public class UimaType implements Serializable {
 	public UimaType() {
 		super();
 	}
-	public UimaType(int uimaTypeID, String uimaTypeName, String mapperName) {
+	public UimaType(int uimaTypeID, String uimaTypeName) {
 		super();
 		this.uimaTypeID = uimaTypeID;
 		this.uimaTypeName = uimaTypeName;
-		this.mapperName = mapperName;
 	}
 }

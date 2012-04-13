@@ -55,7 +55,6 @@
 		<cache usage="read-only" />
 		<id name="uimaTypeID" column="uima_type_id" />
 		<property name="uimaTypeName" column="uima_type_name" />
-		<property name="mapperName" column="mapper_name" />
 	</class>
 
 	<query name="getUimaTypeByName"><![CDATA[
