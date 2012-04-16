@@ -9,5 +9,4 @@
 	<import resource="classpath:/ytex/web/beans-kernel-simweb.xml" />
 	<import resource="classpath:/ytex/web/beans-web.xml" />
 	<import resource="classpath:/ytex/web/beans-ws.xml" />
-	<import resource="classpath:/ytex/web/beans-security.xml" />
 </beans>
