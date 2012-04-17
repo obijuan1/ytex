@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<relativePath>../build/pom.xml</relativePath>
+		<version>0.7</version>
+		<groupId>ytex</groupId>
+		<artifactId>parent</artifactId>
+	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>my.mas</groupId>
 	<artifactId>jdl</artifactId>
 	<packaging>jar</packaging>
 	<name>Java Data Loader</name>
-	<version>0.0.4-SNAPSHOT</version>
 	<description>
 		jdl is a loader utility for moving data from (CSV or XML)
 		external files into the database.
+		Modified from original jdl - fixed bugs, support tab-delimited format.
 	</description>
-	<url>http://jdl-prj.googlecode.com</url>
-	<developers>
-		<developer>
-			<id>mas</id>
-			<name>Matteo Alberto Sorrenti</name>
-		</developer>
-	</developers>
 	<licenses>
 		<license>
 			<name>The MIT License</name>
@@ -31,12 +29,8 @@
 				<directory>src/main/resources</directory>
 			</resource>
 		</resources>
-		<testResources>
-			<testResource>
-				<filtering>true</filtering>
-				<directory>src/test/resources</directory>
-			</testResource>
-		</testResources>
+		<!-- <testResources> <testResource> <filtering>true</filtering> <directory>src/test/resources</directory> 
+			</testResource> </testResources> -->
 		<!-- <finalName>${project.artifactId}</finalName> -->
 		<filters>
 			<!-- <filter>src/filters/${env}.properties</filter> -->
@@ -113,6 +107,7 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.1</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>

@@ -2,32 +2,17 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<relativePath>../build/pom.xml</relativePath>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.7</version>
 		<groupId>ytex</groupId>
 		<artifactId>parent</artifactId>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>ytex</groupId>
 	<artifactId>ytex.kernel</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 	<dependencies>
 		<dependency>
 			<groupId>ytex</groupId>
 			<artifactId>ytex.model</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>weka</groupId>
@@ -49,6 +34,5 @@
 			<artifactId>guava</artifactId>
 			<version>10.0.1</version>
 		</dependency>
-
 	</dependencies>
 </project>
