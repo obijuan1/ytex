@@ -1,4 +1,4 @@
-<project name="kernel.cp">
+<project name="kernel.cp" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 	<!--
 	this build script is included inside other build scripts.
 	the ytex.home property must be set before including this script.
@@ -37,13 +37,12 @@
 	<path id="kernel.cp.dev">
 		<pathelement location="${config.local}" />
 		<pathelement location="${ytex.home}/config/desc" />
-		<pathelement location="${ytex.home}/ytex.kernel/bin" />
-		<pathelement location="${ytex.home}/ytex.model/bin" />
-		<pathelement location="${ytex.home}/ytex.uima/bin" />
-		<pathelement location="${ytex.home}/ytex.negex/bin" />
-		<pathelement location="${ytex.home}/ctakes-patches/bin" />
-		<pathelement location="${ytex.home}/jdl/bin" />
-		<pathelement location="${ytex.home}/jdl/src/main/resources" />
+		<pathelement location="${ytex.home}/ytex.kernel/target/classes" />
+		<pathelement location="${ytex.home}/ytex.model/target/classes" />
+		<pathelement location="${ytex.home}/ytex.uima/target/classes" />
+		<pathelement location="${ytex.home}/ytex.negex/target/classes" />
+		<pathelement location="${ytex.home}/ctakes-patches/target/classes" />
+		<pathelement location="${ytex.home}/jdl/target/classes" />
 		<fileset dir="${ytex.home}/ytex.web/WebContent/WEB-INF/lib" includes="**/*.jar" />
 		<path refid="kernel.cp.common" />
 	</path>
@@ -77,5 +76,5 @@
 	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" onerror="ignore" classpathref="${kernel.cp}" />
 	<taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" onerror="ignore" classpathref="${kernel.cp}" />
 	<taskdef name="propertycopy" classname="net.sf.antcontrib.property.PropertyCopy" onerror="ignore" classpathref="${kernel.cp}" />
-
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="${kernel.cp}" />
 </project>

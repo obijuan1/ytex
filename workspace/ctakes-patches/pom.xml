@@ -2,8 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<relativePath>../build/pom.xml</relativePath>
-		<version>0.0.1-SNAPSHOT</version>
 		<groupId>ytex</groupId>
+		<version>0.7</version>
 		<artifactId>parent</artifactId>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>ytex</groupId>
 			<artifactId>ytex.uima</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${parent.version}</version>
 		</dependency>
 	</dependencies>
 </project>

@@ -1,4 +1,4 @@
-<project name="build">
+<project name="build" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 	<property name="java.tools.home" value="c:/java" />
 	<!--
 	<property name="maveric.home" value="${java.tools.home}/MavericArcApp-1.0.0" />
@@ -12,7 +12,8 @@
 	<property name="tomcat.dir" value="apache-tomcat-7.0.25" />
 	<property name="ant.dir" value="apache-ant-1.8.0" />
 	<property name="ytex.version" value="0.6" />
-
+	<path id="maven-ant-tasks.classpath" path="${ytex.home}/libs.system/ant-dependencies/maven-ant-tasks-2.1.3.jar" />
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
 	<path id="cp.maveric">
 		<fileset dir="${maveric.home}/ext">
 			<include name="mavericPipeline-1.0.0.jar" />
@@ -30,6 +31,10 @@
 		<path refid="cp.ytex" />
 		<path refid="cp.maveric" />
 	</path>
+	<target name="test">
+		<echo>helloooo ${ytex.version}</echo>
+		<antcall target="copy.config" />
+	</target>
 
 	<target name="zipSources">
 		<tstamp>
@@ -343,7 +348,7 @@
 		<delete dir="${dist.home}" includes="ytex*.zip" />
 		<zip destfile="${dist.home}/ytex-v${ytex.version}.zip" update="no">
 			<fileset dir="${dist.home}">
-				<include name="ytex/**/*.*"/>
+				<include name="ytex/**/*.*" />
 				<exclude name="ytex/libs.system/ytex.model.jar" />
 				<exclude name="ytex/libs.system/ytex.kernel.jar" />
 			</fileset>
@@ -357,6 +362,18 @@
 			<zipfileset dir="${nlp.home}" includes="${tomcat.dir}/**/*.*" excludes="${tomcat.dir}/webapps/**/*.*" />
 			<zipfileset dir="${nlp.home}" includes="${ant.dir}/**/*,${ant.dir}/**/*.*" excludes="${ant.dir}/docs/**/*.*" />
 		</zip>
+	</target>
+	<target name="copy.dependencies">
+		<delete quiet="yes">
+			<fileset dir="../ytex.web/WebContent/WEB-INF/lib" includes="*.*" />
+		</delete>
+		<artifact:dependencies filesetId="dependency.fileset" useScope="compile">
+			<pom file="../ytex.web/pom.xml" />
+		</artifact:dependencies>
+		<copy todir="../ytex.web/WebContent/WEB-INF/lib">
+			<fileset refid="dependency.fileset" />
+			<mapper type="flatten" />
+		</copy>
 	</target>
 	<target name="build.all" depends="clean.dist,build.jdl,build.ytex.model,build.ytex.kernel,build.ytex.negex,build.ytex.uima,build.ctakes-patches,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,copy.maveric,build.ytex.jar,zip.dist" />
 </project>

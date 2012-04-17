@@ -7,6 +7,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ctakes-patches"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/libs.system"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/libs.ytex"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ytex.kernel"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ytex.model"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ytex.negex"/>
