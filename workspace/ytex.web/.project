@@ -3,9 +3,9 @@
 	<name>ytex.web</name>
 	<comment></comment>
 	<projects>
+		<project>ytex.model</project>
 		<project>config.local</project>
 		<project>ytex.kernel</project>
-		<project>ytex.model</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -28,14 +28,8 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.m2e.core.maven2Builder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>org.eclipse.jem.workbench.JavaEMFNature</nature>
 		<nature>org.eclipse.wst.common.modulecore.ModuleCoreNature</nature>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
