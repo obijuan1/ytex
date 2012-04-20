@@ -739,7 +739,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				// reference to another annotation - get the other anno's id
 				FeatureStructure fs = anno.getFeatureValue(feat);
 				Integer refAnnoId = null;
-				if (fs instanceof Annotation) {
+				if (fs != null && fs instanceof Annotation) {
 					refAnnoId = mapAnnoToId.get(fs);
 				}
 				if (refAnnoId != null) {
@@ -830,12 +830,15 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 						// pull out the composite fields for storage
 						for (String fieldName : fsNames) {
 							Feature feat = type.getFeatureByBaseName(fieldName);
-							if (feat.getRange().isArray()) {
-								FSArray arr = (FSArray) anno
+							if (!feat.getRange().isPrimitive()) {
+								// handle arrays and lists
+								FeatureStructure fsCol = anno
 										.getFeatureValue(feat);
-								if (arr != null) {
-									for (int i = 0; i < arr.size(); i++) {
-										FeatureStructure fs = arr.get(i);
+								if (fsCol != null
+										&& (fsCol instanceof FSArray || fsCol instanceof FSList)) {
+									List<FeatureStructure> fsList = extractList(fsCol);
+									int i = 0;
+									for (FeatureStructure fs : fsList) {
 										if (fs instanceof Annotation) {
 											// annotations are linked via the
 											// anno_link table
@@ -855,11 +858,12 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 											mapAnnoToFS.put(fs.getType()
 													.getName(),
 													new AnnoFSAttribute(annoId,
-															fs, i));
+															fs, i++));
 										}
 									}
 								}
 							} else {
+								// handle primitive attributes
 								mapAnnoToFS.put(
 										feat.getRange().getName(),
 										new AnnoFSAttribute(annoId, anno
@@ -1002,20 +1006,27 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 * covert a FSArray or FSList into a List<FeatureStructure>
 	 * 
 	 * @param fsc
-	 * @return
+	 * @return list, entries guaranteed not null
 	 */
 	private List<FeatureStructure> extractList(FeatureStructure fsc) {
 		List<FeatureStructure> listFS = new ArrayList<FeatureStructure>();
-		if (fsc instanceof FSArray) {
-			FSArray fsa = (FSArray) fsc;
-			for (int i = 0; i < fsa.size(); i++) {
-				listFS.add(fsa.get(i));
-			}
-		} else if (fsc instanceof FSList) {
-			FSList fsl = (FSList) fsc;
-			while (fsl instanceof NonEmptyFSList) {
-				listFS.add(((NonEmptyFSList) fsl).getHead());
-				fsl = ((NonEmptyFSList) fsl).getTail();
+		if (fsc != null) {
+			if (fsc instanceof FSArray) {
+				FSArray fsa = (FSArray) fsc;
+				for (int i = 0; i < fsa.size(); i++) {
+					FeatureStructure fsElement = fsa.get(i);
+					if (fsElement != null)
+						listFS.add(fsElement);
+				}
+			} else if (fsc instanceof FSList) {
+				FSList fsl = (FSList) fsc;
+				while (fsl instanceof NonEmptyFSList) {
+					FeatureStructure fsElement = ((NonEmptyFSList) fsl)
+							.getHead();
+					if (fsElement != null)
+						listFS.add(fsElement);
+					fsl = ((NonEmptyFSList) fsl).getTail();
+				}
 			}
 		}
 		return listFS;
