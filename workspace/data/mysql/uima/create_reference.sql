@@ -11,7 +11,7 @@ create table ref_named_entity_regex (
 create table ref_segment_regex (
 	segment_regex_id int auto_increment NOT NULL,
 	regex varchar(256) not null,
-	segment_id varchar(256),
+	segment_id varchar(20),
 	limit_to_regex bit null default 0, 
 	primary key (segment_regex_id)
 ) engine=myisam;
@@ -19,7 +19,7 @@ create table ref_segment_regex (
 create table ref_uima_type (
 	uima_type_id int not null,
 	uima_type_name varchar(256) not null,
-	mapper_name varchar(256) not null,
+	table_name varchar(100) null,
 	CONSTRAINT PK_ref_uima_type PRIMARY KEY  
 	(
 		uima_type_id ASC

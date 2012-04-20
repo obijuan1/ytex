@@ -2,7 +2,7 @@
 <taeDescription xmlns="http://uima.apache.org/resourceSpecifier">
   <frameworkImplementation>org.apache.uima.java</frameworkImplementation>
   <primitive>true</primitive>
-  <annotatorImplementationName>edu.mayo.bmi.dictionary.DictionaryLookupAnnotator</annotatorImplementationName>
+  <annotatorImplementationName>edu.mayo.bmi.uima.lookup.ae.DictionaryLookupAnnotator</annotatorImplementationName>
   <analysisEngineMetaData>
     <name>DictionaryLookupAnnotator</name>
     <description/>
@@ -10,31 +10,24 @@
     <vendor/>
     <configurationParameters>
       <configurationParameter>
-        <name>Patterns</name>
-        <type>String</type>
-        <multiValued>true</multiValued>
-        <mandatory>true</mandatory>
+        <name>maxListSize</name>
+        <description>Specifies the maximum number of items to be returned from an lucene query.</description>
+        <type>Integer</type>
+        <multiValued>false</multiValued>
+        <mandatory>false</mandatory>
       </configurationParameter>
     </configurationParameters>
     <configurationParameterSettings>
       <nameValuePair>
-        <name>Patterns</name>
+        <name>maxListSize</name>
         <value>
-          <array>
-            <string>All</string>
-          </array>
+          <integer>2147483647</integer>
         </value>
       </nameValuePair>
     </configurationParameterSettings>
     <typeSystemDescription>
       <imports>
-        <import name="tokenizer.TypeSystem"/>
-        <import name="chunker.ChunkerTypeSystem"/>
-        <import name="context dependent tokenizer.CdtTypeSystem"/>
-        <import name="dictionary lookup.DictionaryLookupTypeSystem"/>
-        <import name="NE contexts.NEContextTypeSystem"/>
-        <import name="lookup.LookupWindowAnnotationTypeSystem"/>
-        <import name="ytex.uima.types.OntologyConceptTypeSystem"/>
+        <import name="ytex.uima.YTEXTypes"/>
       </imports>
     </typeSystemDescription>
     <typePriorities/>
@@ -42,11 +35,12 @@
     <capabilities>
       <capability>
         <inputs>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.ae.type.BaseToken</type>
+          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.BaseToken</type>
           <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation</type>
+          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Sentence</type>
         </inputs>
         <outputs>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.ae.type.NamedEntity</type>
+          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NamedEntity</type>
         </outputs>
         <languagesSupported/>
       </capability>
@@ -113,14 +107,7 @@
                 <multiValued>false</multiValued>
                 <mandatory>false</mandatory>
               </configurationParameter>
-              <configurationParameter>
-                <name>InitStatements</name>
-                <type>String</type>
-                <multiValued>false</multiValued>
-                <mandatory>false</mandatory>
-              </configurationParameter>
             </configurationParameters>
-            <configurationParameterSettings/>
           </resourceMetaData>
         </configurableDataResourceSpecifier>
         <implementationName>ytex.uima.resource.InitableJdbcConnectionResourceImpl</implementationName>

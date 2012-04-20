@@ -23,7 +23,7 @@ execute setup.lvg and templateToConfig
 	</description>
 	<!-- override these variables using eclipse settings/command line -->
 	<property name="ytex.home" value=".." />
-	<include file="${ytex.home}/libs.system/build-classpath.xml" />
+	<import file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="lvg.download.dir" value="${ytex.home}/.." />
 	<property name="lvg.basename" value="2011" />
 	<property name="lvg.filename" value="lvg${lvg.basename}lite.tgz" />
@@ -35,6 +35,7 @@ execute setup.lvg and templateToConfig
 		<echo>
 Ant build script to setup ytex.
 Call with option -projecthelp for more info.
+			${ictakes.url}
 </echo>
 	</target>
 
@@ -45,7 +46,7 @@ Call with option -projecthelp for more info.
 	<target name="setupDatabase" description="setup ytex database tables">
 		<ant dir="${ytex.home}/data" target="all" />
 	</target>
-	<target name="templateToConfig.init" description="setup variables for updating template">
+	<target name="templateToConfig.init" description="setup variables for updating template" depends="init.ictakes.url">
 		<condition property="filter.umls.catalog" value="" else="catalog=&quot;${umls.catalog}&quot;">
 			<or>
 				<!-- for mysql/oracle, no catalog - assume umls in same catalog -->
@@ -72,6 +73,7 @@ Call with option -projecthelp for more info.
 				<filtersfile file="${ytex.properties}" />
 				<filter token="umls.schema" value="${umls.schema}" />
 				<filter token="filter.umls.catalog" value="${filter.umls.catalog}" />
+				<filter token="ictakes.url" value="${ictakes.url}" />
 			</filterset>
 		</copy>
 	</target>

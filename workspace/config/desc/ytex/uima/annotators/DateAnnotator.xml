@@ -12,7 +12,7 @@
     <configurationParameterSettings/>
     <typeSystemDescription>
       <imports>
-        <import name="ytex.uima.types.DateTypeSystem"/>
+        <import name="ytex.uima.YTEXTypes"/>
       </imports>
     </typeSystemDescription>
     <typePriorities/>

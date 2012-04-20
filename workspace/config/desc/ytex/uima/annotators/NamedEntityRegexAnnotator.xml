@@ -12,8 +12,7 @@
     <configurationParameterSettings/>
     <typeSystemDescription>
       <imports>
-        <import name="tokenizer.NamedEntity"/>
-        <import name="tokenizer.Segment"/>
+        <import name="ytex.uima.YTEXTypes"/>
       </imports>
     </typeSystemDescription>
     <typePriorities/>

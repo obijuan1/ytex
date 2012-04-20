@@ -408,7 +408,7 @@ ${sql.delimiter}
 		</for>
 	</target>
 	<target name="uima.create" depends="init" description="create ytex uima tables">
-		<for list="create_reference.sql,create_document.sql,create_view.sql,insert_reference.sql" param="sqlcmd.script">
+		<for list="create_reference.sql,create_document.sql,create_view.sql" param="sqlcmd.script">
 			<sequential>
 				<antcall target="jdbc.sqlcmd">
 					<param name="sqlcmd.dir" value="uima" />
@@ -417,6 +417,7 @@ ${sql.delimiter}
 			</sequential>
 		</for>
 		<antcall target="uima.create.trigger" />
+		<antcall target="uima.ref.load" />
 		<antcall target="uima.examples.load" />
 		<antcall target="uima.stopword.load" />
 	</target>
@@ -430,6 +431,12 @@ ${sql.delimiter}
 				</antcall>
 			</sequential>
 		</for>
+	</target>
+	<target name="uima.ref.load" depends="init,init.conn">
+		<antcall target="jdl">
+			<param name="jdl.data" value="ref_uima_type.txt" />
+			<param name="jdl.format" value="ref_uima_type.xml" />
+		</antcall>
 	</target>
 	<target name="uima.stopword.load" depends="init,init.conn">
 		<antcall target="jdl">

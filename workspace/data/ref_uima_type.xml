@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
-	<csv table="@db.schema@.tmp_ic" commit="10000" delimiter="&#009;">
-		<column name="feature_name" />
-		<column name="evaluation" />
-		<column name="rank" />
+	<csv table="ref_uima_type" commit="10000" delimiter="&#009;">
+		<column name="uima_type_id" />
+		<column name="uima_type_name" />
+		<column name="table_name" />
 	</csv>
 </load>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cpeDescription xmlns="http://uima.apache.org/resourceSpecifier">
+	<collectionReader>
+		<collectionIterator>
+			<descriptor>
+				<import
+					location="file:///C:/java/icTAKES-1.3.2/cTAKESdesc/coredesc/collection_reader/FilesInDirectoryCollectionReader.xml" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>InputDirectory</name>
+					<value>
+						<string>testdata/drugnertest/testinput/plaintext</string>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</collectionIterator>
+	</collectionReader>
+	<casProcessors casPoolSize="3" processingUnitThreadCount="1">
+		<casProcessor deployment="integrated" name="AggregatePlaintextProcessor">
+			<descriptor>
+				<import
+					location="file:///C:/java/icTAKES-1.3.2/cTAKESdesc/drugnerdesc/analysis_engine/DrugAggregatePlaintextProcessor.xml" />
+			</descriptor>
+			<deploymentParameters />
+			<errorHandling>
+				<errorRateThreshold action="terminate" value="0/1000" />
+				<maxConsecutiveRestarts action="terminate"
+					value="30" />
+				<timeout max="100000" default="-1" />
+			</errorHandling>
+			<checkpoint batch="10000" time="1000ms" />
+		</casProcessor>
+		<casProcessor deployment="integrated" name="YTEX DBConsumer">
+			<descriptor>
+				<import name="ytex.uima.annotators.DBConsumer" />
+			</descriptor>
+			<checkpoint batch="10000" time="1000ms" />
+		</casProcessor>
+	</casProcessors>
+	<cpeConfig>
+		<numToProcess>-1</numToProcess>
+		<deployAs>immediate</deployAs>
+		<checkpoint batch="0" time="300000ms" />
+		<timerImpl />
+	</cpeConfig>
+</cpeDescription>

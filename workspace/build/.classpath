@@ -15,5 +15,6 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ytex.uima"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/config"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/config.local"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jdl"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

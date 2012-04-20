@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<styleMap>
+<rule>
+<pattern>ytex.uima.types.WordToken</pattern>
+<label>WordToken</label>
+<style>color:black; background:lightblue;</style>
+</rule>
+<rule>
+<pattern>ytex.uima.types.KeyValuePair</pattern>
+<label>KeyValuePair</label>
+<style>color:black; background:lightgreen;</style>
+</rule>
+<rule>
+<pattern>ytex.uima.types.DocKey</pattern>
+<label>DocKey</label>
+<style>color:black; background:orange;</style>
+</rule>
+<rule>
+<pattern>ytex.uima.types.Date</pattern>
+<label>Date</label>
+<style>color:black; background:yellow;</style>
+</rule>
+<rule>
+<pattern>ytex.uima.types.OntologyConcept</pattern>
+<label>OntologyConcept</label>
+<style>color:black; background:pink;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.WordToken</pattern>
+<label>WordToken</label>
+<style>color:black; background:salmon;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.VP</pattern>
+<label>VP</label>
+<style>color:black; background:cyan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.UmlsConcept</pattern>
+<label>UmlsConcept</label>
+<style>color:black; background:violet;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.UCP</pattern>
+<label>UCP</label>
+<style>color:black; background:tan;</style>
+</rule>
+<rule>
+<pattern>org.chboston.cnlp.ctakes.parser.uima.type.TreebankNode</pattern>
+<label>TreebankNode</label>
+<style>color:white; background:brown;</style>
+</rule>
+<rule>
+<pattern>org.chboston.cnlp.ctakes.parser.uima.type.TopTreebankNode</pattern>
+<label>TopTreebankNode</label>
+<style>color:white; background:blue;</style>
+</rule>
+<rule>
+<pattern>org.chboston.cnlp.ctakes.parser.uima.type.TerminalTreebankNode</pattern>
+<label>TerminalTreebankNode</label>
+<style>color:white; background:green;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.SymbolToken</pattern>
+<label>SymbolToken</label>
+<style>color:white; background:red;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.pad.type.SubSection</pattern>
+<label>SubSection</label>
+<style>color:white; background:mediumpurple;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.Sentence</pattern>
+<label>Sentence</label>
+<style>color:black; background:lightblue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.Segment</pattern>
+<label>Segment</label>
+<style>color:black; background:lightgreen;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.SBAR</pattern>
+<label>SBAR</label>
+<style>color:black; background:orange;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.Relation</pattern>
+<label>Relation</label>
+<style>color:black; background:yellow;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.PunctuationToken</pattern>
+<label>PunctuationToken</label>
+<style>color:black; background:pink;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.Properties</pattern>
+<label>Properties</label>
+<style>color:black; background:salmon;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.Property</pattern>
+<label>Property</label>
+<style>color:black; background:cyan;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.Properties</pattern>
+<label>Properties</label>
+<style>color:black; background:violet;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.PredicateArgRelation</pattern>
+<label>PredicateArgRelation</label>
+<style>color:black; background:tan;</style>
+</rule>
+<rule>
+<pattern>org.chboston.cnlp.ctakes.common.type.Pair</pattern>
+<label>Pair</label>
+<style>color:white; background:brown;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.PRT</pattern>
+<label>PRT</label>
+<style>color:white; background:blue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.PP</pattern>
+<label>PP</label>
+<style>color:white; background:green;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.OntologyConcept</pattern>
+<label>OntologyConcept</label>
+<style>color:white; background:red;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.NumToken</pattern>
+<label>NumToken</label>
+<style>color:white; background:mediumpurple;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.NewlineToken</pattern>
+<label>NewlineToken</label>
+<style>color:black; background:lightblue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.NamedEntity</pattern>
+<label>NamedEntity</label>
+<style>color:black; background:lightgreen;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.NP</pattern>
+<label>NP</label>
+<style>color:black; background:orange;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.Lemma</pattern>
+<label>Lemma</label>
+<style>color:black; background:yellow;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.LST</pattern>
+<label>LST</label>
+<style>color:black; background:pink;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.IdentifiedAnnotation</pattern>
+<label>IdentifiedAnnotation</label>
+<style>color:black; background:salmon;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.INTJ</pattern>
+<label>INTJ</label>
+<style>color:black; background:cyan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.smoking.i2b2.type.RecordSentence</pattern>
+<label>RecordSentence</label>
+<style>color:black; background:violet;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.DocumentID</pattern>
+<label>DocumentID</label>
+<style>color:black; background:tan;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.DiscoveryTechnique</pattern>
+<label>DiscoveryTechnique</label>
+<style>color:white; background:brown;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation</pattern>
+<label>LookupWindowAnnotation</label>
+<style>color:white; background:blue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.ContractionToken</pattern>
+<label>ContractionToken</label>
+<style>color:white; background:green;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.context.type.ContextAnnotation</pattern>
+<label>ContextAnnotation</label>
+<style>color:white; background:red;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.nlp.parser.type.ConllDependencyNode</pattern>
+<label>ConllDependencyNode</label>
+<style>color:white; background:mediumpurple;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.CollectionRelation</pattern>
+<label>CollectionRelation</label>
+<style>color:black; background:lightblue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.Chunk</pattern>
+<label>Chunk</label>
+<style>color:black; background:lightgreen;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.CONJP</pattern>
+<label>CONJP</label>
+<style>color:black; background:orange;</style>
+</rule>
+<rule>
+<pattern>org.chboston.cnlp.ctakes.common.type.BooleanLabeledFS</pattern>
+<label>BooleanLabeledFS</label>
+<style>color:black; background:yellow;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.BinaryRelation</pattern>
+<label>BinaryRelation</label>
+<style>color:black; background:pink;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.BaseToken</pattern>
+<label>BaseToken</label>
+<style>color:black; background:salmon;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.nlp.parser.type.BaseDependencyNode</pattern>
+<label>BaseDependencyNode</label>
+<style>color:black; background:cyan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.ADVP</pattern>
+<label>ADVP</label>
+<style>color:black; background:violet;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.chunker.type.ADJP</pattern>
+<label>ADJP</label>
+<style>color:black; background:tan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.DosagesAnnotation</pattern>
+<label>DosagesAnnotation</label>
+<style>color:white; background:brown;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.DrugChangeStatusAnnotation</pattern>
+<label>DrugChangeStatusAnnotation</label>
+<style>color:white; background:blue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.DecimalStrengthAnnotation</pattern>
+<label>DecimalStrengthAnnotation</label>
+<style>color:white; background:green;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.coref.type.MarkablePairSet</pattern>
+<label>MarkablePairSet</label>
+<style>color:white; background:red;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.cdt.type.PersonTitleAnnotation</pattern>
+<label>PersonTitleAnnotation</label>
+<style>color:white; background:mediumpurple;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.RangeStrengthAnnotation</pattern>
+<label>RangeStrengthAnnotation</label>
+<style>color:black; background:lightblue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.libsvm.type.DocumentID</pattern>
+<label>DocumentID</label>
+<style>color:black; background:lightgreen;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.coref.type.MarkablePair</pattern>
+<label>MarkablePair</label>
+<style>color:black; background:orange;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.cdt.type.MeasurementAnnotation</pattern>
+<label>MeasurementAnnotation</label>
+<style>color:black; background:yellow;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.SmokingStatus.type.UnknownSmokerNamedEntityAnnotation</pattern>
+<label>UnknownSmokerNamedEntityAnnotation</label>
+<style>color:black; background:pink;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.FractionStrengthAnnotation</pattern>
+<label>FractionStrengthAnnotation</label>
+<style>color:black; background:salmon;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.libsvm.type.DateAttributeValue</pattern>
+<label>DateAttributeValue</label>
+<style>color:black; background:cyan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.coref.type.DemMarkable</pattern>
+<label>DemMarkable</label>
+<style>color:black; background:violet;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.cdt.type.RangeAnnotation</pattern>
+<label>RangeAnnotation</label>
+<style>color:black; background:tan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.smoking.type.SmokingDocumentClassification</pattern>
+<label>SmokingDocumentClassification</label>
+<style>color:white; background:brown;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.sideeffect.type.SESentence</pattern>
+<label>SESentence</label>
+<style>color:white; background:blue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.SuffixStrengthAnnotation</pattern>
+<label>SuffixStrengthAnnotation</label>
+<style>color:white; background:green;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.libsvm.type.StringAttributeValue</pattern>
+<label>StringAttributeValue</label>
+<style>color:white; background:red;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.coref.type.NEMarkable</pattern>
+<label>NEMarkable</label>
+<style>color:white; background:mediumpurple;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.cdt.type.TimeAnnotation</pattern>
+<label>TimeAnnotation</label>
+<style>color:black; background:lightblue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.SmokingStatus.type.NonSmokerNamedEntityAnnotation</pattern>
+<label>NonSmokerNamedEntityAnnotation</label>
+<style>color:black; background:lightgreen;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.sideeffect.type.PSESentenceFeature</pattern>
+<label>PSESentenceFeature</label>
+<style>color:black; background:orange;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.pad.type.PADHit</pattern>
+<label>PADHit</label>
+<style>color:black; background:yellow;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.RouteAnnotation</pattern>
+<label>RouteAnnotation</label>
+<style>color:black; background:pink;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.libsvm.type.NominalAttributeValue</pattern>
+<label>NominalAttributeValue</label>
+<style>color:black; background:salmon;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.NonCoreferenceRelation</pattern>
+<label>NonCoreferenceRelation</label>
+<style>color:black; background:cyan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.coref.type.PronounMarkable</pattern>
+<label>PronounMarkable</label>
+<style>color:black; background:violet;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.cdt.type.DateAnnotation</pattern>
+<label>DateAnnotation</label>
+<style>color:black; background:tan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.coref.type.AnaphoricityVecInstance</pattern>
+<label>AnaphoricityVecInstance</label>
+<style>color:white; background:brown;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.SmokingStatus.type.SmokerNamedEntityAnnotation</pattern>
+<label>SmokerNamedEntityAnnotation</label>
+<style>color:white; background:blue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.sideeffect.type.PSESentence</pattern>
+<label>PSESentence</label>
+<style>color:white; background:green;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.UnrelationArgument</pattern>
+<label>UnrelationArgument</label>
+<style>color:white; background:red;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.pad.type.PADLocation</pattern>
+<label>PADLocation</label>
+<style>color:white; background:mediumpurple;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.CopyDestAnnotation</pattern>
+<label>CopyDestAnnotation</label>
+<style>color:black; background:lightblue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.DurationAnnotation</pattern>
+<label>DurationAnnotation</label>
+<style>color:black; background:lightgreen;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.libsvm.type.AttributeValue</pattern>
+<label>AttributeValue</label>
+<style>color:black; background:orange;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.coref.type.CoreferenceChain</pattern>
+<label>CoreferenceChain</label>
+<style>color:black; background:yellow;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.cdt.type.FractionAnnotation</pattern>
+<label>FractionAnnotation</label>
+<style>color:black; background:pink;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.coref.type.VecInstance</pattern>
+<label>VecInstance</label>
+<style>color:black; background:salmon;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.smoking.i2b2.type.RecordSentence</pattern>
+<label>RecordSentence</label>
+<style>color:black; background:cyan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.sideeffect.type.SideEffectAnnotation</pattern>
+<label>SideEffectAnnotation</label>
+<style>color:black; background:violet;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.RelationArgument</pattern>
+<label>RelationArgument</label>
+<style>color:black; background:tan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.pad.type.PADTerm</pattern>
+<label>PADTerm</label>
+<style>color:white; background:brown;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.core.type.CopySrcAnnotation</pattern>
+<label>CopySrcAnnotation</label>
+<style>color:white; background:blue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.FrequencyAnnotation</pattern>
+<label>FrequencyAnnotation</label>
+<style>color:white; background:green;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.libsvm.type.NumericAttributeValue</pattern>
+<label>NumericAttributeValue</label>
+<style>color:white; background:red;</style>
+</rule>
+<rule>
+<pattern>org.mipacq.annotation.type.CoreferenceRelation</pattern>
+<label>CoreferenceRelation</label>
+<style>color:white; background:mediumpurple;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.coref.type.Markable</pattern>
+<label>Markable</label>
+<style>color:black; background:lightblue;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.cdt.type.RomanNumeralAnnotation</pattern>
+<label>RomanNumeralAnnotation</label>
+<style>color:black; background:lightgreen;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.lookup.type.MetaHeader</pattern>
+<label>MetaHeader</label>
+<style>color:black; background:orange;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.lookup.type.DrugLookupWindowAnnotation</pattern>
+<label>DrugLookupWindowAnnotation</label>
+<style>color:black; background:yellow;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.ChunkAnnotation</pattern>
+<label>ChunkAnnotation</label>
+<style>color:black; background:pink;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.DrugMentionAnnotation</pattern>
+<label>DrugMentionAnnotation</label>
+<style>color:black; background:salmon;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.SubSectionAnnotation</pattern>
+<label>SubSectionAnnotation</label>
+<style>color:black; background:cyan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.FormAnnotation</pattern>
+<label>FormAnnotation</label>
+<style>color:black; background:violet;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.FrequencyUnitAnnotation</pattern>
+<label>FrequencyUnitAnnotation</label>
+<style>color:black; background:tan;</style>
+</rule>
+<rule>
+<pattern>edu.mayo.bmi.uima.drugner.type.StrengthAnnotation</pattern>
+<label>StrengthAnnotation</label>
+<style>color:white; background:brown;</style>
+</rule>
+</styleMap>
+

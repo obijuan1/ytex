@@ -68,8 +68,7 @@
         <featureDescription>
           <name>date</name>
           <description>ISO 8601 Formatted Timestamp: 
-yyyy-MM-dd'T'HH:mm:ssZ
-</description>
+yyyy-MM-dd'T'HH:mm:ssZ</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
       </features>
