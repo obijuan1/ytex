@@ -15,6 +15,6 @@ public interface DocumentMapperService {
 	 * @return document id
 	 */
 	public abstract Integer saveDocument(JCas jcas, String analysisBatch,
-			boolean bStoreDocText, boolean bStoreCAS, Set<String> typesToIgnore, Set<String> typesStoreCoveredText, int coveredTextMaxLen);
+			boolean bStoreDocText, boolean bStoreCAS, Set<String> typesToIgnore);
 
 }

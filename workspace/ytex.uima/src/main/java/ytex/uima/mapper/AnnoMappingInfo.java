@@ -6,15 +6,12 @@ import java.util.TreeMap;
 
 public class AnnoMappingInfo {
 	String annoClassName;
-	SortedMap<String, FieldMappingInfo> mapField = new TreeMap<String, FieldMappingInfo>();
-	String tableName;
+	ColumnMappingInfo coveredTextColumn;
+	SortedMap<String, ColumnMappingInfo> mapField = new TreeMap<String, ColumnMappingInfo>();
 	String sql;
-
-	@Override
-	public String toString() {
-		return "AnnoMappingInfo [mapField=" + mapField + ", tableName="
-				+ tableName + "]";
-	}
+	String tableName;
+	int uimaTypeId;
+	String uimaTypeIdColumnName;
 
 	public AnnoMappingInfo() {
 	}
@@ -29,42 +26,74 @@ public class AnnoMappingInfo {
 		n.annoClassName = this.annoClassName;
 		n.tableName = this.tableName;
 		n.sql = this.sql;
-		for (Map.Entry<String, FieldMappingInfo> e : this.mapField.entrySet()) {
+		n.coveredTextColumn = this.coveredTextColumn != null ? this.coveredTextColumn
+				.deepCopy() : null;
+		for (Map.Entry<String, ColumnMappingInfo> e : this.mapField.entrySet()) {
 			n.mapField.put(e.getKey(), e.getValue().deepCopy());
 		}
 		return n;
-	}
-
-	public String getSql() {
-		return sql;
-	}
-
-	public void setSql(String sql) {
-		this.sql = sql;
 	}
 
 	public String getAnnoClassName() {
 		return annoClassName;
 	}
 
-	public SortedMap<String, FieldMappingInfo> getMapField() {
+	public ColumnMappingInfo getCoveredTextColumn() {
+		return coveredTextColumn;
+	}
+
+	public SortedMap<String, ColumnMappingInfo> getMapField() {
 		return mapField;
+	}
+
+	public String getSql() {
+		return sql;
 	}
 
 	public String getTableName() {
 		return tableName;
 	}
 
+	public int getUimaTypeId() {
+		return uimaTypeId;
+	}
+
+	public String getUimaTypeIdColumnName() {
+		return uimaTypeIdColumnName;
+	}
+
 	public void setAnnoClassName(String annoClassName) {
 		this.annoClassName = annoClassName;
 	}
 
-	public void setMapField(SortedMap<String, FieldMappingInfo> mapField) {
+	public void setCoveredTextColumn(ColumnMappingInfo coveredTextColumn) {
+		this.coveredTextColumn = coveredTextColumn;
+	}
+
+	public void setMapField(SortedMap<String, ColumnMappingInfo> mapField) {
 		this.mapField = mapField;
+	}
+
+	public void setSql(String sql) {
+		this.sql = sql;
 	}
 
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
+	}
+
+	public void setUimaTypeId(int uimaTypeId) {
+		this.uimaTypeId = uimaTypeId;
+	}
+
+	public void setUimaTypeIdColumnName(String uimaTypeIdColumnName) {
+		this.uimaTypeIdColumnName = uimaTypeIdColumnName;
+	}
+
+	@Override
+	public String toString() {
+		return "AnnoMappingInfo [mapField=" + mapField + ", tableName="
+				+ tableName + "]";
 	}
 
 }

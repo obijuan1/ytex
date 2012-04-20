@@ -2,23 +2,23 @@ package ytex.uima.mapper;
 
 import org.apache.commons.beanutils.Converter;
 
-public class FieldMappingInfo {
+public class ColumnMappingInfo {
 	private String annoFieldName;
 	private Converter converter;
 	private int size;
-	private String tableFieldName;
+	private String columnName;
 	private Class<?> targetType;
 
 	private String targetTypeName;
 
-	public FieldMappingInfo() {
+	public ColumnMappingInfo() {
 	}
 
-	public FieldMappingInfo deepCopy() {
-		FieldMappingInfo n = new FieldMappingInfo();
+	public ColumnMappingInfo deepCopy() {
+		ColumnMappingInfo n = new ColumnMappingInfo();
 		n.annoFieldName = this.annoFieldName;
 		n.converter = this.converter;
-		n.tableFieldName = this.tableFieldName;
+		n.columnName = this.columnName;
 		n.targetType = this.targetType;
 		n.targetTypeName = this.targetTypeName;
 		return n;
@@ -36,8 +36,8 @@ public class FieldMappingInfo {
 		return size;
 	}
 
-	public String getTableFieldName() {
-		return tableFieldName;
+	public String getColumnName() {
+		return columnName;
 	}
 
 	public Class<?> getTargetType() {
@@ -60,8 +60,8 @@ public class FieldMappingInfo {
 		this.size = size;
 	}
 
-	public void setTableFieldName(String tableFieldName) {
-		this.tableFieldName = tableFieldName;
+	public void setColumnName(String tableFieldName) {
+		this.columnName = tableFieldName;
 	}
 
 	public void setTargetTypeName(String targetTypeName) {
@@ -75,7 +75,7 @@ public class FieldMappingInfo {
 
 	@Override
 	public String toString() {
-		return "FieldMappingInfo [tableFieldName=" + tableFieldName + "]";
+		return "ColumnMappingInfo [columnName=" + columnName + "]";
 	}
 
 }

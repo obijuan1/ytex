@@ -8,18 +8,18 @@ import java.util.Date;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.Converter;
 
+import ytex.uima.annotators.DateAnnotator;
+
 /**
  * convert ISO8601 formatted date to Date/Timestamp object
  * @author vijay
  *
  */
 public class ISO8601Converter implements Converter {
-	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
-
 	private ThreadLocal<SimpleDateFormat> tlDateFormat = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
-			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+			return new SimpleDateFormat(DateAnnotator.DATE_FORMAT);
 		}
 	};
 

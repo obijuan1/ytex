@@ -16,7 +16,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<value>ytex/umls/model/UMLS.hbm.xml</value>
 				<value>ytex/umls/model/FWord.hbm.xml</value>
 				<value>ytex/model/Document.hbm.xml</value>
-				<value>ytex/model/DocumentAnnotation.hbm.xml</value>
 			</list>
 		</property>
 		<property name="hibernateProperties" ref="hibernateProperties" />

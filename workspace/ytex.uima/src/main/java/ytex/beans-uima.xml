@@ -14,53 +14,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="mapperOperation" />
 	</aop:config>
 	<bean id="ISO8601Converter" class="ytex.uima.mapper.ISO8601Converter"></bean>
-	<bean id="namedEntityMappingInfo" class="ytex.uima.mapper.AnnoMappingInfo">
-		<property name="tableName" value="anno_named_entity" />
-		<property name="mapField">
-			<map>
-				<entry>
-					<key>
-						<value>discoveryTechnique</value>
-					</key>
-					<bean class="ytex.uima.mapper.FieldMappingInfo">
-						<property name="tableFieldName" value="discovery_technique" />
-					</bean>
-				</entry>
-				<entry>
-					<key>
-						<value>typeID</value>
-					</key>
-					<bean class="ytex.uima.mapper.FieldMappingInfo">
-						<property name="tableFieldName" value="type_id" />
-					</bean>
-				</entry>
-				<entry>
-					<key>
-						<value>segmentID</value>
-					</key>
-					<bean class="ytex.uima.mapper.FieldMappingInfo">
-						<property name="tableFieldName" value="segment_id" />
-					</bean>
-				</entry>
-			</map>
-		</property>
-	</bean>
-
-	<bean id="conceptMappingInfo" class="ytex.uima.mapper.AnnoMappingInfo">
-		<property name="tableName" value="anno_ontology_concept" />
-		<property name="mapField">
-			<map>
-				<entry>
-					<key>
-						<value>codingScheme</value>
-					</key>
-					<bean class="ytex.uima.mapper.FieldMappingInfo">
-						<property name="tableFieldName" value="coding_scheme" />
-					</bean>
-				</entry>
-			</map>
-		</property>
-	</bean>
 
 	<bean id="documentMapperService" class="ytex.uima.mapper.DocumentMapperServiceImpl">
 		<property name="sessionFactory" ref="sessionFactory" />
@@ -73,13 +26,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			<map>
 				<entry>
 					<key>
-						<!-- <value>edu.mayo.bmi.uima.core.ae.type.NamedEntity</value> -->
-						<value>edu.mayo.bmi.uima.core.type.NamedEntity</value>
-					</key>
-					<ref bean="namedEntityMappingInfo" />
-				</entry>
-				<entry>
-					<key>
 						<value>ytex.uima.types.Date</value>
 					</key>
 					<bean class="ytex.uima.mapper.AnnoMappingInfo">
@@ -90,8 +36,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 									<key>
 										<value>date</value>
 									</key>
-									<bean class="ytex.uima.mapper.FieldMappingInfo">
-										<property name="tableFieldName" value="tstamp" />
+									<bean class="ytex.uima.mapper.ColumnMappingInfo">
+										<property name="columnName" value="tstamp" />
 										<property name="converter" ref="ISO8601Converter" />
 										<property name="targetTypeName" value="java.sql.Timestamp" />
 									</bean>
@@ -99,26 +45,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							</map>
 						</property>
 					</bean>
-				</entry>
-				<entry>
-					<key>
-						<!-- <value>edu.mayo.bmi.uima.core.ae.type.OntologyConcept</value> -->
-						<value>edu.mayo.bmi.uima.core.type.OntologyConcept</value>
-					</key>
-					<ref bean="conceptMappingInfo" />
-				</entry>
-				<entry>
-					<key>
-						<value>ytex.uima.types.OntologyConcept</value>
-					</key>
-					<ref bean="conceptMappingInfo" />
-				</entry>
-				<entry>
-					<key>
-						<!-- <value>edu.mayo.bmi.uima.core.ae.type.UmlsConcept</value> -->
-						<value>edu.mayo.bmi.uima.core.type.UmlsConcept</value>
-					</key>
-					<ref bean="conceptMappingInfo" />
 				</entry>
 			</map>
 		</property>

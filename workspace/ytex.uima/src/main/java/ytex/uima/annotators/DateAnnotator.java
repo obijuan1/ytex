@@ -40,7 +40,7 @@ public class DateAnnotator extends JCasAnnotator_ImplBase {
 		super.initialize(aContext);
 		dateType = (String) aContext.getConfigParameterValue("dateType");
 		if (dateType == null) {
-			dateType = "edu.mayo.bmi.uima.cdt.ae.type.DateAnnotation";
+			dateType = "edu.mayo.bmi.uima.cdt.type.DateAnnotation";
 		}
 	}
 

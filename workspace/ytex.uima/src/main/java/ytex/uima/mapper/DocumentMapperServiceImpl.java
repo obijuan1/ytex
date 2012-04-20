@@ -52,7 +52,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.dao.DBUtil;
 import ytex.model.Document;
-import ytex.model.DocumentAnnotation;
 import ytex.model.UimaType;
 import ytex.uima.types.DocKey;
 import ytex.uima.types.KeyValuePair;
@@ -126,19 +125,45 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 
 	}
 
+	public static class AnnoLink {
+		private int parentAnnoBaseId;
+		private int childAnnoBaseId;
+		private String feature;
+
+		public AnnoLink(int annoId, int childAnnoId, String feature) {
+			this.parentAnnoBaseId = annoId;
+			this.childAnnoBaseId = childAnnoId;
+			this.feature = feature;
+		}
+
+		public int getParentAnnoBaseId() {
+			return parentAnnoBaseId;
+		}
+
+		public void setParentAnnoBaseId(int parentAnnoBaseId) {
+			this.parentAnnoBaseId = parentAnnoBaseId;
+		}
+
+		public int getChildAnnoBaseId() {
+			return childAnnoBaseId;
+		}
+
+		public void setChildAnnoBaseId(int childAnnoBaseId) {
+			this.childAnnoBaseId = childAnnoBaseId;
+		}
+
+		public String getFeature() {
+			return feature;
+		}
+
+		public void setFeature(String feature) {
+			this.feature = feature;
+		}
+	}
+
 	private static final Log log = LogFactory
 			.getLog(DocumentMapperServiceImpl.class);
-	/**
-	 * thread local cache of mappers. instantiate them on-demand so that we
-	 * don't run into trouble with trying to access Uima Annotations that are
-	 * not in the type system.
-	 */
-	private static final ThreadLocal<Map<String, DocumentAnnotationMapper<? extends DocumentAnnotation>>> mappers = new ThreadLocal<Map<String, DocumentAnnotationMapper<? extends DocumentAnnotation>>>() {
-		@Override
-		protected Map<String, DocumentAnnotationMapper<? extends DocumentAnnotation>> initialValue() {
-			return new HashMap<String, DocumentAnnotationMapper<? extends DocumentAnnotation>>();
-		}
-	};
+
 	private static Set<Integer> numericTypes = new HashSet<Integer>();
 	private static Set<Integer> stringTypes = new HashSet<Integer>();
 	/**
@@ -234,6 +259,13 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		doc.setAnalysisBatch(analysisBatch == null
 				|| analysisBatch.length() == 0 ? getDefaultAnalysisBatch()
 				: analysisBatch);
+		// look for the ctakes DocumentID anno
+		if (setUimaDocId(jcas, doc, "edu.mayo.bmi.uima.core.type.DocumentID",
+				"documentID") == null) {
+			// look for the uima SourceDocumentInformation anno
+			setUimaDocId(jcas, doc,
+					"org.apache.uima.examples.SourceDocumentInformation", "uri");
+		}
 		if (bStoreCAS) {
 			try {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -249,6 +281,40 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			}
 		}
 		return doc;
+	}
+
+	/**
+	 * get the document id from the specified type and feature.
+	 * 
+	 * @param jcas
+	 * @param doc
+	 * @param idType
+	 * @param idFeature
+	 * @return docId if found, else null
+	 */
+	private String setUimaDocId(JCas jcas, Document doc, String idType,
+			String idFeature) {
+		Type docIDtype = jcas.getTypeSystem().getType(idType);
+		Feature docIDFeature = null;
+		if (docIDtype != null)
+			docIDFeature = docIDtype.getFeatureByBaseName(idFeature);
+		if (docIDtype != null && docIDFeature != null) {
+			AnnotationIndex<Annotation> idx = jcas
+					.getAnnotationIndex(docIDtype);
+			if (idx != null) {
+				FSIterator<Annotation> iter = idx.iterator();
+				if (iter.hasNext()) {
+					Annotation docId = iter.next();
+					String uimaDocId = docId.getStringValue(docIDFeature);
+					if (!Strings.isNullOrEmpty(uimaDocId)) {
+						uimaDocId = this.truncateString(uimaDocId, 256);
+						doc.setUimaDocumentID(uimaDocId);
+						return uimaDocId;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	private void extractAndSaveDocKey(JCas jcas, Document doc) {
@@ -283,7 +349,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		return mapAnnoMappingInfo;
 	}
 
-	private AnnoMappingInfo getMapInfo(Type type) {
+	private AnnoMappingInfo getMapInfo(FeatureStructure fs) {
+		Type type = fs.getType();
 		String className = type.getName();
 		// if the key is there, then return it (may be null)
 		AnnoMappingInfo mapInfo = null;
@@ -291,7 +358,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			mapInfo = this.tl_mapAnnoMappingInfo.get().get(className);
 		} else {
 			// load the mappinginfo, save in cache
-			mapInfo = initMapInfo(type);
+			mapInfo = initMapInfo(fs);
 			this.tl_mapAnnoMappingInfo.get().put(className, mapInfo);
 		}
 		return mapInfo;
@@ -364,16 +431,27 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 * @param type
 	 * @return
 	 */
-	private AnnoMappingInfo initMapInfo(Type type) {
+	private AnnoMappingInfo initMapInfo(FeatureStructure fs) {
+		Type type = fs.getType();
 		String annoName = type.getShortName().toLowerCase();
 		AnnoMappingInfo mapInfo;
+		UimaType ut = uimaTypeMap.get(type.getName());
 		if (this.mapAnnoMappingInfo.containsKey(type.getName())) {
 			mapInfo = this.mapAnnoMappingInfo.get(type.getName()).deepCopy();
 		} else {
 			mapInfo = new AnnoMappingInfo();
 		}
-		if (Strings.isNullOrEmpty(mapInfo.getTableName()))
-			mapInfo.setTableName("anno_" + annoName);
+		if (ut != null)
+			mapInfo.setUimaTypeId(ut.getUimaTypeID());
+		// first see if the table name has been set in beans-uima.xml
+		if (Strings.isNullOrEmpty(mapInfo.getTableName())) {
+			// next see if the table name has been set in ref_uima_type
+			if (ut != null && !Strings.isNullOrEmpty(ut.getTableName()))
+				mapInfo.setTableName(ut.getTableName());
+			else
+				// default to anno_[short name]
+				mapInfo.setTableName("anno_" + annoName);
+		}
 		List<Feature> features = type.getFeatures();
 		// get the non primitive fields
 		for (Feature f : features) {
@@ -394,24 +472,33 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			while (rs.next()) {
 				String colName = rs.getString("COLUMN_NAME");
 				int colSize = rs.getInt("COLUMN_SIZE");
-				if (!"anno_base_id".equals(colName)) {
+				int dataType = rs.getInt("DATA_TYPE");
+				if ("anno_base_id".equalsIgnoreCase(colName)) {
+					// skip anno_base_id
+					continue;
+				}
+				if ("uima_type_id".equalsIgnoreCase(colName)) {
+					// see if there is a uima_type_id column
+					// for FeatureStructures that are not annotations
+					// there can be a field for the uima_type_id
+					if (!(fs instanceof Annotation)
+							&& Strings.isNullOrEmpty(mapInfo
+									.getUimaTypeIdColumnName())) {
+						mapInfo.setUimaTypeIdColumnName(colName);
+					}
+				} else if ("coveredText".equalsIgnoreCase(colName)) {
+					// see if there is a coveredText column, store the covered
+					// text here
+					ColumnMappingInfo coveredTextColumn = new ColumnMappingInfo();
+					coveredTextColumn.setColumnName(colName);
+					mapInfo.setCoveredTextColumn(coveredTextColumn);
+					coveredTextColumn.setSize(colSize);
+				} else {
 					// possibility 1: the column is already mapped to the field
 					// if so, then just set the size
 					if (!updateSize(mapInfo, colName, colSize)) {
-						// // possibility 2: the column is not mapped - see if
-						// it
-						// // matches a field
-						// for (Feature f : features) {
-						// String annoFieldName = f.getShortName();
-						// if (annoFieldName.equalsIgnoreCase(colName)) {
-						// // create new field mapping info
-						// FieldMappingInfo fmap = new FieldMappingInfo();
-						// fmap.setAnnoFieldName(annoFieldName);
-						// fmap.setSize(colSize);
-						// fmap.setTableFieldName(colName);
-						// mapInfo.getMapField().put(annoFieldName, fmap);
-						// }
-						// }
+						// possibility 2: the column is not mapped - see if
+						// it matches a field
 						// iterate through features, see which match the column
 						for (Feature f : features) {
 							String annoFieldName = f.getShortName();
@@ -419,9 +506,26 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 									&& annoFieldName.equalsIgnoreCase(colName)
 									&& !mapInfo.getMapField().containsKey(
 											annoFieldName)) {
-								FieldMappingInfo fmap = new FieldMappingInfo();
+								// primitive attribute
+								ColumnMappingInfo fmap = new ColumnMappingInfo();
 								fmap.setAnnoFieldName(annoFieldName);
-								fmap.setTableFieldName(colName);
+								fmap.setColumnName(colName);
+								fmap.setSize(colSize);
+								mapInfo.getMapField().put(annoFieldName, fmap);
+								break;
+							} else if (!f.getRange().isArray()
+									&& !f.getRange().isPrimitive()
+									&& annoFieldName.equalsIgnoreCase(colName)
+									&& !mapInfo.getMapField().containsKey(
+											annoFieldName)
+									&& (dataType == Types.INTEGER
+											|| dataType == Types.NUMERIC || dataType == Types.SMALLINT)) {
+								// this feature is a reference to another
+								// annotation.
+								// this column is an integer - a match
+								ColumnMappingInfo fmap = new ColumnMappingInfo();
+								fmap.setAnnoFieldName(annoFieldName);
+								fmap.setColumnName(colName);
 								fmap.setSize(colSize);
 								mapInfo.getMapField().put(annoFieldName, fmap);
 								break;
@@ -431,7 +535,9 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				}
 			}
 			// don't map this annotation if no fields match columns
-			if (mapInfo.getMapField().size() == 0)
+			if (mapInfo.getMapField().size() == 0
+					&& mapInfo.getCoveredTextColumn() == null
+					&& Strings.isNullOrEmpty(mapInfo.getUimaTypeIdColumnName()))
 				mapInfo = null;
 			else {
 				// generate sql
@@ -442,15 +548,33 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				StringBuilder b = new StringBuilder("insert into ");
 				b.append(tablePrefix).append(mapInfo.getTableName());
 				b.append("(anno_base_id");
-				for (Map.Entry<String, FieldMappingInfo> fieldEntry : mapInfo
+				// add coveredText column if available
+				if (mapInfo.getCoveredTextColumn() != null) {
+					b.append(", coveredText");
+				}
+				// add uima_type_id column if available
+				if (mapInfo.getUimaTypeIdColumnName() != null) {
+					b.append(", uima_type_id");
+				}
+				// add other fields
+				for (Map.Entry<String, ColumnMappingInfo> fieldEntry : mapInfo
 						.getMapField().entrySet()) {
 					b.append(", ").append(dialect.openQuote())
-							.append(fieldEntry.getValue().getTableFieldName())
+							.append(fieldEntry.getValue().getColumnName())
 							.append(dialect.closeQuote());
 				}
-				b.append(") values (?")
-						.append(Strings.repeat(",?", mapInfo.getMapField()
-								.size())).append(")");
+				b.append(") values (?");
+				// add coveredText bind param
+				if (mapInfo.getCoveredTextColumn() != null) {
+					b.append(", ?");
+				}
+				// add uimaTypeId bind param
+				if (mapInfo.getUimaTypeIdColumnName() != null) {
+					b.append(", ?");
+				}
+				// add bind params for other fields
+				b.append(Strings.repeat(", ?", mapInfo.getMapField().size()))
+						.append(")");
 				mapInfo.setSql(b.toString());
 				if (log.isInfoEnabled())
 					log.info("sql insert for type " + type.getName() + ": "
@@ -487,8 +611,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 */
 	private boolean updateSize(AnnoMappingInfo mapInfo, String colName,
 			int colSize) {
-		for (FieldMappingInfo fi : mapInfo.getMapField().values()) {
-			if (colName.equalsIgnoreCase(fi.getTableFieldName())) {
+		for (ColumnMappingInfo fi : mapInfo.getMapField().values()) {
+			if (colName.equalsIgnoreCase(fi.getColumnName())) {
 				if (fi.getSize() <= 0)
 					fi.setSize(colSize);
 				return true;
@@ -497,13 +621,12 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		return false;
 	}
 
-	private BiMap<TOP, Integer> saveAnnoBase(JCas jcas,
-			Set<String> setTypesToIgnore, Set<String> typesStoreCoveredText,
-			int coveredTextMaxLen, Document doc) {
+	private BiMap<Annotation, Integer> saveAnnoBase(JCas jcas,
+			Set<String> setTypesToIgnore, Document doc) {
 		AnnotationIndex<Annotation> annoIdx = jcas
 				.getAnnotationIndex(Annotation.typeIndexID);
-		List<TOP> listAnno = new ArrayList<TOP>(annoIdx.size());
-		BiMap<TOP, Integer> mapAnnoToId = HashBiMap.create();
+		List<Annotation> listAnno = new ArrayList<Annotation>(annoIdx.size());
+		BiMap<Annotation, Integer> mapAnnoToId = HashBiMap.create();
 		FSIterator<Annotation> annoIterator = annoIdx.iterator();
 		Connection conn = null;
 		PreparedStatement ps = null;
@@ -513,7 +636,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			conn = this.getDataSource().getConnection();
 			ps = conn
 					.prepareStatement(
-							"insert into anno_base (document_id, span_begin, span_end, uima_type_id, covered_text) values (?, ?, ?, ?, ?)",
+							"insert into anno_base (document_id, span_begin, span_end, uima_type_id) values (?, ?, ?, ?)",
 							Statement.RETURN_GENERATED_KEYS);
 			while (annoIterator.hasNext()) {
 				Annotation anno = (Annotation) annoIterator.next();
@@ -527,16 +650,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 					ps.setInt(3, anno.getEnd());
 					ps.setInt(4, this.uimaTypeMap.get(annoClass)
 							.getUimaTypeID());
-					if (typesStoreCoveredText.contains(annoClass)) {
-						String coveredText = anno.getCoveredText();
-						if (coveredText.length() > coveredTextMaxLen) {
-							coveredText = coveredText.substring(0,
-									coveredTextMaxLen - 1);
-						}
-						ps.setString(5, coveredText);
-					} else {
-						ps.setNull(5, Types.VARCHAR);
-					}
 					ps.addBatch();
 				}
 			}
@@ -572,17 +685,39 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		}
 	}
 
-	protected void saveAnnoBindVariables(final Type type,
+	/**
+	 * bind the variables to the prepared statement
+	 * 
+	 * @param type
+	 * @param mapInfo
+	 * @param ps
+	 * @param annoId
+	 * @param anno
+	 * @throws SQLException
+	 */
+	private void saveAnnoBindVariables(final Type type,
 			final AnnoMappingInfo mapInfo, PreparedStatement ps, int annoId,
-			FeatureStructure anno) throws SQLException {
+			FeatureStructure anno, final BiMap<Annotation, Integer> mapAnnoToId)
+			throws SQLException {
 		// set anno_base_id
-		ps.setInt(1, annoId);
-		int argIdx = 2;
+		int argIdx = 1;
+		ps.setInt(argIdx++, annoId);
+		if (mapInfo.getCoveredTextColumn() != null) {
+			String trunc = null;
+			if (anno instanceof Annotation) {
+				trunc = truncateString(((Annotation) anno).getCoveredText(),
+						mapInfo.getCoveredTextColumn().getSize());
+			}
+			ps.setString(argIdx++, trunc);
+		}
+		if (!Strings.isNullOrEmpty(mapInfo.getUimaTypeIdColumnName())) {
+			ps.setInt(argIdx++, mapInfo.getUimaTypeId());
+		}
 		// iterate over fields
-		for (Map.Entry<String, FieldMappingInfo> fieldEntry : mapInfo
+		for (Map.Entry<String, ColumnMappingInfo> fieldEntry : mapInfo
 				.getMapField().entrySet()) {
 			String fieldName = fieldEntry.getKey();
-			FieldMappingInfo fieldMapInfo = fieldEntry.getValue();
+			ColumnMappingInfo fieldMapInfo = fieldEntry.getValue();
 			Feature feat = type.getFeatureByBaseName(fieldName);
 			if (fieldMapInfo.getConverter() != null) {
 				try {
@@ -593,6 +728,18 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 									fieldMapInfo.getTargetType(), prop));
 				} catch (Exception e) {
 					throw new RuntimeException(e);
+				}
+			} else if (!feat.getRange().isPrimitive()) {
+				// reference to another annotation - get the other anno's id
+				FeatureStructure fs = anno.getFeatureValue(feat);
+				Integer refAnnoId = null;
+				if(fs instanceof Annotation) {
+					refAnnoId = mapAnnoToId.get(fs);
+				}
+				if(refAnnoId != null) {
+					ps.setInt(argIdx, refAnnoId);
+				} else {
+					ps.setNull(argIdx, Types.INTEGER);
 				}
 			} else {
 				if ("uima.cas.Integer".equals(feat.getRange().getName())) {
@@ -628,21 +775,28 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	}
 
 	/**
-	 * save the annotation properties
+	 * save the annotation properties for a given type
 	 * 
 	 * @param mapIdToAnno
+	 *            map of all annoIDs to Annotation
 	 * @param annoIds
+	 *            annotation ids for a single type
+	 * @param listAnnoLinks
+	 *            annotation to annotation links to save
 	 */
-	private void saveAnnoPrimitive(final Map<Integer, TOP> mapIdToAnno,
-			Set<Integer> annoIds) {
+	private void saveAnnoPrimitive(
+			final BiMap<Annotation, Integer> mapAnnoToId,
+			final Set<Integer> annoIds, final List<AnnoLink> listAnnoLinks) {
+		final BiMap<Integer, Annotation> mapIdToAnno = mapAnnoToId.inverse();
 		// nothing to do
 		if (annoIds.size() == 0)
 			return;
 		// covert to array for spring batch update
 		final Integer[] annoIdArray = annoIds.toArray(new Integer[] {});
 		// get mappinginfo
-		final Type type = mapIdToAnno.get(annoIdArray[0]).getType();
-		final AnnoMappingInfo mapInfo = this.getMapInfo(type);
+		final TOP t = mapIdToAnno.get(annoIdArray[0]);
+		final Type type = t.getType();
+		final AnnoMappingInfo mapInfo = this.getMapInfo(t);
 		// get non primitive fields, insert them after inserting the annotation
 		final Set<String> fsNames = this.tl_mapFieldInfo.get().get(
 				type.getName());
@@ -664,9 +818,9 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 							throws SQLException {
 						// get the entry
 						int annoId = annoIdArray[idx];
-						TOP anno = mapIdToAnno.get(annoId);
-						saveAnnoBindVariables(type, mapInfo, ps, annoId, anno);
-						// pull out the composit fields for storage
+						Annotation anno = mapIdToAnno.get(annoId);
+						saveAnnoBindVariables(type, mapInfo, ps, annoId, anno, mapAnnoToId);
+						// pull out the composite fields for storage
 						for (String fieldName : fsNames) {
 							Feature feat = type.getFeatureByBaseName(fieldName);
 							if (feat.getRange().isArray()) {
@@ -675,10 +829,27 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 								if (arr != null) {
 									for (int i = 0; i < arr.size(); i++) {
 										FeatureStructure fs = arr.get(i);
-										mapAnnoToFS.put(fs.getType().getName(),
-												new AnnoFSAttribute(annoId, fs,
-														i));
-
+										if (fs instanceof Annotation) {
+											// annotations are linked via the
+											// anno_link table
+											Integer childAnnoId = mapAnnoToId
+													.get(fs);
+											if (childAnnoId != null) {
+												listAnnoLinks.add(new AnnoLink(
+														annoId, childAnnoId,
+														feat.getShortName()));
+											}
+										} else {
+											// featureStructs that are not
+											// annotations get stored in their
+											// own tables
+											// with a many to one relationship
+											// to the annotation
+											mapAnnoToFS.put(fs.getType()
+													.getName(),
+													new AnnoFSAttribute(annoId,
+															fs, i));
+										}
 									}
 								}
 							} else {
@@ -693,21 +864,21 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 
 		);
 		for (String fsType : mapAnnoToFS.keySet()) {
-			this.saveAnnoFS(mapAnnoToFS.get(fsType));
+			this.saveAnnoFS(mapAnnoToFS.get(fsType), mapAnnoToId);
 		}
 	}
 
 	/**
-	 * insert composite attributes. TODO: handle case where attribute is an
-	 * annotation itself
+	 * insert composite attributes.
 	 * 
 	 * @param listFSA
 	 */
-	private void saveAnnoFS(final List<AnnoFSAttribute> listFSA) {
+	private void saveAnnoFS(final List<AnnoFSAttribute> listFSA, final BiMap<Annotation, Integer> mapAnnoToId) {
 		if (listFSA.size() == 0)
 			return;
-		final Type type = listFSA.get(0).getFs().getType();
-		final AnnoMappingInfo mapInfo = this.getMapInfo(type);
+		FeatureStructure fs = listFSA.get(0).getFs();
+		final Type type = fs.getType();
+		final AnnoMappingInfo mapInfo = this.getMapInfo(fs);
 		// don't know how to map this feature
 		if (mapInfo == null)
 			return;
@@ -725,29 +896,57 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 						AnnoFSAttribute fsa = listFSA.get(idx);
 						// todo pass array index for storage
 						saveAnnoBindVariables(type, mapInfo, ps,
-								fsa.getAnnoBaseId(), fsa.getFs());
+								fsa.getAnnoBaseId(), fsa.getFs(), mapAnnoToId);
 					}
 				});
 	}
 
 	private void saveAnnotations(JCas jcas, Set<String> setTypesToIgnore,
-			Set<String> typesStoreCoveredText, int coveredTextMaxLen,
 			Document doc) {
-		BiMap<TOP, Integer> mapAnnoToId = saveAnnoBase(jcas, setTypesToIgnore,
-				typesStoreCoveredText, coveredTextMaxLen, doc);
+		BiMap<Annotation, Integer> mapAnnoToId = saveAnnoBase(jcas,
+				setTypesToIgnore, doc);
 		// split the annotations up by type
 		// create a map of class name to anno id
 		SetMultimap<String, Integer> mapTypeToAnnoId = HashMultimap.create();
-		for (Map.Entry<TOP, Integer> annoEntry : mapAnnoToId.entrySet()) {
+		for (Map.Entry<Annotation, Integer> annoEntry : mapAnnoToId.entrySet()) {
 			mapTypeToAnnoId.put(annoEntry.getKey().getClass().getName(),
 					annoEntry.getValue());
 		}
-		BiMap<Integer, TOP> mapIdToAnno = mapAnnoToId.inverse();
-		// save
+		// allocate a list to store annotation links
+		List<AnnoLink> listAnnoLinks = new ArrayList<AnnoLink>();
+		// save annotation properties
 		for (String annoClass : mapTypeToAnnoId.keySet()) {
-			saveAnnoPrimitive(mapIdToAnno, mapTypeToAnnoId.get(annoClass));
+			saveAnnoPrimitive(mapAnnoToId, mapTypeToAnnoId.get(annoClass),
+					listAnnoLinks);
 		}
+		saveAnnoLinks(listAnnoLinks);
+	}
 
+	/**
+	 * save annotation to annotation links (many-to-many relationships)
+	 * 
+	 * @param listAnnoLinks
+	 */
+	private void saveAnnoLinks(final List<AnnoLink> listAnnoLinks) {
+		jdbcTemplate
+				.batchUpdate(
+						"insert into anno_link(parent_anno_base_id, child_anno_base_id, feature) values (?, ?, ?)",
+						new BatchPreparedStatementSetter() {
+
+							@Override
+							public int getBatchSize() {
+								return listAnnoLinks.size();
+							}
+
+							@Override
+							public void setValues(PreparedStatement ps, int idx)
+									throws SQLException {
+								AnnoLink l = listAnnoLinks.get(idx);
+								ps.setInt(1, l.getParentAnnoBaseId());
+								ps.setInt(2, l.getChildAnnoBaseId());
+								ps.setString(3, l.getFeature());
+							}
+						});
 	}
 
 	/**
@@ -773,7 +972,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			String key = kp.getKey();
 			if (key.equalsIgnoreCase("uid")) {
 				// uid is something we 'know' about - set it
-				document.setUid(kp.getValueLong());
+				document.setInstanceID(kp.getValueLong());
 			} else if (this.docTableCols.containsKey(key)) {
 				// only attempt to map keys that correspond to valid columns
 				boolean badArg = false;
@@ -827,26 +1026,19 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 */
 	public Integer saveDocument(JCas jcas, String analysisBatch,
 			boolean bStoreDocText, boolean bStoreCAS,
-			Set<String> setTypesToIgnore, Set<String> typesStoreCoveredText,
-			int coveredTextMaxLen) {
-		try {
-			// communicate options to mappers using thread local variable
-			MapperConfig.setConfig(typesStoreCoveredText, coveredTextMaxLen);
-			Document doc = createDocument(jcas, analysisBatch, bStoreDocText,
-					bStoreCAS);
-			this.sessionFactory.getCurrentSession().save(doc);
-			extractAndSaveDocKey(jcas, doc);
-			this.sessionFactory.getCurrentSession().flush();
-			saveAnnotations(jcas, setTypesToIgnore, typesStoreCoveredText,
-					coveredTextMaxLen, doc);
-			Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
-					"insertAnnotationContainmentLinks");
-			q.setInteger("documentID", doc.getDocumentID());
-			q.executeUpdate();
-			return doc.getDocumentID();
-		} finally {
-			MapperConfig.unsetConfig();
-		}
+			Set<String> setTypesToIgnore) {
+		// communicate options to mappers using thread local variable
+		Document doc = createDocument(jcas, analysisBatch, bStoreDocText,
+				bStoreCAS);
+		this.sessionFactory.getCurrentSession().save(doc);
+		extractAndSaveDocKey(jcas, doc);
+		this.sessionFactory.getCurrentSession().flush();
+		saveAnnotations(jcas, setTypesToIgnore, doc);
+		Query q = this.sessionFactory.getCurrentSession().getNamedQuery(
+				"insertAnnotationContainmentLinks");
+		q.setInteger("documentID", doc.getDocumentID());
+		q.executeUpdate();
+		return doc.getDocumentID();
 	}
 
 	public void setDataSource(DataSource dataSource) {

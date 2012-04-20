@@ -9,8 +9,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
-import java.util.Random;
 import java.util.zip.GZIPInputStream;
 
 import junit.framework.TestCase;
@@ -22,7 +20,6 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.model.Document;
-import ytex.model.SentenceAnnotation;
 import ytex.uima.ApplicationContextHolder;
 import ytex.uima.mapper.DocumentMapperService;
 

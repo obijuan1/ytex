@@ -75,6 +75,7 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 			int ocArrIdx = 0;
 			for (String code : concepts) {
 				OntologyConcept oc = new OntologyConcept(jcas);
+				// set the cui field if this is in fact a cui
 				oc.setCode(code);
 				oc.setCodingScheme(iv_props.getProperty(CODING_SCHEME_PRP_KEY));
 				ocArr.set(ocArrIdx, oc);

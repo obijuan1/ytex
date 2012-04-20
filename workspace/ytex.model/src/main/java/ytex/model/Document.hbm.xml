@@ -10,58 +10,63 @@
 		<property name="docText" column="doc_text" type="text" />
 		<property name="cas" column="cas" type="binary" />
 		<property name="analysisBatch" column="analysis_batch" />
-		<property name="uid" column="`uid`" />
+		<property name="instanceID" column="instance_id" />
+		<property name="uimaDocumentID" column="uimaDocumentID" />
 		<bag name="documentAnnotations" inverse="true" cascade="delete">
 			<key column="document_id" />
 			<one-to-many class="DocumentAnnotation" />
 		</bag>
-		<bag name="documentClasses" inverse="true" cascade="delete">
-			<key column="document_id" />
-			<one-to-many class="DocumentClass" />
-		</bag>
 	</class>
-	<class name="DocumentClass" table="document_class">
-		<id name="documentClassID" column="document_class_id">
-			<generator class="native">
-				<param name="sequence">document_class_id_sequence</param>
-			</generator>
-		</id>
-		<many-to-one name="document" class="Document" column="document_id"
-			not-null="true" />
-		<!-- <property name="id" column="id" /> -->
-		<property name="task" column="task" />
-		<property name="classAuto" column="class_auto" />
-		<property name="classGold" column="class_gold" />
-	</class>
-	<class name="OntologyConceptAnnotation" table="anno_ontology_concept">
-		<id name="ontologyConceptAnnotationID" column="anno_ontology_concept_id">
-			<generator class="native">
-				<param name="sequence">anno_onto_concept_id_sequence</param>
-			</generator>
-		</id>
-		<property name="codingScheme" column="coding_scheme" />
-		<property name="code" column="code" />
-		<property name="oid" column="oid" />
-		<property name="disambiguated" column="disambiguated" />
-		<many-to-one name="namedEntityAnnotation" class="NamedEntityAnnotation"
-			column="anno_base_id" not-null="true" />
-		<joined-subclass name="UmlsConceptAnnotation" table="anno_umls_concept">
-			<key column="anno_ontology_concept_id" />
-			<property name="cui" column="cui" />
-		</joined-subclass>
-	</class>
-
 	<class name="UimaType" table="ref_uima_type">
 		<cache usage="read-only" />
 		<id name="uimaTypeID" column="uima_type_id" />
 		<property name="uimaTypeName" column="uima_type_name" />
+		<property name="tableName" column="table_name" />
 	</class>
-
+	<class name="AnnotationContainmentLink" table="anno_contain">
+		<!-- <id name="annotationContainmentLinkId" column="anno_contain_id"> <generator 
+			class="native"> <param name="sequence">anno_contain_id_sequence</param> </generator> 
+			</id> -->
+		<composite-id>
+			<key-property name="parentAnnotationId" column="parent_anno_base_id" />
+			<key-property name="childAnnotationId" column="child_anno_base_id" />
+		</composite-id>
+		<property name="parentUimaTypeId" column="parent_uima_type_id" />
+		<property name="childUimaTypeId" column="child_uima_type_id" />
+	</class>
+	<class name="DocumentAnnotation" table="anno_base">
+		<id name="documentAnnotationID" column="anno_base_id">
+			<generator class="native">
+				<param name="sequence">anno_base_id_sequence</param>
+			</generator>
+		</id>
+		<property name="begin" column="span_begin" />
+		<property name="end" column="span_end" />
+		<property name="coveredText" column="covered_text" />
+		<many-to-one name="uimaType" class="UimaType" column="uima_type_id"
+			not-null="true" />
+		<many-to-one name="document" class="Document" column="document_id"
+			not-null="true" />
+	</class>
 	<query name="getUimaTypeByName"><![CDATA[
 		from UimaType
 		where uimaTypeName = :uimaTypeName
 	]]></query>
 	<query name="getUimaTypes"><![CDATA[
 		from UimaType
+	]]></query>
+	<!-- insert anno_contain for a document annotations must pertain to the 
+		same document parent annotation spans a range that contains the child annotation 
+		if annotations span the exact same range, they must be of different types -->
+	<query name="insertAnnotationContainmentLinks"><![CDATA[
+		insert into AnnotationContainmentLink (parentAnnotationId, parentUimaTypeId, childAnnotationId, childUimaTypeId)
+		select p.documentAnnotationID, p.uimaType.uimaTypeID, c.documentAnnotationID, c.uimaType.uimaTypeID
+		from DocumentAnnotation p, DocumentAnnotation c
+		where p.document.documentID = c.document.documentID
+		and p.begin <= c.begin
+		and p.end >= c.end
+		and p.documentAnnotationID <> c.documentAnnotationID
+		and not (p.begin = c.begin and p.end = c.end and p.uimaType.uimaTypeID = c.uimaType.uimaTypeID)
+		and p.document.documentID = :documentID
 	]]></query>
 </hibernate-mapping>

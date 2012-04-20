@@ -12,7 +12,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="mappingResources">
 			<list>
 				<value>ytex/model/Document.hbm.xml</value>
-				<value>ytex/model/DocumentAnnotation.hbm.xml</value>
 				<value>ytex/model/NamedEntityRegex.hbm.xml</value>
 				<value>ytex/model/SegmentRegex.hbm.xml</value>
 			</list>

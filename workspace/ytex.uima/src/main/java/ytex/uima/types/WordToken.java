@@ -1,6 +1,6 @@
 
 
-/* First created by JCasGen Wed Apr 04 22:02:31 EDT 2012 */
+/* First created by JCasGen Thu Apr 19 20:50:38 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas; 
@@ -10,8 +10,8 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** Negatable Word Token
- * Updated by JCasGen Wed Apr 04 22:02:31 EDT 2012
- * XML source: src/main/java/ytex/uima/types/YTEXTypes.xml
+ * Updated by JCasGen Thu Apr 19 20:50:38 EDT 2012
+ * XML source: ../config/desc/ytex/uima/YTEXTypes.xml
  * @generated */
 public class WordToken extends edu.mayo.bmi.uima.core.type.WordToken {
   /** @generated

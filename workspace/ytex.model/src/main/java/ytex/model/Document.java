@@ -42,7 +42,9 @@ public class Document implements Serializable {
 	/**
 	 * external document id
 	 */
-	long uid;
+	long instanceID;
+	
+	String uimaDocumentID;
 
 	public Document() {
 		super();
@@ -72,8 +74,12 @@ public class Document implements Serializable {
 		return documentID;
 	}
 
-	public long getUid() {
-		return uid;
+	public long getInstanceID() {
+		return instanceID;
+	}
+
+	public String getUimaDocumentID() {
+		return uimaDocumentID;
 	}
 
 	public void setAnalysisBatch(String analysisBatch) {
@@ -101,8 +107,12 @@ public class Document implements Serializable {
 		this.documentID = documentID;
 	}
 
-	public void setUid(long uid) {
-		this.uid = uid;
+	public void setInstanceID(long instanceID) {
+		this.instanceID = instanceID;
+	}
+
+	public void setUimaDocumentID(String uimaDocumentID) {
+		this.uimaDocumentID = uimaDocumentID;
 	}
 
 	@Override
