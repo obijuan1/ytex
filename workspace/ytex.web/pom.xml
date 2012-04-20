@@ -20,6 +20,30 @@
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<plugins>
 			<plugin>
+				<groupId>org.eclipse.m2e</groupId>
+				<artifactId>lifecycle-mapping</artifactId>
+				<version>1.0.0</version>
+				<configuration>
+					<lifecycleMappingMetadata>
+						<pluginExecutions>
+							<pluginExecution>
+								<pluginExecutionFilter>
+									<groupId>ytex</groupId>
+									<artifactId>ytex.web</artifactId>
+									<versionRange>[1.0,)</versionRange>
+									<goals>
+										<goal>some-goal</goal>
+									</goals>
+								</pluginExecutionFilter>
+								<action>
+									<ignore />
+								</action>
+							</pluginExecution>
+						</pluginExecutions>
+					</lifecycleMappingMetadata>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
@@ -57,6 +81,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
+							<excludeScope>test</excludeScope>
 							<outputDirectory>${basedir}/WebContent/WEB-INF/lib</outputDirectory>
 						</configuration>
 					</execution>
@@ -134,11 +159,6 @@
 			<version>2.0.2</version>
 		</dependency>
 
-		<dependency>
-			<groupId>net.sf.jcharts</groupId>
-			<artifactId>krysalis-jCharts</artifactId>
-			<version>1.0.0-alpha-1</version>
-		</dependency>
 		<dependency>
 			<groupId>backport-util-concurrent</groupId>
 			<artifactId>backport-util-concurrent</artifactId>
@@ -259,15 +279,9 @@
 
 
 		<!-- maven won't download this for some reason / downloads the wrong version! -->
-		<!--
-		<dependency>
-			<groupId>xml-apis</groupId>
-			<artifactId>xml-apis</artifactId>
-			<version>1.0.b2</version>
-			<scope>provided</scope>
-		</dependency>
-		-->
-		
+		<!-- <dependency> <groupId>xml-apis</groupId> <artifactId>xml-apis</artifactId> 
+			<version>1.0.b2</version> <scope>provided</scope> </dependency> -->
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
@@ -309,6 +323,12 @@
 			<groupId>com.uwyn</groupId>
 			<artifactId>jhighlight</artifactId>
 			<version>1.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.servlet</groupId>
+					<artifactId>servlet-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
@@ -319,11 +339,6 @@
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.4</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>cglib</groupId>
@@ -412,18 +427,8 @@
 			<artifactId>guava</artifactId>
 			<version>10.0.1</version>
 		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.3</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.4</version>
-			<scope>provided</scope>
-		</dependency>
+		<!-- <dependency> <groupId>javax.servlet</groupId> <artifactId>servlet-api</artifactId> 
+			<version>2.4</version> <scope>provided</scope> </dependency> -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-servlet_2.5_spec</artifactId>
