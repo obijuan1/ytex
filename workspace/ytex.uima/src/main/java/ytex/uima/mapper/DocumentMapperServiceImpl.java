@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.sql.DataSource;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.uima.cas.FSIterator;
@@ -35,6 +37,8 @@ import org.apache.uima.cas.impl.XmiCasSerializer;
 import org.apache.uima.cas.text.AnnotationIndex;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
+import org.apache.uima.jcas.cas.FSList;
+import org.apache.uima.jcas.cas.NonEmptyFSList;
 import org.apache.uima.jcas.cas.TOP;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.util.XMLSerializer;
@@ -56,9 +60,11 @@ import ytex.model.UimaType;
 import ytex.uima.types.DocKey;
 import ytex.uima.types.KeyValuePair;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.BiMap;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
@@ -733,10 +739,10 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				// reference to another annotation - get the other anno's id
 				FeatureStructure fs = anno.getFeatureValue(feat);
 				Integer refAnnoId = null;
-				if(fs instanceof Annotation) {
+				if (fs instanceof Annotation) {
 					refAnnoId = mapAnnoToId.get(fs);
 				}
-				if(refAnnoId != null) {
+				if (refAnnoId != null) {
 					ps.setInt(argIdx, refAnnoId);
 				} else {
 					ps.setNull(argIdx, Types.INTEGER);
@@ -819,7 +825,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 						// get the entry
 						int annoId = annoIdArray[idx];
 						Annotation anno = mapIdToAnno.get(annoId);
-						saveAnnoBindVariables(type, mapInfo, ps, annoId, anno, mapAnnoToId);
+						saveAnnoBindVariables(type, mapInfo, ps, annoId, anno,
+								mapAnnoToId);
 						// pull out the composite fields for storage
 						for (String fieldName : fsNames) {
 							Feature feat = type.getFeatureByBaseName(fieldName);
@@ -873,7 +880,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 * 
 	 * @param listFSA
 	 */
-	private void saveAnnoFS(final List<AnnoFSAttribute> listFSA, final BiMap<Annotation, Integer> mapAnnoToId) {
+	private void saveAnnoFS(final List<AnnoFSAttribute> listFSA,
+			final BiMap<Annotation, Integer> mapAnnoToId) {
 		if (listFSA.size() == 0)
 			return;
 		FeatureStructure fs = listFSA.get(0).getFs();
@@ -919,7 +927,139 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			saveAnnoPrimitive(mapAnnoToId, mapTypeToAnnoId.get(annoClass),
 					listAnnoLinks);
 		}
+		addAnnoLinks(jcas, mapAnnoToId, listAnnoLinks);
+		// saveMarkablePairs(jcas, mapAnnoToId, listAnnoLinks);
+		// saveCoref(jcas, mapAnnoToId, listAnnoLinks);
 		saveAnnoLinks(listAnnoLinks);
+	}
+
+	private void addAnnoLinks(JCas jcas,
+			BiMap<Annotation, Integer> mapAnnoToId, List<AnnoLink> listAnnoLinks) {
+		Collection<AnnoMappingInfo> annoLinkInfos = Collections2.filter(this
+				.getMapAnnoMappingInfo().values(),
+				new Predicate<AnnoMappingInfo>() {
+
+					@Override
+					public boolean apply(AnnoMappingInfo mi) {
+						return "anno_link".equalsIgnoreCase(mi.getTableName());
+					}
+				});
+		for (AnnoMappingInfo mi : annoLinkInfos) {
+			addAnnoLinks(jcas, mapAnnoToId, listAnnoLinks, mi);
+		}
+	}
+
+	private void addAnnoLinks(JCas jcas,
+			BiMap<Annotation, Integer> mapAnnoToId,
+			List<AnnoLink> listAnnoLinks, AnnoMappingInfo mi) {
+		Type t = jcas.getTypeSystem().getType(mi.getAnnoClassName());
+		if (t != null) {
+			ColumnMappingInfo cip = mi.getMapField().get("parent");
+			ColumnMappingInfo cic = mi.getMapField().get("child");
+			// get the parent and child features
+			Feature fp = t.getFeatureByBaseName(cip.getAnnoFieldName());
+			Feature fc = t.getFeatureByBaseName(cic.getAnnoFieldName());
+			// get all annotations
+			FSIterator<FeatureStructure> iter = jcas.getFSIndexRepository()
+					.getAllIndexedFS(t);
+			while (iter.hasNext()) {
+				FeatureStructure fs = iter.next();
+				// get parent and child feature values
+				FeatureStructure fsp = fs.getFeatureValue(fp);
+				FeatureStructure fsc = fs.getFeatureValue(fc);
+				if (fsp != null && fsc != null) {
+					// extract the parent annotation from the parent feature
+					// value
+					Object parentAnno = extractFeature(cip.getJxpath(), fsp);
+					if (parentAnno instanceof Annotation) {
+						Integer parentId = mapAnnoToId
+								.get((Annotation) parentAnno);
+						if (parentId != null) {
+							// parent is persisted, look for child(ren)
+							if (fsc instanceof FSList || fsc instanceof FSArray) {
+								// this is a one-to-many relationship
+								// iterate over children
+								List<FeatureStructure> children = extractList(fsc);
+								for (FeatureStructure child : children) {
+									addLink(mapAnnoToId, listAnnoLinks,
+											t.getShortName(), cic.getJxpath(),
+											parentId, child);
+								}
+							} else {
+								// this is a one-to-one relationship
+								addLink(mapAnnoToId, listAnnoLinks,
+										t.getShortName(), cic.getJxpath(),
+										parentId, fsc);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * covert a FSArray or FSList into a List<FeatureStructure>
+	 * 
+	 * @param fsc
+	 * @return
+	 */
+	private List<FeatureStructure> extractList(FeatureStructure fsc) {
+		List<FeatureStructure> listFS = new ArrayList<FeatureStructure>();
+		if (fsc instanceof FSArray) {
+			FSArray fsa = (FSArray) fsc;
+			for (int i = 0; i < fsa.size(); i++) {
+				listFS.add(fsa.get(i));
+			}
+		} else if (fsc instanceof FSList) {
+			FSList fsl = (FSList) fsc;
+			while (fsl instanceof NonEmptyFSList) {
+				listFS.add(((NonEmptyFSList) fsl).getHead());
+				fsl = ((NonEmptyFSList) fsl).getTail();
+			}
+		}
+		return listFS;
+	}
+
+	/**
+	 * add a link. apply jxpath as needed, get child anno id, and save the link
+	 * 
+	 * @param mapAnnoToId
+	 *            map to find existing annos
+	 * @param listAnnoLinks
+	 *            list to populate
+	 * @param linkType
+	 *            anno_link.feature
+	 * @param childJxpath
+	 *            jxpath to child annotation feature value, can be null
+	 * @param parentId
+	 *            parent_anno_base_id
+	 * @param child
+	 *            child object to apply jxpath to, or which is already an
+	 *            annotation
+	 */
+	private void addLink(BiMap<Annotation, Integer> mapAnnoToId,
+			List<AnnoLink> listAnnoLinks, String linkType, String childJxpath,
+			Integer parentId, FeatureStructure child) {
+		Object childAnno = extractFeature(childJxpath, child);
+		if (childAnno instanceof Annotation) {
+			Integer childId = mapAnnoToId.get((Annotation) childAnno);
+			if (childId != null) {
+				listAnnoLinks.add(new AnnoLink(parentId, childId, linkType));
+			}
+		}
+	}
+
+	/**
+	 * apply jxpath to object
+	 * 
+	 * @param jxpath
+	 * @param child
+	 * @return child if jxpath null, else apply jxpath
+	 */
+	private Object extractFeature(String jxpath, Object child) {
+		return jxpath != null ? JXPathContext.newContext(child)
+				.getValue(jxpath) : child;
 	}
 
 	/**

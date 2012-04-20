@@ -4,11 +4,11 @@ import org.apache.commons.beanutils.Converter;
 
 public class ColumnMappingInfo {
 	private String annoFieldName;
-	private Converter converter;
-	private int size;
 	private String columnName;
+	private Converter converter;
+	private String jxpath;
+	private int size;
 	private Class<?> targetType;
-
 	private String targetTypeName;
 
 	public ColumnMappingInfo() {
@@ -28,16 +28,20 @@ public class ColumnMappingInfo {
 		return annoFieldName;
 	}
 
+	public String getColumnName() {
+		return columnName;
+	}
+
 	public Converter getConverter() {
 		return converter;
 	}
 
-	public int getSize() {
-		return size;
+	public String getJxpath() {
+		return jxpath;
 	}
 
-	public String getColumnName() {
-		return columnName;
+	public int getSize() {
+		return size;
 	}
 
 	public Class<?> getTargetType() {
@@ -52,16 +56,20 @@ public class ColumnMappingInfo {
 		this.annoFieldName = annoFieldName;
 	}
 
+	public void setColumnName(String tableFieldName) {
+		this.columnName = tableFieldName;
+	}
+
 	public void setConverter(Converter converter) {
 		this.converter = converter;
 	}
 
-	public void setSize(int size) {
-		this.size = size;
+	public void setJxpath(String jxpath) {
+		this.jxpath = jxpath;
 	}
 
-	public void setColumnName(String tableFieldName) {
-		this.columnName = tableFieldName;
+	public void setSize(int size) {
+		this.size = size;
 	}
 
 	public void setTargetTypeName(String targetTypeName) {

@@ -46,6 +46,72 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</property>
 					</bean>
 				</entry>
+				<entry>
+					<key>
+						<value>org.mipacq.annotation.type.CoreferenceRelation</value>
+					</key>
+					<bean class="ytex.uima.mapper.AnnoMappingInfo">
+						<property name="annoClassName" value="org.mipacq.annotation.type.CoreferenceRelation" />
+						<property name="tableName" value="anno_link" />
+						<property name="mapField">
+							<map>
+								<entry>
+									<key>
+										<value>parent</value>
+									</key>
+									<bean class="ytex.uima.mapper.ColumnMappingInfo">
+										<property name="annoFieldName" value="arg1" />
+										<property name="columnName" value="parent_anno_base_id" />
+										<property name="jxpath" value="argument/content" />
+									</bean>
+								</entry>
+								<entry>
+									<key>
+										<value>child</value>
+									</key>
+									<bean class="ytex.uima.mapper.ColumnMappingInfo">
+										<property name="annoFieldName" value="arg2" />
+										<property name="columnName" value="child_anno_base_id" />
+										<property name="jxpath" value="argument/content" />
+									</bean>
+								</entry>
+							</map>
+						</property>
+					</bean>
+				</entry>
+				<entry>
+					<key>
+						<value>edu.mayo.bmi.uima.coref.type.MarkablePairSet</value>
+					</key>
+					<bean class="ytex.uima.mapper.AnnoMappingInfo">
+						<property name="annoClassName" value="edu.mayo.bmi.uima.coref.type.MarkablePairSet" />
+						<property name="tableName" value="anno_link" />
+						<property name="mapField">
+							<map>
+								<entry>
+									<key>
+										<value>parent</value>
+									</key>
+									<bean class="ytex.uima.mapper.ColumnMappingInfo">
+										<property name="annoFieldName" value="anaphor" />
+										<property name="columnName" value="parent_anno_base_id" />
+										<property name="jxpath" value="content" />
+									</bean>
+								</entry>
+								<entry>
+									<key>
+										<value>child</value>
+									</key>
+									<bean class="ytex.uima.mapper.ColumnMappingInfo">
+										<property name="annoFieldName" value="antecedentList" />
+										<property name="columnName" value="child_anno_base_id" />
+										<property name="jxpath" value="feature" />
+									</bean>
+								</entry>
+							</map>
+						</property>
+					</bean>
+				</entry>				
 			</map>
 		</property>
 	</bean>
