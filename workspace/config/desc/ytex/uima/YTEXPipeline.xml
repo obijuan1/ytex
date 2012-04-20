@@ -19,10 +19,7 @@
       <import name="ytex.uima.annotators.SegmentRegexAnnotator"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="SentenceDetectorAnnotator">
-      <import name="coredesc.analysis_engine.SentenceDetectorAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="SenseDisambiguatorAnnotator">
-      <import name="ytex.uima.annotators.SenseDisambiguatorAnnotator"/>
+      <import name="ytex.uima.annotators.SentenceDetectorAnnotator"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="AdjustNounPhraseToIncludeFollowingNP">
       <import name="chunkerdesc.analysis_engine.AdjustNounPhraseToIncludeFollowingNP"/>
