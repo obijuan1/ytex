@@ -31,6 +31,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<prop key="hibernate.default_schema">${db.schema}</prop>
 				<prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>
 				<prop key="hibernate.cache.use_query_cache">true</prop>
+				<!--  to enable batch inserts -->
+				<prop key="hibernate.jdbc.batch_size">${hibernate.jdbc.batch_size}</prop>
+				<prop key="hibernate.order_inserts">${hibernate.order_inserts}</prop>
+				<prop key="hibernate.order_updates">${hibernate.order_updates}</prop>
 				<!-- <prop key="hibernate.connection.isolation">1</prop>  -->
 			</props>
 		</property>

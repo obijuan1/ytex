@@ -89,19 +89,6 @@ CREATE INDEX IX_segment_anno_seg ON anno_segment
 )
 ;
 
--- mapped to SourceDocumentInformation
-create table anno_source_doc_info (
-	anno_base_id int NOT NULL comment 'fk anno_base',
-	uri varchar(256),
-	offsetInSource int,
-	documentSize int,
-	lastSegment bit,
-	PRIMARY KEY
-	(
-		anno_base_id ASC
-	)
-)engine=myisam;
-
 -- mapped to BaseToken, WordToken
 create table anno_token (
 	anno_base_id int NOT NULL  comment 'fk anno_base',
@@ -128,7 +115,6 @@ create table anno_date (
 	tstamp datetime,
 	primary key (anno_base_id) 
 ) engine=myisam;
-
 
 create table anno_drug_mention (
 	anno_base_id int not null primary key comment 'fk anno_base',

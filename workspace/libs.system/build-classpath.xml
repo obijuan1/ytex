@@ -25,13 +25,16 @@
 	<property name="ytex.properties" value="${config.local}/ytex.properties" />
 	<property file="${ytex.properties}" />
 	<property name="ytex.conceptGraphDir" value="${ytex.home}/conceptGraph" />
-	<property name="ictakes.home" value="${ytex.home}/../icTAKES-1.3.2" />
+	<condition property="ictakes.home" value="${env.ICTAKES_HOME}" else="${ytex.home}/../icTAKES-1.3.2">
+		<isset property="env.ICTAKES_HOME"/>
+	</condition>
 	<path id="kernel.cp.common">
 		<!-- make sure ctakes patches come first -->
 		<fileset dir="${ytex.home}/libs.system" includes="ctakes-patches.jar" />
 		<fileset dir="${ytex.home}/libs.system" includes="**/*.jar" excludes="ctakes-patches.jar" />
 		<pathelement location="${ictakes.home}/cTAKESdesc" />
 		<pathelement location="${ictakes.home}/resources" />
+		<pathelement location="${ictakes.home}/cTAKES.jar" />
 	</path>
 	<path id="kernel.cp.dev">
 		<pathelement location="${config.local}" />
@@ -88,5 +91,6 @@
 	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" onerror="ignore" classpathref="${kernel.cp}" />
 	<taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" onerror="ignore" classpathref="${kernel.cp}" />
 	<taskdef name="propertycopy" classname="net.sf.antcontrib.property.PropertyCopy" onerror="ignore" classpathref="${kernel.cp}" />
+	<taskdef name="math" classname="net.sf.antcontrib.math.MathTask" onerror="ignore" classpathref="${kernel.cp}" />
 	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="${kernel.cp}" />
 </project>

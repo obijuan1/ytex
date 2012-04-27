@@ -11,8 +11,8 @@ Main target is 'all', which does the following:
 You *must* define the ytex.home variable for this script using the -D option:
 ant -Dytex.home=c:\java\clinicalnlp\ytex -file build-setup.xml
 
-Prior to executing this script, download lvg2010lite.tgz; 
-if we can't find this file, we will attempt to download it.
+Prior to executing this script, download lvg2008lite.tgz and ictakes-1.3.2.zip; 
+if we can't find these files, we will attempt to download them.
 
 To use this in a 'real' environment, you will need an installation of UMLS,
 or you can download a UMLS database dump we've provided.
@@ -24,13 +24,15 @@ execute setup.lvg and templateToConfig
 	<!-- override these variables using eclipse settings/command line -->
 	<property name="ytex.home" value=".." />
 	<import file="${ytex.home}/libs.system/build-classpath.xml" />
-	<property name="lvg.download.dir" value="${ytex.home}/.." />
-	<property name="lvg.basename" value="2011" />
+	<property name="download.dir" value="${ytex.home}/.." />
+	<property name="lvg.basename" value="2008" />
 	<property name="lvg.filename" value="lvg${lvg.basename}lite.tgz" />
-	<property name="lvg.tgz" value="${lvg.download.dir}/${lvg.filename}" />
+	<property name="lvg.tgz" value="${download.dir}/${lvg.filename}" />
 	<property name="context.root" value="ytex.web" />
 	<property name="catalina.base" value="${ytex.home}/web" />
-
+	<property name="ictakes.version" value="1.3.2" />
+	<property name="ictakes.filename" value="icTAKES-${ictakes.version}.zip" />
+	<property name="ictakes.url" value="http://downloads.sourceforge.net/project/ohnlp/icTAKES/v${ictakes.version}/${ictakes.filename}" />
 	<target name="help">
 		<echo>
 Ant build script to setup ytex.
@@ -101,15 +103,78 @@ Call with option -projecthelp for more info.
 	</target>
 	<target name="templateToConfig" depends="templateToConfig.init,templateToConfig.fixUnix,templateToConfig.updateExamples,templateToConfig.updateConfig" description="generate config files from templates using values specified in ytex.properties">
 	</target>
+	<target name="setup.ictakes" description="download and unpack ictakes" depends="setup.ictakes.download,setup.ictakes.unzip" />
+	<target name="setup.ictakes.download" description="download ictakes">
+		<if>
+			<and>
+				<not>
+					<available file="${download.dir}/${ictakes.filename}" />
+				</not>
+				<not>
+					<available file="${ictakes.home}/cTAKES.jar" />
+				</not>
+			</and>
+			<then>
+				<echo>Downloading ${ictakes.filename} to ${download.dir} from sourceforge.  This may take a while!</echo>
+				<copy todir="${download.dir}" flatten="true" failonerror="false">
+					<resources>
+						<url url="${ictakes.url}" />
+					</resources>
+				</copy>
+			</then>
+		</if>
+	</target>
+	<target name="setup.ictakes.unzip">
+		<if>
+			<and>
+				<available file="${download.dir}/${ictakes.filename}" />
+				<not>
+					<available file="${ictakes.home}/cTAKES.jar" />
+				</not>
+			</and>
+			<then>
+				<echo>unpacking ${ictakes.filename}</echo>
+				<mkdir dir="${ictakes.home}" />
+				<unzip file="${download.dir}/${ictakes.filename}" todir="${ictakes.home}" />
+			</then>
+		</if>
+		<if>
+			<not>
+				<available file="${ictakes.home}/cTAKES.jar" />
+			</not>
+			<then>
+				<echo>Warning: ictakes not installed in ${ictakes.home}, and ${download.dir}/${ictakes.filename} not found, and ${ictakes.filename} could not be downloaded.  YTEX NLP will not work.</echo>
+			</then>
+		</if>
+	</target>
+	<target name="setup.lvg.all" description="see if lvg setup required">
+		<!-- don't bother if ictakes not there, or if lvg is already updated (greater than 800 MB), or if setup.lvg=no -->
+		<if>
+			<and>
+				<available file="${ictakes.home}/cTAKES.jar" />
+				<length file="${ictakes.home}/resources/lvgresources/lvg/data/HSqlDb/lvg${lvg.basename}.data" property="lvg.length" length="800000000" when="lt" />
+				<not>
+					<equals arg1="${setup.lvg}" arg2="no" />
+				</not>
+			</and>
+			<then>
+				<echo>perform lvg setup</echo>
+				<antcall target="setup.lvg" />
+			</then>
+			<else>
+				<echo>Skipping lvg setup because ictakes not available, or lvg already set up</echo>
+			</else>
+		</if>
+	</target>
 	<target name="setup.lvg" description="unpack lvg data directory to resources folder" depends="setup.lvg.download,setup.lvg.unzip" />
-	<target name="setup.lvg.download" description="download lvg2010lite.tgz from nlm">
+	<target name="setup.lvg.download" description="download lvglite from nlm">
 		<if>
 			<not>
 				<available file="${lvg.tgz}" />
 			</not>
 			<then>
-				<echo>Downloading ${lvg.filename} to ${lvg.download.dir} from nlm.  This may take a while!</echo>
-				<copy todir="${lvg.download.dir}" flatten="true" failonerror="false">
+				<echo>Downloading ${lvg.filename} to ${download.dir} from nlm.  This may take a while!</echo>
+				<copy todir="${download.dir}" flatten="true" failonerror="false">
 					<resources>
 						<url url="http://lexsrv3.nlm.nih.gov/LexSysGroup/Projects/lvg/${lvg.basename}/release/${lvg.filename}" />
 					</resources>
@@ -123,35 +188,21 @@ Call with option -projecthelp for more info.
 			<then>
 				<delete dir="${java.io.tmpdir}/lvg" quiet="yes" />
 				<mkdir dir="${java.io.tmpdir}/lvg" />
+				<echo>unpacking ${lvg.filename} to ${java.io.tmpdir}/lvg</echo>
 				<untar src="${lvg.tgz}" compression="gzip" dest="${java.io.tmpdir}/lvg">
 				</untar>
-				<copy todir="${ytex.home}/maveric/resources/lvg">
-					<fileset dir="${java.io.tmpdir}/lvg/lvg${lvg.basename}lite">
-						<include name="data/**/*.*" />
-						<exclude name="data/**/lvg.properties" />
+				<echo>copying HSqlDb to ${ictakes.home}/resources/lvgresources/lvg/data</echo>
+				<copy todir="${ictakes.home}/resources/lvgresources/lvg/data/HSqlDb" overwrite="yes">
+					<fileset dir="${java.io.tmpdir}/lvg/lvg${lvg.basename}lite/data/HSqlDB">
+						<include name="**/*.*" />
+						<exclude name="**/lvg.properties" />
 					</fileset>
 				</copy>
 				<delete dir="${java.io.tmpdir}/lvg" />
 			</then>
 			<else>
-				<echo>Warning: ${lvg.tgz} not found and could not be downloaded.  Stemming will not be enabled</echo>
+				<echo>Warning: ${lvg.tgz} not found and could not be downloaded.  Stemming will use the incomplete default database</echo>
 			</else>
 		</if>
-	</target>
-	<target name="update.manifest" description="update the manifest">
-		<manifestclasspath property="ytex.classpath.man" jarfile="${ytex.home}/lib/ytex.model.jar">
-			<classpath>
-				<fileset dir="${catalina.base}/webapps/${context.root}/WEB-INF/lib" includes="*.jar" />
-				<fileset dir="${ytex.home}/lib/mysql-connector-java-5.1.9" includes="**/*.jar" />
-				<fileset dir="${ytex.home}/lib/oracle11.2.0.1.0" includes="**/*.jar" />
-				<fileset dir="${ytex.home}/lib/sqljdbc_3.0" includes="**/*.jar" />
-			</classpath>
-		</manifestclasspath>
-		<manifest file="${ytex.home}/lib/MANIFEST.MF">
-			<attribute name="Class-Path" value="${ytex.classpath.man}" />
-		</manifest>
-		<zip destfile="${ytex.home}/lib/ytex.model.jar" update="yes">
-			<zipfileset dir="${ytex.home}/lib" includes="MANIFEST.MF" prefix="META-INF" />
-		</zip>
 	</target>
 </project>

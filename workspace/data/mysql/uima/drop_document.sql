@@ -1,13 +1,19 @@
 -- drop 'operational' data
-drop table if exists fracture_demo;
-drop table if exists document_class;
 -- legacy begin
+drop table if exists document_class;
 drop table if exists anno_word_token;
 drop table if exists anno_base_token;
+drop table if exists anno_num_token;
 drop table if exists anno_umls_concept; 
--- legacy end
-drop table if exists anno_contain;
 drop table if exists anno_source_doc_info;
+drop table if exists anno_umls_concept;
+-- legacy end
+drop table if exists fracture_demo;
+drop table if exists anno_drug_mention;
+drop table if exists anno_markable;
+drop table if exists anno_treebank_node;
+drop table if exists anno_link;
+drop table if exists anno_contain;
 drop table if exists anno_num_token;
 drop table if exists anno_token;
 drop table if exists anno_segment;

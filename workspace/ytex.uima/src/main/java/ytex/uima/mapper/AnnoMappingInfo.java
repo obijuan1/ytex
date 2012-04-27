@@ -1,14 +1,18 @@
 package ytex.uima.mapper;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class AnnoMappingInfo {
 	String annoClassName;
+	Set<ColumnMappingInfo> columnMappingInfos;
 	ColumnMappingInfo coveredTextColumn;
 	SortedMap<String, ColumnMappingInfo> mapField = new TreeMap<String, ColumnMappingInfo>();
+
 	String sql;
+
 	String tableName;
 	int uimaTypeId;
 	String uimaTypeIdColumnName;
@@ -28,14 +32,37 @@ public class AnnoMappingInfo {
 		n.sql = this.sql;
 		n.coveredTextColumn = this.coveredTextColumn != null ? this.coveredTextColumn
 				.deepCopy() : null;
-		for (Map.Entry<String, ColumnMappingInfo> e : this.mapField.entrySet()) {
-			n.mapField.put(e.getKey(), e.getValue().deepCopy());
+		Set<ColumnMappingInfo> ciCopy = new HashSet<ColumnMappingInfo>();
+		for (ColumnMappingInfo e : this.columnMappingInfos) {
+			ciCopy.add(e.deepCopy());
 		}
+		n.setColumnMappingInfos(ciCopy);
 		return n;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AnnoMappingInfo other = (AnnoMappingInfo) obj;
+		if (annoClassName == null) {
+			if (other.annoClassName != null)
+				return false;
+		} else if (!annoClassName.equals(other.annoClassName))
+			return false;
+		return true;
 	}
 
 	public String getAnnoClassName() {
 		return annoClassName;
+	}
+
+	public Set<ColumnMappingInfo> getColumnMappingInfos() {
+		return columnMappingInfos;
 	}
 
 	public ColumnMappingInfo getCoveredTextColumn() {
@@ -62,16 +89,28 @@ public class AnnoMappingInfo {
 		return uimaTypeIdColumnName;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((annoClassName == null) ? 0 : annoClassName.hashCode());
+		return result;
+	}
+
 	public void setAnnoClassName(String annoClassName) {
 		this.annoClassName = annoClassName;
 	}
 
-	public void setCoveredTextColumn(ColumnMappingInfo coveredTextColumn) {
-		this.coveredTextColumn = coveredTextColumn;
+	public void setColumnMappingInfos(Set<ColumnMappingInfo> columnMappingInfos) {
+		this.columnMappingInfos = columnMappingInfos;
+		for (ColumnMappingInfo ci : columnMappingInfos) {
+			this.mapField.put(ci.getColumnName(), ci);
+		}
 	}
 
-	public void setMapField(SortedMap<String, ColumnMappingInfo> mapField) {
-		this.mapField = mapField;
+	public void setCoveredTextColumn(ColumnMappingInfo coveredTextColumn) {
+		this.coveredTextColumn = coveredTextColumn;
 	}
 
 	public void setSql(String sql) {

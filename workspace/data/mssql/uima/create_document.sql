@@ -1,8 +1,9 @@
 
 
 CREATE TABLE $(db_schema).[document](
-	[document_id] [int] IDENTITY(1,1) NOT NULL primary key,
-	uid bigint not null default 0,
+	[document_id] [int] /* IDENTITY(1,1) */ NOT NULL primary key,
+	instance_id bigint not null default 0,
+	uimaDocumentID varchar(256) null,
 	[analysis_batch] [varchar](50) NOT NULL,
 	[cas] [varbinary](max) NULL,
 	[doc_text] [nvarchar](max) NULL
@@ -19,37 +20,16 @@ CREATE NONCLUSTERED INDEX [IX_document_analysis_batch] ON $(db_schema).[document
 
 CREATE NONCLUSTERED INDEX [IX_uid] ON $(db_schema).[document] 
 (
-	[uid]
-)
-;
-
-CREATE TABLE $(db_schema).[document_class](
-	[document_class_id] [int] IDENTITY(1,1) NOT NULL,
-	[document_id] [int] NOT NULL,
-	[task] [varchar](50) NOT NULL,
-	[class_auto] [int] NOT NULL,
-	[class_gold] [int] NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[document_class_id]
-)
-)
-;
-
-CREATE UNIQUE NONCLUSTERED INDEX [NK_document_class] ON $(db_schema).[document_class] 
-(
-	[document_id] ASC,
-	[task] ASC
+	[instance_id]
 )
 ;
 
 create table $(db_schema).anno_base (
-	anno_base_id int identity not null, 
+	anno_base_id int /* identity */ not null, 
 	document_id int not null, 
 	span_begin int,
 	span_end int,
-	uima_type_id int not null,
-	covered_text nvarchar(100) null,
+	uima_type_id int not null
 	primary key (anno_base_id),
 	foreign key (document_id) references $(db_schema).document (document_id) ON DELETE CASCADE,
 	foreign key (uima_type_id) references $(db_schema).ref_uima_type (uima_type_id)
@@ -59,24 +39,22 @@ create table $(db_schema).anno_base (
 CREATE INDEX IX_docanno_doc ON $(db_schema).anno_base (document_id)
 ;
 
-CREATE INDEX IX_covered_text ON $(db_schema).anno_base (covered_text)
-;
-
 create table $(db_schema).anno_sentence (
 	anno_base_id int not null,
-	sentence_number int,
+	sentenceNumber int,
+	segmentId varchar(20),
 	primary key (anno_base_id),
 	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id)  ON DELETE CASCADE
 );
 
 create table $(db_schema).anno_named_entity (
 	anno_base_id int not null, 
-	discovery_technique int,
+	discoveryTechnique int,
 	status int,
 	certainty int,
-	type_id int,
+	typeID int,
 	confidence float,
-	segment_id varchar(64),
+	segmentID varchar(20),
 	primary key (anno_base_id),
 	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id)  ON DELETE CASCADE
 );
@@ -84,9 +62,8 @@ create table $(db_schema).anno_named_entity (
 create table $(db_schema).anno_ontology_concept (
 	anno_ontology_concept_id int identity not null, 
 	anno_base_id int not null,
-	coding_scheme varchar(20),
 	code varchar(20),
-	oid varchar(10),
+	cui char(8),
 	disambiguated bit not null default 0,
 	primary key (anno_ontology_concept_id),
 	foreign key (anno_base_id) references $(db_schema).anno_named_entity(anno_base_id)  ON DELETE CASCADE
@@ -95,19 +72,9 @@ create table $(db_schema).anno_ontology_concept (
 create index IX_onto_concept_code on $(db_schema).anno_ontology_concept (code);
 create index IX_onto_concept_anno_code on $(db_schema).anno_ontology_concept (anno_base_id, code);
 
-create table $(db_schema).anno_umls_concept (
-	anno_ontology_concept_id int not null,
-	cui varchar(10),
-	primary key (anno_ontology_concept_id),
-	foreign key (anno_ontology_concept_id) references $(db_schema).anno_ontology_concept(anno_ontology_concept_id)  ON DELETE CASCADE
-);
-
-CREATE INDEX IX_umls_concept_cui ON $(db_schema).anno_umls_concept (cui)
-;
-
 CREATE TABLE $(db_schema).[anno_segment](
 	[anno_base_id] [int] NOT NULL,
-	[segment_id] [varchar](50) NULL,
+	id varchar(20) NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[anno_base_id] ASC
@@ -123,31 +90,24 @@ ON DELETE CASCADE
 CREATE NONCLUSTERED INDEX [IX_segment_anno_seg] ON $(db_schema).[anno_segment] 
 (
 	[anno_base_id] ASC,
-	[segment_id] ASC
+	[id] ASC
 )
 ;
 
--- mapped to SourceDocumentInformation
-create table $(db_schema).anno_source_doc_info (
-	[anno_base_id] [int] NOT NULL,
-	uri varchar(256),
-	offset_in_source int,
-	document_size int,
-	last_segment bit,
-	PRIMARY KEY CLUSTERED 
-	(
-		[anno_base_id] ASC
-	),
-	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id)  ON DELETE CASCADE
-);
-
 
 -- mapped to BaseToken
-create table $(db_schema).anno_base_token (
+create table $(db_schema).anno_token (
 	[anno_base_id] [int] NOT NULL,
-	token_number int,
-	normalized_form varchar(256),
-	part_of_speech varchar(5),
+	tokenNumber int NOT NULL default 0,
+	normalizedForm nvarchar(20),
+	partofSpeech varchar(5),
+	coveredText nvarchar(20) null,
+	capitalization int not null default 0,
+	numPosition int not null default 0,
+	suggestion varchar(20),
+	canonicalForm nvarchar(20),
+	negated bit not null default 0,
+	possible bit not null default 0,
 	PRIMARY KEY CLUSTERED 
 	(
 		[anno_base_id] ASC
@@ -157,39 +117,9 @@ create table $(db_schema).anno_base_token (
 		ON DELETE CASCADE
 );
 
--- mapped to NumToken
-create table $(db_schema).anno_num_token (
-	[anno_base_id] [int] NOT NULL,
-	num_type int,
-	PRIMARY KEY CLUSTERED 
-	(
-		[anno_base_id] ASC
-	),
-	foreign key (anno_base_id) 
-		references $(db_schema).anno_base_token(anno_base_id)  
-		ON DELETE CASCADE
-)
 
--- mapped to WordToken
-create table $(db_schema).anno_word_token (
-	[anno_base_id] [int] NOT NULL,
-	capitalization [int],
-	num_position [int],
-	suggestion [int],
-	canonical_form varchar(256),
-	negated bit not null default 0,
-	possible bit not null default 0,
-	PRIMARY KEY CLUSTERED 
-	(
-		[anno_base_id] ASC
-	),
-	foreign key (anno_base_id) 
-		references $(db_schema).anno_base_token(anno_base_id)  
-		ON DELETE CASCADE
-);
-
-create index IX_word_stem on $(db_schema).anno_word_token (canonical_form);
-create index IX_word_anno_stem on $(db_schema).anno_word_token (anno_base_id, canonical_form);
+create index IX_word_stem on $(db_schema).anno_token (canonicalForm);
+create index IX_coveredText on $(db_schema).anno_token (coveredText);
 
 create table $(db_schema).anno_date (
 	anno_base_id int not null,
@@ -198,6 +128,50 @@ create table $(db_schema).anno_date (
 	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
 );
 
+create table $(db_schema).anno_drug_mention (
+	anno_base_id int not null primary key ,
+	status int not null default 0,
+	frequency varchar(20),
+	duration varchar(20),
+	route varchar(20),
+	drugChangeStatus varchar(10),
+	dosage varchar(20),
+	strength varchar(20),
+	form varchar(20),
+	frequencyUnit varchar(20),
+	startDate varchar(20),
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table $(db_schema).anno_markable (
+	anno_base_id int not null primary key ,
+	id int default 0,
+	anaphoric_prob float default 0,
+	content int default 0,
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table $(db_schema).anno_treebank_node (
+	anno_base_id int not null primary key ,
+	parent int default 0,
+	nodeType varchar(10),
+	nodeValue varchar(10),
+	leaf bit default 0,
+	headIndex int default 0,
+	[index] int default 0,
+	tokenIndex int default 0,
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table $(db_schema).anno_link (
+	anno_link_id int IDENTITY not null primary key,
+	parent_anno_base_id int not null,
+	child_anno_base_id int not null,
+	feature varchar(20),
+	foreign key (parent_anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
+);
+create index IX_link on $(db_schema).anno_link (parent_anno_base_id, child_anno_base_id, feature);
+create index IX_parent on $(db_schema).anno_link (parent_anno_base_id);
 
 -- we run into deadlocks if we have a clustered index and foreign key constraint
 -- on anno_contain.  use a nonclustered primary key and throw out the fk.

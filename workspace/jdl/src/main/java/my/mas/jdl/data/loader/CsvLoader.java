@@ -105,6 +105,8 @@ public class CsvLoader extends Loader {
 	@Override
 	public final void dataInsert(final JdlConnection jdlConnection) {
 		String sql = getSqlInsert(loader);
+		if(log.isInfoEnabled())
+			log.info(sql);
 		Number ncommit = loader.getCommit();
 		int rs = (loader.getSkip() == null) ? 0 : loader.getSkip().intValue();
 		PreparedStatement preparedStatement = null;

@@ -2,7 +2,7 @@ create view $(db_schema).v_document as
 -- We assume the metadata about documents (patient id, date) come from
 -- some table in your database.  modify this view to join with that table
 -- and get this info
-select analysis_batch, document_id, doc_text, uid, cast(null as int) patient_id, cast(null as datetime) doc_date, cast(null as varchar(256)) doc_title, cast(null as varchar(256)) document_type_name
+select analysis_batch, document_id, doc_text, instance_id, cast(null as int) patient_id, cast(null as datetime) doc_date, cast(null as varchar(256)) doc_title, cast(null as varchar(256)) document_type_name
 from $(db_schema).document;
 go
 

@@ -25,6 +25,7 @@
 33	edu.mayo.bmi.uima.coref.type.Markable	anno_markable	
 34	edu.mayo.bmi.uima.coref.type.DemMarkable	anno_markable	
 35	edu.mayo.bmi.uima.coref.type.NEMarkable	anno_markable	
+36	edu.mayo.bmi.uima.coref.type.PronounMarkable	anno_markable	
 40	org.chboston.cnlp.ctakes.parser.uima.type.TreebankNode	anno_treebank_node
 41	org.chboston.cnlp.ctakes.parser.uima.type.TopTreebankNode	anno_treebank_node	
 42	org.chboston.cnlp.ctakes.parser.uima.type.TerminalTreebankNode	anno_treebank_node	

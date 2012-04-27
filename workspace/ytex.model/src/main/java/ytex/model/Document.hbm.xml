@@ -3,7 +3,8 @@
 <hibernate-mapping package="ytex.model">
 	<class name="Document" table="document" discriminator-value="D">
 		<id name="documentID" column="document_id">
-			<generator class="native">
+			<generator class="org.hibernate.id.enhanced.TableGenerator">
+				<!-- <generator class="native"> -->
 				<param name="sequence">document_id_sequence</param>
 			</generator>
 		</id>
@@ -36,13 +37,14 @@
 	</class>
 	<class name="DocumentAnnotation" table="anno_base">
 		<id name="documentAnnotationID" column="anno_base_id">
-			<generator class="native">
-				<param name="sequence">anno_base_id_sequence</param>
+			<generator class="org.hibernate.id.enhanced.TableGenerator">
+				<param name="segment_value">anno_base_id_sequence</param>
 			</generator>
+			<!-- <generator class="native"> <param name="sequence">anno_base_id_sequence</param> 
+				</generator> -->
 		</id>
 		<property name="begin" column="span_begin" />
 		<property name="end" column="span_end" />
-		<property name="coveredText" column="covered_text" />
 		<many-to-one name="uimaType" class="UimaType" column="uima_type_id"
 			not-null="true" />
 		<many-to-one name="document" class="Document" column="document_id"

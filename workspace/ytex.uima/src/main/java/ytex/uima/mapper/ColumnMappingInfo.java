@@ -8,7 +8,9 @@ public class ColumnMappingInfo {
 	private Converter converter;
 	private String jxpath;
 	private int size;
+
 	private Class<?> targetType;
+
 	private String targetTypeName;
 
 	public ColumnMappingInfo() {
@@ -22,6 +24,23 @@ public class ColumnMappingInfo {
 		n.targetType = this.targetType;
 		n.targetTypeName = this.targetTypeName;
 		return n;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ColumnMappingInfo other = (ColumnMappingInfo) obj;
+		if (columnName == null) {
+			if (other.columnName != null)
+				return false;
+		} else if (!columnName.equals(other.columnName))
+			return false;
+		return true;
 	}
 
 	public String getAnnoFieldName() {
@@ -50,6 +69,15 @@ public class ColumnMappingInfo {
 
 	public String getTargetTypeName() {
 		return targetTypeName;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((columnName == null) ? 0 : columnName.hashCode());
+		return result;
 	}
 
 	public void setAnnoFieldName(String annoFieldName) {

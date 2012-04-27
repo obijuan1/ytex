@@ -1,3 +1,8 @@
+create table $(db_schema).hibernate_sequences (
+	sequence_name varchar(100) not null primary key,
+	next_val int not null default 1
+);
+
 create table $(db_schema).ref_named_entity_regex (
 	named_entity_regex_id int IDENTITY(1,1) NOT NULL,
 	regex varchar(512) not null,
@@ -19,20 +24,13 @@ create table $(db_schema).ref_segment_regex (
 create table $(db_schema).ref_uima_type (
 	uima_type_id int not null,
 	uima_type_name varchar(256) not null,
-	mapper_name varchar(256) not null,
+	table_name varchar(100) null,
 	CONSTRAINT PK_ref_uima_type PRIMARY KEY  
 	(
 		uima_type_id ASC
 	)
 )
 ;
-
-CREATE UNIQUE NONCLUSTERED INDEX NK_ref_uima_type ON $(db_schema).ref_uima_type
-(
-	uima_type_name
-)
-;
-
 
 CREATE TABLE $(db_schema).ref_stopword (
 	stopword varchar(50) not null primary key
