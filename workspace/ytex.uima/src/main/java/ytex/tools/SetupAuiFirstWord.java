@@ -20,6 +20,7 @@ import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +29,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import ytex.kernel.KernelContextHolder;
 import ytex.umls.dao.UMLSDao;
@@ -59,9 +61,9 @@ public class SetupAuiFirstWord {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static Map loadHyphMap(String filename)
+	public static Map<String, Integer> loadHyphMap(String filename)
 			throws FileNotFoundException, IOException {
-		Map hyphMap = new HashMap();
+		Map<String, Integer> hyphMap = new HashMap<String, Integer>();
 		File f = new File(filename);
 		BufferedReader br = new BufferedReader(new FileReader(f));
 		String line = br.readLine();
@@ -97,44 +99,16 @@ public class SetupAuiFirstWord {
 	 * @throws Exception
 	 */
 	public SetupAuiFirstWord() throws Exception {
-		URL uriTok = this.getClass().getClassLoader()
-				.getResource("tokenizer/hyphenated.txt");
-		if (log.isInfoEnabled())
-			log.info("loading hyphMap from:" + uriTok.getPath());
-		Map hyphMap = loadHyphMap(uriTok.getPath());
-		this.tokenizer = new Tokenizer(hyphMap, 0);
+		initTokenizer();
 		// initialize exclusion set
-		this.exclusionSet = new HashSet<String>();
-		InputStream isLvgAnno = null;
-		try {
-			if (log.isInfoEnabled())
-				log.info("loading LvgAnnotator.xml from:"
-						+ this.getClass().getClassLoader()
-								.getResource("LVG/LvgAnnotator.xml").getPath());
-			isLvgAnno = this.getClass().getClassLoader()
-					.getResourceAsStream("LVG/LvgAnnotator.xml");
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(isLvgAnno);
-			NodeList nList = doc.getElementsByTagName("nameValuePair");
-			for (int i = 0; i < nList.getLength(); i++) {
-				Element e = (Element) nList.item(i);
-				String name = e.getElementsByTagName("name").item(0)
-						.getChildNodes().item(0).getNodeValue();
-				if ("ExclusionSet".equals(name)) {
-					NodeList nListEx = e.getElementsByTagName("string");
-					for (int j = 0; j < nListEx.getLength(); j++) {
-						exclusionSet.add(nListEx.item(j).getChildNodes()
-								.item(0).getNodeValue());
-					}
-				}
-			}
-		} finally {
-			if (isLvgAnno != null)
-				isLvgAnno.close();
-		}
+		initExclusionSet();
+		initLvg();
+	}
 
+	/**
+	 * initialize lvgCmd
+	 */
+	private void initLvg() {
 		// See
 		// http://lexsrv2.nlm.nih.gov/SPECIALIST/Projects/lvg/2008/docs/userDoc/index.html
 		// See
@@ -145,7 +119,7 @@ public class SetupAuiFirstWord {
 		// b = uninflect a term
 		try {
 			URL uri = this.getClass().getClassLoader()
-					.getResource("lvg/data/config/lvg.properties");
+					.getResource("lvgresources/lvg/data/config/lvg.properties");
 			if (log.isInfoEnabled())
 				log.info("loading lvg.properties from:" + uri.getPath());
 			File f = new File(uri.getPath());
@@ -159,33 +133,78 @@ public class SetupAuiFirstWord {
 					"could not initialize lvg - will not create a stemmed dictionary.",
 					e);
 		}
-
 	}
 
-	// /**
-	// * get the first word from the string. done to recreate first words as in
-	// * arc's umls_ms_2009 table. it doesn't really make sense for strings that
-	// * start with non-word characters, but whatever.
-	// *
-	// * @param str
-	// * full concept string
-	// * @return first word
-	// */
-	// public String getFirstWord(String str) {
-	// String firstWord = str;
-	// Matcher firstNonWordMatcher = nonWord.matcher(str);
-	// if (firstNonWordMatcher.find()) {
-	// int firstNonWord = firstNonWordMatcher.start();
-	// if (firstNonWord == 0) {
-	// // non-word token at beginning of string - this is the first
-	// // word
-	// firstWord = str.substring(0, 1);
-	// } else {
-	// firstWord = str.substring(0, firstNonWord);
-	// }
-	// }
-	// return firstWord.toLowerCase(Locale.ENGLISH);
-	// }
+	/**
+	 * initialize lvg exclusion set
+	 * 
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 */
+	private void initExclusionSet() throws ParserConfigurationException,
+			SAXException, IOException {
+		this.exclusionSet = new HashSet<String>();
+		InputStream isLvgAnno = null;
+		try {
+			URL lvgURL = this.getClass().getClassLoader()
+					.getResource("lvgdesc/analysis_engine/LvgAnnotator.xml");
+			if (lvgURL == null) {
+				log.warn("lvgdesc/analysis_engine/LvgAnnotator.xml not available, using empty exclusion set");
+			} else {
+				if (log.isInfoEnabled())
+					log.info("loading LvgAnnotator.xml from:"
+							+ lvgURL.getPath());
+				isLvgAnno = this
+						.getClass()
+						.getClassLoader()
+						.getResourceAsStream(
+								"lvgdesc/analysis_engine/LvgAnnotator.xml");
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(isLvgAnno);
+				NodeList nList = doc.getElementsByTagName("nameValuePair");
+				for (int i = 0; i < nList.getLength(); i++) {
+					Element e = (Element) nList.item(i);
+					String name = e.getElementsByTagName("name").item(0)
+							.getChildNodes().item(0).getNodeValue();
+					if ("ExclusionSet".equals(name)) {
+						NodeList nListEx = e.getElementsByTagName("string");
+						for (int j = 0; j < nListEx.getLength(); j++) {
+							exclusionSet.add(nListEx.item(j).getChildNodes()
+									.item(0).getNodeValue());
+						}
+					}
+				}
+			}
+		} finally {
+			if (isLvgAnno != null)
+				isLvgAnno.close();
+		}
+	}
+
+	/**
+	 * initialize the tokenizer. loads the hypenated word list.
+	 * 
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private void initTokenizer() throws FileNotFoundException, IOException {
+		URL uriTok = this
+				.getClass()
+				.getClassLoader()
+				.getResource("resources/coreresources/tokenizer/hyphenated.txt");
+		Map<String, Integer> hyphMap;
+		if (uriTok != null) {
+			log.info("loading hyphMap from:" + uriTok.getPath());
+			hyphMap = loadHyphMap(uriTok.getPath());
+		} else {
+			log.warn("hyphenated.txt not available, will use empty hyphenated word list");
+			hyphMap = new HashMap<String, Integer>();
+		}
+		this.tokenizer = new Tokenizer(hyphMap, 0);
+	}
 
 	/**
 	 * @param args
@@ -227,6 +246,9 @@ public class SetupAuiFirstWord {
 						if (fw == null)
 							log.error("Error tokenizing aui=" + aui + ", str="
 									+ str);
+						else if (fw.getFword().length() > 30)
+							log.warn("fword too long: aui=" + aui + ", str="
+									+ fw.getFword());
 						else if (fw.getTokenizedStr().length() > 250)
 							log.warn("string too long: aui=" + aui + ", str="
 									+ str);
