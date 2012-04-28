@@ -9,13 +9,13 @@
                 <nameValuePair>
                     <name>queryGetDocumentKeys</name>
                     <value>
-                        <string>select note_id "uid", site_id from fracture_demo</string>
+                        <string>select note_id instance_id, site_id from fracture_demo</string>
                     </value>
                 </nameValuePair>
                 <nameValuePair>
                     <name>queryGetDocument</name>
                     <value>
-                        <string>select note_text from fracture_demo where note_id = :uid and site_id = :SITE_ID</string>
+                        <string>select note_text from fracture_demo where note_id = :instance_id and site_id = :SITE_ID</string>
                     </value>
                 </nameValuePair>
             </configurationParameterSettings>
