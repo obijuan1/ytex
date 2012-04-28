@@ -1,3 +1,8 @@
+create table hibernate_sequences (
+	sequence_name varchar(100) not null primary key,
+	next_val int not null default 1
+);
+
 create table ref_named_entity_regex (
 	named_entity_regex_id int auto_increment NOT NULL,
 	regex varchar(512) not null,

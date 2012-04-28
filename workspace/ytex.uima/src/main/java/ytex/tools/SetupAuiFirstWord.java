@@ -246,7 +246,7 @@ public class SetupAuiFirstWord {
 						if (fw == null)
 							log.error("Error tokenizing aui=" + aui + ", str="
 									+ str);
-						else if (fw.getFword().length() > 30)
+						else if (fw.getFword().length() > 70)
 							log.warn("fword too long: aui=" + aui + ", str="
 									+ fw.getFword());
 						else if (fw.getTokenizedStr().length() > 250)

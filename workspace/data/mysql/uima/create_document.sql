@@ -1,5 +1,5 @@
 CREATE TABLE document(
-	document_id int AUTO_INCREMENT NOT NULL,
+	document_id int /* AUTO_INCREMENT */ NOT NULL,
 	instance_id bigint not null default 0,
 	uimaDocumentID varchar(256) null comment 'mapped to DocumentID.DocumentID',
 	analysis_batch varchar(50) NOT NULL,
@@ -26,7 +26,7 @@ CREATE INDEX IX_instance_id ON document
 ;
 
 create table anno_base (
-	anno_base_id int auto_increment not null,
+	anno_base_id int /* AUTO_INCREMENT */  not null,
 	document_id int not null  comment 'fk document',
 	span_begin int,
 	span_end int,
