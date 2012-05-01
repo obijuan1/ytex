@@ -2,7 +2,7 @@ create view v_document as
 -- We assume the metadata about documents (patient id, date) come from
 -- some table in your database.  modify this view to join with that table
 -- and get this info
-select analysis_batch, document_id, doc_text, "uid", null patient_id, null doc_date, null doc_title, null document_type_name
+select analysis_batch, document_id, doc_text, instance_id, null patient_id, null doc_date, null doc_title, null document_type_name
 from document;
 ;
 
@@ -47,7 +47,7 @@ INNER JOIN v_document d on da.document_id = d.document_id
 
 CREATE VIEW v_document_ontoanno
 AS
-SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.coding_scheme, o.code, d.analysis_batch, substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, da.anno_base_id, o.disambiguated 
+SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.code, d.analysis_batch, substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, da.anno_base_id, o.disambiguated, o.cui 
 FROM v_document d INNER JOIN
 anno_base  da ON d.document_id = da.document_id INNER JOIN
 anno_named_entity  ne ON da.anno_base_id = ne.anno_base_id INNER JOIN

@@ -2,6 +2,12 @@ create sequence named_entity_regex_id_sequence;
 create sequence segment_regex_id_sequence;
 create sequence hibernate_sequence;
 
+create table hibernate_sequences (
+	sequence_name varchar2(100) not null,
+	next_val int default 1 not null,
+	primary key (sequence_name)
+);
+
 create table ref_named_entity_regex (
 	named_entity_regex_id int NOT NULL,
 	regex varchar2(512) not null,
@@ -23,7 +29,7 @@ create table ref_segment_regex (
 create table ref_uima_type (
 	uima_type_id int not null,
 	uima_type_name varchar2(256) not null,
-	mapper_name varchar2(256) not null,
+	table_name varchar(100) null,
 	CONSTRAINT PK_ref_uima_type PRIMARY KEY  
 	(
 		uima_type_id 

@@ -1,6 +1,6 @@
 -- insert triggers to generate primary keys from sequence
 
-create trigger trg_ref_named_entity_regex before insert on ref_named_entity_regex
+create or replace trigger trg_ref_named_entity_regex before insert on ref_named_entity_regex
 for each row
 when (new.named_entity_regex_id is null)
 begin
@@ -8,7 +8,7 @@ begin
 end;
 /
 
-create trigger trg_ref_segment_regex before insert on ref_segment_regex
+create or replace trigger trg_ref_segment_regex before insert on ref_segment_regex
 for each row
 when (new.segment_regex_id is null)
 begin
