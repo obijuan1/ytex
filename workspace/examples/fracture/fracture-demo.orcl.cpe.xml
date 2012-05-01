@@ -15,7 +15,7 @@
                 <nameValuePair>
                     <name>queryGetDocument</name>
                     <value>
-                        <string>select note_text from fracture_demo where note_id = :instance_id and site_id = :SITE_ID</string>
+                        <string>select note_text from fracture_demo where note_id = :INSTANCE_ID and site_id = :SITE_ID</string>
                     </value>
                 </nameValuePair>
             </configurationParameterSettings>
