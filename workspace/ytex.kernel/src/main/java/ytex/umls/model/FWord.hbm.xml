@@ -28,5 +28,16 @@
 	<query name="getLastAui"><![CDATA[
 		select max(aui)
 		from UmlsAuiFirstWord
-	]]></query>	
+	]]></query>
+	<query name="getRXNORMCuis"><![CDATA[
+		select distinct(cui)
+		from MRCONSO
+		where sab = 'RXNORM'
+	]]></query>
+	<query name="isRXNORMCui"><![CDATA[
+		select count(*)
+		from MRCONSO
+		where sab = 'RXNORM'
+		and cui = :cui
+	]]></query>
 </hibernate-mapping>

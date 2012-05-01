@@ -33,7 +33,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="corpusEvaluatorOperation" />
 	</aop:config>
 	<bean id="kernelEvaluationDao" class="ytex.kernel.dao.KernelEvaluationDaoImpl">
-		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="sessionFactory" ref="kernelSessionFactory" />
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="conceptDao" class="ytex.kernel.dao.ConceptDaoImpl">
@@ -42,7 +42,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="intrinsicInfoContentEvaluator" ref="intrinsicInfoContentEvaluator" />
 	</bean>
 	<bean id="umlsDao" class="ytex.umls.dao.UMLSDaoImpl">
-		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="sessionFactory" ref="kernelSessionFactory" />
 	</bean>
 	<bean id="wekaBagOfWordsExporter" class="ytex.weka.WekaBagOfWordsExporterImpl">
 		<property name="dataSource" ref="dataSource" />
@@ -55,16 +55,16 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 	<bean id="documentResultInstanceImporter" class="ytex.weka.DocumentResultInstanceImporter">
-		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="sessionFactory" ref="kernelSessionFactory" />
 	</bean>
 	<bean id="wekaResultsImporter" class="ytex.weka.WekaResultsImporterImpl">
 		<property name="docResultInstanceImporter" ref="documentResultInstanceImporter" />
-		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="sessionFactory" ref="kernelSessionFactory" />
 	</bean>
 	<!-- <bean id="corpusDao" class="ytex.kernel.dao.CorpusDaoImpl"> <property 
 		name="sessionFactory" ref="sessionFactory" /> </bean> -->
 	<bean id="classifierEvaluationDao" class="ytex.kernel.dao.ClassifierEvaluationDaoImpl">
-		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="sessionFactory" ref="kernelSessionFactory" />
 	</bean>
 	<bean id="libSVMGramMatrixExporter" class="ytex.libsvm.LibSVMGramMatrixExporterImpl">
 		<property name="dataSource" ref="dataSource" />

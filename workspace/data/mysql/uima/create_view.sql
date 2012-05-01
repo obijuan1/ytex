@@ -38,7 +38,7 @@ INNER JOIN anno_ontology_concept  o ON o.anno_base_id = ne.anno_base_id
 inner join anno_contain ac on da.anno_base_id = ac.child_anno_base_id
 INNER join anno_base s
   on ac.parent_anno_base_id = s.anno_base_id
-  and s.uima_type_id in (select uima_type_id from ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.sentence.type.Sentence')
+  and s.uima_type_id in (select uima_type_id from ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.type.Sentence')
 INNER JOIN document d on da.document_id = d.document_id
 ;
 

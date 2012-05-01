@@ -1,8 +1,12 @@
 package ytex.umls.dao;
 
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import javax.sql.DataSource;
 
@@ -39,32 +43,32 @@ public class UMLSDaoImpl implements UMLSDao {
 		return t.getDataSource();
 	}
 
-//	/*
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see ytex.umls.dao.UMLSDao#getRelationsForSABs(java.util.Set)
-//	 */
-//	public List<Object[]> getRelationsForSABs(String[] sabs) {
-//		Query q = sessionFactory.getCurrentSession().getNamedQuery(
-//				"getRelationsForSABs");
-//		q.setParameterList("sabs", sabs);
-//		// q.setParameterList("rel", INCLUDE_REL);
-//		// q.setParameterList("relaExclude", EXCLUDE_RELA);
-//		return (List<Object[]>) q.list();
-//	}
+	// /*
+	// * (non-Javadoc)
+	// *
+	// * @see ytex.umls.dao.UMLSDao#getRelationsForSABs(java.util.Set)
+	// */
+	// public List<Object[]> getRelationsForSABs(String[] sabs) {
+	// Query q = sessionFactory.getCurrentSession().getNamedQuery(
+	// "getRelationsForSABs");
+	// q.setParameterList("sabs", sabs);
+	// // q.setParameterList("rel", INCLUDE_REL);
+	// // q.setParameterList("relaExclude", EXCLUDE_RELA);
+	// return (List<Object[]>) q.list();
+	// }
 
-//	/*
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see ytex.umls.dao.UMLSDao#getAllRelations(java.util.Set)
-//	 */
-//	public List<Object[]> getAllRelations() {
-//		Query q = sessionFactory.getCurrentSession().getNamedQuery(
-//				"getAllRelations");
-//		// q.setParameterList("rel", INCLUDE_REL);
-//		// q.setParameterList("relaExclude", EXCLUDE_RELA);
-//		return (List<Object[]>) q.list();
-//	}
+	// /*
+	// * (non-Javadoc)
+	// *
+	// * @see ytex.umls.dao.UMLSDao#getAllRelations(java.util.Set)
+	// */
+	// public List<Object[]> getAllRelations() {
+	// Query q = sessionFactory.getCurrentSession().getNamedQuery(
+	// "getAllRelations");
+	// // q.setParameterList("rel", INCLUDE_REL);
+	// // q.setParameterList("relaExclude", EXCLUDE_RELA);
+	// return (List<Object[]>) q.list();
+	// }
 
 	/**
 	 * sets up the umls_aui_fword table.
@@ -116,11 +120,36 @@ public class UMLSDaoImpl implements UMLSDao {
 			names.put((String) cuiName[0], (String) cuiName[1]);
 		}
 	}
-	
+
 	@Override
 	public String getLastAui() {
-		Query q = sessionFactory.getCurrentSession().getNamedQuery("getLastAui");
-		String aui = (String)q.uniqueResult();
+		Query q = sessionFactory.getCurrentSession()
+				.getNamedQuery("getLastAui");
+		String aui = (String) q.uniqueResult();
 		return aui;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public TIntSet getRXNORMCuis() {
+		TIntSet cuis = new TIntHashSet();
+		for (String cui : (List<String>) sessionFactory.getCurrentSession()
+				.getNamedQuery("getRXNORMCuis").list()) {
+			Matcher m = UMLSDao.cuiPattern.matcher(cui);
+			if (m.find()) {
+				cuis.add(Integer.parseInt(m.group(1)));
+			}
+		}
+		return cuis;
+	}
+
+	@Override
+	public boolean isRXNORMCui(String cui) {
+		Query q = sessionFactory.getCurrentSession().getNamedQuery(
+				"isRXNORMCui");
+		q.setCacheable(true);
+		q.setString("cui", cui);
+		long count = ((Long)q.uniqueResult());
+		return count > 0;
 	}
 }

@@ -40,8 +40,8 @@ left join
   select ac.child_anno_base_id, s.span_begin, s.span_end
   from $(db_schema).anno_contain ac 
   INNER join $(db_schema).anno_base s on ac.parent_anno_base_id = s.anno_base_id
-  where s.uima_type_id in (select uima_type_id from $(db_schema).ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.sentence.type.Sentence')
-  and ac.child_uima_type_id in (select uima_type_id from $(db_schema).ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.ae.type.NamedEntity')
+  where s.uima_type_id in (select uima_type_id from $(db_schema).ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.type.Sentence')
+  and ac.child_uima_type_id in (select uima_type_id from $(db_schema).ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.type.NamedEntity')
 ) s on da.anno_base_id = s.child_anno_base_id
 INNER JOIN $(db_schema).v_document d on da.document_id = d.document_id
 ;

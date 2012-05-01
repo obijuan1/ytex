@@ -554,8 +554,7 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 			} else {
 				// we need to load the ic from the database on demand
 				Map<String, FeatureRank> frMap = getICOnDemand(
-						new HashSet<String>(Arrays.asList(concept)),
-						false);
+						new HashSet<String>(Arrays.asList(concept)), false);
 				if (frMap.containsKey(concept))
 					return frMap.get(concept).getEvaluation();
 			}
@@ -730,13 +729,18 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		}
 		this.tuiList = Collections.unmodifiableList(tmpTuiList);
 		// convert list of cuis into bitsets
-		Map<String, BitSet> tmpCuiTuiBitsetMap = new HashMap<String, BitSet>();
+		// Map<String, BitSet> tmpCuiTuiBitsetMap = new HashMap<String,
+		// BitSet>();
+		ImmutableMap.Builder<String, BitSet> cuiTuiBitsetMapBuilder = new ImmutableMap.Builder<String, BitSet>();
 		for (Map.Entry<String, Set<String>> cuiTuiMapEntry : tmpTuiCuiMap
 				.entrySet()) {
-			tmpCuiTuiBitsetMap.put(cuiTuiMapEntry.getKey(),
+			// tmpCuiTuiBitsetMap.put(cuiTuiMapEntry.getKey(),
+			// tuiListToBitset(cuiTuiMapEntry.getValue(), mapTuiIndex));
+			cuiTuiBitsetMapBuilder.put(cuiTuiMapEntry.getKey(),
 					tuiListToBitset(cuiTuiMapEntry.getValue(), mapTuiIndex));
 		}
-		this.cuiTuiMap = Collections.unmodifiableMap(tmpCuiTuiBitsetMap);
+		// this.cuiTuiMap = Collections.unmodifiableMap(tmpCuiTuiBitsetMap);
+		this.cuiTuiMap = cuiTuiBitsetMapBuilder.build();
 	}
 
 	/**

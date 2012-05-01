@@ -4,13 +4,13 @@
 		<collectionIterator>
 			<descriptor>
 				<import
-					location="file:///C:/java/icTAKES-1.3.2/cTAKESdesc/coredesc/collection_reader/FilesInDirectoryCollectionReader.xml" />
+					name="coredesc.collection_reader.FilesInDirectoryCollectionReader" />
 			</descriptor>
 			<configurationParameterSettings>
 				<nameValuePair>
 					<name>InputDirectory</name>
 					<value>
-						<string>testdata/coreftest/testinput</string>
+						<string>examples/pubmed/abstracts</string>
 					</value>
 				</nameValuePair>
 			</configurationParameterSettings>
@@ -19,8 +19,7 @@
 	<casProcessors casPoolSize="3" processingUnitThreadCount="1">
 		<casProcessor deployment="integrated" name="CorefPlaintextProcessor">
 			<descriptor>
-				<import
-					location="file:///C:/java/icTAKES-1.3.2/cTAKESdesc/corefdesc/analysis_engine/CorefProcessor.xml" />
+				<import name="ytex.corefdesc.analysis_engine.CorefProcessor" />
 			</descriptor>
 			<deploymentParameters />
 			<errorHandling>
