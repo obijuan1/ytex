@@ -592,11 +592,17 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			@Override
 			public void execute(Connection conn) throws SQLException {
 				ResultSet rs = null;
+
 				try {
 					DatabaseMetaData dmd = conn.getMetaData();
 					// get columns for corresponding table
+					// mssql - add schema prefix
+					// oracle - convert table name to upper case
 					rs = dmd.getColumns(null, "mssql".equals(dbType) ? dbSchema
-							: null, mapInfo.getTableName(), null);
+							: null,
+							"orcl".equals(dbType) ? mapInfo.getTableName()
+									.toUpperCase() : mapInfo.getTableName(),
+							null);
 					while (rs.next()) {
 						String colName = rs.getString("COLUMN_NAME");
 						int colSize = rs.getInt("COLUMN_SIZE");
