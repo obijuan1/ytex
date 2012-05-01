@@ -32,7 +32,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						<set>
 							<bean class="ytex.uima.mapper.ColumnMappingInfo">
 								<property name="annoFieldName" value="date" />
-								<property name="columnName" value="tstamp" />
+								<property name="columnName" value="TSTAMP" />
 								<property name="converter" ref="ISO8601Converter" />
 								<property name="targetTypeName" value="java.sql.Timestamp" />
 							</bean>
