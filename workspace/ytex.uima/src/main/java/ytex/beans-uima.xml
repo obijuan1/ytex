@@ -22,6 +22,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="dialectClassName" value="${hibernate.dialect}" />
 		<property name="dbSchema" value="${db.schema}" />
 		<property name="dbType" value="${db.type}" />
+		<property name="insertAnnotationContainmentLinks" value="${ytex.insertAnnotationContainmentLinks}" />
 		<property name="annoMappingInfos">
 			<set>
 				<bean class="ytex.uima.mapper.AnnoMappingInfo">

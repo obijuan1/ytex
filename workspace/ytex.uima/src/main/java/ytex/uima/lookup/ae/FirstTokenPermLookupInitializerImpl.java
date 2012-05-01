@@ -1,3 +1,26 @@
+/*
+ * Copyright: (c) 2009   Mayo Foundation for Medical Education and 
+ * Research (MFMER). All rights reserved. MAYO, MAYO CLINIC, and the
+ * triple-shield Mayo logo are trademarks and service marks of MFMER.
+ *
+ * Except as contained in the copyright notice above, or as used to identify 
+ * MFMER as the author of this software, the trade names, trademarks, service
+ * marks, or product names of the copyright holder shall not be used in
+ * advertising, promotion or otherwise in connection with this software without
+ * prior written authorization of the copyright holder.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and 
+ * limitations under the License. 
+ */
 package ytex.uima.lookup.ae;
 
 import java.lang.reflect.Constructor;
@@ -35,8 +58,9 @@ import edu.mayo.bmi.uima.lookup.ae.LookupAnnotationToJCasAdapter;
 import edu.mayo.bmi.uima.lookup.ae.LookupInitializer;
 
 /**
- * @author vngarla copied from ctakes-1.1.1 modified to support a configurable
- *         lookupTokenAdapter to support dictionary lookup with stemmed words.
+ * @author Mayo Clinic
+ * @author vngarla copied from ctakes-1.3.2 modified to support a configurable
+ *         lookupTokenAdapter to support dictionary lookup with stemmed words. *
  */
 public class FirstTokenPermLookupInitializerImpl implements LookupInitializer {
 	// LOG4J logger based on class name
@@ -64,6 +88,9 @@ public class FirstTokenPermLookupInitializerImpl implements LookupInitializer {
 	 */
 	protected Constructor lookupTokenAdapterCtor = null;
 
+	/*
+	 * vng - to support lookup using stemmed words
+	 */
 	public FirstTokenPermLookupInitializerImpl(AnnotatorContext aCtx,
 			Properties props) throws ClassNotFoundException,
 			IllegalAccessException, NoSuchFieldException {
@@ -103,7 +130,6 @@ public class FirstTokenPermLookupInitializerImpl implements LookupInitializer {
 		} catch (NoSuchMethodException nsme) {
 			throw new ClassNotFoundException(lookupTokenAdapterClazz, nsme);
 		}
-
 	}
 
 	public LookupAlgorithm getLookupAlgorithm(DictionaryEngine dictEngine)
@@ -235,6 +261,7 @@ public class FirstTokenPermLookupInitializerImpl implements LookupInitializer {
 	 * 
 	 * @param annotItr
 	 * @return
+	 * @throws AnnotatorInitializationException
 	 */
 	private List constrainToWindow(int begin, int end, Iterator annotItr)
 			throws AnnotatorInitializationException {
@@ -245,6 +272,7 @@ public class FirstTokenPermLookupInitializerImpl implements LookupInitializer {
 
 			// only consider if it's within the window
 			if ((annot.getBegin() >= begin) && (annot.getEnd() <= end)) {
+				// vng list.add(new LookupAnnotationToJCasAdapter(annot));
 				list.add(annoToLookupToken(annot));
 			}
 		}

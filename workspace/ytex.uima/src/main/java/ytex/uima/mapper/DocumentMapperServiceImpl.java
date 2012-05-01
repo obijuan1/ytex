@@ -195,16 +195,17 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	private String dbType;
 	private Dialect dialect;
 	private String dialectClassName;
-
 	private CaseInsensitiveMap docTableCols = new CaseInsensitiveMap();
 
 	private String formattedTableName = null;
 
+	private boolean insertAnnotationContainmentLinks;
+
 	private JdbcTemplate jdbcTemplate;
+
 	private Map<String, AnnoMappingInfo> mapAnnoMappingInfo = new HashMap<String, AnnoMappingInfo>();
 
 	private SessionFactory sessionFactory;
-
 	private ThreadLocal<Map<String, AnnoMappingInfo>> tl_mapAnnoMappingInfo = new ThreadLocal<Map<String, AnnoMappingInfo>>() {
 
 		@Override
@@ -213,6 +214,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		}
 
 	};
+
 	/**
 	 * map of annotation to fields that need to be mapped
 	 */
@@ -223,9 +225,9 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		}
 
 	};
+
 	private PlatformTransactionManager transactionManager;
 	private Map<String, UimaType> uimaTypeMap = new HashMap<String, UimaType>();
-
 	private Properties ytexProperties;
 
 	private void addAnnoLinks(JCas jcas,
@@ -723,14 +725,19 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		return mapInfo;
 	}
 
+	public boolean isInsertAnnotationContainmentLinks() {
+		return insertAnnotationContainmentLinks;
+	}
+
 	private BiMap<Annotation, Integer> saveAnnoBase(final JCas jcas,
 			final Set<String> setTypesToIgnore, final int docId) {
 		final AnnotationIndex<Annotation> annoIdx = jcas
 				.getAnnotationIndex(Annotation.typeIndexID);
-		final List<Annotation> listAnno = new ArrayList<Annotation>(annoIdx.size());
+		final List<Annotation> listAnno = new ArrayList<Annotation>(
+				annoIdx.size());
 		final BiMap<Annotation, Integer> mapAnnoToId = HashBiMap.create();
 		final FSIterator<Annotation> annoIterator = annoIdx.iterator();
-		this.sessionFactory.getCurrentSession().doWork(new Work(){
+		this.sessionFactory.getCurrentSession().doWork(new Work() {
 
 			@Override
 			public void execute(Connection conn) throws SQLException {
@@ -748,7 +755,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 						String annoClass = anno.getClass().getName();
 						if (!setTypesToIgnore.contains(annoClass)
 								&& uimaTypeMap.containsKey(annoClass)) {
-							// should not ignore, and we know how to map this annotation
+							// should not ignore, and we know how to map this
+							// annotation
 							listAnno.add(anno);
 							ps.setInt(1, docId);
 							ps.setInt(2, anno.getBegin());
@@ -781,12 +789,15 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 						}
 					}
 				}
-			}});
+			}
+		});
 		return mapAnnoToId;
 	}
 
 	private BiMap<Annotation, Integer> saveAnnoBaseHib(JCas jcas,
 			Set<String> setTypesToIgnore, Document doc) {
+		if (log.isTraceEnabled())
+			log.trace("begin saveAnnoBaseHib");
 		AnnotationIndex<Annotation> annoIdx = jcas
 				.getAnnotationIndex(Annotation.typeIndexID);
 		List<Annotation> listAnno = new ArrayList<Annotation>(annoIdx.size());
@@ -810,18 +821,34 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				mapAnnoToHib.put(anno, hibAnno);
 			}
 		}
-		// insert containment links - this will force a flush
-		// thereby guarantee the the annoBaseId is set
-		Query q = sessionFactory.getCurrentSession().getNamedQuery(
-				"insertAnnotationContainmentLinks");
-		q.setInteger("documentID", doc.getDocumentID());
-		q.executeUpdate();
+		sessionFactory.getCurrentSession().flush();
+		insertAnnotationContainmentLinks(doc.getDocumentID());
 		BiMap<Annotation, Integer> mapAnnoToId = HashBiMap.create();
 		for (Map.Entry<Annotation, DocumentAnnotation> e : mapAnnoToHib
 				.entrySet()) {
 			mapAnnoToId.put(e.getKey(), e.getValue().getDocumentAnnotationID());
 		}
+		if (log.isTraceEnabled())
+			log.trace("end saveAnnoBaseHib");
 		return mapAnnoToId;
+	}
+
+	/**
+	 * insert annotation containment links.
+	 * 
+	 * @param documentId
+	 */
+	private void insertAnnotationContainmentLinks(int documentId) {
+		if (this.isInsertAnnotationContainmentLinks()) {
+			if (log.isTraceEnabled())
+				log.trace("begin insertAnnotationContainmentLinks");
+			Query q = sessionFactory.getCurrentSession().getNamedQuery(
+					"insertAnnotationContainmentLinks");
+			q.setInteger("documentID", documentId);
+			q.executeUpdate();
+			if (log.isTraceEnabled())
+				log.trace("end insertAnnotationContainmentLinks");
+		}
 	}
 
 	/**
@@ -945,6 +972,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 * @param listAnnoLinks
 	 */
 	private void saveAnnoLinks(final List<AnnoLink> listAnnoLinks) {
+		if (log.isTraceEnabled())
+			log.trace("begin saveAnnoLinks");
 		jdbcTemplate
 				.batchUpdate(
 						"insert into "
@@ -966,6 +995,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 								ps.setString(3, l.getFeature());
 							}
 						});
+		if (log.isTraceEnabled())
+			log.trace("end saveAnnoLinks");
 	}
 
 	/**
@@ -981,6 +1012,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	private void saveAnnoPrimitive(
 			final BiMap<Annotation, Integer> mapAnnoToId,
 			final Set<Integer> annoIds, final List<AnnoLink> listAnnoLinks) {
+		if (log.isTraceEnabled())
+			log.trace("begin saveAnnoPrimitive");
 		final BiMap<Integer, Annotation> mapIdToAnno = mapAnnoToId.inverse();
 		// nothing to do
 		if (annoIds.size() == 0)
@@ -1065,6 +1098,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		for (String fsType : mapAnnoToFS.keySet()) {
 			this.saveAnnoFS(mapAnnoToFS.get(fsType), mapAnnoToId);
 		}
+		if (log.isTraceEnabled())
+			log.trace("end saveAnnoPrimitive");
 	}
 
 	private void saveAnnotations(JCas jcas, Set<String> setTypesToIgnore,
@@ -1093,6 +1128,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 
 	private void saveAnnotationsHib(JCas jcas, Set<String> setTypesToIgnore,
 			Document doc) {
+		if (log.isTraceEnabled())
+			log.trace("begin saveAnnotationsHib");
 		BiMap<Annotation, Integer> mapAnnoToId = saveAnnoBaseHib(jcas,
 				setTypesToIgnore, doc);
 		// split the annotations up by type
@@ -1113,6 +1150,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		// saveMarkablePairs(jcas, mapAnnoToId, listAnnoLinks);
 		// saveCoref(jcas, mapAnnoToId, listAnnoLinks);
 		saveAnnoLinks(listAnnoLinks);
+		if (log.isTraceEnabled())
+			log.trace("end saveAnnotationsHib");
 	}
 
 	/**
@@ -1193,6 +1232,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	public Integer saveDocument(final JCas jcas, final String analysisBatch,
 			final boolean bStoreDocText, final boolean bStoreCAS,
 			final Set<String> setTypesToIgnore) {
+		if (log.isTraceEnabled())
+			log.trace("begin saveDocument");
 		// communicate options to mappers using thread local variable
 		final DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(
 				TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1235,6 +1276,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		// return null;
 		// }
 		// });
+		if (log.isTraceEnabled())
+			log.trace("end saveDocument");
 		return documentId;
 	}
 
@@ -1271,6 +1314,11 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void setInsertAnnotationContainmentLinks(
+			boolean insertAnnotationContainmentLinks) {
+		this.insertAnnotationContainmentLinks = insertAnnotationContainmentLinks;
 	}
 
 	public void setMapAnnoMappingInfo(
