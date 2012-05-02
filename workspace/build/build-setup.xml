@@ -41,14 +41,14 @@ Call with option -projecthelp for more info.
 </echo>
 	</target>
 
-	<target name="all" depends="dbping,setup.lvg,templateToConfig,setupDatabase" description="calls dbping,setup.lvg,templateToConfig,setupDatabase" />
+	<target name="all" depends="dbping,setup.ictakes,setup.lvg.all,templateToConfig,setupDatabase" description="calls dbping,setup.ictakes,setup.lvg.all,templateToConfig,setupDatabase" />
 	<target name="dbping" description="verify db connection params">
 		<ant dir="${ytex.home}/data" target="dbping" />
 	</target>
 	<target name="setupDatabase" description="setup ytex database tables">
 		<ant dir="${ytex.home}/data" target="all" />
 	</target>
-	<target name="templateToConfig.init" description="setup variables for updating template" depends="init.ictakes.url">
+	<target name="templateToConfig.init" description="setup variables for updating template">
 		<condition property="filter.umls.catalog" value="" else="catalog=&quot;${umls.catalog}&quot;">
 			<or>
 				<!-- for mysql/oracle, no catalog - assume umls in same catalog -->
@@ -75,7 +75,6 @@ Call with option -projecthelp for more info.
 				<filtersfile file="${ytex.properties}" />
 				<filter token="umls.schema" value="${umls.schema}" />
 				<filter token="filter.umls.catalog" value="${filter.umls.catalog}" />
-				<filter token="ictakes.url" value="${ictakes.url}" />
 			</filterset>
 		</copy>
 	</target>

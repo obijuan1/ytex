@@ -122,7 +122,7 @@
 		<delete dir="${project.bin.home}" quiet="yes" />
 		<mkdir dir="${project.bin.home}" />
 		<mkdir dir="${ytex.dist.home}/libs.system" />
-		<javac srcdir="${project.src.home}" destdir="${project.bin.home}" classpathref="${project.classpathref}" debug="yes" />
+		<javac srcdir="${project.src.home}" destdir="${project.bin.home}" classpathref="${project.classpathref}" debug="yes" source="1.6" target="1.6" />
 		<copy todir="${project.bin.home}">
 			<fileset dir="${project.src.home}">
 				<exclude name="**/*.java" />
@@ -146,7 +146,7 @@
 			</fileset>
 		</copy>
 		<mkdir dir="${ytex.web.classes.dir}" />
-		<javac srcdir="../ytex.web/src/main/java" destdir="${ytex.web.classes.dir}" debug="yes">
+		<javac srcdir="../ytex.web/src/main/java" destdir="${ytex.web.classes.dir}" debug="yes" source="1.6" target="1.6">
 			<classpath>
 				<fileset dir="${ytex.dist.home}/libs.system">
 					<include name="ytex.model.jar" />

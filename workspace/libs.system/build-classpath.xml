@@ -75,20 +75,6 @@
 	<condition property="umls.prefix" value="${umls.catalog}.${umls.schema}" else="${umls.schema}">
 		<equals arg1="mssql" arg2="${db.type}" />
 	</condition>
-	<target name="init.ictakes.url" description="set ictakes.url, used in urls in UIMA descriptors">
-		<!-- ant url task needs a file, doesn't work with dirs -->
-		<property name="ictakes.dir.abs" location="${ictakes.home}" />
-		<pathconvert property="ictakes.dir" targetos="unix">
-			<path>
-				<pathelement location="${ictakes.dir.abs}" />
-			</path>
-		</pathconvert>
-		<condition property="ictakes.url" value="file:///${ictakes.dir}" else="file:${ictakes.dir}">
-			<os family="windows" />
-		</condition>
-		<echo>${ictakes.url}</echo>
-	</target>
-
 	<!-- 
 	for some reason on linux just copying the jars to the ant/lib directory doesn't work.
 	explicitly define the task.

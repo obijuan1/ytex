@@ -7,7 +7,12 @@
 @set JAVA_HOME=C:\java\jdk-6u17-windows-x32
 
 @rem where ytex is intalled (the directory this file is in)
-@set YTEX_HOME=C:\java\clinicalnlp\ytex
+@set YTEX_HOME=C:\java\clinicalnlp\ytex-0.7
+
+@rem where ictakes is/will be installed
+@rem if you have ictakes installed, set this variable to your ictakes directory
+@rem otherwise this is the directory where the ytex installer will put ictakes 
+@set ICTAKES_HOME=%YTEX_HOME%\..\icTAKES-1.3.2
 
 @rem -------------------------------------------
 @rem if you installed from ytex-with-dependencies.zip, 
@@ -29,7 +34,7 @@
 
 @rem MS SQL server jdbc driver directory
 @rem downloaded from http://www.microsoft.com/downloads/details.aspx?displaylang=en&FamilyID=a737000d-68d0-4531-b65d-da0f2a735707
-@set SQLJDBC_HOME=%YTEX_LIB_SYS_HOME%\sqljdbc_3.0
+@set SQLJDBC_HOME=%YTEX_LIB_SYS_HOME%\sqljdbc_4.0
 
 @rem change %SQLJDBC_HOME%\enu\auth\x86 to %SQLJDBC_HOME%\enu\auth\x64 if using a 64 bit JDK
 @set PATH=%JAVA_HOME%\bin;%SystemRoot%;%SystemRoot%\System32;%SystemRoot%\System32\wbem;%ANT_HOME%\bin;%SQLJDBC_HOME%\enu\auth\x86
@@ -44,5 +49,6 @@
 @set TOMCAT_CP=%JDBC_CP%;%YTEX_HOME%\config\desc
 
 @rem YTEX classpath
-@set CLASSPATH=%YTEX_LIB_SYS_HOME%\ctakes-patches.jar;%YTEX_LIB_SYS_HOME%\ytex.jar
+@set CLASSPATH=%YTEX_LIB_SYS_HOME%\ytex.jar;%ICTAKES_HOME%\cTAKES.jar;%ICTAKES_HOME%\cTAKESdesc;%ICTAKES_HOME%\resources
+@set JAVA_OPTS=-Xmx500m -Djava.util.logging.config.file=%YTEX_HOME%/config/desc/Logger.properties -Dlog4j.configuration=log4j.properties
 

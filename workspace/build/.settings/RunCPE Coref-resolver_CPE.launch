@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/ytex.uima/src/main/java/ytex/tools/RunCPE.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.tools.RunCPE"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${workspace_loc}\config\desc\ytex\corefdesc\collection_processing_engine\Coref-resolver_CPE.xml"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="build"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g&#13;&#10;-Djava.util.logging.config.file=${workspace_loc}/config/desc/Logger.properties &#13;&#10;-Dlog4j.configuration=file:///${workspace_loc}/config/desc/log4j.properties"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc}"/>
+</launchConfiguration>

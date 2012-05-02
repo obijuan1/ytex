@@ -1,5 +1,5 @@
 @setlocal
 @call %~dp0setenv.cmd
-@call %YTEX_HOME%\ytexTools.cmd CPE
+java %JAVA_OPTS% org.apache.uima.tools.cpm.CpmFrame
 @endlocal
 

@@ -1,4 +1,4 @@
 @setlocal
 @call %~dp0setenv.cmd
-@call %YTEX_HOME%\ytexTools.cmd DocumentAnalyzer
+java %JAVA_OPTS% org.apache.uima.tools.docanalyzer.DocumentAnalyzer
 @endlocal
