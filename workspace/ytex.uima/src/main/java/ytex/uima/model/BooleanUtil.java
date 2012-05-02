@@ -1,4 +1,4 @@
-package ytex.model;
+package ytex.uima.model;
 
 public class BooleanUtil {
 	public static String toYNString(Boolean bool) {

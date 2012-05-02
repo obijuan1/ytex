@@ -20,9 +20,9 @@ import org.apache.uima.resource.ResourceInitializationException;
 import edu.mayo.bmi.uima.core.type.NamedEntity;
 import edu.mayo.bmi.uima.core.type.Segment;
 
-import ytex.dao.NamedEntityRegexDao;
-import ytex.model.NamedEntityRegex;
 import ytex.uima.ApplicationContextHolder;
+import ytex.uima.dao.NamedEntityRegexDao;
+import ytex.uima.model.NamedEntityRegex;
 import ytex.uima.types.OntologyConcept;
 
 

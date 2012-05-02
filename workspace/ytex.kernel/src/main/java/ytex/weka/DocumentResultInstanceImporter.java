@@ -6,9 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 
-import ytex.model.Document;
-import ytex.model.DocumentClass;
-
 public class DocumentResultInstanceImporter implements
 		WekaResultInstanceImporter {
 	private SessionFactory sessionFactory;
@@ -31,18 +28,19 @@ public class DocumentResultInstanceImporter implements
 		try {
 			int documentId = Integer.parseInt(instanceKey.get(0));
 			if (documentId > 0) {
-				Document doc = (Document) this.getSessionFactory()
-						.getCurrentSession().get(Document.class, documentId);
-				if (doc != null) {
-					DocumentClass docClass = new DocumentClass();
-					docClass.setDocument(doc);
-					docClass.setClassAuto(classAuto);
-					docClass.setClassGold(classGold);
-					docClass.setTask(task);
-					this.getSessionFactory().getCurrentSession().save(docClass);
-				} else {
-					log.error("no document for id: " + documentId);
-				}
+				// todo fix this
+//				Document doc = (Document) this.getSessionFactory()
+//						.getCurrentSession().get(Document.class, documentId);
+//				if (doc != null) {
+//					DocumentClass docClass = new DocumentClass();
+//					docClass.setDocument(doc);
+//					docClass.setClassAuto(classAuto);
+//					docClass.setClassGold(classGold);
+//					docClass.setTask(task);
+//					this.getSessionFactory().getCurrentSession().save(docClass);
+//				} else {
+//					log.error("no document for id: " + documentId);
+//				}
 			} else {
 				log.error("Invalid instance id: " + instanceKey
 						+ ", instanceNumber: " + instanceNumber);

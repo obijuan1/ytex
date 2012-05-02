@@ -1,10 +1,10 @@
-package ytex.dao;
+package ytex.uima.dao;
 
 import java.util.List;
 
 import org.hibernate.SessionFactory;
 
-import ytex.model.NamedEntityRegex;
+import ytex.uima.model.NamedEntityRegex;
 
 
 public class NamedEntityRegexDaoImpl implements NamedEntityRegexDao {

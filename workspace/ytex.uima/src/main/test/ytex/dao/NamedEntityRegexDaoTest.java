@@ -1,8 +1,9 @@
 package ytex.dao;
 
 import junit.framework.TestCase;
-import ytex.model.NamedEntityRegex;
 import ytex.uima.ApplicationContextHolder;
+import ytex.uima.dao.NamedEntityRegexDao;
+import ytex.uima.model.NamedEntityRegex;
 
 public class NamedEntityRegexDaoTest extends TestCase {
 	NamedEntityRegexDao neRegexDao;

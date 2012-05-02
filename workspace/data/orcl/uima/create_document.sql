@@ -8,7 +8,7 @@ create sequence demo_note_id_sequence;
 CREATE TABLE document(
 	document_id int  NOT NULL,
 	instance_id NUMBER(19) default 0 not null,
-	uimaDocumentID varchar(256) null,
+	instance_key varchar(256) null,
 	analysis_batch varchar2(50) default ' ' NOT NULL,
 	cas blob NULL,
 	doc_text clob NULL,

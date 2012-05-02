@@ -1,7 +1,7 @@
-package ytex.dao;
+package ytex.uima.dao;
 
 
-import ytex.model.Document;
+import ytex.uima.model.Document;
 
 /**
  * DAO interface for accessing Document objects.

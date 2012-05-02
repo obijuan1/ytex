@@ -19,9 +19,10 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import ytex.model.Document;
 import ytex.uima.ApplicationContextHolder;
+import ytex.uima.dao.DocumentDao;
 import ytex.uima.mapper.DocumentMapperService;
+import ytex.uima.model.Document;
 
 
 public class DocumentDaoTest extends TestCase {

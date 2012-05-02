@@ -1,9 +1,9 @@
-package ytex.dao;
+package ytex.uima.dao;
 
 
 import java.util.List;
 
-import ytex.model.SegmentRegex;
+import ytex.uima.model.SegmentRegex;
 
 /**
  * Dao to access Segment Boundary Regular Expressions.

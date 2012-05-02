@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
 import javax.sql.DataSource;
@@ -58,9 +60,9 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import ytex.dao.DBUtil;
-import ytex.model.Document;
-import ytex.model.DocumentAnnotation;
-import ytex.model.UimaType;
+import ytex.uima.model.Document;
+import ytex.uima.model.DocumentAnnotation;
+import ytex.uima.model.UimaType;
 import ytex.uima.types.DocKey;
 import ytex.uima.types.KeyValuePair;
 
@@ -371,6 +373,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			setUimaDocId(jcas, doc,
 					"org.apache.uima.examples.SourceDocumentInformation", "uri");
 		}
+		// look for document
 		if (bStoreCAS) {
 			try {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -504,6 +507,14 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	public void initDocKeyMapping() {
 		AbstractEntityPersister cm = (AbstractEntityPersister) this.sessionFactory
 				.getClassMetadata(Document.class);
+		// figure out which columns are already mapped
+		String[] propNames = cm.getPropertyNames();
+		Set<String> mappedCols = new TreeSet<String>(
+				String.CASE_INSENSITIVE_ORDER);
+		for (String prop : propNames) {
+			String cols[] = cm.getPropertyColumnNames(prop);
+			mappedCols.addAll(Arrays.asList(cols));
+		}
 		// this.formattedTableName = DBUtil.formatTableName(cm.getTableName());
 		this.formattedTableName = cm.getTableName();
 		log.info("document table name = " + formattedTableName);
@@ -519,7 +530,11 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			ResultSetMetaData rsmd = rs.getMetaData();
 			int nCols = rsmd.getColumnCount();
 			for (int i = 1; i <= nCols; i++) {
-				docTableCols.put(rsmd.getColumnName(i), rsmd.getColumnType(i));
+				String colName = rsmd.getColumnName(i);
+				if (!mappedCols.contains(colName)) {
+					log.info("document candidate foreign key column: " + colName);
+					docTableCols.put(colName, rsmd.getColumnType(i));
+				}
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("docTableCols: " + docTableCols);
@@ -1181,9 +1196,11 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		for (int i = 0; i < fsa.size(); i++) {
 			KeyValuePair kp = (KeyValuePair) fsa.get(i);
 			String key = kp.getKey();
-			if (key.equalsIgnoreCase("uid")) {
-				// uid is something we 'know' about - set it
+			if (key.equalsIgnoreCase("instance_id")) {
+				// instance_id is something we 'know' about - set it
 				document.setInstanceID(kp.getValueLong());
+			} else if (key.equalsIgnoreCase("instance_key")) {
+				document.setInstanceKey(kp.getValueString());
 			} else if (this.docTableCols.containsKey(key)) {
 				// only attempt to map keys that correspond to valid columns
 				boolean badArg = false;
@@ -1366,7 +1383,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 					String uimaDocId = docId.getStringValue(docIDFeature);
 					if (!Strings.isNullOrEmpty(uimaDocId)) {
 						uimaDocId = this.truncateString(uimaDocId, 256);
-						doc.setUimaDocumentID(uimaDocId);
+						doc.setInstanceKey(uimaDocId);
 						return uimaDocId;
 					}
 				}

@@ -1,7 +1,7 @@
 CREATE TABLE document(
 	document_id int /* AUTO_INCREMENT */ NOT NULL,
 	instance_id bigint not null default 0,
-	uimaDocumentID varchar(256) null comment 'mapped to DocumentID.DocumentID',
+	instance_key varchar(256) null comment 'mapped to DocumentID.DocumentID',
 	analysis_batch varchar(50) NOT NULL,
 	cas longblob NULL,
 	doc_text text NULL,

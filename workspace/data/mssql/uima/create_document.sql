@@ -3,7 +3,7 @@
 CREATE TABLE $(db_schema).[document](
 	[document_id] [int] /* IDENTITY(1,1) */ NOT NULL primary key,
 	instance_id bigint not null default 0,
-	uimaDocumentID varchar(256) null,
+	instance_key varchar(256) null,
 	[analysis_batch] [varchar](50) NOT NULL,
 	[cas] [varbinary](max) NULL,
 	[doc_text] [nvarchar](max) NULL

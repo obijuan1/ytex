@@ -7,11 +7,10 @@
 		<constructor-arg>
 			<list>
 				<value>ytex/beans-datasource.xml</value>
-				<value>ytex/beans-model.hbm.xml</value>
-				<value>ytex/beans.xml</value>
-				<value>ytex/beans-kernel.hbm.xml</value>
+				<value>ytex/beans-uima.hbm.xml</value>
+				<value>ytex/beans-uima-dao.xml</value>
+				<value>ytex/beans-uima-mapper.xml</value>
 				<value>ytex/beans-kernel.xml</value>
-				<value>ytex/beans-uima.xml</value>
 			</list>
 		</constructor-arg>
 	</bean>

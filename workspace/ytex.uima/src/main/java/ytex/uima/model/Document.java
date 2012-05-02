@@ -1,4 +1,4 @@
-package ytex.model;
+package ytex.uima.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class Document implements Serializable {
 	 */
 	long instanceID;
 	
-	String uimaDocumentID;
+	String instanceKey;
 
 	public Document() {
 		super();
@@ -78,8 +78,8 @@ public class Document implements Serializable {
 		return instanceID;
 	}
 
-	public String getUimaDocumentID() {
-		return uimaDocumentID;
+	public String getInstanceKey() {
+		return instanceKey;
 	}
 
 	public void setAnalysisBatch(String analysisBatch) {
@@ -111,8 +111,8 @@ public class Document implements Serializable {
 		this.instanceID = instanceID;
 	}
 
-	public void setUimaDocumentID(String uimaDocumentID) {
-		this.uimaDocumentID = uimaDocumentID;
+	public void setInstanceKey(String uimaDocumentID) {
+		this.instanceKey = uimaDocumentID;
 	}
 
 	@Override

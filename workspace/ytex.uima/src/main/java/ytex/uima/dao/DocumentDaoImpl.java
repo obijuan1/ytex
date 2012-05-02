@@ -1,11 +1,11 @@
-package ytex.dao;
+package ytex.uima.dao;
 
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 
-import ytex.model.Document;
+import ytex.uima.model.Document;
 
 public class DocumentDaoImpl implements DocumentDao {
 	private SessionFactory sessionFactory;

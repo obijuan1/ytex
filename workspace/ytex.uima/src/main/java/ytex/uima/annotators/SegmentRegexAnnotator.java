@@ -19,9 +19,9 @@ import org.apache.uima.resource.ResourceInitializationException;
 
 import com.google.common.base.Strings;
 
-import ytex.dao.SegmentRegexDao;
-import ytex.model.SegmentRegex;
 import ytex.uima.ApplicationContextHolder;
+import ytex.uima.dao.SegmentRegexDao;
+import ytex.uima.model.SegmentRegex;
 import edu.mayo.bmi.uima.core.type.Segment;
 
 /**

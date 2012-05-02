@@ -1,11 +1,11 @@
-package ytex.dao;
+package ytex.uima.dao;
 
 
 import java.util.List;
 
 import org.hibernate.SessionFactory;
 
-import ytex.model.SegmentRegex;
+import ytex.uima.model.SegmentRegex;
 
 public class SegmentRegexDaoImpl implements SegmentRegexDao {
 	public SessionFactory getSessionFactory() {

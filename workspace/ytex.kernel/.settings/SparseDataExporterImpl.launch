@@ -7,8 +7,8 @@
 <listEntry value="1"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.kernel.SparseDataExporterImpl"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-prop export-bow.xml -type libsvm"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-prop export.xml -type sparsematrix"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="build"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g"/>
-<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:i2b2.2008/libsvm/bag-usword-10/0.0337}"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1g&#13;&#10;-Djava.util.logging.config.file=${workspace_loc}/config/desc/Logger.properties &#13;&#10;-Dlog4j.configuration=file:///${workspace_loc}/config/desc/log4j.properties"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:examples/fracture/word}"/>
 </launchConfiguration>

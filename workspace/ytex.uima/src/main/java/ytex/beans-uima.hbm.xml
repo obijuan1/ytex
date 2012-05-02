@@ -11,10 +11,16 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="dataSource" ref="dataSource" />
 		<property name="mappingResources">
 			<list>
+				<!--  kernel persistent objects -->
 				<value>ytex/kernel/model/KernelEvaluation.hbm.xml</value>
 				<value>ytex/kernel/model/ClassifierEvaluation.hbm.xml</value>
+				<!--  umls persistent objects -->
 				<value>ytex/umls/model/UMLS.hbm.xml</value>
 				<value>ytex/umls/model/FWord.hbm.xml</value>
+				<!--  uima persistent objects -->
+				<value>ytex/uima/model/Document.hbm.xml</value>
+				<value>ytex/uima/model/NamedEntityRegex.hbm.xml</value>
+				<value>ytex/uima/model/SegmentRegex.hbm.xml</value>				
 			</list>
 		</property>
 		<property name="hibernateProperties" ref="hibernateProperties" />

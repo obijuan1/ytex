@@ -1,4 +1,4 @@
-package ytex.model;
+package ytex.uima.model;
 
 import java.io.Serializable;
 import java.sql.PreparedStatement;

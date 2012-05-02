@@ -1,9 +1,9 @@
-package ytex.dao;
+package ytex.uima.dao;
 
 
 import java.util.List;
 
-import ytex.model.NamedEntityRegex;
+import ytex.uima.model.NamedEntityRegex;
 
 /**
  * Dao to access NamedEntity Regular Expressions used by the NamedEntityRegexAnnotator
