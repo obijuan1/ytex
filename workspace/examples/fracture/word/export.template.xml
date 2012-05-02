@@ -6,16 +6,16 @@
 	select note_id, 
 		fracture, 
 		case when note_set = 'train' then 1 else 0 end train
-	from fracture_demo
+	from @db.schema@.fracture_demo
 ]]></entry>
 <entry key="numericWordQuery"><![CDATA[
-	select f.note_id, canonical_form, COUNT(*)
-	from anno_word_token w
-	inner join anno_base da on w.anno_base_id = da.anno_base_id
-	inner join document d on d.document_id = da.document_id
-	inner join fracture_demo f on f.note_id = d."uid"
-	where canonical_form is not null
+	select f.note_id, canonicalForm, COUNT(*)
+	from @db.schema@.anno_token w
+	inner join @db.schema@.anno_base da on w.anno_base_id = da.anno_base_id
+	inner join @db.schema@.document d on d.document_id = da.document_id
+	inner join @db.schema@.fracture_demo f on f.note_id = d.instance_id
+	where canonicalForm is not null
 	and d.analysis_batch = 'cpe-fracture'
-	group by f.note_id, canonical_form
+	group by f.note_id, canonicalForm
 ]]></entry>
 </properties>

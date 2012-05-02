@@ -12,7 +12,7 @@
 	select f.note_id, code, COUNT(*)
 	from @db.schema@.v_document_ontoanno o
 	inner join @db.schema@.document d on d.document_id = o.document_id
-	inner join @db.schema@.fracture_demo f on f.note_id = d."uid"
+	inner join @db.schema@.fracture_demo f on f.note_id = d.instance_id
 	where certainty <> -1
 	and d.analysis_batch = 'cpe-fracture'
 	group by f.note_id, code
