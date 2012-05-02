@@ -134,7 +134,7 @@ Call with option -projecthelp for more info.
 			<then>
 				<echo>unpacking ${ictakes.filename}</echo>
 				<mkdir dir="${ictakes.home}" />
-				<unzip file="${download.dir}/${ictakes.filename}" todir="${ictakes.home}" />
+				<unzip src="${download.dir}/${ictakes.filename}" dest="${ictakes.home}" />
 			</then>
 		</if>
 		<if>
