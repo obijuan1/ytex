@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- spring bean in ytex.uima -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+	<!-- ensure that the above transactional advice runs for any execution of 
+		an operation defined by the FooService interface -->
+	<aop:config>
+		<aop:pointcut id="mapperOperation" expression="execution(* ytex.uima.mapper.*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="mapperOperation" />
+	</aop:config>
+	<bean id="ISO8601Converter" class="ytex.uima.mapper.ISO8601Converter"></bean>
+
+	<bean id="documentMapperService" class="ytex.uima.mapper.DocumentMapperServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="dialectClassName" value="${hibernate.dialect}" />
+		<property name="dbSchema" value="${db.schema}" />
+		<property name="dbType" value="${db.type}" />
+		<property name="annoMappingInfos">
+			<set>
+				<bean class="ytex.uima.mapper.AnnoMappingInfo">
+					<property name="annoClassName" value="ytex.uima.types.Date" />
+					<property name="tableName" value="anno_date" />
+					<property name="columnMappingInfos">
+						<set>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="date" />
+								<property name="columnName" value="TSTAMP" />
+								<property name="converter" ref="ISO8601Converter" />
+								<property name="targetTypeName" value="java.sql.Timestamp" />
+							</bean>
+						</set>
+					</property>
+				</bean>
+				<bean class="ytex.uima.mapper.AnnoMappingInfo">
+					<property name="annoClassName"
+						value="org.mipacq.annotation.type.CoreferenceRelation" />
+					<property name="tableName" value="anno_link" />
+					<property name="columnMappingInfos">
+						<set>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="arg1" />
+								<property name="columnName" value="parent_anno_base_id" />
+								<property name="jxpath" value="argument/content" />
+							</bean>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="arg2" />
+								<property name="columnName" value="child_anno_base_id" />
+								<property name="jxpath" value="argument/content" />
+							</bean>
+						</set>
+					</property>
+				</bean>
+				<bean class="ytex.uima.mapper.AnnoMappingInfo">
+					<property name="annoClassName"
+						value="edu.mayo.bmi.uima.coref.type.MarkablePairSet" />
+					<property name="tableName" value="anno_link" />
+					<property name="columnMappingInfos">
+						<set>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="anaphor" />
+								<property name="columnName" value="parent_anno_base_id" />
+								<property name="jxpath" value="content" />
+							</bean>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="antecedentList" />
+								<property name="columnName" value="child_anno_base_id" />
+								<property name="jxpath" value="feature" />
+							</bean>
+						</set>
+					</property>
+				</bean>
+			</set>
+		</property>
+	</bean>
+</beans>
