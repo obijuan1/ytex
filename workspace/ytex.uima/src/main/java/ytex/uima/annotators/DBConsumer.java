@@ -37,6 +37,8 @@ import ytex.uima.mapper.DocumentMapperService;
  * <li>storeCAS - boolean - should the serialized xmi cas be stored in the DB?
  * defaults to true
  * <li>typesToIngore - multivalued String - uima types not to be saved.
+ * <li>insertAnnotationContainmentLinks - boolean - should we store containment
+ * links? defaults to true
  * </ul>
  * 
  * @author vijay
@@ -49,7 +51,9 @@ public class DBConsumer extends JCasAnnotator_ImplBase {
 	private String analysisBatch;
 	private boolean bStoreDocText;
 	private boolean bStoreCAS;
+	private boolean bInsertAnnotationContainmentLinks;
 	private Set<String> setTypesToIgnore = new HashSet<String>();
+
 	/**
 	 * read config parameters
 	 */
@@ -65,6 +69,8 @@ public class DBConsumer extends JCasAnnotator_ImplBase {
 				.getConfigParameterValue("storeDocText");
 		Boolean boolStoreCAS = (Boolean) aContext
 				.getConfigParameterValue("storeCAS");
+		Boolean boolInsertAnnotationContainmentLinks = (Boolean) aContext
+				.getConfigParameterValue("insertAnnotationContainmentLinks");
 		String typesToIgnore[] = (String[]) aContext
 				.getConfigParameterValue("typesToIgnore");
 		if (typesToIgnore != null)
@@ -72,6 +78,8 @@ public class DBConsumer extends JCasAnnotator_ImplBase {
 		bStoreDocText = boolStoreDocText == null ? true : boolStoreDocText
 				.booleanValue();
 		bStoreCAS = boolStoreCAS == null ? true : boolStoreCAS.booleanValue();
+		bInsertAnnotationContainmentLinks = boolInsertAnnotationContainmentLinks == null ? true
+				: boolInsertAnnotationContainmentLinks.booleanValue();
 		documentMapperService = (DocumentMapperService) ApplicationContextHolder
 				.getApplicationContext().getBean("documentMapperService");
 	}
@@ -84,7 +92,7 @@ public class DBConsumer extends JCasAnnotator_ImplBase {
 	@Override
 	public void process(JCas jcas) {
 		Integer documentID = documentMapperService.saveDocument(jcas,
-				analysisBatch, bStoreDocText, bStoreCAS, setTypesToIgnore);
+				analysisBatch, bStoreDocText, bStoreCAS, bInsertAnnotationContainmentLinks, setTypesToIgnore);
 		if (documentID != null && xmiOutputDirectory != null
 				&& xmiOutputDirectory.length() > 0) {
 			File dirOut = new File(xmiOutputDirectory);

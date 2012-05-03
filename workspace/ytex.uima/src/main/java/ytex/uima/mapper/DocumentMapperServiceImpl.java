@@ -201,8 +201,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 
 	private String formattedTableName = null;
 
-	private boolean insertAnnotationContainmentLinks;
-
 	private JdbcTemplate jdbcTemplate;
 
 	private Map<String, AnnoMappingInfo> mapAnnoMappingInfo = new HashMap<String, AnnoMappingInfo>();
@@ -532,7 +530,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			for (int i = 1; i <= nCols; i++) {
 				String colName = rsmd.getColumnName(i);
 				if (!mappedCols.contains(colName)) {
-					log.info("document candidate foreign key column: " + colName);
+					log.info("document candidate foreign key column: "
+							+ colName);
 					docTableCols.put(colName, rsmd.getColumnType(i));
 				}
 			}
@@ -746,10 +745,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		return mapInfo;
 	}
 
-	public boolean isInsertAnnotationContainmentLinks() {
-		return insertAnnotationContainmentLinks;
-	}
-
 	private BiMap<Annotation, Integer> saveAnnoBase(final JCas jcas,
 			final Set<String> setTypesToIgnore, final int docId) {
 		final AnnotationIndex<Annotation> annoIdx = jcas
@@ -843,7 +838,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			}
 		}
 		sessionFactory.getCurrentSession().flush();
-		insertAnnotationContainmentLinks(doc.getDocumentID());
 		BiMap<Annotation, Integer> mapAnnoToId = HashBiMap.create();
 		for (Map.Entry<Annotation, DocumentAnnotation> e : mapAnnoToHib
 				.entrySet()) {
@@ -860,16 +854,14 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 * @param documentId
 	 */
 	private void insertAnnotationContainmentLinks(int documentId) {
-		if (this.isInsertAnnotationContainmentLinks()) {
-			if (log.isTraceEnabled())
-				log.trace("begin insertAnnotationContainmentLinks");
-			Query q = sessionFactory.getCurrentSession().getNamedQuery(
-					"insertAnnotationContainmentLinks");
-			q.setInteger("documentID", documentId);
-			q.executeUpdate();
-			if (log.isTraceEnabled())
-				log.trace("end insertAnnotationContainmentLinks");
-		}
+		if (log.isTraceEnabled())
+			log.trace("begin insertAnnotationContainmentLinks");
+		Query q = sessionFactory.getCurrentSession().getNamedQuery(
+				"insertAnnotationContainmentLinks");
+		q.setInteger("documentID", documentId);
+		q.executeUpdate();
+		if (log.isTraceEnabled())
+			log.trace("end insertAnnotationContainmentLinks");
 	}
 
 	/**
@@ -1147,12 +1139,15 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		saveAnnoLinks(listAnnoLinks);
 	}
 
-	private void saveAnnotationsHib(JCas jcas, Set<String> setTypesToIgnore,
-			Document doc) {
+	private void saveAnnotationsHib(JCas jcas,
+			boolean bInsertAnnotationContainmentLinks,
+			Set<String> setTypesToIgnore, Document doc) {
 		if (log.isTraceEnabled())
 			log.trace("begin saveAnnotationsHib");
 		BiMap<Annotation, Integer> mapAnnoToId = saveAnnoBaseHib(jcas,
 				setTypesToIgnore, doc);
+		if (bInsertAnnotationContainmentLinks)
+			insertAnnotationContainmentLinks(doc.getDocumentID());
 		// split the annotations up by type
 		// create a map of class name to anno id
 		SetMultimap<String, Integer> mapTypeToAnnoId = HashMultimap.create();
@@ -1254,6 +1249,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 */
 	public Integer saveDocument(final JCas jcas, final String analysisBatch,
 			final boolean bStoreDocText, final boolean bStoreCAS,
+			final boolean bInsertAnnotationContainmentLinks,
 			final Set<String> setTypesToIgnore) {
 		if (log.isTraceEnabled())
 			log.trace("begin saveDocument");
@@ -1272,7 +1268,9 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 						Document doc = createDocument(jcas, analysisBatch,
 								bStoreDocText, bStoreCAS);
 						sessionFactory.getCurrentSession().save(doc);
-						saveAnnotationsHib(jcas, setTypesToIgnore, doc);
+						saveAnnotationsHib(jcas,
+								bInsertAnnotationContainmentLinks,
+								setTypesToIgnore, doc);
 						extractAndSaveDocKey(jcas, doc);
 						return doc.getDocumentID();
 					}
@@ -1337,11 +1335,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public void setInsertAnnotationContainmentLinks(
-			boolean insertAnnotationContainmentLinks) {
-		this.insertAnnotationContainmentLinks = insertAnnotationContainmentLinks;
 	}
 
 	public void setMapAnnoMappingInfo(
