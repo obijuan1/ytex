@@ -1,9 +1,28 @@
+A3089160	abdominal	abdominal	Abdominal	abdominal
 A2877991	abdomen	abdomen	Abdomen	abdomen
 A4737700	abdomen	abdomen	Abdomen , NOS	abdomen , NO
-A3089160	abdominal	abdominal	Abdominal	abdominal
 A3089260	abdominal	abdominal	Abdominal structure	abdominal structure
 A3330996	abdominal	abdominal	Abdominal structure ( body structure )	abdominal structure ( body structure )
 A3328303	abdominal	abdominal	Abdominal ( qualifier value )	abdominal ( qualifier value )
+A2878027	acetaminophen	acetaminophen	Acetaminophen	acetaminophen
+A2878028	acetaminophen	acetaminophen	Acetaminophen	acetaminophen
+A4710438	acetaminophen	acetaminophen	Acetaminophen	acetaminophen
+A4710439	acetaminophen	acetaminophen	Acetaminophen	acetaminophen
+A10334543	acetaminophen	acetaminophen	Acetaminophen	acetaminophen
+A2885087	paracetamol	paracetamol	Paracetamol	paracetamol
+A4713755	paracetamol	paracetamol	Paracetamol	paracetamol
+A4713756	paracetamol	paracetamol	Paracetamol	paracetamol
+A4713757	paracetamol	paracetamol	Paracetamol	paracetamol
+A2885088	paracetamol	paracetamol	Paracetamol	paracetamol
+A3055463	paracetamol	paracetamol	Paracetamol product	paracetamol product
+A4894245	paracetamol	paracetamol	Paracetamol - chemical	paracetamol - chemical
+A4894246	paracetamol	paracetamol	Paracetamol - chemical	paracetamol - chemical
+A3425761	acetaminophen	acetaminophen	Acetaminophen ( product )	acetaminophen ( product )
+A3428293	acetaminophen	acetaminophen	Acetaminophen product	acetaminophen product
+A4984742	acetaminophen	acetaminophen	Acetaminophen ( substance )	acetaminophen ( substance )
+A3425772	acetaminophen	acetaminophen	Acetaminophen ( substance )	acetaminophen ( substance )
+A5018566	paracetamol	paracetamol	Paracetamol ( substance )	paracetamol ( substance )
+A15109848	paracetamol	paracetamol	Paracetamol - chemical ( substance )	paracetamol - chemical ( substance )
 A3463273	acute	acute	Acute disease	acute disease
 A4752123	acute	acute	Acute disease , NOS	acute disease , NO
 A3463150	acute	acute	Acute disease ( disorder )	acute disease ( disorder )
@@ -17,13 +36,13 @@ A3485165	adenocarcinoma	adenocarcinoma	Adenocarcinoma , no subtype ( morphologic
 A13010023	adenocarcinoma	adenocarcinoma	Adenocarcinoma , no subtype	adenocarcinoma , NO subtype
 A17310266	malignant	malignant	Malignant adenomatous neoplasm	malignant adenomatous neoplasm
 A17313783	malignant	malignant	Malignant adenomatous neoplasm ( disorder )	malignant adenomatous neoplasm ( disorder )
+A3092766	adrenal	adrenal	Adrenal structure	adrenal structure
 A2874484	adrenal	adrenal	Adrenal gland	adrenal gland
 A4738770	adrenal	adrenal	Adrenal gland , NOS	adrenal gland , NO
-A3092766	adrenal	adrenal	Adrenal structure	adrenal structure
 A3499148	adrenal	adrenal	Adrenal structure ( body structure )	adrenal structure ( body structure )
+A2951828	aids	aids	AIDS - like syndrome	AIDS - like syndrome
 A2921883	aids	aids	AIDS - related complex	AIDS - relate complex
 A2921578	arc	arc	ARC	arc
-A2951828	aids	aids	AIDS - like syndrome	AIDS - like syndrome
 A3309324	arc	arc	ARC - Acquired immunodeficiency syndrome - related complex	arc - acquire immunodeficiency syndrome - relate complex
 A3309331	acquired	acquire	Acquired immune deficiency syndrome - related complex	acquire immune deficiency syndrome - relate complex
 A5002642	aids	aids	Aids - related complex ( ARC )	AIDS - relate complex ( arc )
@@ -37,15 +56,15 @@ A10887088	acquired	acquire	Acquired immunodeficiency syndrome ( AIDS ) - like sy
 A10887095	acquired	acquire	Acquired immunodeficiency syndrome ( AIDS ) - like syndrome	acquire immunodeficiency syndrome ( AIDS ) - like syndrome
 A15117005	acquired	acquire	Acquired immune deficiency syndrome ( & [ ARC ] ) ( disorder )	acquire immune deficiency syndrome ( & [ arc ] ) ( disorder )
 A15093673	acquired	acquire	Acquired immune deficiency syndrome ( & [ ARC ] ) ( disorder )	acquire immune deficiency syndrome ( & [ arc ] ) ( disorder )
-A3590778	analysis	analysis	Analysis ( qualifier value )	analysis ( qualifier value )
 A2991399	analysis	analysis	Analysis	analysis
+A3590778	analysis	analysis	Analysis ( qualifier value )	analysis ( qualifier value )
 A15127679	aneurysm	aneurysm	Aneurysm	aneurysm
 A2878489	aneurysm	aneurysm	Aneurysm	aneurysm
 A17303083	aneurysm	aneurysm	Aneurysm NOS	aneurysm NO
 A4771216	aneurysm	aneurysm	Aneurysm NOS	aneurysm NO
 A4771217	aneurysm	aneurysm	Aneurysm NOS	aneurysm NO
-A4771218	aneurysm	aneurysm	Aneurysm NOS	aneurysm NO
 A4771219	aneurysm	aneurysm	Aneurysm NOS	aneurysm NO
+A4771218	aneurysm	aneurysm	Aneurysm NOS	aneurysm NO
 A4771220	aneurysm	aneurysm	Aneurysm , NOS	aneurysm , NO
 A2876946	aneurysmal	aneurysmal	Aneurysmal dilatation	aneurysmal dilatation
 A4771221	aneurysmal	aneurysmal	Aneurysmal dilatation , NOS	aneurysmal dilatation , NO
@@ -64,9 +83,9 @@ A4737715	ankle	ankle	Ankle , NOS	ankle , NO
 A2882479	hock	hock	Hock	hock
 A4737716	hock	hock	Hock , NOS	hock , NO
 A4714700	tarsus	tarsus	Tarsus	tarsus
+A3096949	aortic	aortic	Aortic	aortic
 A2878589	aorta	aorta	Aorta	aorta
 A4737613	aorta	aorta	Aorta , NOS	aorta , NO
-A3096949	aortic	aortic	Aortic	aortic
 A3096981	aortic	aortic	Aortic structure	aortic structure
 A3656494	aortic	aortic	Aortic structure ( body structure )	aortic structure ( body structure )
 A3655399	aortic	aortic	Aortic ( qualifier value )	aortic ( qualifier value )
@@ -87,13 +106,13 @@ A15116031	aortic	aortic	Aortic aneurysm ( disorder )	aortic aneurysm ( disorder 
 A3655434	aortic	aortic	Aortic aneurysm ( disorder )	aortic aneurysm ( disorder )
 A17331342	aortic	aortic	Aortic aneurysm NOS ( disorder )	aortic aneurysm NO ( disorder )
 A15113615	aortic	aortic	Aortic aneurysm NOS ( disorder )	aortic aneurysm NO ( disorder )
+A2993327	arterial	arterial	Arterial structure	arterial structure
 A2874381	artery	artery	Artery	artery
 A4739037	artery	artery	Artery , NOS	artery , NO
-A2993327	arterial	arterial	Arterial structure	arterial structure
 A3689056	arterial	arterial	Arterial structure ( body structure )	arterial structure ( body structure )
 A16956227	arthroplasty	arthroplasty	Arthroplasty	arthroplasty
-A16965744	arthroplasty	arthroplasty	Arthroplasty	arthroplasty
 A4710746	arthroplasty	arthroplasty	Arthroplasty	arthroplasty
+A16965744	arthroplasty	arthroplasty	Arthroplasty	arthroplasty
 A4730190	arthroplasty	arthroplasty	Arthroplasty , NOS	arthroplasty , NO
 A16967620	reconstruction	reconstruction	Reconstruction of joint	reconstruction of joint
 A4824068	joint	joint	Joint reconstruction	joint reconstruction
@@ -108,21 +127,46 @@ A15119037	arthroplasty	arthroplasty	Arthroplasty - action ( qualifier value )	ar
 A15102976	arthroplasty	arthroplasty	Arthroplasty ( procedure )	arthroplasty ( procedure )
 A16964893	repair	repair	Repair of joint ( procedure )	repair of joint ( procedure )
 A16967427	repair	repair	Repair of joint	repair of joint
-A2878796	atelectasis	atelectasis	Atelectasis	atelectasis
+A2878765	aspirin	aspirin	Aspirin	aspirin
+A2878766	aspirin	aspirin	Aspirin	aspirin
+A10334699	aspirin	aspirin	Aspirin	aspirin
+A2987925	acetylsalicylic	acetylsalicylic	Acetylsalicylic acid	acetylsalicylic acid
+A2987924	acetylsalicylic	acetylsalicylic	Acetylsalicylic acid	acetylsalicylic acid
+A11730847	antiplatelet	antiplatelet	Antiplatelet aspirin	antiplatelet aspirin
+A11737590	aspirin	aspirin	Aspirin [ antiplatelet ]	aspirin [ antiplatelet ]
+A13366763	aspirin	aspirin	Aspirin [ central nervous system use ]	aspirin [ central nervous system use ]
+A13378811	aspirin	aspirin	Aspirin [ musculoskeletal use ]	aspirin [ musculoskeletal use ]
+A4985028	acetylsalicylic	acetylsalicylic	Acetylsalicylic acid - chemical	acetylsalicylic acid - chemical
+A11724207	antiplatelet	antiplatelet	Antiplatelet aspirin ( product )	antiplatelet aspirin ( product )
+A5025609	antiplatelet	antiplatelet	Antiplatelet aspirin ( substance )	antiplatelet aspirin ( substance )
+A13376186	aspirin	aspirin	Aspirin [ central nervous system use ] ( product )	aspirin [ central nervous system use ] ( product )
+A5046151	aspirin	aspirin	Aspirin [ central nervous system use ] ( substance )	aspirin [ central nervous system use ] ( substance )
+A5046067	aspirin	aspirin	Aspirin - chemical	aspirin - chemical
+A5046068	aspirin	aspirin	Aspirin - chemical	aspirin - chemical
+A3716311	aspirin	aspirin	Aspirin - chemical	aspirin - chemical
+A13373047	aspirin	aspirin	Aspirin [ musculoskeletal use ] ( product )	aspirin [ musculoskeletal use ] ( product )
+A5046152	aspirin	aspirin	Aspirin [ musculoskeletal use ] ( substance )	aspirin [ musculoskeletal use ] ( substance )
+A3715933	aspirin	aspirin	Aspirin ( product )	aspirin ( product )
+A5046193	aspirin	aspirin	Aspirin product	aspirin product
+A5046192	aspirin	aspirin	Aspirin product ( substance )	aspirin product ( substance )
+A5046006	aspirin	aspirin	Aspirin ( substance )	aspirin ( substance )
+A3715938	aspirin	aspirin	Aspirin ( substance )	aspirin ( substance )
+A15123780	aspirin	aspirin	Aspirin - chemical ( substance )	aspirin - chemical ( substance )
 A4710792	atelectasis	atelectasis	Atelectasis	atelectasis
 A4710793	atelectasis	atelectasis	Atelectasis	atelectasis
 A4710794	atelectasis	atelectasis	Atelectasis	atelectasis
+A2878796	atelectasis	atelectasis	Atelectasis	atelectasis
 A4752954	atelectasis	atelectasis	Atelectasis , NOS	atelectasis , NO
 A4744157	pulmonary	pulmonary	Pulmonary collapse	pulmonary collapse
 A2943242	pulmonary	pulmonary	Pulmonary collapse	pulmonary collapse
-A4974617	collapse	collapse	Collapse - lung	collapse - lung
-A4974616	collapse	collapse	Collapse - lung	collapse - lung
 A4754504	collapse	collapse	Collapse of lung	collapse of lung
 A4754505	collapse	collapse	Collapse of lung	collapse of lung
 A4754506	collapse	collapse	Collapse of lung	collapse of lung
 A4754507	collapse	collapse	Collapse of lung	collapse of lung
 A4754508	collapse	collapse	Collapse of lung	collapse of lung
 A2958943	collapse	collapse	Collapse of lung	collapse of lung
+A4974617	collapse	collapse	Collapse - lung	collapse - lung
+A4974616	collapse	collapse	Collapse - lung	collapse - lung
 A3062048	pulmonary	pulmonary	Pulmonary atelectasis	pulmonary atelectasis
 A4869442	pulmonary	pulmonary	Pulmonary collapse with atelectasis	pulmonary collapse with atelectasis
 A4869443	pulmonary	pulmonary	Pulmonary collapse with atelectasis	pulmonary collapse with atelectasis
@@ -142,20 +186,21 @@ A15155798	atelectasis	atelectasis	Atelectasis ( & with pulmonary collapse ) ( di
 A15148243	(	(	( Pulmonary collapse - atelactasis ) or ( atelectasis ) or ( collapse - lung ) ( disorder )	( pulmonary collapse - atelactasi ) OR ( atelectasis ) OR ( collapse - lung ) ( disorder )
 A15137619	(	(	( Pulmonary collapse - atelactasis ) or ( atelectasis ) or ( collapse - lung ) ( disorder )	( pulmonary collapse - atelactasi ) OR ( atelectasis ) OR ( collapse - lung ) ( disorder )
 A15130849	collapse	collapse	Collapse of lung ( disorder )	collapse of lung ( disorder )
-A2878824	attention	attention	Attention	attention
 A4710812	attention	attention	Attention	attention
+A2878824	attention	attention	Attention	attention
 A4739133	attention	attention	Attention , NOS	attention , NO
 A5048601	attention	attention	Attention [ Ambiguous ]	attention [ ambiguous ]
 A3744847	attention	attention	Attention , function ( observable entity )	attention , function ( observable entity )
 A13015815	attention	attention	Attention , function	attention , function
 A5048591	attention	attention	Attention ( function )	attention ( function )
 A15130492	attention	attention	Attention ( finding )	attention ( find )
-A11730665	axilla	axilla	Axilla	axilla
+A3099553	axillary	axillary	Axillary	axillary
 A11731035	axilla	axilla	Axilla	axilla
 A11731401	axilla	axilla	Axilla	axilla
 A4710825	axilla	axilla	Axilla	axilla
 A4710826	axilla	axilla	Axilla	axilla
 A8222185	axilla	axilla	Axilla	axilla
+A11730665	axilla	axilla	Axilla	axilla
 A4739159	axilla	axilla	Axilla , NOS	axilla , NO
 A11731036	armpit	armpit	Armpit	armpit
 A11733694	armpit	armpit	Armpit	armpit
@@ -163,7 +208,6 @@ A11737757	axillary	axillary	Axillary fossa	axillary fossa
 A11726979	axillary	axillary	Axillary fossa	axillary fossa
 A2924425	axillary	axillary	Axillary region	axillary region
 A11728879	axilla	axilla	Axilla structure	axilla structure
-A3099553	axillary	axillary	Axillary	axillary
 A13005651	axilla	axilla	Axilla ( body structure )	axilla ( body structure )
 A8225498	axilla	axilla	Axilla ( body structure )	axilla ( body structure )
 A11728880	axilla	axilla	Axilla structure ( body structure )	axilla structure ( body structure )
@@ -172,11 +216,11 @@ A3763032	axillary	axillary	Axillary ( qualifier value )	axillary ( qualifier val
 A3763562	axillary	axillary	Axillary region structure	axillary region structure
 A11733692	structure	structure	Structure of axillary fossa ( body structure )	structure of axillary fossa ( body structure )
 A11733693	structure	structure	Structure of axillary fossa	structure of axillary fossa
-A2875357	benign	benign	Benign prostatic hypertrophy	benign prostatic hypertrophy
 A4709452	benign	benign	Benign prostatic hypertrophy	benign prostatic hypertrophy
 A4709453	benign	benign	Benign prostatic hypertrophy	benign prostatic hypertrophy
 A4709454	benign	benign	Benign prostatic hypertrophy	benign prostatic hypertrophy
 A4709455	benign	benign	Benign prostatic hypertrophy	benign prostatic hypertrophy
+A2875357	benign	benign	Benign prostatic hypertrophy	benign prostatic hypertrophy
 A4739180	bph	bph	BPH	BPH
 A2924465	bph	bph	BPH	BPH
 A4870014	benign	benign	Benign enlargement of prostate	benign enlargement of prostate
@@ -202,8 +246,8 @@ A2931687	gallbladder	gallbladder	Gallbladder bile	gallbladder bile
 A3471356	gallbladder	gallbladder	Gallbladder bile ( substance )	gallbladder bile ( substance )
 A3810585	bile	bile	Bile ( substance )	bile ( substance )
 A3101397	bile	bile	Bile duct structure	bile duct structure
-A4739270	bile	bile	Bile duct , NOS	bile duct , NO
 A3101374	bile	bile	Bile duct	bile duct
+A4739270	bile	bile	Bile duct , NOS	bile duct , NO
 A3810682	bile	bile	Bile duct structure ( body structure )	bile duct structure ( body structure )
 A2879106	biopsy	biopsy	Biopsy	biopsy
 A4729796	biopsy	biopsy	Biopsy , NOS	biopsy , NO
@@ -211,55 +255,57 @@ A3241110	biopsy	biopsy	Biopsy - action	biopsy - action
 A3256655	bx	bx	BX - Biopsy	bx - biopsy
 A3811188	biopsy	biopsy	Biopsy - action ( qualifier value )	biopsy - action ( qualifier value )
 A3811187	biopsy	biopsy	Biopsy ( procedure )	biopsy ( procedure )
-A2890177	urinary	urinary	Urinary bladder	urinary bladder
-A4737642	urinary	urinary	Urinary bladder , NOS	urinary bladder , NO
+A3257804	urinary	urinary	Urinary bladder structure	urinary bladder structure
 A2879124	bladder	bladder	Bladder	bladder
 A4737643	bladder	bladder	Bladder , NOS	bladder , NO
+A2890177	urinary	urinary	Urinary bladder	urinary bladder
+A4737642	urinary	urinary	Urinary bladder , NOS	urinary bladder , NO
 A3102222	bladder	bladder	Bladder structure	bladder structure
-A3257804	urinary	urinary	Urinary bladder structure	urinary bladder structure
 A3774016	urinary	urinary	Urinary bladder structure ( body structure )	urinary bladder structure ( body structure )
-A3257760	malignant	malignant	Malignant neoplasm of urinary bladder	malignant neoplasm of urinary bladder
-A4870633	malignant	malignant	Malignant neoplasm of urinary bladder	malignant neoplasm of urinary bladder
-A17303007	malignant	malignant	Malignant neoplasm of urinary bladder NOS	malignant neoplasm of urinary bladder NO
-A13369186	malignant	malignant	Malignant neoplasm of bladder	malignant neoplasm of bladder
-A4889770	malignant	malignant	Malignant neoplasm of bladder , NOS	malignant neoplasm of bladder , NO
-A4773213	bladder	bladder	Bladder cancer	bladder Cancer
-A2998385	bladder	bladder	Bladder cancer	bladder Cancer
-A4773896	ca	ca	CA - Bladder cancer	CA - bladder Cancer
-A3002406	ca	ca	CA - Bladder cancer	CA - bladder Cancer
 A4786543	malignant	malignant	Malignant tumor of urinary bladder	malignant tumor of urinary bladder
 A3042392	malignant	malignant	Malignant tumor of urinary bladder	malignant tumor of urinary bladder
 A4786672	malignant	malignant	Malignant tumour of urinary bladder	malignant tumour of urinary bladder
 A3042872	malignant	malignant	Malignant tumour of urinary bladder	malignant tumour of urinary bladder
+A4889770	malignant	malignant	Malignant neoplasm of bladder , NOS	malignant neoplasm of bladder , NO
+A13369186	malignant	malignant	Malignant neoplasm of bladder	malignant neoplasm of bladder
+A4773213	bladder	bladder	Bladder cancer	bladder Cancer
+A2998385	bladder	bladder	Bladder cancer	bladder Cancer
+A4773896	ca	ca	CA - Bladder cancer	CA - bladder Cancer
+A3002406	ca	ca	CA - Bladder cancer	CA - bladder Cancer
+A4870633	malignant	malignant	Malignant neoplasm of urinary bladder	malignant neoplasm of urinary bladder
+A3257760	malignant	malignant	Malignant neoplasm of urinary bladder	malignant neoplasm of urinary bladder
+A17303007	malignant	malignant	Malignant neoplasm of urinary bladder NOS	malignant neoplasm of urinary bladder NO
 A5060798	bladder	bladder	Bladder Ca	bladder CA
 A5060797	bladder	bladder	Bladder Ca	bladder CA
 A17312105	malignant	malignant	Malignant neoplasm of urinary bladder NOS ( disorder )	malignant neoplasm of urinary bladder NO ( disorder )
 A5006407	malignant	malignant	Malignant tumor of urinary bladder ( disorder )	malignant tumor of urinary bladder ( disorder )
 A3551060	malignant	malignant	Malignant tumor of urinary bladder ( disorder )	malignant tumor of urinary bladder ( disorder )
-A3577653	neoplasm	neoplasm	Neoplasm of bone	neoplasm of bone
 A17298890	bone	bone	Bone tumor	bone tumor
 A3000924	bone	bone	Bone tumor	bone tumor
 A17336429	bone	bone	Bone tumour	bone tumour
 A3000926	bone	bone	Bone tumour	bone tumour
+A3577653	neoplasm	neoplasm	Neoplasm of bone	neoplasm of bone
 A3324211	bone	bone	Bone tumor ( morphologic abnormality )	bone tumor ( morphologic abnormality )
 A3577644	neoplasm	neoplasm	Neoplasm of bone ( disorder )	neoplasm of bone ( disorder )
-A5011616	neoplasms	neoplasm	Neoplasms - malignant	neoplasm - malignant
-A5011615	neoplasms	neoplasm	Neoplasms - malignant	neoplasm - malignant
-A4825802	malignant	malignant	Malignant neoplasms	malignant neoplasm
-A4825803	malignant	malignant	Malignant neoplasms	malignant neoplasm
+A2873562	bruit	bruit	Bruit	bruit
+A3330021	bruit	bruit	Bruit ( finding )	bruit ( find )
+A13358673	malignant	malignant	Malignant neoplastic disease	malignant neoplastic disease
+A2972175	malignant	malignant	Malignant neoplastic disease	malignant neoplastic disease
+A4711083	cancer	cancer	Cancer	Cancer
+A2879399	cancer	cancer	Cancer	Cancer
+A4711085	cancers	cancer	Cancers	cancer
 A4825766	malignant	malignant	Malignant neoplasm	malignant neoplasm
 A3156140	malignant	malignant	Malignant neoplasm	malignant neoplasm
+A4825803	malignant	malignant	Malignant neoplasms	malignant neoplasm
+A4825802	malignant	malignant	Malignant neoplasms	malignant neoplasm
 A4897518	malignant	malignant	Malignant neoplasm NOS	malignant neoplasm NO
-A2879399	cancer	cancer	Cancer	Cancer
-A4711083	cancer	cancer	Cancer	Cancer
-A4711085	cancers	cancer	Cancers	cancer
+A5011616	neoplasms	neoplasm	Neoplasms - malignant	neoplasm - malignant
+A5011615	neoplasms	neoplasm	Neoplasms - malignant	neoplasm - malignant
 A4786455	malignant	malignant	Malignant tumor	malignant tumor
 A3041974	malignant	malignant	Malignant tumor	malignant tumor
 A4786552	malignant	malignant	Malignant tumour	malignant tumour
 A4786553	malignant	malignant	Malignant tumour	malignant tumour
 A3042422	malignant	malignant	Malignant tumour	malignant tumour
-A13358673	malignant	malignant	Malignant neoplastic disease	malignant neoplastic disease
-A2972175	malignant	malignant	Malignant neoplastic disease	malignant neoplastic disease
 A16376123	[	[	[ X ] Malignant neoplasm without specification of site	[ X ] malignant neoplasm without specification of site
 A17339543	malignant	malignant	Malignant neoplasm of unspecified site	malignant neoplasm of unspecified site
 A17346684	malignant	malignant	Malignant neoplasm of unspecified site NOS	malignant neoplasm of unspecified site NO
@@ -282,39 +328,39 @@ A15095168	malignant	malignant	Malignant tumour ( disorder )	malignant tumour ( d
 A15155302	(	(	( Neoplasms ) or ( cancers ) ( disorder )	( neoplasm ) OR ( cancer ) ( disorder )
 A3318222	adenocarcinoma	adenocarcinoma	Adenocarcinoma of prostate	adenocarcinoma of prostate
 A3484896	adenocarcinoma	adenocarcinoma	Adenocarcinoma of prostate ( disorder )	adenocarcinoma of prostate ( disorder )
+A3341363	cartilage	cartilage	Cartilage tissue	cartilage tissue
 A2879519	cartilage	cartilage	Cartilage	cartilage
 A4739674	cartilage	cartilage	Cartilage , NOS	cartilage , NO
 A2874360	cartilaginous	cartilaginous	Cartilaginous tissue	cartilaginous tissue
 A4739677	cartilaginous	cartilaginous	Cartilaginous tissue , NOS	cartilaginous tissue , NO
-A3341363	cartilage	cartilage	Cartilage tissue	cartilage tissue
 A3341362	cartilage	cartilage	Cartilage tissue ( body structure )	cartilage tissue ( body structure )
 A3341374	cartilaginous	cartilaginous	Cartilaginous tissue structure ( body structure )	cartilaginous tissue structure ( body structure )
 A3341375	cartilaginous	cartilaginous	Cartilaginous tissue structure	cartilaginous tissue structure
+A3343843	cell	cell	Cell structure	cell structure
 A2874574	cell	cell	Cell	cell
 A4739703	cell	cell	Cell , NOS	cell , NO
-A3343843	cell	cell	Cell structure	cell structure
 A3005260	cellular	cellular	Cellular structures	cellular structure
 A3343971	cellular	cellular	Cellular structure	cellular structure
 A4970219	cell	cell	Cell structure ( body structure )	cell structure ( body structure )
 A3343841	cell	cell	Cell structure ( cell structure )	cell structure ( cell structure )
+A3349586	chin	chin	Chin structure	chin structure
 A2879737	chin	chin	Chin	chin
 A11728683	mental	mental	Mental region of face	mental region of face
 A11730389	mental	mental	Mental region of face	mental region of face
 A3349585	chin	chin	Chin structure ( body structure )	chin structure ( body structure )
 A11733121	structure	structure	Structure of mental region of face ( body structure )	structure of mental region of face ( body structure )
-A3349586	chin	chin	Chin structure	chin structure
 A11726432	structure	structure	Structure of mental region of face	structure of mental region of face
-A15160669	cholecystectomy	cholecystectomy	Cholecystectomy ( procedure )	cholecystectomy ( procedure )
-A3351206	cholecystectomy	cholecystectomy	Cholecystectomy ( procedure )	cholecystectomy ( procedure )
-A2879848	cholecystectomy	cholecystectomy	Cholecystectomy	cholecystectomy
 A4711287	cholecystectomy	cholecystectomy	Cholecystectomy	cholecystectomy
 A4711288	cholecystectomy	cholecystectomy	Cholecystectomy	cholecystectomy
+A2879848	cholecystectomy	cholecystectomy	Cholecystectomy	cholecystectomy
 A3230453	removal	removal	Removal of gallbladder	removal of gallbladder
 A3279625	excision	excision	Excision of gallbladder	excision of gallbladder
 A17333170	excision	excision	Excision of gallbladder NOS	excision of gallbladder NO
 A4991443	gallbladder	gallbladder	Gallbladder excision	gallbladder excision
 A4991444	gallbladder	gallbladder	Gallbladder excision	gallbladder excision
 A3471395	gallbladder	gallbladder	Gallbladder excision	gallbladder excision
+A15160669	cholecystectomy	cholecystectomy	Cholecystectomy ( procedure )	cholecystectomy ( procedure )
+A3351206	cholecystectomy	cholecystectomy	Cholecystectomy ( procedure )	cholecystectomy ( procedure )
 A17342832	excision	excision	Excision of gallbladder NOS ( procedure )	excision of gallbladder NO ( procedure )
 A3103417	bone	bone	Bone structure of clavicle	bone structure of clavicle
 A2879991	clavicle	clavicle	Clavicle	clavicle
@@ -334,10 +380,10 @@ A2927155	common	common	Common bile duct	common bile duct
 A4739973	common	common	Common bile duct , NOS	common bile duct , NO
 A3363778	common	common	Common bile duct structure ( body structure )	common bile duct structure ( body structure )
 A16364676	cyst	cyst	Cyst	cyst
-A2873890	cyst	cyst	Cyst	cyst
 A4708992	cyst	cyst	Cyst	cyst
 A4708993	cyst	cyst	Cyst	cyst
 A4708994	cyst	cyst	Cyst	cyst
+A2873890	cyst	cyst	Cyst	cyst
 A4777618	cyst	cyst	Cyst , NOS	cyst , NO
 A4977452	cyst	cyst	Cyst ( morphologic abnormality ) [ Ambiguous ]	cyst ( morphologic abnormality ) [ ambiguous ]
 A15102575	cyst	cyst	Cyst ( morphologic abnormality )	cyst ( morphologic abnormality )
@@ -347,7 +393,7 @@ A4977457	cyst	cyst	Cyst - morphology	cyst - morphology
 A15099204	cyst	cyst	Cyst - RETIRED -	cyst - retire -
 A16359467	cyst	cyst	Cyst ( disorder )	cyst ( disorder )
 A3117780	decision	decision	Decision making	decision make
-A3155890	making	make	Making up mind	make UP mind
+A3155890	making	make	Making up mind	make up mind
 A3271360	decision	decision	Decision taking	decision take
 A3382758	decision	decision	Decision making ( observable entity )	decision make ( observable entity )
 A3897643	decision	decision	Decision making behavior	decision make behavior
@@ -360,18 +406,18 @@ A3386983	degenerative	degenerative	Degenerative abnormality ( morphologic abnorm
 A3386948	degeneration	degeneration	Degeneration ( morphologic abnormality )	degeneration ( morphologic abnormality )
 A16369886	diagnosis	diagnosis	Diagnosis	diagnosis
 A16359542	diagnosis	diagnosis	Diagnosis ( observable entity )	diagnosis ( observable entity )
+A13012866	imaging	image	Imaging	image
 A4740397	diagnostic	diagnostic	Diagnostic imaging	diagnostic image
 A2928682	diagnostic	diagnostic	Diagnostic imaging	diagnostic image
 A4736731	diagnostic	diagnostic	Diagnostic imaging , NOS	diagnostic image , NO
-A13012866	imaging	image	Imaging	image
 A3504807	imaging	image	Imaging ( procedure )	image ( procedure )
 A13363368	imaging	image	Imaging procedure	image procedure
 A4980317	diagnostic	diagnostic	Diagnostic imaging ( procedure )	diagnostic image ( procedure )
 A13004350	imaging	image	Imaging by method	image by method
 A4997722	imaging	image	Imaging by method	image by method
 A4997721	imaging	image	Imaging by method ( procedure )	image by method ( procedure )
-A2880797	discrimination	discrimination	Discrimination	discrimination
 A3267088	cognitive	cognitive	Cognitive discrimination	cognitive discrimination
+A2880797	discrimination	discrimination	Discrimination	discrimination
 A3361858	cognitive	cognitive	Cognitive discrimination , function ( observable entity )	cognitive discrimination , function ( observable entity )
 A4974479	cognitive	cognitive	Cognitive discrimination ( qualifier value )	cognitive discrimination ( qualifier value )
 A13016660	cognitive	cognitive	Cognitive discrimination , function	cognitive discrimination , function
@@ -388,32 +434,32 @@ A4755999	disease	disease	Disease or syndrome present , NOS	disease OR syndrome p
 A3400904	disorder	disorder	Disorder	disorder
 A3015782	disorders	disorder	Disorders	disorder
 A4815663	disorder	disorder	Disorder , NOS	disorder , NO
-A4711718	dislocations	dislocation	Dislocations	dislocation
-A4711719	dislocations	dislocation	Dislocations	dislocation
+A3120854	dislocation	dislocation	Dislocation of joint	dislocation of joint
 A2873804	dislocation	dislocation	Dislocation	dislocation
+A4711719	dislocations	dislocation	Dislocations	dislocation
+A4711718	dislocations	dislocation	Dislocations	dislocation
 A4778680	dislocation	dislocation	Dislocation , NOS	dislocation , NO
 A3120841	dislocated	dislocate	Dislocated joint	dislocate joint
-A3120854	dislocation	dislocation	Dislocation of joint	dislocation of joint
 A3399561	dislocation	dislocation	Dislocation ( morphologic abnormality )	dislocation ( morphologic abnormality )
 A3399593	dislocation	dislocation	Dislocation of joint ( disorder )	dislocation of joint ( disorder )
+A3241170	dissection	dissection	Dissection - action	dissection - action
 A2880805	dissection	dissection	Dissection	dissection
 A4729764	dissection	dissection	Dissection , NOS	dissection , NO
-A3241170	dissection	dissection	Dissection - action	dissection - action
 A3401143	dissection	dissection	Dissection - action ( qualifier value )	dissection - action ( qualifier value )
 A3401153	dissection	dissection	Dissection procedure	dissection procedure
 A3401152	dissection	dissection	Dissection procedure ( procedure )	dissection procedure ( procedure )
+A3473479	general	general	General drug type	general drug type
 A16365946	drug	drug	Drug	drug
 A4708693	drug	drug	Drug	drug
 A6917025	drug	drug	Drug	drug
 A6917026	drug	drug	Drug	drug
 A4779090	drug	drug	Drug , NOS	drug , NO
-A4713155	medicine	medicine	Medicine	medicine
 A4786932	medicine	medicine	Medicine , NOS	medicine , NO
-A3473479	general	general	General drug type	general drug type
+A4713155	medicine	medicine	Medicine	medicine
 A11739923	drug	drug	Drug preparation	drug preparation
 A4779075	drug	drug	Drug preparation , NOS	drug preparation , NO
-A4862657	medication	medication	Medication	medication
 A4786930	medication	medication	Medication , NOS	medication , NO
+A4862657	medication	medication	Medication	medication
 A6922636	drug	drug	Drug , medicament or biological substance	drug , medicament OR biological substance
 A3627347	pharmaceutical	pharmaceutical	Pharmaceutical / biologic product	pharmaceutical / biologic product
 A3627346	pharmaceutical	pharmaceutical	Pharmaceutical / biologic product ( product )	pharmaceutical / biologic product ( product )
@@ -443,27 +489,27 @@ A3436425	equilibrium	equilibrium	Equilibrium , function ( observable entity )	eq
 A13013025	equilibrium	equilibrium	Equilibrium , function	equilibrium , function
 A4985482	equilibrium	equilibrium	Equilibrium ( function )	equilibrium ( function )
 A7882959	balance	balance	Balance ( observable entity )	balance ( observable entity )
-A2881512	fascia	fascia	Fascia	fascia
+A3130324	fascial	fascial	Fascial	fascial
 A4712055	fascia	fascia	Fascia	fascia
 A4712056	fascia	fascia	Fascia	fascia
+A2881512	fascia	fascia	Fascia	fascia
 A4741016	fascia	fascia	Fascia , NOS	fascia , NO
-A3130324	fascial	fascial	Fascial	fascial
 A6922449	fascial	fascial	Fascial structure	fascial structure
 A6926151	fascial	fascial	Fascial structure ( body structure )	fascial structure ( body structure )
 A3451790	fascial	fascial	Fascial ( qualifier value )	fascial ( qualifier value )
 A6948285	structure	structure	Structure of fascia ( body structure )	structure of fascia ( body structure )
 A6948296	structure	structure	Structure of fascia	structure of fascia
 A15151232	fascia	fascia	Fascia ( body structure )	fascia ( body structure )
+A3103419	bone	bone	Bone structure of femur	bone structure of femur
 A2881562	femur	femur	Femur	femur
 A4741054	femur	femur	Femur , NOS	femur , NO
-A3103419	bone	bone	Bone structure of femur	bone structure of femur
 A3130996	femoral	femoral	Femoral	femoral
 A3324058	bone	bone	Bone structure of femur ( body structure )	bone structure of femur ( body structure )
 A3453397	femoral	femoral	Femoral ( qualifier value )	femoral ( qualifier value )
 A10895004	structure	structure	Structure of femur ( body structure )	structure of femur ( body structure )
 A10895005	structure	structure	Structure of femur	structure of femur
-A2881622	fibrosis	fibrosis	Fibrosis	fibrosis
 A2881623	fibrosis	fibrosis	Fibrosis	fibrosis
+A2881622	fibrosis	fibrosis	Fibrosis	fibrosis
 A4780799	fibrosis	fibrosis	Fibrosis , NOS	fibrosis , NO
 A2877090	desmoplasia	desmoplasia	Desmoplasia	desmoplasia
 A2877088	fibroplasia	fibroplasia	Fibroplasia	fibroplasia
@@ -473,12 +519,12 @@ A3022468	fibrous	fibrous	Fibrous thickening	fibrous thicken
 A3455905	fibrosis	fibrosis	Fibrosis ( morphologic abnormality )	fibrosis ( morphologic abnormality )
 A3455906	fibrosis	fibrosis	Fibrosis ( qualifier value )	fibrosis ( qualifier value )
 A3456000	fibrous	fibrous	Fibrous replacement	fibrous replacement
-A2874570	finger	finger	Finger	finger
-A4741118	finger	finger	Finger , NOS	finger , NO
+A3273491	digit	digit	Digit of hand structure	digit of hand structure
 A4741193	foredigit	foredigit	Foredigit , NOS	foredigit , NO
 A3273486	digit	digit	Digit of hand	digit of hand
-A3273491	digit	digit	Digit of hand structure	digit of hand structure
 A3280640	finger	finger	Finger structure	finger structure
+A2874570	finger	finger	Finger	finger
+A4741118	finger	finger	Finger , NOS	finger , NO
 A3395756	digit	digit	Digit of hand structure ( body structure )	digit of hand structure ( body structure )
 A3461348	finger	finger	Finger structure ( body structure )	finger structure ( body structure )
 A13362577	fistula	fistula	Fistula	fistula
@@ -495,9 +541,9 @@ A5053757	unspecified	unspecified	Unspecified fistula	unspecified fistula
 A9415817	sinus	sinus	Sinus ( morphologic abnormality )	sinus ( morphologic abnormality )
 A13364132	fistula	fistula	Fistula ( disorder )	fistula ( disorder )
 A15114858	unspecified	unspecified	Unspecified fistula ( disorder )	unspecified fistula ( disorder )
+A3133420	foot	foot	Foot structure	foot structure
 A2881740	foot	foot	Foot	foot
 A4737717	foot	foot	Foot , NOS	foot , NO
-A3133420	foot	foot	Foot structure	foot structure
 A3465894	foot	foot	Foot structure ( body structure )	foot structure ( body structure )
 A2873867	foreign	foreign	Foreign body	foreign body
 A2873866	foreign	foreign	Foreign body	foreign body
@@ -512,19 +558,19 @@ A3258664	fb	fb	FB - Foreign body	fb - foreign body
 A3466224	foreign	foreign	Foreign body ( morphologic abnormality )	foreign body ( morphologic abnormality )
 A3399832	disorder	disorder	Disorder due to presence of foreign body	disorder due to presence of foreign body
 A3466223	foreign	foreign	Foreign body ( disorder )	foreign body ( disorder )
-A2873798	fracture	fracture	Fracture	fracture
 A2873799	fracture	fracture	Fracture	fracture
 A4708966	fracture	fracture	Fracture	fracture
 A4708967	fracture	fracture	Fracture	fracture
+A2873798	fracture	fracture	Fracture	fracture
 A17334450	fracture	fracture	Fracture NOS	fracture NO
 A4781154	fracture	fracture	Fracture NOS	fracture NO
 A4781155	fracture	fracture	Fracture NOS	fracture NO
 A4781156	fracture	fracture	Fracture NOS	fracture NO
 A4781258	fracture	fracture	Fracture , NOS	fracture , NO
-A17303098	fracture	fracture	Fracture of unspecified bones	fracture of unspecified bone
 A4717631	fracture	fracture	Fracture of unspecified bones	fracture of unspecified bone
-A17334838	fracture	fracture	Fracture of bones NOS	fracture of bone NO
+A17303098	fracture	fracture	Fracture of unspecified bones	fracture of unspecified bone
 A3259188	fracture	fracture	Fracture of bone	fracture of bone
+A17334838	fracture	fracture	Fracture of bones NOS	fracture of bone NO
 A17347054	fracture	fracture	Fracture , cause unspecified	fracture , cause unspecified
 A3258982	broken	break	Broken bone	break bone
 A4877499	fracture	fracture	Fracture - lesion	fracture - lesion
@@ -545,37 +591,37 @@ A17306764	fracture	fracture	Fracture , cause unspecified ( disorder )	fracture ,
 A15113195	fracture	fracture	Fracture - lesion ( disorder )	fracture - lesion ( disorder )
 A15092539	fracture	fracture	Fracture : [ of unspecified bones ] or [ NOS ] ( disorder )	fracture : [ of unspecified bone ] OR [ NO ] ( disorder )
 A15109864	fracture	fracture	Fracture - lesion ( morphologic abnormality )	fracture - lesion ( morphologic abnormality )
+A3283378	frontal	frontal	Frontal sinus structure	frontal sinus structure
 A2931567	frontal	frontal	Frontal sinus	frontal sinus
 A4741235	frontal	frontal	Frontal sinus , NOS	frontal sinus , NO
-A3283378	frontal	frontal	Frontal sinus structure	frontal sinus structure
 A3469018	frontal	frontal	Frontal sinus structure ( body structure )	frontal sinus structure ( body structure )
+A3283668	gallbladder	gallbladder	Gallbladder structure	gallbladder structure
 A2881834	gallbladder	gallbladder	Gallbladder	gallbladder
 A4737635	gallbladder	gallbladder	Gallbladder , NOS	gallbladder , NO
-A3283668	gallbladder	gallbladder	Gallbladder structure	gallbladder structure
 A3471436	gallbladder	gallbladder	Gallbladder structure ( body structure )	gallbladder structure ( body structure )
 A3300171	gall	gall	gall bladder	gall bladder
 A2882053	gold	gold	Gold	Gold
 A4782006	gold	gold	Gold , NOS	Gold , NO
 A3245678	au	au	Au - Gold	AU - Gold
 A3479213	gold	gold	Gold ( substance )	Gold ( substance )
+A3139980	hand	hand	Hand structure	hand structure
 A2882173	hand	hand	Hand	hand
 A4737711	hand	hand	Hand , NOS	hand , NO
-A3139980	hand	hand	Hand structure	hand structure
 A3486422	hand	hand	Hand structure ( body structure )	hand structure ( body structure )
+A3140404	head	head	Head structure	head structure
 A2882193	head	head	Head	head
 A4741590	head	head	Head , NOS	head , NO
-A3140404	head	head	Head structure	head structure
 A3487561	head	head	Head structure ( body structure )	head structure ( body structure )
+A3140621	heart	heart	Heart structure	heart structure
 A2882201	heart	heart	Heart	heart
 A4737609	heart	heart	Heart , NOS	heart , NO
 A6921134	cardiac	cardiac	Cardiac structure	cardiac structure
 A6921135	cardiac	cardiac	Cardiac structure	cardiac structure
-A3140621	heart	heart	Heart structure	heart structure
 A6923260	cardiac	cardiac	Cardiac structure ( body structure )	cardiac structure ( body structure )
 A3488292	heart	heart	Heart structure ( body structure )	heart structure ( body structure )
-A2872568	heart	heart	Heart failure	heart failure
 A4708533	heart	heart	Heart failure	heart failure
 A4708534	heart	heart	Heart failure	heart failure
+A2872568	heart	heart	Heart failure	heart failure
 A4757882	heart	heart	Heart failure , NOS	heart failure , NO
 A17347533	heart	heart	Heart failure NOS	heart failure NO
 A4782624	heart	heart	Heart failure NOS	heart failure NO
@@ -597,8 +643,8 @@ A15148936	heart	heart	Heart failure NOS ( disorder )	heart failure NO ( disorder
 A4994650	heart	heart	Heart : [ weak ] or [ failure NOS ]	heart : [ weak ] OR [ failure NO ]
 A4994651	heart	heart	Heart : [ weak ] or [ failure NOS ]	heart : [ weak ] OR [ failure NO ]
 A15134002	heart	heart	Heart : [ weak ] or [ failure NOS ] ( disorder )	heart : [ weak ] OR [ failure NO ] ( disorder )
-A2876049	congestive	congestive	Congestive heart failure	congestive heart failure
 A4709776	congestive	congestive	Congestive heart failure	congestive heart failure
+A2876049	congestive	congestive	Congestive heart failure	congestive heart failure
 A4777070	congestive	congestive	Congestive cardiac failure	congestive cardiac failure
 A4777071	congestive	congestive	Congestive cardiac failure	congestive cardiac failure
 A4777072	congestive	congestive	Congestive cardiac failure	congestive cardiac failure
@@ -611,9 +657,12 @@ A4975804	congestive	congestive	Congestive cardiac fail	congestive cardiac fail
 A4975813	congetive	congetive	Congetive cardiac failure	congetive cardiac failure
 A4975812	congetive	congetive	Congetive cardiac failure	congetive cardiac failure
 A3370025	congestive	congestive	Congestive heart failure ( disorder )	congestive heart failure ( disorder )
-A2882266	hematuria	hematuria	Hematuria	hematuria
+A2966879	hematuria	hematuria	Hematuria syndrome	hematuria syndrome
+A4757920	hematuria	hematuria	Hematuria syndrome , NOS	hematuria syndrome , NO
+A3484380	haematuria	haematuria	Haematuria syndrome	haematuria syndrome
 A4712406	hematuria	hematuria	Hematuria	hematuria
 A4712407	hematuria	hematuria	Hematuria	hematuria
+A2882266	hematuria	hematuria	Hematuria	hematuria
 A4757833	haematuria	haematuria	Haematuria	haematuria
 A4757834	haematuria	haematuria	Haematuria	haematuria
 A2966656	haematuria	haematuria	Haematuria	haematuria
@@ -623,9 +672,6 @@ A4878007	haematuria	haematuria	Haematuria NOS	haematuria NO
 A17328868	hematuria	hematuria	Hematuria NOS	hematuria NO
 A4878246	hematuria	hematuria	Hematuria NOS	hematuria NO
 A3000481	blood	blood	Blood in urine	blood in urine
-A2966879	hematuria	hematuria	Hematuria syndrome	hematuria syndrome
-A4757920	hematuria	hematuria	Hematuria syndrome , NOS	hematuria syndrome , NO
-A3484380	haematuria	haematuria	Haematuria syndrome	haematuria syndrome
 A4870807	blood	blood	Blood in urine - hematuria	blood in urine - hematuria
 A4870808	blood	blood	Blood in urine - hematuria	blood in urine - hematuria
 A4870809	blood	blood	Blood in urine - hematuria	blood in urine - hematuria
@@ -667,9 +713,9 @@ A15102418	blood	blood	Blood in urine - haematuria ( & [ symptom ] ) ( finding )	
 A15161003	haematuria	haematuria	Haematuria ( disorder )	haematuria ( disorder )
 A15151996	haematuria	haematuria	Haematuria NOS ( disorder )	haematuria NO ( disorder )
 A15103055	blood	blood	Blood in urine ( & symptom ) ( finding )	blood in urine ( & symptom ) ( find )
-A2882340	hemothorax	hemothorax	Hemothorax	hemothorax
 A4712441	hemothorax	hemothorax	Hemothorax	hemothorax
 A4712442	hemothorax	hemothorax	Hemothorax	hemothorax
+A2882340	hemothorax	hemothorax	Hemothorax	hemothorax
 A4782446	haemothorax	haemothorax	Haemothorax	haemothorax
 A4782447	haemothorax	haemothorax	Haemothorax	haemothorax
 A3028061	haemothorax	haemothorax	Haemothorax	haemothorax
@@ -677,8 +723,8 @@ A3185589	pleural	pleural	Pleural hemorrhage	pleural hemorrhage
 A3185588	pleural	pleural	Pleural haemorrhage	pleural haemorrhage
 A3491113	hemothorax	hemothorax	Hemothorax ( disorder )	hemothorax ( disorder )
 A3286475	hip	hip	Hip region structure	hip region structure
-A2882432	hip	hip	Hip	hip
 A2882433	hip	hip	Hip	hip
+A2882432	hip	hip	Hip	hip
 A4737694	hip	hip	Hip , NOS	hip , NO
 A3141790	hip	hip	Hip region	hip region
 A3259226	bone	bone	Bone structure of hip	bone structure of hip
@@ -711,9 +757,9 @@ A4741726	humerus	humerus	Humerus , NOS	humerus , NO
 A16358780	bone	bone	Bone structure of upper arm ( body structure )	bone structure of upper arm ( body structure )
 A16361719	bone	bone	Bone structure of upper arm	bone structure of upper arm
 A3324081	bone	bone	Bone structure of humerus ( body structure )	bone structure of humerus ( body structure )
-A2882585	hydronephrosis	hydronephrosis	Hydronephrosis	hydronephrosis
 A4712557	hydronephrosis	hydronephrosis	Hydronephrosis	hydronephrosis
 A4712558	hydronephrosis	hydronephrosis	Hydronephrosis	hydronephrosis
+A2882585	hydronephrosis	hydronephrosis	Hydronephrosis	hydronephrosis
 A17327807	hydronephrosis	hydronephrosis	Hydronephrosis NOS	hydronephrosis NO
 A15104297	hydronephrosis	hydronephrosis	Hydronephrosis ( disorder )	hydronephrosis ( disorder )
 A3500045	hydronephrosis	hydronephrosis	Hydronephrosis ( disorder )	hydronephrosis ( disorder )
@@ -723,24 +769,44 @@ A4783364	hyperplasia	hyperplasia	Hyperplasia , NOS	hyperplasia , NO
 A3005255	cellular	cellular	Cellular proliferation	cellular proliferation
 A3032023	hypercellularity	hypercellularity	Hypercellularity	hypercellularity
 A3501362	hyperplasia	hyperplasia	Hyperplasia ( morphologic abnormality )	hyperplasia ( morphologic abnormality )
+A2882832	ibuprofen	ibuprofen	Ibuprofen	ibuprofen
+A2882833	ibuprofen	ibuprofen	Ibuprofen	ibuprofen
+A10335543	ibuprofen	ibuprofen	Ibuprofen	ibuprofen
+A3061000	propionic	propionic	Propionic acid - ibuprofen	propionic acid - ibuprofen
+A3087735	p	p	p - Isobutylhydratropic acid	P - isobutylhydratropic acid
+A3087734	p	p	p - Isobutylhydratropic acid	P - isobutylhydratropic acid
+A13361985	ibuprofen	ibuprofen	Ibuprofen [ cns analgesic ] [ see j28 . . ]	ibuprofen [ CN analgesic ] [ see j28 . . ]
+A13365890	ibuprofen	ibuprofen	Ibuprofen [ musculoskeletal use ]	ibuprofen [ musculoskeletal use ]
+A3503515	ibuprofen	ibuprofen	Ibuprofen ( product )	ibuprofen ( product )
+A4878514	ibuprofen	ibuprofen	Ibuprofen product	ibuprofen product
+A13370987	ibuprofen	ibuprofen	Ibuprofen [ musculoskeletal use 2 ]	ibuprofen [ musculoskeletal use 2 ]
+A13373045	ibuprofen	ibuprofen	Ibuprofen [ musculoskeletal use 2 ] ( product )	ibuprofen [ musculoskeletal use 2 ] ( product )
+A4997479	ibuprofen	ibuprofen	Ibuprofen [ musculoskeletal use 2 ] ( substance )	ibuprofen [ musculoskeletal use 2 ] ( substance )
+A13373036	ibuprofen	ibuprofen	Ibuprofen [ cns analgesic ] [ see j28 . . ] ( product )	ibuprofen [ CN analgesic ] [ see j28 . . ] ( product )
+A4997478	ibuprofen	ibuprofen	Ibuprofen [ cns analgesic ] [ see j28 . . ] ( substance )	ibuprofen [ CN analgesic ] [ see j28 . . ] ( substance )
+A13376563	ibuprofen	ibuprofen	Ibuprofen [ musculoskeletal use ] ( product )	ibuprofen [ musculoskeletal use ] ( product )
+A4997480	ibuprofen	ibuprofen	Ibuprofen [ musculoskeletal use ] ( substance )	ibuprofen [ musculoskeletal use ] ( substance )
+A4997481	ibuprofen	ibuprofen	Ibuprofen product ( substance )	ibuprofen product ( substance )
+A4997461	ibuprofen	ibuprofen	Ibuprofen ( substance )	ibuprofen ( substance )
+A3503516	ibuprofen	ibuprofen	Ibuprofen ( substance )	ibuprofen ( substance )
 A3726726	structure	structure	Structure of iliac artery	structure of iliac artery
 A2933577	iliac	iliac	Iliac artery	iliac artery
 A4741866	iliac	iliac	Iliac artery , NOS	iliac artery , NO
 A3726725	structure	structure	Structure of iliac artery ( body structure )	structure of iliac artery ( body structure )
-A2883019	intestines	intestine	Intestines	intestine
-A2883018	intestine	intestine	Intestine	intestine
-A4742071	intestines	intestine	Intestines , NOS	intestine , NO
+A2934838	intestinal	intestinal	Intestinal	intestinal
 A2877632	bowel	bowel	Bowel	bowel
 A4739422	bowel	bowel	Bowel , NOS	bowel , NO
 A2877633	intestinal	intestinal	Intestinal tract	intestinal tract
 A4742069	intestinal	intestinal	Intestinal tract , NOS	intestinal tract , NO
-A2934838	intestinal	intestinal	Intestinal	intestinal
+A2883019	intestines	intestine	Intestines	intestine
+A2883018	intestine	intestine	Intestine	intestine
+A4742071	intestines	intestine	Intestines , NOS	intestine , NO
 A3147912	intestinal	intestinal	Intestinal structure	intestinal structure
 A3521135	intestinal	intestinal	Intestinal structure ( body structure )	intestinal structure ( body structure )
 A3520954	intestinal	intestinal	Intestinal ( qualifier value )	intestinal ( qualifier value )
-A2875904	arthropathy	arthropathy	Arthropathy	arthropathy
 A4709707	arthropathy	arthropathy	Arthropathy	arthropathy
 A4709708	arthropathy	arthropathy	Arthropathy	arthropathy
+A2875904	arthropathy	arthropathy	Arthropathy	arthropathy
 A4752882	arthropathy	arthropathy	Arthropathy , NOS	arthropathy , NO
 A17303453	arthropathies	arthropathy	Arthropathies NOS	arthropathy NO
 A17340264	arthropathy	arthropathy	Arthropathy NOS	arthropathy NO
@@ -789,32 +855,32 @@ A17300293	joint	joint	Joint disorders NOS ( disorder )	joint disorder NO ( disor
 A15142366	joint	joint	Joint disorders NOS ( disorder )	joint disorder NO ( disorder )
 A17325413	joint	joint	Joint disorder NOS , of unspecified site ( disorder )	joint disorder NO , of unspecified site ( disorder )
 A5016342	osteoarthrosis	osteoarthrosis	Osteoarthrosis ( disorder )	osteoarthrosis ( disorder )
-A2874324	joint	joint	Joint	joint
-A4742175	joint	joint	Joint , NOS	joint , NO
 A4824074	joint	joint	Joint structure	joint structure
 A4824075	joint	joint	Joint structure	joint structure
 A3149428	joint	joint	Joint structure	joint structure
+A2874324	joint	joint	Joint	joint
+A4742175	joint	joint	Joint , NOS	joint , NO
 A15139824	joint	joint	Joint structure ( body structure )	joint structure ( body structure )
 A3526918	joint	joint	Joint structure ( body structure )	joint structure ( body structure )
 A3526984	joint	joint	Joint types	joint type
+A3149916	kidney	kidney	Kidney structure	kidney structure
 A2883238	kidney	kidney	Kidney	kidney
 A4737640	kidney	kidney	Kidney , NOS	kidney , NO
-A3149916	kidney	kidney	Kidney structure	kidney structure
 A3193797	renal	renal	Renal structure	renal structure
 A3528827	kidney	kidney	Kidney structure ( body structure )	kidney structure ( body structure )
+A3150072	knee	knee	Knee joint structure	knee joint structure
 A2935362	knee	knee	Knee joint	knee joint
 A4742224	knee	knee	Knee joint , NOS	knee joint , NO
 A4745085	stifle	stifle	Stifle joint , NOS	stifle joint , NO
-A3150072	knee	knee	Knee joint structure	knee joint structure
 A3529271	knee	knee	Knee joint structure ( body structure )	knee joint structure ( body structure )
-A2936832	lower	low	Lower extremity	low extremity
-A4742500	lower	low	Lower extremity , NOS	low extremity , NO
+A3154547	lower	low	Lower limb structure	low limb structure
 A4741679	hindlimb	hindlimb	Hindlimb , NOS	hindlimb , NO
 A8380129	leg	leg	Leg	leg
+A2936832	lower	low	Lower extremity	low extremity
+A4742500	lower	low	Lower extremity , NOS	low extremity , NO
 A3154526	lower	low	Lower limb	low limb
 A4742503	lower	low	Lower limb , NOS	low limb , NO
 A3152109	leg	leg	Leg region	leg region
-A3154547	lower	low	Lower limb structure	low limb structure
 A3663202	region	region	Region of lower extremity ( body structure )	region of low extremity ( body structure )
 A3543893	lower	low	Lower limb structure ( body structure )	low limb structure ( body structure )
 A3663204	region	region	Region of lower extremity	region of low extremity
@@ -824,57 +890,40 @@ A2936313	leg	leg	Leg length inequality	leg length inequality
 A13365913	leg	leg	Leg length discrepancy	leg length discrepancy
 A3273133	lower	low	Lower limb length difference	low limb length difference
 A3535301	leg	leg	Leg length inequality ( finding )	leg length inequality ( find )
+A3728627	structure	structure	Structure of ligament	structure of ligament
 A4709122	ligament	ligament	Ligament	ligament
 A4709123	ligament	ligament	Ligament	ligament
 A2874351	ligament	ligament	Ligament	ligament
 A4742433	ligament	ligament	Ligament , NOS	ligament , NO
 A3728532	structure	structure	Structure of ligament ( body structure )	structure of ligament ( body structure )
-A3728627	structure	structure	Structure of ligament	structure of ligament
 A15141005	ligament	ligament	Ligament ( body structure )	ligament ( body structure )
+A3153533	liver	liver	Liver structure	liver structure
 A2883564	liver	liver	Liver	liver
 A4737634	liver	liver	Liver , NOS	liver , NO
-A3153533	liver	liver	Liver structure	liver structure
 A3540928	liver	liver	Liver structure ( body structure )	liver structure ( body structure )
+A3154872	lung	lung	Lung structure	lung structure
 A2883605	lung	lung	Lung	lung
 A4737606	lung	lung	Lung , NOS	lung , NO
-A3154872	lung	lung	Lung structure	lung structure
 A3544709	lung	lung	Lung structure ( body structure )	lung structure ( body structure )
 A2883621	lymph	lymph	Lymph	lymph
 A4742547	lymph	lymph	Lymph , NOS	lymph , NO
 A3545168	lymph	lymph	Lymph ( substance )	lymph ( substance )
+A11726135	structure	structure	Structure of lymph node	structure of lymph node
+A11737275	lymph	lymph	Lymph node structure	lymph node structure
 A2874291	lymph	lymph	Lymph node	lymph node
 A4742546	lymph	lymph	Lymph node , NOS	lymph node , NO
 A3545175	lymph	lymph	Lymph gland	lymph gland
 A4825418	lymph	lymph	Lymph gland , NOS	lymph gland , NO
 A3545399	lymphatic	lymphatic	Lymphatic gland	lymphatic gland
 A4825432	lymphatic	lymphatic	Lymphatic gland , NOS	lymphatic gland , NO
-A11726135	structure	structure	Structure of lymph node	structure of lymph node
-A11737275	lymph	lymph	Lymph node structure	lymph node structure
 A11728353	structure	structure	Structure of lymph node ( body structure )	structure of lymph node ( body structure )
 A11732811	lymph	lymph	Lymph node structure ( body structure )	lymph node structure ( body structure )
-A5005389	lymphatic	lymphatic	Lymphatic disease	lymphatic disease
-A5005388	lymphatic	lymphatic	Lymphatic disease	lymphatic disease
-A4738751	adenopathy	adenopathy	Adenopathy	adenopathy
-A4738752	adenopathy	adenopathy	Adenopathy	adenopathy
-A6924810	disorder	disorder	Disorder of lymphatics	disorder of lymphatic
-A4756085	disorder	disorder	Disorder of lymphatics , NOS	disorder of lymphatic , NO
-A2971947	lymphangiopathy	lymphangiopathy	Lymphangiopathy	lymphangiopathy
-A4760028	lymphangiopathy	lymphangiopathy	Lymphangiopathy , NOS	lymphangiopathy , NO
-A3121092	disorders	disorder	Disorders of lymph node and lymphatics	disorder of lymph node and lymphatic
-A6924608	disease	disease	Disease of lymphoid system ( disorder )	disease of lymphoid system ( disorder )
-A13367367	disease	disease	Disease of lymphoid system	disease of lymphoid system
-A3400868	disorders	disorder	Disorders of lymph node and lymphatics ( disorder )	disorder of lymph node and lymphatic ( disorder )
-A3400278	disorder	disorder	Disorder of lymphatic system ( disorder )	disorder of lymphatic system ( disorder )
-A3400279	disorder	disorder	Disorder of lymphatic system	disorder of lymphatic system
-A6938351	disorder	disorder	Disorder of lymphoid system ( disorder )	disorder of lymphoid system ( disorder )
-A6938352	disorder	disorder	Disorder of lymphoid system	disorder of lymphoid system
 A2874279	lymphocyte	lymphocyte	Lymphocyte	lymphocyte
 A4742559	lymphocyte	lymphocyte	Lymphocyte , NOS	lymphocyte , NO
 A3545846	lymphocytic	lymphocytic	Lymphocytic cell	lymphocytic cell
 A4742560	lymphocytic	lymphocytic	Lymphocytic cell , NOS	lymphocytic cell , NO
-A3155145	lymphocytic	lymphocytic	Lymphocytic	lymphocytic
 A3545596	lymphocyte	lymphocyte	Lymphocyte ( cell )	lymphocyte ( cell )
-A3545845	lymphocytic	lymphocytic	Lymphocytic ( qualifier value )	lymphocytic ( qualifier value )
+A13004259	magnetic	magnetic	Magnetic resonance imaging - action	magnetic resonance image - action
 A13024063	magnetic	magnetic	Magnetic resonance imaging	magnetic resonance image
 A4742624	magnetic	magnetic	Magnetic resonance imaging	magnetic resonance image
 A2937233	magnetic	magnetic	Magnetic resonance imaging	magnetic resonance image
@@ -902,24 +951,23 @@ A15107595	nuclear	nuclear	Nuclear magnetic resonance NOS ( procedure )	nuclear m
 A15104125	magnetic	magnetic	Magnetic resonance study ( procedure )	magnetic resonance study ( procedure )
 A5005869	magnetic	magnetic	Magnetic resonance study ( procedure )	magnetic resonance study ( procedure )
 A5010708	nmr	nmr	NMR Scan	NMR scan
-A13004259	magnetic	magnetic	Magnetic resonance imaging - action	magnetic resonance image - action
 A15133099	magnetic	magnetic	Magnetic resonance : [ imaging ] or [ study ] ( procedure )	magnetic resonance : [ image ] OR [ study ] ( procedure )
+A3157558	mediastinal	mediastinal	Mediastinal	mediastinal
 A2883836	mediastinum	mediastinum	Mediastinum	mediastinum
 A4737698	mediastinum	mediastinum	Mediastinum , NOS	mediastinum , NO
 A3205435	structure	structure	Structure of mediastinum	structure of mediastinum
-A3157558	mediastinal	mediastinal	Mediastinal	mediastinal
 A3157572	mediastinal	mediastinal	Mediastinal structure	mediastinal structure
 A3555770	mediastinal	mediastinal	Mediastinal structure ( body structure )	mediastinal structure ( body structure )
 A3555737	mediastinal	mediastinal	Mediastinal ( qualifier value )	mediastinal ( qualifier value )
-A3158344	metacarpal	metacarpal	Metacarpal bone	metacarpal bone
-A4826536	metacarpal	metacarpal	Metacarpal bone , NOS	metacarpal bone , NO
+A3259291	bone	bone	Bone structure of metacarpal	bone structure of metacarpal
 A2874315	metacarpal	metacarpal	Metacarpal	metacarpal
 A4742809	metacarpal	metacarpal	Metacarpal , NOS	metacarpal , NO
-A3259291	bone	bone	Bone structure of metacarpal	bone structure of metacarpal
+A3158344	metacarpal	metacarpal	Metacarpal bone	metacarpal bone
+A4826536	metacarpal	metacarpal	Metacarpal bone , NOS	metacarpal bone , NO
 A3324103	bone	bone	Bone structure of metacarpal ( body structure )	bone structure of metacarpal ( body structure )
 A3158454	metatarsal	metatarsal	Metatarsal bone structure	metatarsal bone structure
-A4826578	metatarsal	metatarsal	Metatarsal bone , NOS	metatarsal bone , NO
 A3319182	metatarsal	metatarsal	Metatarsal bone	metatarsal bone
+A4826578	metatarsal	metatarsal	Metatarsal bone , NOS	metatarsal bone , NO
 A2874322	metatarsal	metatarsal	Metatarsal	metatarsal
 A4742815	metatarsal	metatarsal	Metatarsal , NOS	metatarsal , NO
 A3560484	metatarsal	metatarsal	Metatarsal bone structure ( body structure )	metatarsal bone structure ( body structure )
@@ -931,24 +979,24 @@ A4742817	metatarsophalangeal	metatarsophalangeal	Metatarsophalangeal joint , NOS
 A16380074	[	[	[ SO ] Metatarsophalangeal joint unspecified	[ so ] metatarsophalangeal joint unspecified
 A16378844	[	[	[ SO ] Metatarsophalangeal joint unspecified ( body structure )	[ so ] metatarsophalangeal joint unspecified ( body structure )
 A3560517	metatarsophalangeal	metatarsophalangeal	Metatarsophalangeal joint structure ( body structure )	metatarsophalangeal joint structure ( body structure )
+A3307432	muscle	muscle	Muscle tissue	muscle tissue
 A2884292	muscle	muscle	Muscle	muscle
 A4742981	muscle	muscle	Muscle , NOS	muscle , NO
 A4742980	muscle	muscle	Muscle , NOS	muscle , NO
 A4827111	muscles	muscle	Muscles , NOS	muscle , NO
-A3307432	muscle	muscle	Muscle tissue	muscle tissue
 A3571107	muscle	muscle	Muscle tissue ( body structure )	muscle tissue ( body structure )
-A5048042	atrophy	atrophy	Atrophy - muscular	atrophy - muscular
-A5048043	atrophy	atrophy	Atrophy - muscular	atrophy - muscular
-A5048044	atrophy	atrophy	Atrophy - muscular	atrophy - muscular
-A5048041	atrophy	atrophy	Atrophy - muscular	atrophy - muscular
+A3046734	muscle	muscle	Muscle atrophy	muscle atrophy
+A4827098	muscle	muscle	Muscle atrophy , NOS	muscle atrophy , NO
 A5010150	muscular	muscular	Muscular atrophy	muscular atrophy
 A5010151	muscular	muscular	Muscular atrophy	muscular atrophy
 A5010152	muscular	muscular	Muscular atrophy	muscular atrophy
 A5010153	muscular	muscular	Muscular atrophy	muscular atrophy
 A3571165	muscular	muscular	Muscular atrophy	muscular atrophy
+A5048042	atrophy	atrophy	Atrophy - muscular	atrophy - muscular
+A5048043	atrophy	atrophy	Atrophy - muscular	atrophy - muscular
+A5048044	atrophy	atrophy	Atrophy - muscular	atrophy - muscular
+A5048041	atrophy	atrophy	Atrophy - muscular	atrophy - muscular
 A4760594	muscular	muscular	Muscular atrophy , NOS	muscular atrophy , NO
-A3046734	muscle	muscle	Muscle atrophy	muscle atrophy
-A4827098	muscle	muscle	Muscle atrophy , NOS	muscle atrophy , NO
 A2922888	amyotrophy	amyotrophy	Amyotrophy	amyotrophy
 A4752591	amyotrophy	amyotrophy	Amyotrophy , NOS	amyotrophy , NO
 A2954214	amyotrophia	amyotrophia	Amyotrophia	amyotrophia
@@ -967,8 +1015,8 @@ A3274826	muscle	muscle	Muscle wasting disorder	muscle waste disorder
 A17312523	amyotrophia	amyotrophia	Amyotrophia NOS ( disorder )	amyotrophia NO ( disorder )
 A3570884	muscle	muscle	Muscle atrophy ( disorder )	muscle atrophy ( disorder )
 A15095854	muscle	muscle	Muscle wasting ( finding )	muscle waste ( find )
-A4713466	neoplasms	neoplasm	Neoplasms	neoplasm
 A2877256	neoplasm	neoplasm	Neoplasm	neoplasm
+A4713466	neoplasms	neoplasm	Neoplasms	neoplasm
 A4788393	neoplasm	neoplasm	Neoplasm , NOS	neoplasm , NO
 A17308392	neoplasms	neoplasm	Neoplasms NOS	neoplasm NO
 A4788394	neoplasms	neoplasm	Neoplasms NOS	neoplasm NO
@@ -977,11 +1025,11 @@ A4788396	neoplasms	neoplasm	Neoplasms NOS	neoplasm NO
 A4788398	neoplasms	neoplasm	Neoplasms NOS	neoplasm NO
 A4788399	neoplasms	neoplasm	Neoplasms NOS	neoplasm NO
 A4788397	neoplasms	neoplasm	Neoplasms NOS	neoplasm NO
+A17302459	unspecified	unspecified	Unspecified nature neoplasm	unspecified nature neoplasm
 A17327616	neoplasm	neoplasm	Neoplasm of unspecified nature	neoplasm of unspecified nature
 A17308400	neoplasm	neoplasm	Neoplasm of unspecified nature NOS	neoplasm of unspecified nature NO
 A4788391	neoplasm	neoplasm	Neoplasm of unspecified nature NOS	neoplasm of unspecified nature NO
 A4788392	neoplasm	neoplasm	Neoplasm of unspecified nature NOS	neoplasm of unspecified nature NO
-A17302459	unspecified	unspecified	Unspecified nature neoplasm	unspecified nature neoplasm
 A2877257	tumor	tumor	Tumor	tumor
 A4798073	tumor	tumor	Tumor , NOS	tumor , NO
 A3079891	tumour	tumour	Tumour	tumour
@@ -1004,10 +1052,10 @@ A15111889	neoplasms	neoplasm	Neoplasms NOS ( disorder )	neoplasm NO ( disorder )
 A15134352	neoplasms	neoplasm	Neoplasms NOS ( disorder )	neoplasm NO ( disorder )
 A17337600	neoplasms	neoplasm	Neoplasms NOS ( disorder )	neoplasm NO ( disorder )
 A15111587	neoplasms	neoplasm	Neoplasms NOS ( disorder )	neoplasm NO ( disorder )
+A3580309	nerve	nerve	Nerve structure	nerve structure
 A2874533	nerve	nerve	Nerve	nerve
 A4743096	nerve	nerve	Nerve , NOS	nerve , NO
 A3580308	nerve	nerve	Nerve structure ( body structure )	nerve structure ( body structure )
-A3580309	nerve	nerve	Nerve structure	nerve structure
 A2873779	nodule	nodule	Nodule	nodule
 A4788635	nodule	nodule	Nodule , NOS	nodule , NO
 A3583958	nodule	nodule	Nodule ( morphologic abnormality )	nodule ( morphologic abnormality )
@@ -1021,10 +1069,10 @@ A3508692	increased	increase	Increased density	increase density
 A3383751	decreased	decrease	Decreased translucency ( finding )	decrease translucency ( find )
 A3508689	increased	increase	Increased density ( finding )	increase density ( find )
 A3508870	increased	increase	Increased mass to volume ratio	increase mass to volume ratio
-A3387073	degenerative	degenerative	Degenerative polyarthritis	degenerative polyarthritis
-A3387074	degenerative	degenerative	Degenerative polyarthritis	degenerative polyarthritis
+A19402317	degenerative	degenerative	Degenerative polyarthritis	degenerative polyarthritis
 A4979197	degenerative	degenerative	Degenerative polyarthritis	degenerative polyarthritis
 A4979198	degenerative	degenerative	Degenerative polyarthritis	degenerative polyarthritis
+A3387073	degenerative	degenerative	Degenerative polyarthritis	degenerative polyarthritis
 A4755641	degenerative	degenerative	Degenerative polyarthritis , NOS	degenerative polyarthritis , NO
 A4709395	degenerative	degenerative	Degenerative arthritis	degenerative arthritis
 A4709396	degenerative	degenerative	Degenerative arthritis	degenerative arthritis
@@ -1036,13 +1084,13 @@ A4709399	hypertrophic	hypertrophic	Hypertrophic arthritis	hypertrophic arthritis
 A4709400	hypertrophic	hypertrophic	Hypertrophic arthritis	hypertrophic arthritis
 A2875256	hypertrophic	hypertrophic	Hypertrophic arthritis	hypertrophic arthritis
 A4758306	hypertrophic	hypertrophic	Hypertrophic arthritis , NOS	hypertrophic arthritis , NO
-A2884883	osteoarthritis	osteoarthritis	Osteoarthritis	osteoarthritis
 A4713658	osteoarthritis	osteoarthritis	Osteoarthritis	osteoarthritis
 A4713659	osteoarthritis	osteoarthritis	Osteoarthritis	osteoarthritis
 A4713660	osteoarthritis	osteoarthritis	Osteoarthritis	osteoarthritis
 A4713661	osteoarthritis	osteoarthritis	Osteoarthritis	osteoarthritis
 A4713662	osteoarthritis	osteoarthritis	Osteoarthritis	osteoarthritis
 A4713663	osteoarthritis	osteoarthritis	Osteoarthritis	osteoarthritis
+A2884883	osteoarthritis	osteoarthritis	Osteoarthritis	osteoarthritis
 A4761394	osteoarthritis	osteoarthritis	Osteoarthritis , NOS	osteoarthritis , NO
 A17341859	osteoarthritis	osteoarthritis	Osteoarthritis NOS	osteoarthritis NO
 A4789535	osteoarthritis	osteoarthritis	Osteoarthritis NOS	osteoarthritis NO
@@ -1088,31 +1136,31 @@ A17332168	osteoarthritis	osteoarthritis	Osteoarthritis NOS ( disorder )	osteoart
 A15129595	osteoarthritis	osteoarthritis	Osteoarthritis NOS ( disorder )	osteoarthritis NO ( disorder )
 A17306496	osteoarthritis	osteoarthritis	Osteoarthritis NOS , of unspecified site ( disorder )	osteoarthritis NO , of unspecified site ( disorder )
 A15151220	[	[	[ Joint degeneration ] or [ osteoarthritis NOS ] ( disorder )	[ joint degeneration ] OR [ osteoarthritis NO ] ( disorder )
-A2884899	osteogenesis	osteogenesis	Osteogenesis	osteogenesis
-A4743369	osteogenesis	osteogenesis	Osteogenesis , NOS	osteogenesis , NO
 A2925057	bone	bone	Bone formation	bone formation
 A4739372	bone	bone	Bone formation , NOS	bone formation , NO
+A2884899	osteogenesis	osteogenesis	Osteogenesis	osteogenesis
+A4743369	osteogenesis	osteogenesis	Osteogenesis , NOS	osteogenesis , NO
 A2940166	ossification	ossification	Ossification	ossification
 A4743346	ossification	ossification	Ossification , NOS	ossification , NO
 A3323706	bone	bone	Bone formation , function ( observable entity )	bone formation , function ( observable entity )
 A13018736	bone	bone	Bone formation , function	bone formation , function
 A4964991	bone	bone	Bone formation ( function )	bone formation ( function )
-A2884920	osteopenia	osteopenia	Osteopenia	osteopenia
 A2884921	osteopenia	osteopenia	Osteopenia	osteopenia
 A4713679	osteopenia	osteopenia	Osteopenia	osteopenia
 A4713680	osteopenia	osteopenia	Osteopenia	osteopenia
 A4713681	osteopenia	osteopenia	Osteopenia	osteopenia
 A4713682	osteopenia	osteopenia	Osteopenia	osteopenia
+A2884920	osteopenia	osteopenia	Osteopenia	osteopenia
 A3604721	osteopenia	osteopenia	Osteopenia ( morphologic abnormality )	osteopenia ( morphologic abnormality )
 A15147433	osteopenia	osteopenia	Osteopenia ( disorder )	osteopenia ( disorder )
 A15148945	osteopenia	osteopenia	Osteopenia ( disorder )	osteopenia ( disorder )
 A3604720	osteopenia	osteopenia	Osteopenia ( disorder )	osteopenia ( disorder )
-A2885021	pain	pain	Pain	pain
 A4713719	pain	pain	Pain	pain
 A4713720	pain	pain	Pain	pain
 A4713721	pain	pain	Pain	pain
 A4713722	pain	pain	Pain	pain
 A4713723	pain	pain	Pain	pain
+A2885021	pain	pain	Pain	pain
 A4743474	pain	pain	Pain , NOS	pain , NO
 A2929091	dolor	dolor	Dolor	dolor
 A2940395	painful	painful	Painful	painful
@@ -1124,28 +1172,28 @@ A15139995	pain	pain	Pain ( finding )	pain ( find )
 A15161594	pain	pain	Pain ( finding )	pain ( find )
 A3614691	pain	pain	Pain ( finding )	pain ( find )
 A5018219	pain	pain	Pain finding	pain find
-A2885033	pancreas	pancreas	Pancreas	pancreas
-A4737636	pancreas	pancreas	Pancreas , NOS	pancreas , NO
+A3180519	pancreatic	pancreatic	Pancreatic structure	pancreatic structure
 A2877641	exocrine	exocrine	Exocrine and endocrine pancreas	exocrine and endocrine pancreas
 A4737637	exocrine	exocrine	Exocrine and endocrine pancreas , NOS	exocrine and endocrine pancreas , NO
-A3180519	pancreatic	pancreatic	Pancreatic structure	pancreatic structure
+A2885033	pancreas	pancreas	Pancreas	pancreas
+A4737636	pancreas	pancreas	Pancreas , NOS	pancreas , NO
 A3615667	pancreatic	pancreatic	Pancreatic structure ( body structure )	pancreatic structure ( body structure )
-A2885046	pancreatitis	pancreatitis	Pancreatitis	pancreatitis
 A4713734	pancreatitis	pancreatitis	Pancreatitis	pancreatitis
 A4713735	pancreatitis	pancreatitis	Pancreatitis	pancreatitis
 A4713736	pancreatitis	pancreatitis	Pancreatitis	pancreatitis
+A2885046	pancreatitis	pancreatitis	Pancreatitis	pancreatitis
 A4761640	pancreatitis	pancreatitis	Pancreatitis , NOS	pancreatitis , NO
 A15095682	pancreatitis	pancreatitis	Pancreatitis ( disorder )	pancreatitis ( disorder )
 A3615734	pancreatitis	pancreatitis	Pancreatitis ( disorder )	pancreatitis ( disorder )
-A2885215	pelvis	pelvis	Pelvis	pelvis
-A4737706	pelvis	pelvis	Pelvis , NOS	pelvis , NO
 A3182327	pelvic	pelvic	Pelvic	pelvic
 A3182393	pelvic	pelvic	Pelvic structure	pelvic structure
+A2885215	pelvis	pelvis	Pelvis	pelvis
+A4737706	pelvis	pelvis	Pelvis , NOS	pelvis , NO
 A3319280	pelvic	pelvic	Pelvic region	pelvic region
 A3622326	pelvic	pelvic	Pelvic structure ( body structure )	pelvic structure ( body structure )
 A3622149	pelvic	pelvic	Pelvic ( qualifier value )	pelvic ( qualifier value )
-A3056746	pericardial	pericardial	Pericardial effusion	pericardial effusion
 A4790740	pericardial	pericardial	Pericardial effusion	pericardial effusion
+A3056746	pericardial	pericardial	Pericardial effusion	pericardial effusion
 A4761866	pericardial	pericardial	Pericardial effusion , NOS	pericardial effusion , NO
 A5020408	pericardial	pericardial	Pericardial effusion ( disorder )	pericardial effusion ( disorder )
 A3624850	pericardial	pericardial	Pericardial effusion ( disorder )	pericardial effusion ( disorder )
@@ -1163,10 +1211,6 @@ A2877566	plasmacyte	plasmacyte	Plasmacyte	plasmacyte
 A2877567	plasmocyte	plasmocyte	Plasmocyte	plasmocyte
 A5022109	plasma	plasma	Plasma cell ( body structure )	plasma cell ( body structure )
 A3633213	plasma	plasma	Plasma cell ( cell )	plasma cell ( cell )
-A15156913	pleural	pleural	Pleural effusion ( disorder )	pleural effusion ( disorder )
-A3635115	pleural	pleural	Pleural effusion ( disorder )	pleural effusion ( disorder )
-A17319015	pleural	pleural	Pleural effusion NOS ( disorder )	pleural effusion NO ( disorder )
-A15139894	pleural	pleural	Pleural effusion NOS ( disorder )	pleural effusion NO ( disorder )
 A4791332	pleural	pleural	Pleural effusion	pleural effusion
 A4791333	pleural	pleural	Pleural effusion	pleural effusion
 A3058975	pleural	pleural	Pleural effusion	pleural effusion
@@ -1176,9 +1220,13 @@ A4791334	pleural	pleural	Pleural effusion NOS	pleural effusion NO
 A4791335	pleural	pleural	Pleural effusion NOS	pleural effusion NO
 A4791336	pleural	pleural	Pleural effusion NOS	pleural effusion NO
 A4791337	pleural	pleural	Pleural effusion NOS	pleural effusion NO
-A2885643	pneumothorax	pneumothorax	Pneumothorax	pneumothorax
+A15156913	pleural	pleural	Pleural effusion ( disorder )	pleural effusion ( disorder )
+A3635115	pleural	pleural	Pleural effusion ( disorder )	pleural effusion ( disorder )
+A17319015	pleural	pleural	Pleural effusion NOS ( disorder )	pleural effusion NO ( disorder )
+A15139894	pleural	pleural	Pleural effusion NOS ( disorder )	pleural effusion NO ( disorder )
 A4713991	pneumothorax	pneumothorax	Pneumothorax	pneumothorax
 A4713992	pneumothorax	pneumothorax	Pneumothorax	pneumothorax
+A2885643	pneumothorax	pneumothorax	Pneumothorax	pneumothorax
 A4762172	pneumothorax	pneumothorax	Pneumothorax , NOS	pneumothorax , NO
 A17339777	pneumothorax	pneumothorax	Pneumothorax NOS	pneumothorax NO
 A4791387	pneumothorax	pneumothorax	Pneumothorax NOS	pneumothorax NO
@@ -1191,15 +1239,15 @@ A3638951	portal	portal	Portal vein structure	portal vein structure
 A2942060	portal	portal	Portal vein	portal vein
 A4743896	portal	portal	Portal vein , NOS	portal vein , NO
 A3638949	portal	portal	Portal vein structure ( body structure )	portal vein structure ( body structure )
+A2920855	prostatic	prostatic	Prostatic	prostatic
 A2885901	prostate	prostate	Prostate	prostate
 A4737657	prostate	prostate	Prostate , NOS	prostate , NO
-A2920855	prostatic	prostatic	Prostatic	prostatic
 A3188910	prostatic	prostatic	Prostatic structure	prostatic structure
 A3650422	prostatic	prostatic	Prostatic structure ( body structure )	prostatic structure ( body structure )
 A3650376	prostatic	prostatic	Prostatic ( qualifier value )	prostatic ( qualifier value )
-A2885904	prostatectomy	prostatectomy	Prostatectomy	prostatectomy
 A4714099	prostatectomy	prostatectomy	Prostatectomy	prostatectomy
 A4714100	prostatectomy	prostatectomy	Prostatectomy	prostatectomy
+A2885904	prostatectomy	prostatectomy	Prostatectomy	prostatectomy
 A4733476	prostatectomy	prostatectomy	Prostatectomy , NOS	prostatectomy , NO
 A17334557	prostatectomy	prostatectomy	Prostatectomy NOS	prostatectomy NO
 A4880707	prostatectomy	prostatectomy	Prostatectomy NOS	prostatectomy NO
@@ -1212,38 +1260,37 @@ A3650369	prostatectomy	prostatectomy	Prostatectomy ( procedure )	prostatectomy (
 A17319234	prostatectomy	prostatectomy	Prostatectomy NOS ( procedure )	prostatectomy NO ( procedure )
 A15104583	prostatectomy	prostatectomy	Prostatectomy NOS ( procedure )	prostatectomy NO ( procedure )
 A15143850	prostate	prostate	Prostate excision ( procedure )	prostate excision ( procedure )
-A3292512	loosening	loosen	Loosening of prosthesis	loosen of prosthesis
-A3542806	loosening	loosen	Loosening of prosthesis ( disorder )	loosen of prosthesis ( disorder )
+A3195252	retroperitoneal	retroperitoneal	Retroperitoneal	retroperitoneal
 A2944005	retroperitoneal	retroperitoneal	Retroperitoneal space	retroperitoneal space
 A4737705	retroperitoneal	retroperitoneal	Retroperitoneal space , NOS	retroperitoneal space , NO
 A2874565	retroperitoneum	retroperitoneum	Retroperitoneum	retroperitoneum
 A4737704	retroperitoneum	retroperitoneum	Retroperitoneum , NOS	retroperitoneum , NO
-A3195252	retroperitoneal	retroperitoneal	Retroperitoneal	retroperitoneal
 A3195266	retroperitoneal	retroperitoneal	Retroperitoneal structure	retroperitoneal structure
 A3678579	retroperitoneal	retroperitoneal	Retroperitoneal structure ( body structure )	retroperitoneal structure ( body structure )
 A3678544	retroperitoneal	retroperitoneal	Retroperitoneal ( qualifier value )	retroperitoneal ( qualifier value )
-A4757409	fracture	fracture	Fracture of rib , NOS	fracture of RIB , NO
-A4781229	fracture	fracture	Fracture of rib	fracture of RIB
-A4781230	fracture	fracture	Fracture of rib	fracture of RIB
-A4781231	fracture	fracture	Fracture of rib	fracture of RIB
-A4781232	fracture	fracture	Fracture of rib	fracture of RIB
-A3023728	fracture	fracture	Fracture of rib	fracture of RIB
-A3064896	rib	rib	Rib fracture	RIB fracture
-A4793027	rib	rib	Rib fracture NOS	RIB fracture NO
-A17323231	rib	rib	Rib fracture NOS	RIB fracture NO
-A15138711	fracture	fracture	Fracture of rib ( disorder )	fracture of RIB ( disorder )
-A15141336	fracture	fracture	Fracture of rib ( disorder )	fracture of RIB ( disorder )
-A3467893	fracture	fracture	Fracture of rib ( disorder )	fracture of RIB ( disorder )
-A17344542	rib	rib	Rib fracture NOS ( disorder )	RIB fracture NO ( disorder )
-A3103434	bone	bone	Bone structure of rib	bone structure of RIB
-A2874296	rib	rib	Rib	RIB
-A4744437	rib	rib	Rib , NOS	RIB , NO
-A3324144	bone	bone	Bone structure of rib ( body structure )	bone structure of RIB ( body structure )
+A4781229	fracture	fracture	Fracture of rib	fracture of rib
+A4781230	fracture	fracture	Fracture of rib	fracture of rib
+A4781231	fracture	fracture	Fracture of rib	fracture of rib
+A4781232	fracture	fracture	Fracture of rib	fracture of rib
+A3023728	fracture	fracture	Fracture of rib	fracture of rib
+A4757409	fracture	fracture	Fracture of rib , NOS	fracture of rib , NO
+A3064896	rib	rib	Rib fracture	rib fracture
+A4793027	rib	rib	Rib fracture NOS	rib fracture NO
+A17323231	rib	rib	Rib fracture NOS	rib fracture NO
+A15138711	fracture	fracture	Fracture of rib ( disorder )	fracture of rib ( disorder )
+A15141336	fracture	fracture	Fracture of rib ( disorder )	fracture of rib ( disorder )
+A3467893	fracture	fracture	Fracture of rib ( disorder )	fracture of rib ( disorder )
+A17344542	rib	rib	Rib fracture NOS ( disorder )	rib fracture NO ( disorder )
+A3103434	bone	bone	Bone structure of rib	bone structure of rib
+A2874296	rib	rib	Rib	rib
+A4744437	rib	rib	Rib , NOS	rib , NO
+A3324144	bone	bone	Bone structure of rib ( body structure )	bone structure of rib ( body structure )
 A3259332	bone	bone	Bone structure of sacrum	bone structure of sacrum
 A2886401	sacrum	sacrum	Sacrum	sacrum
 A4744539	sacrum	sacrum	Sacrum , NOS	sacrum , NO
 A2944578	sacral	sacral	Sacral bone	sacral bone
 A3324148	bone	bone	Bone structure of sacrum ( body structure )	bone structure of sacrum ( body structure )
+A3685894	salivary	salivary	Salivary gland structure	salivary gland structure
 A4709125	salivary	salivary	Salivary gland	salivary gland
 A2874430	salivary	salivary	Salivary gland	salivary gland
 A4737633	salivary	salivary	Salivary gland , NOS	salivary gland , NO
@@ -1252,15 +1299,15 @@ A5057966	[	[	[ SO ] Salivary apparatus	[ so ] salivary apparatus
 A3685893	salivary	salivary	Salivary gland structure ( body structure )	salivary gland structure ( body structure )
 A3685917	salivary	salivary	Salivary structure ( body structure )	salivary structure ( body structure )
 A5057968	[	[	[ SO ] Salivary gland	[ so ] salivary gland
-A3685894	salivary	salivary	Salivary gland structure	salivary gland structure
 A3685918	salivary	salivary	Salivary structure	salivary structure
+A3298458	shoulder	shoulder	Shoulder region structure	shoulder region structure
 A2886598	shoulder	shoulder	Shoulder	shoulder
 A4737693	shoulder	shoulder	Shoulder , NOS	shoulder , NO
 A10867241	shoulder	shoulder	Shoulder region	shoulder region
-A3298458	shoulder	shoulder	Shoulder region structure	shoulder region structure
 A3704777	shoulder	shoulder	Shoulder region structure ( body structure )	shoulder region structure ( body structure )
 A3299329	soft	soft	Soft tissue swelling	soft tissue swell
 A3711535	soft	soft	Soft tissue swelling ( finding )	soft tissue swell ( find )
+A3072128	somatotropin	somatotropin	Somatotropin preparation	somatotropin preparation
 A11739881	growth	growth	Growth hormone	growth hormone
 A11724352	somatotropin	somatotropin	Somatotropin	somatotropin
 A11733250	somatotrophin	somatotrophin	Somatotrophin	somatotrophin
@@ -1269,29 +1316,28 @@ A3027126	growth	growth	Growth hormone preparation	growth hormone preparation
 A3027127	growth	growth	Growth hormone product	growth hormone product
 A11724354	somatotropic	somatotropic	Somatotropic hormone	somatotropic hormone
 A15142240	somatrophic	somatrophic	Somatrophic hormone	somatrophic hormone
-A3072128	somatotropin	somatotropin	Somatotropin preparation	somatotropin preparation
 A11730982	sth	sth	STH	sth
 A15091763	somatrophic	somatrophic	Somatrophic hormone ( product )	somatrophic hormone ( product )
 A5045372	somatrophic	somatrophic	Somatrophic hormone ( substance )	somatrophic hormone ( substance )
 A3712078	somatotropin	somatotropin	Somatotropin preparation ( product )	somatotropin preparation ( product )
 A5045365	somatotropin	somatotropin	Somatotropin preparation ( substance )	somatotropin preparation ( substance )
+A3203653	splenic	splenic	Splenic structure	splenic structure
 A2886764	spleen	spleen	Spleen	spleen
 A4737683	spleen	spleen	Spleen , NOS	spleen , NO
-A3203653	splenic	splenic	Splenic structure	splenic structure
 A3715973	splenic	splenic	Splenic structure ( body structure )	splenic structure ( body structure )
+A3205044	stomach	stomach	Stomach structure	stomach structure
 A2886868	stomach	stomach	Stomach	stomach
 A4737624	stomach	stomach	Stomach , NOS	stomach , NO
 A2920813	ventriculus	ventriculus	Ventriculus	ventriculus
-A3205044	stomach	stomach	Stomach structure	stomach structure
 A3720060	stomach	stomach	Stomach structure ( body structure )	stomach structure ( body structure )
 A16955698	swelling	swell	Swelling	swell
-A2873776	swelling	swell	Swelling	swell
 A4708954	swelling	swell	Swelling	swell
 A4708955	swelling	swell	Swelling	swell
 A4708956	swelling	swell	Swelling	swell
 A4708957	swelling	swell	Swelling	swell
 A4708958	swelling	swell	Swelling	swell
 A4708959	swelling	swell	Swelling	swell
+A2873776	swelling	swell	Swelling	swell
 A4796647	swelling	swell	Swelling , NOS	swell , NO
 A2876809	tumefaction	tumefaction	Tumefaction	tumefaction
 A2876810	tumescence	tumescence	Tumescence	tumescence
@@ -1332,28 +1378,28 @@ A3299525	thumb	thumb	Thumb structure	thumb structure
 A2887342	thumb	thumb	Thumb	thumb
 A4745532	thumb	thumb	Thumb , NOS	thumb , NO
 A3754522	thumb	thumb	Thumb structure ( body structure )	thumb structure ( body structure )
+A3210610	thyroid	thyroid	Thyroid structure	thyroid structure
 A2949321	thyroid	thyroid	Thyroid gland	thyroid gland
 A4737681	thyroid	thyroid	Thyroid gland , NOS	thyroid gland , NO
 A2949310	thyroid	thyroid	Thyroid	thyroid
 A4842357	thyroid	thyroid	Thyroid , NOS	thyroid , NO
-A3210610	thyroid	thyroid	Thyroid structure	thyroid structure
 A3754976	thyroid	thyroid	Thyroid structure ( body structure )	thyroid structure ( body structure )
 A3103444	bone	bone	Bone structure of tibia	bone structure of tibia
 A2887376	tibia	tibia	Tibia	tibia
 A4745541	tibia	tibia	Tibia , NOS	tibia , NO
 A3324179	bone	bone	Bone structure of tibia ( body structure )	bone structure of tibia ( body structure )
+A3323401	body	body	Body tissue structure	body tissue structure
+A3210892	tissue	tissue	Tissue	tissue
+A4745558	tissue	tissue	Tissue , NOS	tissue , NO
 A2925038	body	body	Body tissue	body tissue
 A4739363	body	body	Body tissue , NOS	body tissue , NO
-A4745558	tissue	tissue	Tissue , NOS	tissue , NO
-A3210892	tissue	tissue	Tissue	tissue
 A3323400	body	body	Body tissue structure ( body structure )	body tissue structure ( body structure )
-A3323401	body	body	Body tissue structure	body tissue structure
-A2887784	ultrasonography	ultrasonography	Ultrasonography	ultrasonography
 A4715008	ultrasonography	ultrasonography	Ultrasonography	ultrasonography
+A2887784	ultrasonography	ultrasonography	Ultrasonography	ultrasonography
 A4736996	ultrasonography	ultrasonography	Ultrasonography , NOS	ultrasonography , NO
 A15161862	echography	echography	Echography	echography
-A2880995	echography	echography	Echography	echography
 A4711820	echography	echography	Echography	echography
+A2880995	echography	echography	Echography	echography
 A13355658	echography	echography	Echography , NOS	echography , NO
 A10876488	ultrasound	ultrasound	Ultrasound diagnostic procedure	ultrasound diagnostic procedure
 A4745734	ultrasound	ultrasound	Ultrasound	ultrasound
@@ -1377,8 +1423,8 @@ A4843296	ultrasonogram	ultrasonogram	Ultrasonogram	ultrasonogram
 A3214580	ultrasonogram	ultrasonogram	Ultrasonogram	ultrasonogram
 A4843252	us	us	US - Ultrasound	US - ultrasound
 A3214367	us	us	US - Ultrasound	US - ultrasound
-A4880998	uss	us	USS - Ultrasound scan	US - ultrasound scan
-A3299054	uss	us	USS - Ultrasound scan	US - ultrasound scan
+A4880998	uss	uss	USS - Ultrasound scan	uss - ultrasound scan
+A3299054	uss	uss	USS - Ultrasound scan	uss - ultrasound scan
 A10876487	ultrasound	ultrasound	Ultrasound diagnostic procedure ( procedure )	ultrasound diagnostic procedure ( procedure )
 A3392973	diagnostic	diagnostic	Diagnostic ultrasonography ( procedure )	diagnostic ultrasonography ( procedure )
 A3409900	echography	echography	Echography ( procedure )	echography ( procedure )
@@ -1388,12 +1434,14 @@ A15151099	ultrasound	ultrasound	Ultrasound scan ( procedure )	ultrasound scan ( 
 A15110999	ultrasound	ultrasound	Ultrasound procedure ( procedure )	ultrasound procedure ( procedure )
 A2887830	urine	urine	Urine	urine
 A3774424	urine	urine	Urine ( substance )	urine ( substance )
+A3780125	venous	venous	Venous structure	venous structure
 A2874397	vein	vein	Vein	vein
 A4737617	vein	vein	Vein , NOS	vein , NO
 A3780116	venous	venous	Venous structure ( body structure )	venous structure ( body structure )
-A3780125	venous	venous	Venous structure	venous structure
 A2877736	vessel	vessel	Vessel	vessel
 A3781187	vessel	vessel	Vessel ( attribute )	vessel ( attribute )
+A3459441	finding	find	Finding of wound healing	find of wind heal
+A11733215	wound	wind	Wound healing ( finding )	wind heal ( find )
 A11735408	wound	wind	Wound healing	wind heal
 A2951409	wound	wind	Wound healing	wind heal
 A4845074	wound	wind	Wound healing , NOS	wind heal , NO
@@ -1408,16 +1456,14 @@ A3285815	observation	observation	Observation of wound healing	observation of win
 A13359674	repair	repair	Repair , NOS	repair , NO
 A3735523	structure	structure	Structure resulting from tissue repair process ( morphologic abnormality )	structure result from tissue repair process ( morphologic abnormality )
 A3459440	finding	find	Finding of wound healing ( finding )	find of wind heal ( find )
-A3459441	finding	find	Finding of wound healing	find of wind heal
-A11733215	wound	wind	Wound healing ( finding )	wind heal ( find )
 A15091667	structure	structure	Structure resulting from tissue repair process	structure result from tissue repair process
-A2876872	laceration	laceration	Laceration	laceration
 A4710097	laceration	laceration	Laceration	laceration
+A2876872	laceration	laceration	Laceration	laceration
 A4784940	laceration	laceration	Laceration NOS	laceration NO
 A17303154	laceration	laceration	Laceration NOS	laceration NO
 A4784948	laceration	laceration	Laceration , NOS	laceration , NO
-A4824416	lacerations	laceration	Lacerations	laceration
 A4824417	lacerations	laceration	Lacerations	laceration
+A4824416	lacerations	laceration	Lacerations	laceration
 A2873812	tear	tear	Tear	tear
 A4796970	tear	tear	Tear , NOS	tear , NO
 A2873809	wound	wind	Wound , lacerated	wind , lacerate
@@ -1426,12 +1472,12 @@ A3316673	laceration	laceration	Laceration - injury	laceration - injury
 A3530913	laceration	laceration	Laceration ( morphologic abnormality )	laceration ( morphologic abnormality )
 A3530914	laceration	laceration	Laceration - injury ( disorder )	laceration - injury ( disorder )
 A17331785	laceration	laceration	Laceration NOS ( disorder )	laceration NO ( disorder )
-A2887558	trauma	trauma	Trauma	trauma
 A8380162	trauma	trauma	Trauma	trauma
+A2887558	trauma	trauma	Trauma	trauma
 A4797712	trauma	trauma	Trauma , NOS	trauma , NO
-A2877855	falls	fall	Falls	fall
 A4710312	falls	fall	Falls	fall
 A4710313	falls	fall	Falls	fall
+A2877855	falls	fall	Falls	fall
 A2873711	fall	fall	Fall	fall
 A4780523	fall	fall	Fall , NOS	fall , NO
 A3086042	[	[	[ X ] Falls	[ X ] fall
@@ -1441,13 +1487,13 @@ A9382954	fall	fall	Fall ( finding )	fall ( find )
 A9397669	[	[	[ X ] Unspecified fall ( finding )	[ X ] unspecified fall ( find )
 A9406342	fall	fall	Fall ( event )	fall ( event )
 A16354264	[	[	[ X ] Unspecified fall ( event )	[ X ] unspecified fall ( event )
-A4797529	total	total	Total knee replacement	total knee replacement
-A4730924	total	total	Total replacement of knee	total replacement of knee
 A3318295	arthroplasty	arthroplasty	Arthroplasty of knee	arthroplasty of knee
 A4730932	arthroplasty	arthroplasty	Arthroplasty of knee , NOS	arthroplasty of knee , NO
 A2993475	arthroplasty	arthroplasty	Arthroplasty of the knee	arthroplasty of the knee
 A4869075	knee	knee	Knee arthroplasty	knee arthroplasty
 A3252442	knee	knee	Knee arthroplasty	knee arthroplasty
+A4730924	total	total	Total replacement of knee	total replacement of knee
+A4797529	total	total	Total knee replacement	total knee replacement
 A3666883	repair	repair	Repair of knee joint	repair of knee joint
 A4730933	repair	repair	Repair of knee joint , NOS	repair of knee joint , NO
 A4784756	knee	knee	Knee replacement	knee replacement
@@ -1455,13 +1501,13 @@ A3036609	knee	knee	Knee replacement	knee replacement
 A4836276	prosthetic	prosthetic	Prosthetic total arthroplasty of the knee	prosthetic total arthroplasty of the knee
 A4836277	prosthetic	prosthetic	Prosthetic total arthroplasty of the knee	prosthetic total arthroplasty of the knee
 A4836278	prosthetic	prosthetic	Prosthetic total arthroplasty of the knee	prosthetic total arthroplasty of the knee
-A4841744	tkr	tkr	TKR - Total knee replacement	TKR - total knee replacement
+A4841744	tkr	tkr	TKR - Total knee replacement	tkr - total knee replacement
 A3697390	arthroplasty	arthroplasty	Arthroplasty of knee ( procedure )	arthroplasty of knee ( procedure )
 A5051673	total	total	Total replacement of knee ( procedure )	total replacement of knee ( procedure )
 A15098420	prosthetic	prosthetic	Prosthetic total arthroplasty of the knee ( procedure )	prosthetic total arthroplasty of the knee ( procedure )
-A3300149	therapeutic	therapeutic	Therapeutic procedure	therapeutic procedure
 A4887700	therapeutic	therapeutic	Therapeutic procedure	therapeutic procedure
 A4887701	therapeutic	therapeutic	Therapeutic procedure	therapeutic procedure
+A3300149	therapeutic	therapeutic	Therapeutic procedure	therapeutic procedure
 A5024932	procedure	procedure	Procedure - therapeutic	procedure - therapeutic
 A3647306	procedure	procedure	Procedure - therapeutic	procedure - therapeutic
 A4842141	therapeutic	therapeutic	Therapeutic procedure , NOS	therapeutic procedure , NO
@@ -1476,11 +1522,11 @@ A5050368	therapy	therapy	Therapy ( regime / therapy ) ( procedure )	therapy ( re
 A3752109	therapy	therapy	Therapy ( regime / therapy )	therapy ( regime / therapy )
 A3292642	lung	lung	Lung mass	lung mass
 A3544674	lung	lung	Lung mass ( finding )	lung mass ( find )
-A3484827	adenocarcinoma	adenocarcinoma	Adenocarcinoma of lung ( disorder )	adenocarcinoma of lung ( disorder )
 A2989294	adenocarcinoma	adenocarcinoma	Adenocarcinoma of lung	adenocarcinoma of lung
-A2894470	fracture	fracture	Fracture of clavicle	fracture of clavicle
+A3484827	adenocarcinoma	adenocarcinoma	Adenocarcinoma of lung ( disorder )	adenocarcinoma of lung ( disorder )
 A4719976	fracture	fracture	Fracture of clavicle	fracture of clavicle
 A4719977	fracture	fracture	Fracture of clavicle	fracture of clavicle
+A2894470	fracture	fracture	Fracture of clavicle	fracture of clavicle
 A4757368	fracture	fracture	Fracture of clavicle , NOS	fracture of clavicle , NO
 A17322205	fracture	fracture	Fracture of clavicle NOS	fracture of clavicle NO
 A3008905	collar	collar	Collar bone fracture	collar bone fracture
@@ -1500,11 +1546,11 @@ A4868214	iliac	iliac	Iliac artery aneurysm	iliac artery aneurysm
 A3604572	aneurysm	aneurysm	Aneurysm of iliac artery ( disorder )	aneurysm of iliac artery ( disorder )
 A17311979	aneurysm	aneurysm	Aneurysm of iliac artery NOS ( disorder )	aneurysm of iliac artery NO ( disorder )
 A15122737	iliac	iliac	Iliac artery aneurysm ( disorder )	iliac artery aneurysm ( disorder )
-A10339368	somatropin	somatropin	Somatropin	somatropin
 A3072137	somatropin	somatropin	Somatropin	somatropin
 A3072138	somatropin	somatropin	Somatropin	somatropin
 A4795898	somatropin	somatropin	Somatropin	somatropin
 A4795899	somatropin	somatropin	Somatropin	somatropin
+A10339368	somatropin	somatropin	Somatropin	somatropin
 A11739549	growth	growth	Growth hormone	growth hormone
 A11724020	somatotrophin	somatotrophin	Somatotrophin	somatotrophin
 A4773151	biosynthetic	biosynthetic	Biosynthetic human growth hormone	biosynthetic human growth hormone
@@ -1523,10 +1569,11 @@ A3712108	somatropin	somatropin	Somatropin ( product )	somatropin ( product )
 A15115360	somatropin	somatropin	Somatropin ( substance )	somatropin ( substance )
 A5045373	somatropin	somatropin	Somatropin ( substance )	somatropin ( substance )
 A3712109	somatropin	somatropin	Somatropin ( substance )	somatropin ( substance )
-A2876820	injury	injury	Injury	injury
+A8383163	traumatic	traumatic	Traumatic injury	traumatic injury
 A8380063	injury	injury	Injury	injury
 A8380064	injury	injury	Injury	injury
 A8380065	injury	injury	Injury	injury
+A2876820	injury	injury	Injury	injury
 A4737879	injuries	injury	Injuries	injury
 A17341225	injury	injury	Injury NOS	injury NO
 A4784112	injury	injury	Injury NOS	injury NO
@@ -1535,7 +1582,6 @@ A4784115	injury	injury	Injury NOS	injury NO
 A4784114	injury	injury	Injury NOS	injury NO
 A4784163	injury	injury	Injury , NOS	injury , NO
 A8380163	trauma	trauma	Trauma	trauma
-A8383163	traumatic	traumatic	Traumatic injury	traumatic injury
 A8383716	injury	injury	Injury - disorder	injury - disorder
 A8383717	injury	injury	Injury - disorder	injury - disorder
 A8383715	injury	injury	Injury ( disorder )	injury ( disorder )
@@ -1545,11 +1591,11 @@ A15102936	injury	injury	Injury NOS ( disorder )	injury NO ( disorder )
 A8393157	traumatic	traumatic	Traumatic AND / OR non - traumatic injury ( disorder )	traumatic AND / OR non - traumatic injury ( disorder )
 A8393159	traumatic	traumatic	Traumatic injury ( disorder )	traumatic injury ( disorder )
 A8393158	traumatic	traumatic	Traumatic AND / OR non - traumatic injury	traumatic AND / OR non - traumatic injury
-A3719471	sternotomy	sternotomy	Sternotomy ( procedure )	sternotomy ( procedure )
 A2898397	sternotomy	sternotomy	Sternotomy	sternotomy
 A11728595	incision	incision	Incision of sternum ( procedure )	incision of sternum ( procedure )
 A11728594	incision	incision	Incision of sternum	incision of sternum
 A3507890	incision	incision	Incision of sternum	incision of sternum
+A3719471	sternotomy	sternotomy	Sternotomy ( procedure )	sternotomy ( procedure )
 A4792408	radical	radical	Radical prostatectomy	radical prostatectomy
 A4792409	radical	radical	Radical prostatectomy	radical prostatectomy
 A3062991	radical	radical	Radical prostatectomy	radical prostatectomy
@@ -1561,14 +1607,14 @@ A3657096	radical	radical	Radical prostatectomy ( procedure )	radical prostatecto
 A2918688	magnetic	magnetic	Magnetic resonance imaging of prostate	magnetic resonance image of prostate
 A3155530	mri	mri	MRI of prostate	MRI of prostate
 A3547935	magnetic	magnetic	Magnetic resonance imaging of prostate ( procedure )	magnetic resonance image of prostate ( procedure )
+A3373269	coronary	coronary	Coronary artery structure	coronary artery structure
 A2895865	coronary	coronary	Coronary artery	coronary artery
 A4737614	coronary	coronary	Coronary artery , NOS	coronary artery , NO
 A3373267	coronary	coronary	Coronary artery structure ( body structure )	coronary artery structure ( body structure )
-A3373269	coronary	coronary	Coronary artery structure	coronary artery structure
 A2921001	portal	portal	Portal	portal
 A3638918	portal	portal	Portal ( qualifier value )	portal ( qualifier value )
-A3076718	thickened	thicken	Thickened	thicken
 A4797202	thickened	thicken	Thickened	thicken
+A3076718	thickened	thicken	Thickened	thicken
 A3210002	thickening	thicken	Thickening	thicken
 A3033801	increased	increase	Increased thickness	increase thickness
 A3509175	increased	increase	Increased thickness ( finding )	increase thickness ( find )
@@ -1603,25 +1649,21 @@ A4739049	articular	articular	Articular facet , NOS	articular facet , NO
 A3447001	facet	facet	Facet	facet
 A4740984	facet	facet	Facet , NOS	facet , NO
 A3723088	structure	structure	Structure of articular surface of bone ( body structure )	structure of articular surface of bone ( body structure )
+A3627304	phalanx	phalanx	Phalanx structure	phalanx structure
 A4743691	phalanx	phalanx	Phalanx	phalanx
 A4743692	phalanx	phalanx	Phalanx	phalanx
 A2941384	phalanx	phalanx	Phalanx	phalanx
 A4743716	phalanx	phalanx	Phalanx , NOS	phalanx , NO
 A3627302	phalanx	phalanx	Phalanx structure ( body structure )	phalanx structure ( body structure )
-A3627304	phalanx	phalanx	Phalanx structure	phalanx structure
 A15122313	phalanx	phalanx	Phalanx ( body structure )	phalanx ( body structure )
-A3324153	bone	bone	Bone structure of second rib	bone structure of second RIB
-A2944880	second	second	Second rib	second RIB
-A4744619	second	second	Second rib , NOS	second RIB , NO
-A3324152	bone	bone	Bone structure of second rib ( body structure )	bone structure of second RIB ( body structure )
-A3324176	bone	bone	Bone structure of third rib	bone structure of third RIB
-A2949122	third	third	Third rib	third RIB
-A4745483	third	third	Third rib , NOS	third RIB , NO
-A3324175	bone	bone	Bone structure of third rib ( body structure )	bone structure of third RIB ( body structure )
-A3324164	bone	bone	Bone structure of sixth rib	bone structure of sixth RIB
-A2945488	sixth	sixth	Sixth rib	sixth RIB
-A4744783	sixth	sixth	Sixth rib , NOS	sixth RIB , NO
-A3324163	bone	bone	Bone structure of sixth rib ( body structure )	bone structure of sixth RIB ( body structure )
+A3324176	bone	bone	Bone structure of third rib	bone structure of third rib
+A2949122	third	third	Third rib	third rib
+A4745483	third	third	Third rib , NOS	third rib , NO
+A3324175	bone	bone	Bone structure of third rib ( body structure )	bone structure of third rib ( body structure )
+A3324164	bone	bone	Bone structure of sixth rib	bone structure of sixth rib
+A2945488	sixth	sixth	Sixth rib	sixth rib
+A4744783	sixth	sixth	Sixth rib , NOS	sixth rib , NO
+A3324163	bone	bone	Bone structure of sixth rib ( body structure )	bone structure of sixth rib ( body structure )
 A3421182	entire	entire	Entire first metacarpal	entire first metacarpal
 A3132213	first	first	First metacarpal	first metacarpal
 A3281823	mc1	mc1	MC1 - First metacarpal	mc1 - first metacarpal
@@ -1631,10 +1673,10 @@ A3132214	first	first	First metatarsal	first metatarsal
 A3281787	fm	fm	FM - First metatarsal	FM - first metatarsal
 A3281824	mt1	mt1	MT1 - First metatarsal	mt1 - first metatarsal
 A3421183	entire	entire	Entire first metatarsal ( body structure )	entire first metatarsal ( body structure )
+A3421401	entire	entire	Entire fourth metatarsal	entire fourth metatarsal
 A3133992	fourth	fourth	Fourth metatarsal	fourth metatarsal
 A3282896	mt4	mt4	MT4 - Fourth metatarsal	mt4 - fourth metatarsal
 A3421392	entire	entire	Entire fourth metatarsal ( body structure )	entire fourth metatarsal ( body structure )
-A3421401	entire	entire	Entire fourth metatarsal	entire fourth metatarsal
 A3432414	entire	entire	Entire supraspinatus	entire supraspinatus
 A3206970	supraspinatus	supraspinatus	Supraspinatus	supraspinatus
 A3432413	entire	entire	Entire supraspinatus ( body structure )	entire supraspinatus ( body structure )
@@ -1653,7 +1695,7 @@ A3744170	symphysis	symphysis	Symphysis structure	symphysis structure
 A2930943	fibrocartilaginous	fibrocartilaginous	Fibrocartilaginous joint	fibrocartilaginous joint
 A2948528	symphysis	symphysis	Symphysis	symphysis
 A3744167	symphysis	symphysis	Symphysis structure ( body structure )	symphysis structure ( body structure )
-A11733163	facet	facet	Facet joint structure	facet joint structure
+A3789539	zygapophyseal	zygapophyseal	Zygapophyseal joint structure	zygapophyseal joint structure
 A11730872	facet	facet	Facet joint	facet joint
 A11737349	facet	facet	Facet joint	facet joint
 A2951513	zygapophyseal	zygapophyseal	Zygapophyseal joint	zygapophyseal joint
@@ -1662,7 +1704,7 @@ A3220539	zygapophysial	zygapophysial	Zygapophysial intervertebral joint	zygapoph
 A3280713	intervertebral	intervertebral	Intervertebral facet joint	intervertebral facet joint
 A11733164	facet	facet	Facet joint structure ( body structure )	facet joint structure ( body structure )
 A3789538	zygapophyseal	zygapophyseal	Zygapophyseal joint structure ( body structure )	zygapophyseal joint structure ( body structure )
-A3789539	zygapophyseal	zygapophyseal	Zygapophyseal joint structure	zygapophyseal joint structure
+A11733163	facet	facet	Facet joint structure	facet joint structure
 A3734271	structure	structure	Structure of tendon insertion	structure of tendon insertion
 A2948876	tendon	tendon	Tendon insertion	tendon insertion
 A4745425	tendon	tendon	Tendon insertion , NOS	tendon insertion , NO
@@ -1670,19 +1712,19 @@ A3734270	structure	structure	Structure of tendon insertion ( body structure )	st
 A3731987	structure	structure	Structure of quadriceps tendon	structure of quadriceps tendon
 A2943422	quadriceps	quadriceps	Quadriceps tendon	quadriceps tendon
 A3731986	structure	structure	Structure of quadriceps tendon ( body structure )	structure of quadriceps tendon ( body structure )
-A3202416	soft	soft	Soft tissue	soft tissue
 A2946233	soft	soft	Soft tissues	soft tissue
 A4744955	soft	soft	Soft tissues , NOS	soft tissue , NO
+A3202416	soft	soft	Soft tissue	soft tissue
 A17315287	soft	soft	Soft tissue NOS	soft tissue NO
 A3711547	soft	soft	Soft tissues ( body structure )	soft tissue ( body structure )
 A10875486	soft	soft	Soft tissue ( body structure )	soft tissue ( body structure )
 A10875487	soft	soft	Soft tissue NOS ( body structure )	soft tissue NO ( body structure )
 A10894686	soft	soft	Soft tissue ( navigational concept )	soft tissue ( navigational concept )
 A17330344	soft	soft	Soft tissue NOS ( navigational concept )	soft tissue NO ( navigational concept )
-A10338176	fiber	fiber	Fiber	fiber
 A15144424	fiber	fiber	Fiber	fiber
 A2930924	fiber	fiber	Fiber	fiber
 A2930925	fiber	fiber	Fiber	fiber
+A10338176	fiber	fiber	Fiber	fiber
 A13355730	fiber	fiber	Fiber , NOS	fiber , NO
 A15099251	fibre	fibre	Fibre	fibre
 A3322387	fibre	fibre	Fibre	fibre
@@ -1706,12 +1748,12 @@ A11723948	portal	portal	Portal vein	portal vein
 A3322453	trunk	trunk	Trunk of portal vein	trunk of portal vein
 A4745654	trunk	trunk	Trunk of portal vein , NOS	trunk of portal vein , NO
 A3734798	structure	structure	Structure of trunk of portal vein ( body structure )	structure of trunk of portal vein ( body structure )
+A3681204	right	right	Right kidney structure	right kidney structure
 A2944233	right	right	Right kidney	right kidney
 A3681203	right	right	Right kidney structure ( body structure )	right kidney structure ( body structure )
-A3681204	right	right	Right kidney structure	right kidney structure
+A3534799	left	leave	Left kidney structure	leave kidney structure
 A2936133	left	leave	Left kidney	leave kidney
 A3534798	left	leave	Left kidney structure ( body structure )	leave kidney structure ( body structure )
-A3534799	left	leave	Left kidney structure	leave kidney structure
 A2945100	serum	serum	Serum	serum
 A3701083	serum	serum	Serum ( substance )	serum ( substance )
 A3732309	structure	structure	Structure of right hand	structure of right hand
@@ -1720,13 +1762,13 @@ A3732308	structure	structure	Structure of right hand ( body structure )	structur
 A3728292	structure	structure	Structure of left hand	structure of leave hand
 A2936109	left	leave	Left hand	leave hand
 A3728290	structure	structure	Structure of left hand ( body structure )	structure of leave hand ( body structure )
+A3540618	little	little	Little finger structure	Little finger structure
 A3319231	fifth	fifth	Fifth finger	fifth finger
 A4741107	fifth	fifth	Fifth finger , NOS	fifth finger , NO
 A2936674	little	little	Little finger	Little finger
 A10866935	finger	finger	Finger , little	finger , Little
 A4742463	little	little	Little finger , NOS	Little finger , NO
 A3540617	little	little	Little finger structure ( body structure )	Little finger structure ( body structure )
-A3540618	little	little	Little finger structure	Little finger structure
 A3732328	structure	structure	Structure of right knee	structure of right knee
 A2944235	right	right	Right knee	right knee
 A3732327	structure	structure	Structure of right knee ( body structure )	structure of right knee ( body structure )
@@ -1740,10 +1782,10 @@ A3534844	left	leave	Left lower leg	leave low leg
 A3728271	structure	structure	Structure of left foot	structure of leave foot
 A2936089	left	leave	Left foot	leave foot
 A3728269	structure	structure	Structure of left foot ( body structure )	structure of leave foot ( body structure )
-A3307659	pulmonary	pulmonary	Pulmonary resonance	pulmonary resonance
-A4762827	pulmonary	pulmonary	Pulmonary resonance , NOS	pulmonary resonance , NO
 A2943815	resonance	resonance	Resonance	resonance
 A4744360	resonance	resonance	Resonance , NOS	resonance , NO
+A3307659	pulmonary	pulmonary	Pulmonary resonance	pulmonary resonance
+A4762827	pulmonary	pulmonary	Pulmonary resonance , NOS	pulmonary resonance , NO
 A3668564	resonance	resonance	Resonance , function ( observable entity )	resonance , function ( observable entity )
 A13015657	resonance	resonance	Resonance , function	resonance , function
 A5028646	resonance	resonance	Resonance ( function )	resonance ( function )
@@ -1760,8 +1802,8 @@ A10874183	p	p	P < sub > s < / sub >	P < sub > s < / sub >
 A4756649	epidermal	epidermal	Epidermal growth factor	epidermal growth factor
 A2963696	epidermal	epidermal	Epidermal growth factor	epidermal growth factor
 A13015666	urogastrone	urogastrone	Urogastrone	urogastrone
-A13022123	urogastrone	urogastrone	Urogastrone	urogastrone
 A4715032	urogastrone	urogastrone	Urogastrone	urogastrone
+A13022123	urogastrone	urogastrone	Urogastrone	urogastrone
 A13021270	anthelone	anthelone	Anthelone U	anthelone U
 A4771378	anthelone	anthelone	Anthelone U	anthelone U
 A13010962	anthelone	anthelone	Anthelone U	anthelone U
@@ -1794,8 +1836,8 @@ A3070484	sexual	sexual	Sexual function	sexual function
 A4763581	sexual	sexual	Sexual function , NOS	sexual function , NO
 A3703516	sexual	sexual	Sexual function ( observable entity )	sexual function ( observable entity )
 A5043888	sexual	sexual	Sexual function ( function )	sexual function ( function )
-A2873883	deformity	deformity	Deformity	deformity
 A9375706	deformity	deformity	Deformity	deformity
+A2873883	deformity	deformity	Deformity	deformity
 A4778108	deformity	deformity	Deformity , NOS	deformity , NO
 A3386828	deformity	deformity	Deformity ( morphologic abnormality )	deformity ( morphologic abnormality )
 A9404663	deformity	deformity	Deformity ( finding )	deformity ( find )
@@ -1806,10 +1848,10 @@ A5053468	balance	balance	BALANCE PREPARATION ( substance )	balance preparation (
 A16961679	control	control	CONTROL	control
 A4967847	control	control	CONTROL ( substance )	control ( substance )
 A16966483	control	control	CONTROL ( product )	control ( product )
-A4762056	physical	physical	Physical finding , NOS	physical find , NO
-A3629820	physical	physical	Physical finding	physical find
 A3705315	sign	sign	Sign	sign
 A4763629	sign	sign	Sign , NOS	sign , NO
+A3629820	physical	physical	Physical finding	physical find
+A4762056	physical	physical	Physical finding , NOS	physical find , NO
 A3629920	physical	physical	Physical sign	physical sign
 A4762057	physical	physical	Physical sign , NOS	physical sign , NO
 A4791056	physical	physical	Physical signs	physical sign
@@ -1821,14 +1863,14 @@ A9390488	physical	physical	Physical signs ( finding )	physical sign ( find )
 A3705234	sign	sign	Sign ( finding )	sign ( find )
 A2886557	sensitivity	sensitivity	Sensitivity	sensitivity
 A3699949	sensitivity	sensitivity	Sensitivity ( finding )	sensitivity ( find )
-A3049899	normal	normal	Normal tissue morphology	normal tissue morphology
-A4788755	normal	normal	Normal tissue morphology , NOS	normal tissue morphology , NO
+A3049898	normal	normal	Normal tissue	normal tissue
+A4788756	normal	normal	Normal tissue , NOS	normal tissue , NO
 A4743157	normal	normal	Normal appearance	normal appearance
 A4743158	normal	normal	Normal appearance , NOS	normal appearance , NO
 A3586949	normal	normal	Normal appearance of tissue	normal appearance of tissue
 A4788737	normal	normal	Normal appearance of tissue , NOS	normal appearance of tissue , NO
-A3049898	normal	normal	Normal tissue	normal tissue
-A4788756	normal	normal	Normal tissue , NOS	normal tissue , NO
+A3049899	normal	normal	Normal tissue morphology	normal tissue morphology
+A4788755	normal	normal	Normal tissue morphology , NOS	normal tissue morphology , NO
 A3587472	normal	normal	Normal tissue ( finding )	normal tissue ( find )
 A3512982	infiltration	infiltration	Infiltration	infiltration
 A4784026	infiltration	infiltration	Infiltration , NOS	infiltration , NO
@@ -1837,9 +1879,9 @@ A4784023	infiltrate	infiltrate	Infiltrate , NOS	infiltrate , NO
 A3756410	tissue	tissue	Tissue infiltration	tissue infiltration
 A4797400	tissue	tissue	Tissue infiltration , NOS	tissue infiltration , NO
 A3512969	infiltration	infiltration	Infiltration ( morphologic abnormality )	infiltration ( morphologic abnormality )
-A3678394	retraction	retraction	Retraction ( finding )	retraction ( find )
 A3064535	retraction	retraction	Retraction	retraction
 A4792920	retraction	retraction	Retraction , NOS	retraction , NO
+A3678394	retraction	retraction	Retraction ( finding )	retraction ( find )
 A3023833	fracture	fracture	Fracture , oblique	fracture , oblique
 A4877523	oblique	oblique	Oblique fracture	oblique fracture
 A4877524	oblique	oblique	Oblique fracture	oblique fracture
@@ -1868,17 +1910,17 @@ A3399669	dislocation	dislocation	Dislocation , incomplete ( morphologic abnormal
 A3737624	subluxation	subluxation	Subluxation of joint ( disorder )	subluxation of joint ( disorder )
 A6931297	subluxations	subluxation	Subluxations ( disorder )	subluxation ( disorder )
 A5047663	subluxation	subluxation	Subluxation - lesion ( qualifier value )	subluxation - lesion ( qualifier value )
-A2994126	atrophic	atrophic	Atrophic	atrophic
-A4771936	atrophic	atrophic	Atrophic	atrophic
-A2878820	atrophy	atrophy	Atrophy	atrophy
 A4710811	atrophy	atrophy	Atrophy	atrophy
+A2878820	atrophy	atrophy	Atrophy	atrophy
 A4771949	atrophy	atrophy	Atrophy , NOS	atrophy , NO
+A4771936	atrophic	atrophic	Atrophic	atrophic
+A2994126	atrophic	atrophic	Atrophic	atrophic
 A5048047	atrophy	atrophy	Atrophy [ dup ] ( morphologic abnormality )	atrophy [ dup ] ( morphologic abnormality )
 A15142422	atrophy	atrophy	Atrophy ( morphologic abnormality )	atrophy ( morphologic abnormality )
 A3739972	atrophy	atrophy	Atrophy ( morphologic abnormality )	atrophy ( morphologic abnormality )
+A3021740	fatty	fatty	Fatty atrophy	fatty atrophy
 A3130373	fat	fat	Fat atrophy	fat atrophy
 A2989425	adipositas	adipositas	Adipositas ex vacuo	adipositas EX vacuo
-A3021740	fatty	fatty	Fatty atrophy	fatty atrophy
 A3452027	fatty	fatty	Fatty atrophy ( morphologic abnormality )	fatty atrophy ( morphologic abnormality )
 A2989308	adenocarcinoma	adenocarcinoma	Adenocarcinoma , metastatic	adenocarcinoma , metastatic
 A3044483	metastatic	metastatic	Metastatic adenocarcinoma	metastatic adenocarcinoma
@@ -1903,23 +1945,23 @@ A4791245	plasma	plasma	Plasma cell infiltration , NOS	plasma cell infiltration ,
 A3058695	plasmacytic	plasmacytic	Plasmacytic infiltrate	plasmacytic infiltrate
 A4791257	plasmacytic	plasmacytic	Plasmacytic infiltrate , NOS	plasmacytic infiltrate , NO
 A3633231	plasma	plasma	Plasma cell inflammation ( morphologic abnormality )	plasma cell inflammation ( morphologic abnormality )
-A3319174	articular	articular	Articular system	articular system
-A4739088	articular	articular	Articular system , NOS	articular system , NO
+A3704054	articular	articular	Articular system structure	articular system structure
 A2883171	joints	joint	Joints	joint
 A4742176	joint	joint	Joint , NOS	joint , NO
 A4824082	joints	joint	Joints , NOS	joint , NO
+A3319174	articular	articular	Articular system	articular system
+A4739088	articular	articular	Articular system , NOS	articular system , NO
 A3704048	articular	articular	Articular system structure ( body structure )	articular system structure ( body structure )
-A3704054	articular	articular	Articular system structure	articular system structure
+A4839927	skin	skin	Skin sinus	skin sinus
+A4839928	skin	skin	Skin sinus	skin sinus
+A3201825	skin	skin	Skin sinus	skin sinus
+A3020795	external	external	External fistula	external fistula
+A3132347	fistula	fistula	Fistula of skin	fistula of skin
+A4757257	fistula	fistula	Fistula of skin , NOS	fistula of skin , NO
 A4777535	cutaneous	cutaneous	Cutaneous fistula	cutaneous fistula
 A4777536	cutaneous	cutaneous	Cutaneous fistula	cutaneous fistula
 A4777538	cutaneous	cutaneous	Cutaneous fistula	cutaneous fistula
 A4777537	cutaneous	cutaneous	Cutaneous fistula	cutaneous fistula
-A3020795	external	external	External fistula	external fistula
-A4757257	fistula	fistula	Fistula of skin , NOS	fistula of skin , NO
-A3132347	fistula	fistula	Fistula of skin	fistula of skin
-A4839927	skin	skin	Skin sinus	skin sinus
-A4839928	skin	skin	Skin sinus	skin sinus
-A3201825	skin	skin	Skin sinus	skin sinus
 A4864865	sinus	sinus	Sinus	sinus
 A3444540	external	external	External fistula ( morphologic abnormality )	external fistula ( morphologic abnormality )
 A3462084	fistula	fistula	Fistula of skin ( disorder )	fistula of skin ( disorder )
@@ -1933,13 +1975,13 @@ A3097302	apparent	apparent	Apparent leg length	apparent leg length
 A3664370	apparent	apparent	Apparent leg length ( observable entity )	apparent leg length ( observable entity )
 A3142660	human	human	Human cells	human cell
 A3497525	human	human	Human cells ( finding )	human cell ( find )
-A2992502	antimicrobial	antimicrobial	Antimicrobial susceptibility	antimicrobial susceptibility
-A3070058	sensitivities	sensitivity	Sensitivities	sensitivity
-A2886558	sensitivity	sensitivity	Sensitivity	sensitivity
-A4808777	antibiotic	antibiotic	Antibiotic susceptibility	antibiotic susceptibility
-A3456691	finding	find	Finding of antimicrobial susceptibility ( finding )	find of antimicrobial susceptibility ( find )
 A3649666	antimicrobial	antimicrobial	Antimicrobial susceptibility - finding	antimicrobial susceptibility - find
 A15099940	finding	find	Finding of antimicrobial susceptibility	find of antimicrobial susceptibility
+A3070058	sensitivities	sensitivity	Sensitivities	sensitivity
+A2886558	sensitivity	sensitivity	Sensitivity	sensitivity
+A2992502	antimicrobial	antimicrobial	Antimicrobial susceptibility	antimicrobial susceptibility
+A4808777	antibiotic	antibiotic	Antibiotic susceptibility	antibiotic susceptibility
+A3456691	finding	find	Finding of antimicrobial susceptibility ( finding )	find of antimicrobial susceptibility ( find )
 A3647016	antigen	antigen	Antigen assay	antigen assay
 A3096815	antigen	antigen	Antigen detection	antigen detection
 A3506922	in	in	In vitro immunologic test to detect , identify , characterize AND / OR quantify an antigen	In vitro immunologic test to detect , identify , characterize AND / OR quantify an antigen
@@ -1963,7 +2005,7 @@ A3264675	no	no	No status change	NO status change
 A3163199	no	no	No change	NO change
 A3583604	no	no	No status change ( qualifier value )	NO status change ( qualifier value )
 A3770693	unchanged	unchanged	Unchanged	unchanged
-A6942015	id	id	Id status quo	ID status quo
+A6942015	id	id	Id status quo	id status quo
 A2994418	autoimmune	autoimmune	Autoimmune reaction	autoimmune reaction
 A4772037	autoimmune	autoimmune	Autoimmune reaction , NOS	autoimmune reaction , NO
 A3099348	autoimmune	autoimmune	Autoimmune	autoimmune
@@ -1996,8 +2038,8 @@ A3810045	biceps	bicep	Biceps tendon structure	bicep tendon structure
 A2924763	biceps	bicep	Biceps tendon	bicep tendon
 A3209171	tendon	tendon	Tendon of biceps brachii	tendon of bicep brachii
 A3810044	biceps	bicep	Biceps tendon structure ( body structure )	bicep tendon structure ( body structure )
-A3179848	per	per	PER	PER
-A3613532	per	per	PER ( body structure )	PER ( body structure )
+A3179848	per	per	PER	per
+A3613532	per	per	PER ( body structure )	per ( body structure )
 A3114534	context	context	Context	context
 A3371287	context	context	Context ( attribute )	context ( attribute )
 A3591115	observation	observation	Observation parameter	observation parameter
@@ -2018,9 +2060,17 @@ A3759696	tracheobronchial	tracheobronchial	Tracheobronchial structure ( body str
 A3210512	thumb	thumb	Thumb joint structure	thumb joint structure
 A3149400	joint	joint	Joint of thumb	joint of thumb
 A3754509	thumb	thumb	Thumb joint structure ( body structure )	thumb joint structure ( body structure )
-A3161984	near	near	Near	near
+A17326760	t0	t0	T0 category	t0 category
+A13367722	to	to	TO	to
+A17332984	t0	t0	T0 stage	t0 stage
+A3213807	tumor	tumor	Tumor stage T0	tumor stage t0
+A3213868	tumour	tumour	Tumour stage T0	tumour stage t0
+A17323379	t0	t0	T0 stage ( finding )	t0 stage ( find )
+A5048933	t0	t0	T0 stage ( tumor staging )	t0 stage ( tumor stage )
+A17311347	t0	t0	T0 category ( finding )	t0 category ( find )
 A3087991	1	1	1 / 3 meter	1 / 3 meter
 A3087992	1	1	1 / 3 metre	1 / 3 metre
+A3161984	near	near	Near	near
 A3294677	nr	nr	Nr - Near	NR - near
 A13002816	1	1	1 / 3 meter ( finding )	1 / 3 meter ( find )
 A13005429	1	1	1 / 3 metre ( finding )	1 / 3 metre ( find )
@@ -2032,18 +2082,21 @@ A16956252	[	[	[ Q ] Comminuted	[ Q ] comminute
 A16963781	[	[	[ Q ] Comminuted	[ Q ] comminute
 A3468083	fracture	fracture	Fracture , comminuted ( morphologic abnormality )	fracture , comminute ( morphologic abnormality )
 A15140187	comminuted	comminute	Comminuted fracture ( morphologic abnormality )	comminute fracture ( morphologic abnormality )
-A16959664	enlargement	enlargement	Enlargement of lymph nodes	enlargement of lymph node
-A4756583	enlargement	enlargement	Enlargement of lymph nodes , NOS	enlargement of lymph node , NO
-A2875343	lymphadenopathy	lymphadenopathy	Lymphadenopathy	lymphadenopathy
 A4709443	lymphadenopathy	lymphadenopathy	Lymphadenopathy	lymphadenopathy
 A4709444	lymphadenopathy	lymphadenopathy	Lymphadenopathy	lymphadenopathy
 A4709445	lymphadenopathy	lymphadenopathy	Lymphadenopathy	lymphadenopathy
 A4709446	lymphadenopathy	lymphadenopathy	Lymphadenopathy	lymphadenopathy
 A4709447	lymphadenopathy	lymphadenopathy	Lymphadenopathy	lymphadenopathy
 A4709448	lymphadenopathy	lymphadenopathy	Lymphadenopathy	lymphadenopathy
+A2875343	lymphadenopathy	lymphadenopathy	Lymphadenopathy	lymphadenopathy
 A4760027	lymphadenopathy	lymphadenopathy	Lymphadenopathy , NOS	lymphadenopathy , NO
-A4779720	enlarged	enlarge	Enlarged lymph nodes	enlarge lymph node
+A4738752	adenopathy	adenopathy	Adenopathy	adenopathy
+A4738751	adenopathy	adenopathy	Adenopathy	adenopathy
+A16959664	enlargement	enlargement	Enlargement of lymph nodes	enlargement of lymph node
+A4756583	enlargement	enlargement	Enlargement of lymph nodes , NOS	enlargement of lymph node , NO
 A4779721	enlarged	enlarge	Enlarged lymph nodes	enlarge lymph node
+A4779720	enlarged	enlarge	Enlarged lymph nodes	enlarge lymph node
+A16967484	swollen	swell	Swollen glands	swell gland
 A3743826	swelling	swell	Swelling of lymph nodes	swell of lymph node
 A4764173	swelling	swell	Swelling of lymph nodes , NOS	swell of lymph node , NO
 A3075062	swollen	swell	Swollen lymph nodes	swell lymph node
@@ -2054,15 +2107,20 @@ A4799565	[	[	[ D ] Lymph node enlargement	[ D ] lymph node enlargement
 A16372140	[	[	[ D ] Lymph node enlargement NOS	[ D ] lymph node enlargement NO
 A4799566	[	[	[ D ] Lymph node enlargement NOS	[ D ] lymph node enlargement NO
 A4799567	[	[	[ D ] Lymph node enlargement NOS	[ D ] lymph node enlargement NO
+A16954248	[	[	[ D ] Swollen glands	[ D ] swell gland
+A4799701	[	[	[ D ] Swollen glands	[ D ] swell gland
+A4799702	[	[	[ D ] Swollen glands	[ D ] swell gland
 A16964147	[	[	[ D ] Lymphadenopathy	[ D ] lymphadenopathy
 A4799568	[	[	[ D ] Lymphadenopathy	[ D ] lymphadenopathy
 A4799569	[	[	[ D ] Lymphadenopathy	[ D ] lymphadenopathy
+A16956599	enlarged	enlarge	Enlarged glands	enlarge gland
 A3075061	swollen	swell	Swollen lymph glands	swell lymph gland
 A3039864	lymphadenopathy	lymphadenopathy	Lymphadenopathy - swelling	lymphadenopathy - swell
 A3290710	la	la	LA - Lymphadenopathy	LA - lymphadenopathy
 A3292409	ln	ln	LN - Lymphadenopathy	LN - lymphadenopathy
 A10877713	[	[	[ D ] Lymph node enlargement NOS ( context - dependent category )	[ D ] lymph node enlargement NO ( context - dependent category )
 A10877712	[	[	[ D ] Lymph node enlargement ( context - dependent category )	[ D ] lymph node enlargement ( context - dependent category )
+A10878047	[	[	[ D ] Swollen glands ( context - dependent category )	[ D ] swell gland ( context - dependent category )
 A10877714	[	[	[ D ] Lymphadenopathy ( context - dependent category )	[ D ] lymphadenopathy ( context - dependent category )
 A3545298	lymphadenopathy	lymphadenopathy	Lymphadenopathy ( disorder )	lymphadenopathy ( disorder )
 A5053773	unspecified	unspecified	Unspecified lymphadenopathy	unspecified lymphadenopathy
@@ -2072,6 +2130,8 @@ A16962687	[	[	[ D ] Lymph node enlargement ( situation )	[ D ] lymph node enlarg
 A15104181	[	[	[ D ] Lymph node enlargement ( situation )	[ D ] lymph node enlargement ( situation )
 A16355018	[	[	[ D ] Lymph node enlargement NOS ( situation )	[ D ] lymph node enlargement NO ( situation )
 A15095047	[	[	[ D ] Lymph node enlargement NOS ( situation )	[ D ] lymph node enlargement NO ( situation )
+A16958940	[	[	[ D ] Swollen glands ( situation )	[ D ] swell gland ( situation )
+A15113242	[	[	[ D ] Swollen glands ( situation )	[ D ] swell gland ( situation )
 A15104994	lymphadenopathy	lymphadenopathy	Lymphadenopathy ( finding )	lymphadenopathy ( find )
 A15125480	lymphadenopathy	lymphadenopathy	Lymphadenopathy ( finding )	lymphadenopathy ( find )
 A15103848	lymphadenopathy	lymphadenopathy	Lymphadenopathy ( finding )	lymphadenopathy ( find )
@@ -2099,11 +2159,11 @@ A3681372	right	right	Right shoulder region	right shoulder region
 A3681175	right	right	Right hip region structure	right hip region structure
 A3196141	right	right	Right hip	right hip
 A3681174	right	right	Right hip region structure ( body structure )	right hip region structure ( body structure )
-A5015474	operative	operative	Operative procedures	operative procedure
+A2887024	surgery	surgery	Surgery	surgery
 A4709089	operative	operative	Operative procedure	operative procedure
 A2874186	operative	operative	Operative procedure	operative procedure
 A4729752	operative	operative	Operative procedure , NOS	operative procedure , NO
-A2887024	surgery	surgery	Surgery	surgery
+A5015474	operative	operative	Operative procedures	operative procedure
 A4743292	operation	operation	Operation	operation
 A2939968	operation	operation	Operation	operation
 A4729753	operation	operation	Operation , NOS	operation , NO
@@ -2117,13 +2177,13 @@ A5048380	surgical	surgical	Surgical procedure ( procedure )	surgical procedure (
 A3742479	surgical	surgical	Surgical procedure ( procedure )	surgical procedure ( procedure )
 A3741762	surgery	surgery	Surgery ( qualifier value )	surgery ( qualifier value )
 A3741774	surgical	surgical	Surgical ( qualifier value )	surgical ( qualifier value )
-A2956728	calcium	calcium	Calcium pyrophosphate deposition disease	calcium pyrophosphate deposition disease
 A2956729	calcium	calcium	Calcium pyrophosphate deposition disease	calcium pyrophosphate deposition disease
-A2879888	chondrocalcinosis	chondrocalcinosis	Chondrocalcinosis	chondrocalcinosis
+A2956728	calcium	calcium	Calcium pyrophosphate deposition disease	calcium pyrophosphate deposition disease
 A2879889	chondrocalcinosis	chondrocalcinosis	Chondrocalcinosis	chondrocalcinosis
 A4711307	chondrocalcinosis	chondrocalcinosis	Chondrocalcinosis	chondrocalcinosis
 A4711308	chondrocalcinosis	chondrocalcinosis	Chondrocalcinosis	chondrocalcinosis
 A4711309	chondrocalcinosis	chondrocalcinosis	Chondrocalcinosis	chondrocalcinosis
+A2879888	chondrocalcinosis	chondrocalcinosis	Chondrocalcinosis	chondrocalcinosis
 A17302212	chondrocalcinosis	chondrocalcinosis	Chondrocalcinosis NOS	chondrocalcinosis NO
 A2875845	chondrocalcinosis	chondrocalcinosis	Chondrocalcinosis articularis	chondrocalcinosis articulari
 A2888321	cpdd	cpdd	CPDD	CPDD
@@ -2155,25 +2215,25 @@ A3299545	subscapularis	subscapularis	Subscapularis tendon	subscapularis tendon
 A3432746	entire	entire	Entire tendon of subscapularis muscle ( body structure )	entire tendon of subscapularis muscle ( body structure )
 A3267038	injury	injury	Injury of coccyx	injury of coccyx
 A3515325	injury	injury	Injury of coccyx ( disorder )	injury of coccyx ( disorder )
-A17300452	compression	compression	Compression NOS ( procedure )	compression NO ( procedure )
-A15111610	compression	compression	Compression NOS ( procedure )	compression NO ( procedure )
+A4867071	compression	compression	Compression - action	compression - action
+A4867072	compression	compression	Compression - action	compression - action
+A3241139	compression	compression	Compression - action	compression - action
 A3113310	compression	compression	Compression	compression
 A17308070	compression	compression	Compression NOS	compression NO
 A4873641	compression	compression	Compression NOS	compression NO
 A4873642	compression	compression	Compression NOS	compression NO
-A4867071	compression	compression	Compression - action	compression - action
-A4867072	compression	compression	Compression - action	compression - action
-A3241139	compression	compression	Compression - action	compression - action
+A17300452	compression	compression	Compression NOS ( procedure )	compression NO ( procedure )
+A15111610	compression	compression	Compression NOS ( procedure )	compression NO ( procedure )
 A3365621	compression	compression	Compression - action ( qualifier value )	compression - action ( qualifier value )
 A15093490	compression	compression	Compression - action ( procedure )	compression - action ( procedure )
-A3296662	rib	rib	Rib pain	RIB pain
-A4880356	rib	rib	Rib pain	RIB pain
-A4880357	rib	rib	Rib pain	RIB pain
-A4880358	rib	rib	Rib pain	RIB pain
-A4880359	rib	rib	Rib pain	RIB pain
-A15106555	rib	rib	Rib pain ( finding )	RIB pain ( find )
-A15121968	rib	rib	Rib pain ( finding )	RIB pain ( find )
-A3680490	rib	rib	Rib pain ( finding )	RIB pain ( find )
+A4880356	rib	rib	Rib pain	rib pain
+A4880357	rib	rib	Rib pain	rib pain
+A4880358	rib	rib	Rib pain	rib pain
+A4880359	rib	rib	Rib pain	rib pain
+A3296662	rib	rib	Rib pain	rib pain
+A15106555	rib	rib	Rib pain ( finding )	rib pain ( find )
+A15121968	rib	rib	Rib pain ( finding )	rib pain ( find )
+A3680490	rib	rib	Rib pain ( finding )	rib pain ( find )
 A3290202	joint	joint	Joint normal	joint normal
 A3526829	joint	joint	Joint normal ( finding )	joint normal ( find )
 A3282630	foot	foot	Foot normal	foot normal
@@ -2205,12 +2265,6 @@ A3553333	mass	mass	Mass of body structure ( finding )	mass of body structure ( f
 A5005258	lump	lump	Lump ( finding )	lump ( find )
 A3254482	axillary	axillary	Axillary lymphadenopathy	axillary lymphadenopathy
 A3763436	axillary	axillary	Axillary lymphadenopathy ( disorder )	axillary lymphadenopathy ( disorder )
-A3299377	thoracic	thoracic	Thoracic spine structure	thoracic spine structure
-A4745513	thoracic	thoracic	Thoracic vertebral column	thoracic vertebral column
-A2949223	thoracic	thoracic	Thoracic vertebral column	thoracic vertebral column
-A4745510	thoracic	thoracic	Thoracic spine	thoracic spine
-A2949213	thoracic	thoracic	Thoracic spine	thoracic spine
-A3753553	thoracic	thoracic	Thoracic spine structure ( body structure )	thoracic spine structure ( body structure )
 A3273499	digit	digit	Digit structure	digit structure
 A15162487	digit	digit	Digit	digit
 A3395924	digit	digit	Digit	digit
@@ -2232,9 +2286,6 @@ A3724385	structure	structure	Structure of condyle of tibia	structure of condyle 
 A3290382	musculotendinous	musculotendinous	Musculotendinous junction	musculotendinous junction
 A3290385	myotendinous	myotendinous	Myotendinous junction	myotendinous junction
 A3571465	musculotendinous	musculotendinous	Musculotendinous junction ( body structure )	musculotendinous junction ( body structure )
-A3288006	infraspinatous	infraspinatou	Infraspinatous muscle structure	infraspinatou muscle structure
-A2934200	infraspinatus	infraspinatus	Infraspinatus muscle	infraspinatus muscle
-A3513681	infraspinatous	infraspinatou	Infraspinatous muscle structure ( body structure )	infraspinatou muscle structure ( body structure )
 A3468062	fracture	fracture	Fracture with displacement	fracture with displacement
 A13011894	displaced	displace	Displaced fracture	displace fracture
 A13014739	displaced	displace	Displaced fracture	displace fracture
@@ -2247,15 +2298,15 @@ A3257194	prostate	prostate	Prostate biopsy sample	prostate biopsy sample
 A3650258	prostate	prostate	Prostate biopsy sample ( specimen )	prostate biopsy sample ( specimen )
 A3282447	follow-up	follow-up	Follow-up status	follow-up status
 A3465453	follow-up	follow-up	Follow-up status ( finding )	follow-up status ( find )
-A15096543	follow	follow	Follow up ( finding )	follow UP ( find )
-A4990407	follow	follow	Follow up ( finding )	follow UP ( find )
+A15096543	follow	follow	Follow up ( finding )	follow up ( find )
+A4990407	follow	follow	Follow up ( finding )	follow up ( find )
 A3465461	follow-up	follow-up	Follow-up	follow-up
-A4990408	follow	follow	Follow up	follow UP
-A4990409	follow	follow	Follow up	follow UP
-A4990411	follow	follow	Follow up	follow UP
-A4990412	follow	follow	Follow up	follow UP
-A4990410	follow	follow	Follow up	follow UP
-A15114581	follow	follow	Follow up ( administrative concept )	follow UP ( administrative concept )
+A4990408	follow	follow	Follow up	follow up
+A4990409	follow	follow	Follow up	follow up
+A4990411	follow	follow	Follow up	follow up
+A4990412	follow	follow	Follow up	follow up
+A4990410	follow	follow	Follow up	follow up
+A15114581	follow	follow	Follow up ( administrative concept )	follow up ( administrative concept )
 A3101804	biopsy	biopsy	Biopsy sample	biopsy sample
 A3811649	biopsy	biopsy	Biopsy sample ( specimen )	biopsy sample ( specimen )
 A3712597	source	source	Source of information	source of information
@@ -2271,17 +2322,17 @@ A3407297	duct	duct	Duct ( organ ) structure ( body structure )	duct ( organ ) st
 A3249236	common	common	Common iliac aneurysm	common iliac aneurysm
 A2991625	aneurysm	aneurysm	Aneurysm of common iliac artery	aneurysm of common iliac artery
 A3363848	common	common	Common iliac aneurysm ( disorder )	common iliac aneurysm ( disorder )
-A11725783	infiltration	infiltration	Infiltration ( procedure )	infiltration ( procedure )
-A11727978	infiltrations	infiltration	Infiltrations ( procedure )	infiltration ( procedure )
 A11730198	infiltration	infiltration	Infiltration	infiltration
 A13372948	infiltrations	infiltration	Infiltrations	infiltration
+A11725783	infiltration	infiltration	Infiltration ( procedure )	infiltration ( procedure )
+A11727978	infiltrations	infiltration	Infiltrations ( procedure )	infiltration ( procedure )
 A18077910	swelling	swell	Swelling of head	swell of head
 A18075536	head	head	Head swelling	head swell
 A18072769	swelling	swell	Swelling of head ( finding )	swell of head ( find )
+A3076833	thoracic	thoracic	Thoracic	thoracic
 A2879712	chest	chest	Chest	chest
 A2887296	thorax	thorax	Thorax	thorax
 A4737696	thorax	thorax	Thorax , NOS	thorax , NO
-A3076833	thoracic	thoracic	Thoracic	thoracic
 A3210319	thoracic	thoracic	Thoracic structure	thoracic structure
 A3753568	thoracic	thoracic	Thoracic structure ( body structure )	thoracic structure ( body structure )
 A3753318	thoracic	thoracic	Thoracic ( qualifier value )	thoracic ( qualifier value )
@@ -2291,15 +2342,12 @@ A11730077	head	head	Head of metatarsal bone	head of metatarsal bone
 A11730078	head	head	Head of metatarsal bone ( body structure )	head of metatarsal bone ( body structure )
 A11732521	head	head	Head of metatarsal ( body structure )	head of metatarsal ( body structure )
 A11727848	structure	structure	Structure of head of metatarsal bone ( body structure )	structure of head of metatarsal bone ( body structure )
+A3543825	lower	low	Lower leg structure	low leg structure
 A2883365	leg	leg	Leg	leg
 A4737714	leg	leg	Leg , NOS	leg , NO
 A2877726	lower	low	Lower leg	low leg
 A3116357	crural	crural	Crural region	crural region
 A3543824	lower	low	Lower leg structure ( body structure )	low leg structure ( body structure )
-A3543825	lower	low	Lower leg structure	low leg structure
-A2882556	hydrarthrosis	hydrarthrosis	Hydrarthrosis	hydrarthrosis
-A4712547	hydrarthrosis	hydrarthrosis	Hydrarthrosis	hydrarthrosis
-A4758173	hydrarthrosis	hydrarthrosis	Hydrarthrosis , NOS	hydrarthrosis , NO
 A4717547	effusion	effusion	Effusion of joint	effusion of joint
 A2889654	effusion	effusion	Effusion of joint	effusion of joint
 A4756445	effusion	effusion	Effusion of joint , NOS	effusion of joint , NO
@@ -2310,6 +2358,9 @@ A3036013	joint	joint	Joint effusion	joint effusion
 A17309758	effusion	effusion	Effusion of joint NOS	effusion of joint NO
 A4816442	effusion	effusion	Effusion of joint NOS	effusion of joint NO
 A4816443	effusion	effusion	Effusion of joint NOS	effusion of joint NO
+A4712547	hydrarthrosis	hydrarthrosis	Hydrarthrosis	hydrarthrosis
+A2882556	hydrarthrosis	hydrarthrosis	Hydrarthrosis	hydrarthrosis
+A4758173	hydrarthrosis	hydrarthrosis	Hydrarthrosis , NOS	hydrarthrosis , NO
 A4779455	effusion	effusion	Effusion into joint	effusion into joint
 A3017758	effusion	effusion	Effusion into joint	effusion into joint
 A17314402	joint	joint	Joint effusion of unspecified site	joint effusion of unspecified site
@@ -2326,8 +2377,8 @@ A3363854	common	common	Common iliac artery structure ( body structure )	common i
 A3567692	morphology	morphology	Morphology within normal limits	morphology within normal limit
 A3567691	morphology	morphology	Morphology within normal limits ( finding )	morphology within normal limit ( find )
 A3786952	within	within	Within Normal Limits	within normal limit
-A3364150	abnormally	abnormally	Abnormally opaque structure ( morphologic abnormality )	abnormally opaque structure ( morphologic abnormality )
 A2873778	opacity	opacity	Opacity	opacity
+A3364150	abnormally	abnormally	Abnormally opaque structure ( morphologic abnormality )	abnormally opaque structure ( morphologic abnormality )
 A15143783	abnormally	abnormally	Abnormally opaque structure	abnormally opaque structure
 A3395339	diffuse	diffuse	Diffuse atrophy	diffuse atrophy
 A3395338	diffuse	diffuse	Diffuse atrophy ( morphologic abnormality )	diffuse atrophy ( morphologic abnormality )
@@ -2344,7 +2395,7 @@ A3706916	skeletal	skeletal	Skeletal bones	skeletal bone
 A3418187	entire	entire	Entire bony skeleton ( body structure )	entire bony skeleton ( body structure )
 A3323603	bone	bone	Bone ( system )	bone ( system )
 A3324263	bony	bony	Bony skeleton	bony skeleton
-A3618555	pars	par	Pars ossea systematis skeletalis	PAR ossea systemati skeletali
+A3618555	pars	par	Pars ossea systematis skeletalis	par ossea systemati skeletali
 A3604256	osseous	osseous	Osseous part of the skeletal system	osseous part of the skeletal system
 A3419254	entire	entire	Entire condyle	entire condyle
 A5043596	articular	articular	Articular condyle	articular condyle
@@ -2371,10 +2422,10 @@ A2930522	facet	facet	Facet joint	facet joint
 A3220540	zygapophysial	zygapophysial	Zygapophysial joint	zygapophysial joint
 A11732914	vertebral	vertebral	Vertebral arch joint	vertebral arch joint
 A3434340	entire	entire	Entire zygapophyseal joint ( body structure )	entire zygapophyseal joint ( body structure )
+A3420287	entire	entire	Entire duct ( organ )	entire duct ( organ )
 A3319830	duct	duct	Duct	duct
 A4890145	duct	duct	Duct , NOS	duct , NO
 A3420285	entire	entire	Entire duct ( organ ) ( body structure )	entire duct ( organ ) ( body structure )
-A3420287	entire	entire	Entire duct ( organ )	entire duct ( organ )
 A3429174	entire	entire	Entire right hip region	entire right hip region
 A3196142	right	right	Right hip	right hip
 A3429173	entire	entire	Entire right hip region ( body structure )	entire right hip region ( body structure )
@@ -2384,7 +2435,7 @@ A3074821	suprarenal	suprarenal	Suprarenal gland	suprarenal gland
 A3416524	entire	entire	Entire adrenal gland ( body structure )	entire adrenal gland ( body structure )
 A3421526	entire	entire	Entire gallbladder	entire gallbladder
 A2881833	gallbladder	gallbladder	Gallbladder	gallbladder
-A3283621	gb	gb	GB - Gallbladder	GB - gallbladder
+A3283621	gb	gb	GB - Gallbladder	gb - gallbladder
 A3421523	entire	entire	Entire gallbladder ( body structure )	entire gallbladder ( body structure )
 A3419346	entire	entire	Entire coronary artery	entire coronary artery
 A2895864	coronary	coronary	Coronary artery	coronary artery
@@ -2434,7 +2485,7 @@ A3293693	mt	mt	MT - Metatarsal	MT - metatarsal
 A3425662	entire	entire	Entire metatarsal ( body structure )	entire metatarsal ( body structure )
 A3423444	entire	entire	Entire joint	entire joint
 A2874323	joint	joint	Joint	joint
-A3290016	jt	jt	Jt - Joint	JT - joint
+A3290016	jt	jt	Jt - Joint	jt - joint
 A3423386	entire	entire	Entire joint ( body structure )	entire joint ( body structure )
 A3432991	entire	entire	Entire thumb	entire thumb
 A2887341	thumb	thumb	Thumb	thumb
@@ -2444,22 +2495,22 @@ A3418678	entire	entire	Entire cell	entire cell
 A2874573	cell	cell	Cell	cell
 A4984659	entire	entire	Entire cell ( body structure )	entire cell ( body structure )
 A3418677	entire	entire	Entire cell ( cell )	entire cell ( cell )
-A3721625	assisted	assist	Assisted ( qualifier value )	assist ( qualifier value )
 A3721767	assisted	assist	Assisted	assist
+A3721625	assisted	assist	Assisted ( qualifier value )	assist ( qualifier value )
 A3668248	requires	require	Requires assistance	require assistance
 A3767048	tumor	tumor	Tumor margin status	tumor margin status
 A3767592	tumour	tumour	Tumour margin status	tumour margin status
 A3043220	margin	margin	Margin	margin
 A3767047	tumor	tumor	Tumor margin status ( observable entity )	tumor margin status ( observable entity )
-A3432959	entire	entire	Entire thoracic spine	entire thoracic spine
-A3881284	thoracic	thoracic	Thoracic vertebral column	thoracic vertebral column
-A2949214	thoracic	thoracic	Thoracic spine	thoracic spine
-A3299381	tx	tx	TX - Thoracic spine	TX - thoracic spine
-A3432958	entire	entire	Entire thoracic spine ( body structure )	entire thoracic spine ( body structure )
 A3416361	entire	entire	Entire abdominal aorta	entire abdominal aorta
 A2874384	abdominal	abdominal	Abdominal aorta	abdominal aorta
 A3119128	descending	descend	Descending abdominal aorta	descend abdominal aorta
 A3416360	entire	entire	Entire abdominal aorta ( body structure )	entire abdominal aorta ( body structure )
+A5013059	not	not	Not significant	not significant
+A5013060	not	not	Not significant	not significant
+A3587994	not	not	Not significant	not significant
+A15150662	not	not	Not significant ( qualifier value )	not significant ( qualifier value )
+A3587991	not	not	Not significant ( qualifier value )	not significant ( qualifier value )
 A3433040	entire	entire	Entire thyroid gland	entire thyroid gland
 A2949320	thyroid	thyroid	Thyroid gland	thyroid gland
 A3433039	entire	entire	Entire thyroid gland ( body structure )	entire thyroid gland ( body structure )
@@ -2547,15 +2598,12 @@ A3422218	entire	entire	Entire iliac artery ( body structure )	entire iliac arter
 A3423437	entire	entire	Entire joint of thumb	entire joint of thumb
 A3149401	joint	joint	Joint of thumb	joint of thumb
 A3423436	entire	entire	Entire joint of thumb ( body structure )	entire joint of thumb ( body structure )
-A3429645	entire	entire	Entire second rib	entire second RIB
-A2944879	second	second	Second rib	second RIB
-A3429644	entire	entire	Entire second rib ( body structure )	entire second RIB ( body structure )
-A3432881	entire	entire	Entire third rib	entire third RIB
-A2949121	third	third	Third rib	third RIB
-A3432880	entire	entire	Entire third rib ( body structure )	entire third RIB ( body structure )
-A3429954	entire	entire	Entire sixth rib	entire sixth RIB
-A2945487	sixth	sixth	Sixth rib	sixth RIB
-A3429953	entire	entire	Entire sixth rib ( body structure )	entire sixth RIB ( body structure )
+A3432881	entire	entire	Entire third rib	entire third rib
+A2949121	third	third	Third rib	third rib
+A3432880	entire	entire	Entire third rib ( body structure )	entire third rib ( body structure )
+A3429954	entire	entire	Entire sixth rib	entire sixth rib
+A2945487	sixth	sixth	Sixth rib	sixth rib
+A3429953	entire	entire	Entire sixth rib ( body structure )	entire sixth rib ( body structure )
 A3432766	entire	entire	Entire tendon	entire tendon
 A2874347	tendon	tendon	Tendon	tendon
 A3432666	entire	entire	Entire tendon ( body structure )	entire tendon ( body structure )
@@ -2581,9 +2629,9 @@ A3432896	entire	entire	Entire thoracic aorta ( body structure )	entire thoracic 
 A3417993	entire	entire	Entire bladder	entire bladder
 A2879123	bladder	bladder	Bladder	bladder
 A3417992	entire	entire	Entire bladder ( body structure )	entire bladder ( body structure )
-A3429034	entire	entire	Entire rib	entire RIB
-A2874297	rib	rib	Rib	RIB
-A3429033	entire	entire	Entire rib ( body structure )	entire RIB ( body structure )
+A3429034	entire	entire	Entire rib	entire rib
+A2874297	rib	rib	Rib	rib
+A3429033	entire	entire	Entire rib ( body structure )	entire rib ( body structure )
 A3421866	entire	entire	Entire hand	entire hand
 A2882172	hand	hand	Hand	hand
 A3421865	entire	entire	Entire hand ( body structure )	entire hand ( body structure )
@@ -2668,7 +2716,7 @@ A3150509	lm	lm	LM - Lateral meniscus	LM - lateral meniscus
 A3423849	entire	entire	Entire lateral meniscus ( body structure )	entire lateral meniscus ( body structure )
 A3425354	entire	entire	Entire medial meniscus	entire medial meniscus
 A3157469	medial	medial	Medial meniscus	medial meniscus
-A3155403	mm	mm	MM - Medial meniscus	MM - medial meniscus
+A3155403	mm	mm	MM - Medial meniscus	mm - medial meniscus
 A3425353	entire	entire	Entire medial meniscus ( body structure )	entire medial meniscus ( body structure )
 A3432247	entire	entire	Entire superior ramus of pubis	entire superior ramus of pubis
 A3206708	superior	superior	Superior pubic ramus	superior pubic ramus
@@ -2696,7 +2744,7 @@ A3550312	malignant	malignant	Malignant neoplasm , primary ( morphologic abnormal
 A5006373	malignant	malignant	Malignant neoplastic disease ( primary )	malignant neoplastic disease ( primary )
 A4981953	disorder	disorder	Disorder : Primary malignant neoplasm ( disorder )	disorder : primary malignant neoplasm ( disorder )
 A3644872	primary	primary	Primary malignant neoplasm ( disorder )	primary malignant neoplasm ( disorder )
-A3632437	plain	plain	Plain x-ray	plain X-ray
+A17323653	plain	plain	Plain radiography	plain radiography
 A2886351	roentgenography	roentgenography	Roentgenography	roentgenography
 A2873184	x-ray	x-ray	X-ray	X-ray
 A4746144	x-rays	x-ray	X-rays	X-ray
@@ -2712,19 +2760,20 @@ A5021843	plain	plain	Plain film diagnostic procedure	plain film diagnostic proce
 A5021842	plain	plain	Plain film diagnostic procedure ( procedure )	plain film diagnostic procedure ( procedure )
 A17304549	plain	plain	Plain film ( procedure )	plain film ( procedure )
 A15158754	plain	plain	Plain film ( procedure )	plain film ( procedure )
+A3632437	plain	plain	Plain x-ray	plain X-ray
 A17311070	plain	plain	Plain radiography ( procedure )	plain radiography ( procedure )
-A17323653	plain	plain	Plain radiography	plain radiography
+A2876669	claudication	claudication	Claudication	claudication
+A4710008	claudication	claudication	Claudication	claudication
+A2876668	claudication	claudication	Claudication	claudication
+A3356027	claudication	claudication	Claudication ( finding )	claudication ( find )
+A17301056	assay	assay	Assay technique	assay technique
 A17301055	assay	assay	Assay	assay
 A17329727	assay	assay	Assay ( qualifier value )	assay ( qualifier value )
-A17301056	assay	assay	Assay technique	assay technique
 A17323688	assay	assay	Assay technique ( qualifier value )	assay technique ( qualifier value )
+A3210216	thoracic	thoracic	Thoracic aorta structure	thoracic aorta structure
 A2877629	thoracic	thoracic	Thoracic aorta	thoracic aorta
 A4745489	thoracic	thoracic	Thoracic aorta , NOS	thoracic aorta , NO
-A2874383	descending	descend	Descending thoracic aorta	descend thoracic aorta
-A3210216	thoracic	thoracic	Thoracic aorta structure	thoracic aorta structure
-A3725013	structure	structure	Structure of descending thoracic aorta ( body structure )	structure of descend thoracic aorta ( body structure )
 A3753333	thoracic	thoracic	Thoracic aorta structure ( body structure )	thoracic aorta structure ( body structure )
-A3725014	structure	structure	Structure of descending thoracic aorta	structure of descend thoracic aorta
 A4720882	calcification	calcification	Calcification	calcification
 A4720884	calcification	calcification	Calcification	calcification
 A4720885	calcification	calcification	Calcification	calcification
@@ -2745,12 +2794,12 @@ A11740479	entire	entire	Entire patellar tendon	entire patellar tendon
 A11731571	infrapatellar	infrapatellar	Infrapatellar tendon	infrapatellar tendon
 A11733857	patellar	patellar	Patellar tendon	patellar tendon
 A11733856	entire	entire	Entire patellar tendon ( body structure )	entire patellar tendon ( body structure )
-A3052604	osteophyte	osteophyte	Osteophyte	osteophyte
 A4789566	osteophyte	osteophyte	Osteophyte	osteophyte
 A4789567	osteophyte	osteophyte	Osteophyte	osteophyte
 A4789568	osteophyte	osteophyte	Osteophyte	osteophyte
-A17316236	bone	bone	Bone spur NOS	bone spur NO
+A3052604	osteophyte	osteophyte	Osteophyte	osteophyte
 A4810845	bone	bone	Bone spur NOS	bone spur NO
+A17316236	bone	bone	Bone spur NOS	bone spur NO
 A3000951	bony	bony	Bony spur	bony spur
 A3052600	osteophyma	osteophyma	Osteophyma	osteophyma
 A4880303	osteophyte	osteophyte	Osteophyte of unspecified site	osteophyte of unspecified site
@@ -2762,8 +2811,12 @@ A3290621	knee	knee	Knee region structure	knee region structure
 A2883253	knee	knee	Knee	knee
 A4742225	knee	knee	Knee , NOS	knee , NO
 A3529307	knee	knee	Knee region structure ( body structure )	knee region structure ( body structure )
-A15116779	effusion	effusion	Effusion ( substance )	effusion ( substance )
 A15136375	effusion	effusion	Effusion	effusion
-A5024972	antigen	antigen	Antigen level ( finding )	antigen level ( find )
+A15116779	effusion	effusion	Effusion ( substance )	effusion ( substance )
 A5024975	antigen	antigen	Antigen level	antigen level
+A5024972	antigen	antigen	Antigen level ( finding )	antigen level ( find )
+A19405981	autoimmune	autoimmune	Autoimmune pancreatitis	autoimmune pancreatitis
+A19404718	autoimmune	autoimmune	Autoimmune pancreatitis ( disorder )	autoimmune pancreatitis ( disorder )
 A17125912	program	program	Program	program
+A18716787	level	level	Level	level
+A18721948	aim	aim	Aim	aim
