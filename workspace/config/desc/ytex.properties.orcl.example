@@ -1,7 +1,3 @@
-# the oracle TNS name
-# used when executing sql*plus to setup tables
-db.name=XE
-
 # jdbc url for database.  
 # Replace localhost:1521/XE with the host, port and service name/SID of your database
 # another format that works is e.g.: jdbc:oracle:thin:ytex/ytex@localhost:1521:XE

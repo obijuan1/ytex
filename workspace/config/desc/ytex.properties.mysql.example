@@ -1,16 +1,11 @@
-# database name same as schema
-db.name=ytex
-# host name of mysql server
-db.host=localhost
-# schema name same as database 
+# schema/database name 
 db.schema=ytex
 # username
 db.username=ytex
 # password
 db.password=ytex
 
-# jdbc url for database.  Replace localhost and VACS_TEST 
-# with the values of db.host and db.name repsectively
+# jdbc url for database.  schema name must match db.schema
 db.url=jdbc:mysql://localhost:3306/ytex?autoReconnect=true
 
 # the schema where umls is installed

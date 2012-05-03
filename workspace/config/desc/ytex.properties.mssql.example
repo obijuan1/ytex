@@ -1,7 +1,5 @@
-# database name
+# database (catalog) name
 db.name=YTEX_TEST
-# host name of database server
-db.host=localhost
 
 # schema. default is dbo
 db.schema=test
