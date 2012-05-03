@@ -1,0 +1,25 @@
+1. Clin Drug Investig. 2006;26(4):223-6.
+
+Oral ciprofloxacin affects the pharmacokinetics of paracetamol in saliva.
+
+Issa MM, Nejem RM, El-Abadla NS.
+
+Department of Chemistry, Pharmaceutical Analytical Chemistry, Alaqsa University, 
+Gaza, Palestine, Palestine.
+
+BACKGROUND: To determine whether concomitant administration of ciprofloxacin has 
+any effect on the release and absorption of paracetamol.
+METHODS AND DESIGN: Ten healthy female volunteers received a single oral dose of 
+paracetamol 1g or paracetamol 1g plus ciprofloxacin 500mg in a double-blind,
+crossover study. Pharmacokinetic parameters were measured in salivary samples
+using a colorimetric method.
+RESULTS: Maximum paracetamol concentration (C(max)) in saliva was significantly
+decreased when co-administered with ciprofloxacin (19.50 vs 13.70 microg/mL, p < 
+0.05). Time to paracetamol C(max) was significantly increased (1.43h vs 0.77h; p 
+< 0.05) and paracetamol half-life was prolonged (1.19 to 1.53h, p = 0.05) in the 
+presence of ciprofloxacin, whereas the area under the concentration-time curve
+was not affected.
+CONCLUSION: Concomitant administration of ciprofloxacin with paracetamol may
+result in a delayed onset of action of paracetamol.
+
+PMID: 17163255  [PubMed - indexed for MEDLINE]
