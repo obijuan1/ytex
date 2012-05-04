@@ -3,7 +3,7 @@
     <collectionReader>
         <collectionIterator>
             <descriptor>
-                <import location="@collectionreader.url@"/>
+                <import name="ytex.uima.annotators.DBConsumer"/>
             </descriptor>
             <configurationParameterSettings>
                 <nameValuePair>
@@ -24,7 +24,7 @@
     <casProcessors casPoolSize="3" processingUnitThreadCount="1">
         <casProcessor deployment="integrated" name="AggregateAllAnnotation">
             <descriptor>
-                <import location="@pipeline.url@"/>
+                <import name="ytex.uima.WSDPipeline"/>
             </descriptor>
             <deploymentParameters/>
             <errorHandling>

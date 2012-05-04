@@ -224,7 +224,7 @@ public class WSDDisambiguator {
 	public Map<Long, Set<String>> loadTitleConcepts() {
 		titleConcepts = new HashMap<Long, Set<String>>();
 		jdbcTemplate
-				.query("select uid, code from document d inner join anno_base abt on abt.document_id = d.document_id inner join anno_segment s on s.anno_base_id = abt.anno_base_id and s.segment_id = 'nlm.wsd.TI' inner join anno_contain ac on ac.parent_anno_base_id = abt.anno_base_id inner join anno_ontology_concept c on c.anno_base_id = ac.child_anno_base_id where d.analysis_batch = 'nlm.wsd' order by uid",
+				.query("select instance_id, code from document d inner join anno_base abt on abt.document_id = d.document_id inner join anno_segment s on s.anno_base_id = abt.anno_base_id and s.id = 'nlm.wsd.TI' inner join anno_contain ac on ac.parent_anno_base_id = abt.anno_base_id inner join anno_ontology_concept c on c.anno_base_id = ac.child_anno_base_id where d.analysis_batch = 'nlm.wsd' order by instance_id",
 						new RowCallbackHandler() {
 							long wordCurrent = -1;
 							Set<String> cuisCurrent = null;
@@ -265,7 +265,7 @@ public class WSDDisambiguator {
 	public Map<Long, Sentence> loadSentences() {
 		sentences = new TreeMap<Long, Sentence>();
 		jdbcTemplate
-				.query("select d.uid instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'nlm.wsd' order by d.uid, span_begin, span_end",
+				.query("select d.instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'nlm.wsd' order by d.instance_id, span_begin, span_end",
 						new RowCallbackHandler() {
 							int currentSpanBegin = -1;
 							int currentSpanEnd = -1;

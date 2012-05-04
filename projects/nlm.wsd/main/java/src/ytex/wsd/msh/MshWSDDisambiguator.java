@@ -216,7 +216,7 @@ public class MshWSDDisambiguator {
 	public Map<Long, Word> loadWords() {
 		words = new HashMap<Long, Word>();
 		jdbcTemplate
-				.query("select w.instance_id, w.pmid, w.word, w.cui, ab.span_begin, ab.span_end from msh_wsd w inner join document d on d.uid = w.instance_id and d.analysis_batch = 'msh.wsd' inner join anno_base ab on d.document_id = ab.document_id inner join anno_segment s on s.anno_base_id = ab.anno_base_id and s.segment_id = 'msh.wsd.target'",
+				.query("select w.instance_id, w.pmid, w.word, w.cui, ab.span_begin, ab.span_end from msh_wsd w inner join document d on d.instance_id = w.instance_id and d.analysis_batch = 'msh.wsd' inner join anno_base ab on d.document_id = ab.document_id inner join anno_segment s on s.anno_base_id = ab.anno_base_id and s.id = 'msh.wsd.target'",
 						new RowCallbackHandler() {
 							@Override
 							public void processRow(ResultSet rs)
@@ -359,7 +359,7 @@ public class MshWSDDisambiguator {
 		try {
 			conn = this.jdbcTemplate.getDataSource().getConnection();
 			s = conn.prepareStatement(
-					"select d.uid instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'msh.wsd' order by d.uid, span_begin, span_end",
+					"select d.instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'msh.wsd' order by d.instance_id, span_begin, span_end",
 					java.sql.ResultSet.TYPE_FORWARD_ONLY,
 					java.sql.ResultSet.CONCUR_READ_ONLY);
 			s.setFetchSize(Integer.MIN_VALUE);
