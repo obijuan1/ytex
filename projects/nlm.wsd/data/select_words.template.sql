@@ -11,7 +11,7 @@ inner join
     select distinct word, choice_code
     from nlm_wsd
     ) n on c.word = n.word and c.choice_code = n.choice_code
-inner join umls.MRCONSO mc on mc.cui = c.cui and mc.str = c.word
+inner join @UMLS_SCHEMA@.MRCONSO mc on mc.cui = c.cui and mc.str = c.word
 group by c.word
 ) s
 inner join
