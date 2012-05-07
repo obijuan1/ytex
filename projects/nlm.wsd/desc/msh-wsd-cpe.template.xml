@@ -3,13 +3,13 @@
     <collectionReader>
         <collectionIterator>
             <descriptor>
-                <import name="ytex.uima.annotators.DBConsumer"/>
+                <import location="@collectionreader.url@"/>
             </descriptor>
             <configurationParameterSettings>
                 <nameValuePair>
                     <name>queryGetDocumentKeys</name>
                     <value>
-                        <string>select instance_id from msh_wsd w left join document d on d.uid = w.instance_id and d.analysis_batch = 'msh.wsd' where d.document_id is null and ((instance_id % @kernel.threads@ + 1) = @kernel.slice@)</string>
+                        <string>select w.instance_id from msh_wsd w left join document d on d.instance_id = w.instance_id and d.analysis_batch = 'msh.wsd' where d.document_id is null and ((w.instance_id % @kernel.threads@ + 1) = @kernel.slice@)</string>
                     </value>
                 </nameValuePair>
                 <nameValuePair>
