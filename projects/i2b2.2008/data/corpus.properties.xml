@@ -13,12 +13,6 @@
 	<entry key="ytex.conceptSetName">ctakes</entry>
 	<entry key="ytex.conceptGraphName">rbpar</entry>
 	<entry key="ytex.parentConceptTopThreshold">50</entry>
-	<entry key="ytex.conceptGraphQuery"><![CDATA[
-	select cui1, cui2 
-	from umls.MRREL 
-	where sab in ('RXNORM', 'SNOMEDCT', 'SRC')
-	and rel in ('PAR', 'RB')
-	]]></entry>
 	<entry key="instanceClassQuery"><![CDATA[
 	select d.instance_id, a.class, 1, a.label
 	from corpus_doc d
@@ -38,7 +32,7 @@ from
         on a.instance_id = d.instance_id 
         and a.corpus_name = d.corpus_name    
 	inner join ytex.document yd 
-        on yd.uid = d.instance_id 
+        on yd.instance_id = d.instance_id 
         and yd.analysis_batch = d.corpus_name
 	inner join ytex.anno_base ac 
         on ac.document_id = yd.document_id

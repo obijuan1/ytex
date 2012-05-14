@@ -65,6 +65,8 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<property name="maxMemory" value="1500m" />
+	
+	<target name="setup.all2" description="annotate corpus, compute infogain" depends="setup.tfidf,eval.infogain,setup.generateConceptGraph,InfoContentEvaluator,ImputedFeatureEvaluator,setup.generateFolds" />
 
 	<target name="setup.all" description="annotate corpus, compute infogain" depends="setup.build.i2b2,setup.load.i2b2,setup.v_i2b2_fword_lookup,RunCPE.all,setup.tfidf,eval.infogain,setup.generateConceptGraph,InfoContentEvaluator,ImputedFeatureEvaluator,setup.generateFolds" />
 	<target name="cv.all" description="cross validate all experiments on training set">
@@ -73,7 +75,7 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 		<antcall target="cv.exp.all">
 			<param name="kernel.experiment" value="cui" />
 		</antcall>
-		<antcall target="tree.export"/>
+		<antcall target="tree.export" />
 		<antcall target="cv.kern.all">
 			<param name="kernel.experiment" value="lin" />
 		</antcall>
@@ -118,6 +120,11 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 		</java>
 	</target>
 	<target name="setup.v_i2b2_fword_lookup" description="load i2b2 docs and annotations">
+		<copy file="${basedir}/data/v_i2b2_fword_lookup.template.sql" tofile="${basedir}/data/v_i2b2_fword_lookup.sql" overwrite="yes">
+			<filterset>
+				<filter token="UMLS_SCHEMA" value="${umls.prefix}" />
+			</filterset>
+		</copy>
 		<antcall target="mysql">
 			<param name="mysql.dir" value="${basedir}/data" />
 			<param name="mysql.script" value="v_i2b2_fword_lookup.sql" />
@@ -183,9 +190,14 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 	</target>
 	<target name="setup.generateConceptGraph" description="generate concept graph used to impute infogain">
 		<mkdir dir="${ytex.conceptGraphDir}" />
+		<copy file="${basedir}/data/rbpar.template.xml" tofile="${basedir}/data/rbpar.xml" overwrite="yes">
+			<filterset>
+				<filter token="UMLS_SCHEMA" value="${umls.prefix}" />
+			</filterset>
+		</copy>
 		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data" failonerror="yes">
 			<arg value="-prop" />
-			<arg value="corpus.properties.xml" />
+			<arg value="rbpar.xml" />
 			<jvmarg value="-Xmx1g" />
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
@@ -231,6 +243,7 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 		<property name="kernel.algo" value="libsvm" />
 		<property name="kernel.export.dir" value="${basedir}/${kernel.algo}/${kernel.experiment}" />
 		<filterset id="exp.filter">
+			<filter token="kernel.algo" value="${kernel.algo}" />
 			<filter token="kernel.name" value="${kernel.name}" />
 			<filter token="kernel.experiment" value="${kernel.experiment}" />
 			<filter token="kernel.hzv.experiment" value="${kernel.hzv.experiment}" />

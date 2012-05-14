@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.conceptGraphName">rbpar</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+	select cui1, cui2 
+	from @UMLS_SCHEMA@.MRREL 
+	where sab in ('RXNORM', 'SNOMEDCT', 'SRC')
+	and rel in ('PAR', 'RB')
+	]]></entry>
+</properties>

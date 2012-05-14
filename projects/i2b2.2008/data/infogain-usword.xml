@@ -21,7 +21,7 @@ where doc.corpus_name = 'i2b2.2008'
 select instance_id, covered_text, 1
 from
 (
-    select distinct doc.instance_id, lower(covered_text) covered_text
+    select distinct doc.instance_id, lower(coveredtext) covered_text
     from corpus_doc doc
     inner join corpus_label l 
         on doc.instance_id = l.instance_id
@@ -29,13 +29,15 @@ from
 	      and l.label = :label
     /* get ytex document */
     inner join document yd 
-        on yd.uid = doc.instance_id
+        on yd.instance_id = doc.instance_id
         and yd.analysis_batch = doc.corpus_name
     /* get words in document */
     inner join anno_base ab 
         on ab.document_id = yd.document_id
         and ab.uima_type_id = 26
-        and covered_text is not null
+    inner join anno_token t
+    	on t.anno_base_id = ab.anno_base_id 
+        and coveredtext is not null
     where doc.doc_group = 'train'
         and doc.corpus_name = 'i2b2.2008'
 ) s	

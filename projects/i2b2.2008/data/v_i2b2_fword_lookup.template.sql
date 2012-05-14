@@ -11,12 +11,12 @@ create table v_i2b2_fword_lookup (
 insert into v_i2b2_fword_lookup
 select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
 from umls_aui_fword c
-inner join umls.MRCONSO mrc on c.aui = mrc.aui
+inner join @UMLS_SCHEMA@.MRCONSO mrc on c.aui = mrc.aui
 where  mrc.SAB in ('RXNORM', 'SNOMEDCT', 'SRC', 'MTH', 'MSH', 'CSP', 'MEDLINEPLUS', 'MEDCIN')
 and exists
 (
 	select *
-	from umls.MRSTY sty
+	from @UMLS_SCHEMA@.MRSTY sty
 	where mrc.cui = sty.cui
 	and sty.tui in
 	(
