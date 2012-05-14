@@ -3,13 +3,13 @@
     <collectionReader>
         <collectionIterator>
             <descriptor>
-                <import location="../../config/desc/ytex/uima/cpe/FileSystemCollectionReader.xml"/>
+                <import name="ytex.uima.cpe.FileSystemCollectionReader"/>
             </descriptor>
             <configurationParameterSettings>
                 <nameValuePair>
                     <name>InputDirectory</name>
                     <value>
-                        <string>abstracts</string>
+                        <string>examples/pubmed/abstracts</string>
                     </value>
                 </nameValuePair>
             </configurationParameterSettings>
@@ -18,7 +18,7 @@
     <casProcessors casPoolSize="3" processingUnitThreadCount="1">
         <casProcessor deployment="integrated" name="AggregateAllAnnotation">
             <descriptor>
-                <import location="../../config/desc/ytex/uima/YTEXPipelineWSD.xml"/>
+                <import name="ytex.uima.YTEXPipelineWSD"/>
             </descriptor>
             <deploymentParameters/>
             <errorHandling>
