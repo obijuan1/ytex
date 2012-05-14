@@ -64,11 +64,11 @@
 		insert into AnnotationContainmentLink (parentAnnotationId, parentUimaTypeId, childAnnotationId, childUimaTypeId)
 		select p.documentAnnotationID, p.uimaType.uimaTypeID, c.documentAnnotationID, c.uimaType.uimaTypeID
 		from DocumentAnnotation p, DocumentAnnotation c
-		where p.document.documentID = c.document.documentID
-		and p.begin <= c.begin
+		where p.begin <= c.begin
 		and p.end >= c.end
 		and p.documentAnnotationID <> c.documentAnnotationID
 		and not (p.begin = c.begin and p.end = c.end and p.uimaType.uimaTypeID = c.uimaType.uimaTypeID)
 		and p.document.documentID = :documentID
+		and c.document.documentID = :documentID
 	]]></query>
 </hibernate-mapping>
