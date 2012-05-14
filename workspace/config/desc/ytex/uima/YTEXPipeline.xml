@@ -1,271 +1,331 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <analysisEngineDescription xmlns="http://uima.apache.org/resourceSpecifier">
-  <frameworkImplementation>org.apache.uima.java</frameworkImplementation>
-  <primitive>false</primitive>
-  <delegateAnalysisEngineSpecifiers>
-    <delegateAnalysisEngine key="TokenizerAnnotator">
-      <import name="coredesc.analysis_engine.TokenizerAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="ContextDependentTokenizerAnnotator">
-      <import name="cdtdesc.analysis_engine.ContextDependentTokenizerAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="StatusAnnotator">
-      <import name="necontextdesc.analysis_engine.StatusAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="NegationAnnotator">
-      <import name="ytex.uima.annotators.NegexAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="SegmentRegexAnnotator">
-      <import name="ytex.uima.annotators.SegmentRegexAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="SentenceDetectorAnnotator">
-      <import name="ytex.uima.annotators.SentenceDetectorAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="AdjustNounPhraseToIncludeFollowingNP">
-      <import name="chunkerdesc.analysis_engine.AdjustNounPhraseToIncludeFollowingNP"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="AdjustNounPhraseToIncludeFollowingPPNP">
-      <import name="chunkerdesc.analysis_engine.AdjustNounPhraseToIncludeFollowingPPNP"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="POSTagger">
-      <import name="posdesc.analysis_engine.POSTagger"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="Chunker">
-      <import name="chunkerdesc.analysis_engine.Chunker"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="DateAnnotator">
-      <import name="ytex.uima.annotators.DateAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="ExtractionPrepAnnotator">
-      <import name="cdpdesc.analysis_engine.ExtractionPrepAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="LookupWindowAnnotator">
-      <import name="cdpdesc.analysis_engine.LookupWindowAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="NamedEntityRegexAnnotator">
-      <import name="ytex.uima.annotators.NamedEntityRegexAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="DictionaryLookupAnnotator">
-      <import name="ytex.uima.annotators.DictionaryLookupAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="LvgAnnotator">
-      <import name="lvgdesc.analysis_engine.LvgAnnotator"/>
-    </delegateAnalysisEngine>
-    <delegateAnalysisEngine key="DBConsumer">
-      <import name="ytex.uima.annotators.DBConsumer"/>
-    </delegateAnalysisEngine>
-  </delegateAnalysisEngineSpecifiers>
-  <analysisEngineMetaData>
-    <name>YTEXPipeline</name>
-    <description>ctakes AggregatePlaintextUMLSProcessor with following
+	<frameworkImplementation>org.apache.uima.java</frameworkImplementation>
+	<primitive>false</primitive>
+	<delegateAnalysisEngineSpecifiers>
+		<delegateAnalysisEngine key="TokenizerAnnotator">
+			<import name="coredesc.analysis_engine.TokenizerAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="ContextDependentTokenizerAnnotator">
+			<import name="cdtdesc.analysis_engine.ContextDependentTokenizerAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="StatusAnnotator">
+			<import name="necontextdesc.analysis_engine.StatusAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="NegationAnnotator">
+			<import name="ytex.uima.annotators.NegexAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="SegmentRegexAnnotator">
+			<import name="ytex.uima.annotators.SegmentRegexAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="SentenceDetectorAnnotator">
+			<import name="ytex.uima.annotators.SentenceDetectorAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="AdjustNounPhraseToIncludeFollowingNP">
+			<import
+				name="chunkerdesc.analysis_engine.AdjustNounPhraseToIncludeFollowingNP" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="AdjustNounPhraseToIncludeFollowingPPNP">
+			<import
+				name="chunkerdesc.analysis_engine.AdjustNounPhraseToIncludeFollowingPPNP" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="POSTagger">
+			<import name="posdesc.analysis_engine.POSTagger" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="Chunker">
+			<import name="chunkerdesc.analysis_engine.Chunker" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="DateAnnotator">
+			<import name="ytex.uima.annotators.DateAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="ExtractionPrepAnnotator">
+			<import name="cdpdesc.analysis_engine.ExtractionPrepAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="LookupWindowAnnotator">
+			<import name="cdpdesc.analysis_engine.LookupWindowAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="NamedEntityRegexAnnotator">
+			<import name="ytex.uima.annotators.NamedEntityRegexAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="DictionaryLookupAnnotator">
+			<import name="ytex.uima.annotators.DictionaryLookupAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="LvgAnnotator">
+			<import name="lvgdesc.analysis_engine.LvgAnnotator" />
+		</delegateAnalysisEngine>
+		<delegateAnalysisEngine key="DBConsumer">
+			<import name="ytex.uima.annotators.DBConsumer" />
+		</delegateAnalysisEngine>
+	</delegateAnalysisEngineSpecifiers>
+	<analysisEngineMetaData>
+		<name>YTEXPipeline</name>
+		<description>ctakes AggregatePlaintextUMLSProcessor with following
 			changes: Replaced cTAKES NegationAnnotator with YTEX NegexAnnotator,
 			replaced cTAKES SimpleSegment with YTEX SegmentRegexAnnotator.
 			Reconfigured DictionaryLookup to use YTEX dictionary.
-			Added DateAnnotator, NamedEntityRegexAnnotator, DBConsumer</description>
-    <version/>
-    <vendor/>
-    <configurationParameters searchStrategy="language_fallback">
-      <configurationParameter>
-        <name>ChunkCreatorClass</name>
-        <type>String</type>
-        <multiValued>false</multiValued>
-        <mandatory>true</mandatory>
-        <overrides>
-          <parameter>Chunker/ChunkCreatorClass</parameter>
-        </overrides>
-      </configurationParameter>
-      <configurationParameter>
-        <name>xmiOutputDirectory</name>
-        <type>String</type>
-        <multiValued>false</multiValued>
-        <mandatory>false</mandatory>
-        <overrides>
-          <parameter>DBConsumer/xmiOutputDirectory</parameter>
-        </overrides>
-      </configurationParameter>
-      <configurationParameter>
-        <name>analysisBatch</name>
-        <type>String</type>
-        <multiValued>false</multiValued>
-        <mandatory>false</mandatory>
-        <overrides>
-          <parameter>DBConsumer/analysisBatch</parameter>
-        </overrides>
-      </configurationParameter>
-      <configurationParameter>
-        <name>storeDocText</name>
-        <type>Boolean</type>
-        <multiValued>false</multiValued>
-        <mandatory>false</mandatory>
-        <overrides>
-          <parameter>DBConsumer/storeDocText</parameter>
-        </overrides>
-      </configurationParameter>
-      <configurationParameter>
-        <name>storeCAS</name>
-        <type>Boolean</type>
-        <multiValued>false</multiValued>
-        <mandatory>false</mandatory>
-        <overrides>
-          <parameter>DBConsumer/storeCAS</parameter>
-        </overrides>
-      </configurationParameter>
-      <configurationParameter>
-        <name>typesToIgnore</name>
-        <description>uima types (fully qualified class names) that should
-					not be saved in the database.</description>
-        <type>String</type>
-        <multiValued>true</multiValued>
-        <mandatory>false</mandatory>
-        <overrides>
-          <parameter>DBConsumer/typesToIgnore</parameter>
-        </overrides>
-      </configurationParameter>
-    </configurationParameters>
-    <configurationParameterSettings>
-      <nameValuePair>
-        <name>ChunkCreatorClass</name>
-        <value>
-          <string>edu.mayo.bmi.uima.chunker.PhraseTypeChunkCreator</string>
-        </value>
-      </nameValuePair>
-      <nameValuePair>
-        <name>xmiOutputDirectory</name>
-        <value>
-          <string/>
-        </value>
-      </nameValuePair>
-      <nameValuePair>
-        <name>analysisBatch</name>
-        <value>
-          <string>test</string>
-        </value>
-      </nameValuePair>
-      <nameValuePair>
-        <name>storeDocText</name>
-        <value>
-          <boolean>true</boolean>
-        </value>
-      </nameValuePair>
-      <nameValuePair>
-        <name>storeCAS</name>
-        <value>
-          <boolean>true</boolean>
-        </value>
-      </nameValuePair>
-      <nameValuePair>
-        <name>typesToIgnore</name>
-        <value>
-          <array>
-            <string>edu.mayo.bmi.uima.core.type.ContractionToken</string>
-            <string>edu.mayo.bmi.uima.core.type.NewlineToken</string>
-            <string>edu.mayo.bmi.uima.core.type.PunctuationToken</string>
-            <string>edu.mayo.bmi.uima.core.type.SymbolToken</string>
-            <string>edu.mayo.bmi.uima.cdt.type.RomanNumeralAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.DateAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.FractionAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.MeasurementAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.PersonTitleAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.RangeAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.TimeAnnotation</string>
-            <string>edu.mayo.bmi.uima.chunker.type.NP</string>
-            <string>edu.mayo.bmi.uima.chunker.type.VP</string>
-          </array>
-        </value>
-      </nameValuePair>
-    </configurationParameterSettings>
-    <flowConstraints>
-      <fixedFlow>
-        <node>SegmentRegexAnnotator</node>
-        <node>SentenceDetectorAnnotator</node>
-        <node>TokenizerAnnotator</node>
-        <node>LvgAnnotator</node>
-        <node>ContextDependentTokenizerAnnotator</node>
-        <node>POSTagger</node>
-        <node>Chunker</node>
-        <node>AdjustNounPhraseToIncludeFollowingNP</node>
-        <node>AdjustNounPhraseToIncludeFollowingPPNP</node>
-        <node>LookupWindowAnnotator</node>
-        <node>DictionaryLookupAnnotator</node>
-        <node>NamedEntityRegexAnnotator</node>
-        <node>StatusAnnotator</node>
-        <node>NegationAnnotator</node>
-        <node>DateAnnotator</node>
-        <node>ExtractionPrepAnnotator</node>
-        <node>DBConsumer</node>
-      </fixedFlow>
-    </flowConstraints>
-    <typePriorities>
-      <name>Ordering</name>
-      <description>For subiterator</description>
-      <version>1.0</version>
-      <priorityList>
-        <type>edu.mayo.bmi.uima.core.type.Segment</type>
-        <type>edu.mayo.bmi.uima.core.type.Sentence</type>
-        <type>edu.mayo.bmi.uima.core.type.BaseToken</type>
-      </priorityList>
-      <priorityList>
-        <type>edu.mayo.bmi.uima.core.type.Sentence</type>
-        <type>edu.mayo.bmi.uima.core.type.NamedEntity</type>
-      </priorityList>
-    </typePriorities>
-    <fsIndexCollection/>
-    <capabilities>
-      <capability>
-        <inputs/>
-        <outputs>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NewlineToken</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NamedEntity</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.WordToken</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.VP</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.UmlsConcept</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.UCP</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.TimeAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.SymbolToken</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Sentence</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Segment</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.SBAR</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.RomanNumeralAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.RangeAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.PunctuationToken</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Property</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Properties</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.PersonTitleAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.PRT</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.PP</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.OntologyConcept</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NumToken</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.NP</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.MeasurementAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Lemma</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.LST</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.IdentifiedAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.INTJ</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.FractionAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.DocumentID</type>
-          <type allAnnotatorFeatures="true">uima.tcas.DocumentAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.DateAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.CopySrcAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.CopyDestAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.ContractionToken</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.context.type.ContextAnnotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.Chunk</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.CONJP</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.BaseToken</type>
-          <type allAnnotatorFeatures="true">uima.cas.AnnotationBase</type>
-          <type allAnnotatorFeatures="true">uima.tcas.Annotation</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.ADVP</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.ADJP</type>
-        </outputs>
-        <languagesSupported/>
-      </capability>
-    </capabilities>
-    <operationalProperties>
-      <modifiesCas>true</modifiesCas>
-      <multipleDeploymentAllowed>true</multipleDeploymentAllowed>
-      <outputsNewCASes>false</outputsNewCASes>
-    </operationalProperties>
-  </analysisEngineMetaData>
-  <resourceManagerConfiguration/>
+			Added
+			DateAnnotator, NamedEntityRegexAnnotator, DBConsumer
+		</description>
+		<version />
+		<vendor />
+		<configurationParameters searchStrategy="language_fallback">
+			<configurationParameter>
+				<name>ChunkCreatorClass</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>true</mandatory>
+				<overrides>
+					<parameter>Chunker/ChunkCreatorClass</parameter>
+				</overrides>
+			</configurationParameter>
+			<configurationParameter>
+				<name>xmiOutputDirectory</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>DBConsumer/xmiOutputDirectory</parameter>
+				</overrides>
+			</configurationParameter>
+			<configurationParameter>
+				<name>analysisBatch</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>DBConsumer/analysisBatch</parameter>
+				</overrides>
+			</configurationParameter>
+			<configurationParameter>
+				<name>storeDocText</name>
+				<type>Boolean</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>DBConsumer/storeDocText</parameter>
+				</overrides>
+			</configurationParameter>
+			<configurationParameter>
+				<name>storeCAS</name>
+				<type>Boolean</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>DBConsumer/storeCAS</parameter>
+				</overrides>
+			</configurationParameter>
+			<configurationParameter>
+				<name>typesToIgnore</name>
+				<description>uima types (fully qualified class names) that should
+					not be saved in the database.
+				</description>
+				<type>String</type>
+				<multiValued>true</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>DBConsumer/typesToIgnore</parameter>
+				</overrides>
+			</configurationParameter>
+			<configurationParameter>
+				<name>insertAnnotationContainmentLinks</name>
+				<type>Boolean</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>DBConsumer/insertAnnotationContainmentLinks</parameter>
+				</overrides>
+			</configurationParameter>
+		</configurationParameters>
+		<configurationParameterSettings>
+			<nameValuePair>
+				<name>ChunkCreatorClass</name>
+				<value>
+					<string>edu.mayo.bmi.uima.chunker.PhraseTypeChunkCreator</string>
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>xmiOutputDirectory</name>
+				<value>
+					<string />
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>analysisBatch</name>
+				<value>
+					<string>test</string>
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>storeDocText</name>
+				<value>
+					<boolean>true</boolean>
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>storeCAS</name>
+				<value>
+					<boolean>true</boolean>
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>typesToIgnore</name>
+				<value>
+					<array>
+						<string>edu.mayo.bmi.uima.core.type.ContractionToken</string>
+						<string>edu.mayo.bmi.uima.core.type.NewlineToken</string>
+						<string>edu.mayo.bmi.uima.core.type.PunctuationToken</string>
+						<string>edu.mayo.bmi.uima.core.type.SymbolToken</string>
+						<string>edu.mayo.bmi.uima.cdt.type.RomanNumeralAnnotation</string>
+						<string>edu.mayo.bmi.uima.cdt.type.DateAnnotation</string>
+						<string>edu.mayo.bmi.uima.cdt.type.FractionAnnotation</string>
+						<string>edu.mayo.bmi.uima.cdt.type.MeasurementAnnotation</string>
+						<string>edu.mayo.bmi.uima.cdt.type.PersonTitleAnnotation</string>
+						<string>edu.mayo.bmi.uima.cdt.type.RangeAnnotation</string>
+						<string>edu.mayo.bmi.uima.cdt.type.TimeAnnotation</string>
+						<string>edu.mayo.bmi.uima.chunker.type.NP</string>
+						<string>edu.mayo.bmi.uima.chunker.type.VP</string>
+					</array>
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>insertAnnotationContainmentLinks</name>
+				<value>
+					<boolean>true</boolean>
+				</value>
+			</nameValuePair>
+		</configurationParameterSettings>
+		<flowConstraints>
+			<fixedFlow>
+				<node>SegmentRegexAnnotator</node>
+				<node>SentenceDetectorAnnotator</node>
+				<node>TokenizerAnnotator</node>
+				<node>LvgAnnotator</node>
+				<node>ContextDependentTokenizerAnnotator</node>
+				<node>POSTagger</node>
+				<node>Chunker</node>
+				<node>AdjustNounPhraseToIncludeFollowingNP</node>
+				<node>AdjustNounPhraseToIncludeFollowingPPNP</node>
+				<node>LookupWindowAnnotator</node>
+				<node>DictionaryLookupAnnotator</node>
+				<node>NamedEntityRegexAnnotator</node>
+				<node>StatusAnnotator</node>
+				<node>NegationAnnotator</node>
+				<node>DateAnnotator</node>
+				<node>ExtractionPrepAnnotator</node>
+				<node>DBConsumer</node>
+			</fixedFlow>
+		</flowConstraints>
+		<typePriorities>
+			<name>Ordering</name>
+			<description>For subiterator</description>
+			<version>1.0</version>
+			<priorityList>
+				<type>edu.mayo.bmi.uima.core.type.Segment</type>
+				<type>edu.mayo.bmi.uima.core.type.Sentence</type>
+				<type>edu.mayo.bmi.uima.core.type.BaseToken</type>
+			</priorityList>
+			<priorityList>
+				<type>edu.mayo.bmi.uima.core.type.Sentence</type>
+				<type>edu.mayo.bmi.uima.core.type.NamedEntity</type>
+			</priorityList>
+		</typePriorities>
+		<fsIndexCollection />
+		<capabilities>
+			<capability>
+				<inputs />
+				<outputs>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NewlineToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NamedEntity
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.WordToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.VP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.UmlsConcept
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.UCP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.TimeAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.SymbolToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Sentence
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Segment
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.SBAR
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.RomanNumeralAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.RangeAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.PunctuationToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Property
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Properties
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.PersonTitleAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.PRT
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.PP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.OntologyConcept
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NumToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.NP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.MeasurementAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Lemma
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.LST
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.IdentifiedAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.INTJ
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.FractionAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.DocumentID
+					</type>
+					<type allAnnotatorFeatures="true">uima.tcas.DocumentAnnotation</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.cdt.type.DateAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.CopySrcAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.CopyDestAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.ContractionToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.context.type.ContextAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.Chunk
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.CONJP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.BaseToken
+					</type>
+					<type allAnnotatorFeatures="true">uima.cas.AnnotationBase</type>
+					<type allAnnotatorFeatures="true">uima.tcas.Annotation</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.ADVP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.chunker.type.ADJP
+					</type>
+				</outputs>
+				<languagesSupported />
+			</capability>
+		</capabilities>
+		<operationalProperties>
+			<modifiesCas>true</modifiesCas>
+			<multipleDeploymentAllowed>true</multipleDeploymentAllowed>
+			<outputsNewCASes>false</outputsNewCASes>
+		</operationalProperties>
+	</analysisEngineMetaData>
+	<resourceManagerConfiguration />
 </analysisEngineDescription>
