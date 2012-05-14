@@ -33,6 +33,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Strings;
+
 /**
  * A span of text and its offsets within some larger text
  */
@@ -52,7 +54,7 @@ public class SentenceSpan {
 		String strPeriodPattern = "(?m)[^Dr|Ms|Mr|Mrs|Ms|\\p{Upper}]\\.\\s+\\p{Upper}";
 		// String strSplitPattern =
 		// "(?im)\\n[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]|[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]\\s*\\r{0,1}\\n|\\r{0,1}\\n{0,1}[^:\\r\\n]{3,20}\\:[^\\r\\n]{3,20}\\r{0,1}\\n|\\n\\d{1,2}\\.\\s+";
-		String strSplitPattern = "(?im)\\n[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]|[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]\\s*\\r{0,1}\\n|^[^:\\r\\n]{3,20}\\:[^\\r\\n]{3,20}$";
+		String strSplitPattern = "(?im)\\n[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]|[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]\\s*\\r{0,1}\\n|^[^:\\r\\n]{3,20}\\:[^\\r\\n]{3,20}$|:\\r{0,1}\\n|\\r{0,1}\\n\\r{0,1}\\n";
 		InputStream ytexPropsIn = null;
 		try {
 			ytexPropsIn = SentenceSpan.class
@@ -75,7 +77,8 @@ public class SentenceSpan {
 			}
 		}
 		periodPattern = Pattern.compile(strPeriodPattern);
-		splitPattern = Pattern.compile(strSplitPattern);
+		splitPattern = Strings.isNullOrEmpty(strSplitPattern) ? null : Pattern
+				.compile(strSplitPattern);
 	}
 
 	private int start; // offset of text within larger text
@@ -220,30 +223,31 @@ public class SentenceSpan {
 			return subspans;
 		}
 
-//		// Split into multiple sentences if contains end-of-line characters
-//		// or return just one sentence if no end-of-line characters are within
-//		// the trimmed string
-//		String spans[] = coveredText.split(separatorPattern);
-//		int position = start;
-//		for (String s : spans) {
-//			String t = s.trim();
-//			if (t.length() > 0) {
-//				positionOfNonWhiteSpace = s.indexOf(t.charAt(0));
-//			} else {
-//				positionOfNonWhiteSpace = 0;
-//			}
-//			// Might have trimmed off some at the beginning of the sentences
-//			// other than the 1st (#0)
-//			position += positionOfNonWhiteSpace; // sf Bugs artifact 3083903:
-//													// For _each_ sentence,
-//													// advance past any spaces
-//													// at beginning of line
-//			subspans.add(new SentenceSpan(position, position + t.length(), t));
-//			position += (s.length() - positionOfNonWhiteSpace + separatorPattern
-//					.length());
-//		}
-//
-//		return subspans;
+		// // Split into multiple sentences if contains end-of-line characters
+		// // or return just one sentence if no end-of-line characters are
+		// within
+		// // the trimmed string
+		// String spans[] = coveredText.split(separatorPattern);
+		// int position = start;
+		// for (String s : spans) {
+		// String t = s.trim();
+		// if (t.length() > 0) {
+		// positionOfNonWhiteSpace = s.indexOf(t.charAt(0));
+		// } else {
+		// positionOfNonWhiteSpace = 0;
+		// }
+		// // Might have trimmed off some at the beginning of the sentences
+		// // other than the 1st (#0)
+		// position += positionOfNonWhiteSpace; // sf Bugs artifact 3083903:
+		// // For _each_ sentence,
+		// // advance past any spaces
+		// // at beginning of line
+		// subspans.add(new SentenceSpan(position, position + t.length(), t));
+		// position += (s.length() - positionOfNonWhiteSpace + separatorPattern
+		// .length());
+		// }
+		//
+		// return subspans;
 		// If there is any leading or trailing whitespace, determine position of
 		// the trimmed section
 		int trimmedStart = start;
@@ -336,35 +340,40 @@ public class SentenceSpan {
 	 */
 	public List<SentenceSpan> splitSubspans(List<SentenceSpan> subspans) {
 		List<SentenceSpan> splitSubspans = new ArrayList<SentenceSpan>();
-		// Split into multiple sentences if contains end-of-line characters
-		// or return just one sentence if no end-of-line characters are within
-		// the trimmed string
-		for (SentenceSpan span : subspans) {
-			String trimmedText = span.getText();
-			Matcher matcher = splitPattern.matcher(trimmedText);
-			boolean bSplit = false;
-			int position = span.getStart();
-			int currentStartPos = 0;
-			while (matcher.find()) {
-				bSplit = true;
-				if (matcher.start() > currentStartPos) {
-					String t = trimmedText.substring(currentStartPos,
-							matcher.start());
-					splitSubspans.add(new SentenceSpan(position
-							+ currentStartPos, position + currentStartPos
-							+ t.length(), t));
-					currentStartPos += t.length();
+		if (splitPattern == null) {
+			splitSubspans.addAll(subspans);
+		} else {
+			// Split into multiple sentences if contains end-of-line characters
+			// or return just one sentence if no end-of-line characters are
+			// within
+			// the trimmed string
+			for (SentenceSpan span : subspans) {
+				String trimmedText = span.getText();
+				boolean bSplit = false;
+				Matcher matcher = splitPattern.matcher(trimmedText);
+				int position = span.getStart();
+				int currentStartPos = 0;
+				while (matcher.find()) {
+					bSplit = true;
+					if (matcher.start() > currentStartPos) {
+						String t = trimmedText.substring(currentStartPos,
+								matcher.start());
+						splitSubspans.add(new SentenceSpan(position
+								+ currentStartPos, position + currentStartPos
+								+ t.length(), t));
+						currentStartPos += t.length();
+					}
 				}
+				if (bSplit) {
+					if (currentStartPos < trimmedText.length()) {
+						String t = trimmedText.substring(currentStartPos);
+						splitSubspans.add(new SentenceSpan(position
+								+ currentStartPos, position + currentStartPos
+								+ t.length(), t));
+					}
+				} else
+					splitSubspans.add(span);
 			}
-			if (bSplit) {
-				if (currentStartPos < trimmedText.length()) {
-					String t = trimmedText.substring(currentStartPos);
-					splitSubspans.add(new SentenceSpan(position
-							+ currentStartPos, position + currentStartPos
-							+ t.length(), t));
-				}
-			} else
-				splitSubspans.add(span);
 		}
 		return splitSubspans;
 	}

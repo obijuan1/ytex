@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -192,11 +191,13 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				Types.INTEGER));
 	}
 	private Set<AnnoMappingInfo> annoMappingInfos;
+	private int batchSize = 100;
 	private DataSource dataSource;
 	private String dbSchema;
 	private String dbType;
 	private Dialect dialect;
 	private String dialectClassName;
+
 	private CaseInsensitiveMap docTableCols = new CaseInsensitiveMap();
 
 	private String formattedTableName = null;
@@ -204,8 +205,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	private JdbcTemplate jdbcTemplate;
 
 	private Map<String, AnnoMappingInfo> mapAnnoMappingInfo = new HashMap<String, AnnoMappingInfo>();
-
 	private SessionFactory sessionFactory;
+
 	private ThreadLocal<Map<String, AnnoMappingInfo>> tl_mapAnnoMappingInfo = new ThreadLocal<Map<String, AnnoMappingInfo>>() {
 
 		@Override
@@ -225,7 +226,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		}
 
 	};
-
 	private PlatformTransactionManager transactionManager;
 	private Map<String, UimaType> uimaTypeMap = new HashMap<String, UimaType>();
 	private Properties ytexProperties;
@@ -441,6 +441,10 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 
 	public Set<AnnoMappingInfo> getAnnoMappingInfos() {
 		return annoMappingInfos;
+	}
+
+	public int getBatchSize() {
+		return batchSize;
 	}
 
 	public DataSource getDataSource() {
@@ -745,6 +749,22 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		return mapInfo;
 	}
 
+	/**
+	 * insert annotation containment links.
+	 * 
+	 * @param documentId
+	 */
+	private void insertAnnotationContainmentLinks(int documentId) {
+		if (log.isTraceEnabled())
+			log.trace("begin insertAnnotationContainmentLinks");
+		Query q = sessionFactory.getCurrentSession().getNamedQuery(
+				"insertAnnotationContainmentLinks");
+		q.setInteger("documentID", documentId);
+		q.executeUpdate();
+		if (log.isTraceEnabled())
+			log.trace("end insertAnnotationContainmentLinks");
+	}
+
 	private BiMap<Annotation, Integer> saveAnnoBase(final JCas jcas,
 			final Set<String> setTypesToIgnore, final int docId) {
 		final AnnotationIndex<Annotation> annoIdx = jcas
@@ -819,6 +839,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		List<Annotation> listAnno = new ArrayList<Annotation>(annoIdx.size());
 		Map<Annotation, DocumentAnnotation> mapAnnoToHib = new HashMap<Annotation, DocumentAnnotation>();
 		FSIterator<Annotation> annoIterator = annoIdx.iterator();
+		int count = 0;
 		// iterate over annotations and save them
 		while (annoIterator.hasNext()) {
 			Annotation anno = (Annotation) annoIterator.next();
@@ -833,6 +854,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				hibAnno.setEnd(anno.getEnd());
 				hibAnno.setUimaType(uimaTypeMap.get(annoClass));
 				sessionFactory.getCurrentSession().save(hibAnno);
+				if (++count % batchSize == 0)
+					sessionFactory.getCurrentSession().flush();
 				doc.getDocumentAnnotations().add(hibAnno);
 				mapAnnoToHib.put(anno, hibAnno);
 			}
@@ -846,22 +869,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		if (log.isTraceEnabled())
 			log.trace("end saveAnnoBaseHib");
 		return mapAnnoToId;
-	}
-
-	/**
-	 * insert annotation containment links.
-	 * 
-	 * @param documentId
-	 */
-	private void insertAnnotationContainmentLinks(int documentId) {
-		if (log.isTraceEnabled())
-			log.trace("begin insertAnnotationContainmentLinks");
-		Query q = sessionFactory.getCurrentSession().getNamedQuery(
-				"insertAnnotationContainmentLinks");
-		q.setInteger("documentID", documentId);
-		q.executeUpdate();
-		if (log.isTraceEnabled())
-			log.trace("end insertAnnotationContainmentLinks");
 	}
 
 	/**
@@ -960,23 +967,92 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		// don't know how to map this feature
 		if (mapInfo == null)
 			return;
-		jdbcTemplate.batchUpdate(mapInfo.getSql(),
-				new BatchPreparedStatementSetter() {
+		// int chunks = (int) Math.ceil((double) listFSA.size()
+		// / (double) this.batchSize);
+		// for (int i = 0; i < chunks; i++) {
+		// int start = i * this.batchSize;
+		// int end = (i + 1) * this.batchSize;
+		// if (end > listFSA.size())
+		// end = listFSA.size();
+		// final List<AnnoFSAttribute> chunkList = listFSA.subList(start, end);
+		// jdbcTemplate.batchUpdate(mapInfo.getSql(),
+		// new BatchPreparedStatementSetter() {
+		//
+		// @Override
+		// public int getBatchSize() {
+		// return chunkList.size();
+		// }
+		//
+		// @Override
+		// public void setValues(PreparedStatement ps, int idx)
+		// throws SQLException {
+		// AnnoFSAttribute fsa = chunkList.get(idx);
+		// // todo pass array index for storage
+		// saveAnnoBindVariables(type, mapInfo, ps,
+		// fsa.getAnnoBaseId(), fsa.getFs(),
+		// mapAnnoToId);
+		// }
+		// });
+		// }
+		chunkedBatchUpdate(mapInfo.getSql(), listFSA,
+				new ChunkPreparedStatementSetter<AnnoFSAttribute>() {
 
 					@Override
-					public int getBatchSize() {
-						return listFSA.size();
-					}
-
-					@Override
-					public void setValues(PreparedStatement ps, int idx)
-							throws SQLException {
-						AnnoFSAttribute fsa = listFSA.get(idx);
+					public void setValues(PreparedStatement ps, int idx,
+							AnnoFSAttribute fsa) throws SQLException {
 						// todo pass array index for storage
 						saveAnnoBindVariables(type, mapInfo, ps,
 								fsa.getAnnoBaseId(), fsa.getFs(), mapAnnoToId);
 					}
 				});
+	}
+
+	/**
+	 * @see #chunkedBatchUpdate
+	 * @author vijay
+	 * 
+	 * @param <T>
+	 */
+	public static interface ChunkPreparedStatementSetter<T> {
+		public abstract void setValues(PreparedStatement ps, int idx, T record)
+				throws SQLException;
+	}
+
+	/**
+	 * for the list l, perform l.size()/batchSize batch updates. Avoid mysql
+	 * packet too large exceptions with large batch updates. Call spring
+	 * jdbcTemplate.batchUpdate internally with sublists of l with size
+	 * batchSize.
+	 * 
+	 * @param sql
+	 * @param l
+	 * @param cpss
+	 */
+	private <T> void chunkedBatchUpdate(String sql, List<T> l,
+			final ChunkPreparedStatementSetter<T> cpss) {
+		int chunks = (int) Math.ceil((double) l.size()
+				/ (double) this.batchSize);
+		for (int i = 0; i < chunks; i++) {
+			int start = i * this.batchSize;
+			int end = (i + 1) * this.batchSize;
+			if (end > l.size())
+				end = l.size();
+			final List<T> chunkList = l.subList(start, end);
+			jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+
+				@Override
+				public int getBatchSize() {
+					return chunkList.size();
+				}
+
+				@Override
+				public void setValues(PreparedStatement ps, int idx)
+						throws SQLException {
+					T record = chunkList.get(idx);
+					cpss.setValues(ps, idx, record);
+				}
+			});
+		}
 	}
 
 	/**
@@ -987,27 +1063,42 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	private void saveAnnoLinks(final List<AnnoLink> listAnnoLinks) {
 		if (log.isTraceEnabled())
 			log.trace("begin saveAnnoLinks");
-		jdbcTemplate
-				.batchUpdate(
-						"insert into "
-								+ this.getTablePrefix()
-								+ "anno_link(parent_anno_base_id, child_anno_base_id, feature) values (?, ?, ?)",
-						new BatchPreparedStatementSetter() {
+		// jdbcTemplate
+		// .batchUpdate(
+		// "insert into "
+		// + this.getTablePrefix()
+		// +
+		// "anno_link(parent_anno_base_id, child_anno_base_id, feature) values (?, ?, ?)",
+		// new BatchPreparedStatementSetter() {
+		//
+		// @Override
+		// public int getBatchSize() {
+		// return listAnnoLinks.size();
+		// }
+		//
+		// @Override
+		// public void setValues(PreparedStatement ps, int idx)
+		// throws SQLException {
+		// AnnoLink l = listAnnoLinks.get(idx);
+		// ps.setInt(1, l.getParentAnnoBaseId());
+		// ps.setInt(2, l.getChildAnnoBaseId());
+		// ps.setString(3, l.getFeature());
+		// }
+		// });
+		chunkedBatchUpdate(
+				"insert into "
+						+ this.getTablePrefix()
+						+ "anno_link(parent_anno_base_id, child_anno_base_id, feature) values (?, ?, ?)",
+				listAnnoLinks, new ChunkPreparedStatementSetter<AnnoLink>() {
 
-							@Override
-							public int getBatchSize() {
-								return listAnnoLinks.size();
-							}
-
-							@Override
-							public void setValues(PreparedStatement ps, int idx)
-									throws SQLException {
-								AnnoLink l = listAnnoLinks.get(idx);
-								ps.setInt(1, l.getParentAnnoBaseId());
-								ps.setInt(2, l.getChildAnnoBaseId());
-								ps.setString(3, l.getFeature());
-							}
-						});
+					@Override
+					public void setValues(PreparedStatement ps, int idx,
+							AnnoLink l) throws SQLException {
+						ps.setInt(1, l.getParentAnnoBaseId());
+						ps.setInt(2, l.getChildAnnoBaseId());
+						ps.setString(3, l.getFeature());
+					}
+				});
 		if (log.isTraceEnabled())
 			log.trace("end saveAnnoLinks");
 	}
@@ -1032,9 +1123,11 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		if (annoIds.size() == 0)
 			return;
 		// covert to array for spring batch update
-		final Integer[] annoIdArray = annoIds.toArray(new Integer[] {});
+		// final Integer[] annoIdArray = annoIds.toArray(new Integer[] {});
+		final List<Integer> annoIdList = new ArrayList<Integer>(annoIds);
 		// get mappinginfo
-		final TOP t = mapIdToAnno.get(annoIdArray[0]);
+		// final TOP t = mapIdToAnno.get(annoIdArray[0]);
+		final TOP t = mapIdToAnno.get(annoIdList.get(0));
 		final Type type = t.getType();
 		final AnnoMappingInfo mapInfo = this.getMapInfo(t);
 		// get non primitive fields, insert them after inserting the annotation
@@ -1045,19 +1138,21 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		// don't know how to map this annotation
 		if (mapInfo == null)
 			return;
-		jdbcTemplate.batchUpdate(mapInfo.getSql(),
-				new BatchPreparedStatementSetter() {
+		// jdbcTemplate.batchUpdate(mapInfo.getSql(),
+		// new BatchPreparedStatementSetter() {
+		//
+		// @Override
+		// public int getBatchSize() {
+		// return annoIdArray.length;
+		// }
+		this.chunkedBatchUpdate(mapInfo.getSql(), annoIdList,
+				new ChunkPreparedStatementSetter<Integer>() {
 
 					@Override
-					public int getBatchSize() {
-						return annoIdArray.length;
-					}
-
-					@Override
-					public void setValues(PreparedStatement ps, int idx)
-							throws SQLException {
+					public void setValues(PreparedStatement ps, int idx,
+							Integer annoId) throws SQLException {
 						// get the entry
-						int annoId = annoIdArray[idx];
+						// int annoId = annoIdArray[idx];
 						Annotation anno = mapIdToAnno.get(annoId);
 						saveAnnoBindVariables(type, mapInfo, ps, annoId, anno,
 								mapAnnoToId);
@@ -1115,29 +1210,29 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 			log.trace("end saveAnnoPrimitive");
 	}
 
-	private void saveAnnotations(JCas jcas, Set<String> setTypesToIgnore,
-			int documentId) {
-		BiMap<Annotation, Integer> mapAnnoToId = saveAnnoBase(jcas,
-				setTypesToIgnore, documentId);
-		// split the annotations up by type
-		// create a map of class name to anno id
-		SetMultimap<String, Integer> mapTypeToAnnoId = HashMultimap.create();
-		for (Map.Entry<Annotation, Integer> annoEntry : mapAnnoToId.entrySet()) {
-			mapTypeToAnnoId.put(annoEntry.getKey().getClass().getName(),
-					annoEntry.getValue());
-		}
-		// allocate a list to store annotation links
-		List<AnnoLink> listAnnoLinks = new ArrayList<AnnoLink>();
-		// save annotation properties
-		for (String annoClass : mapTypeToAnnoId.keySet()) {
-			saveAnnoPrimitive(mapAnnoToId, mapTypeToAnnoId.get(annoClass),
-					listAnnoLinks);
-		}
-		addAnnoLinks(jcas, mapAnnoToId, listAnnoLinks);
-		// saveMarkablePairs(jcas, mapAnnoToId, listAnnoLinks);
-		// saveCoref(jcas, mapAnnoToId, listAnnoLinks);
-		saveAnnoLinks(listAnnoLinks);
-	}
+	// private void saveAnnotations(JCas jcas, Set<String> setTypesToIgnore,
+	// int documentId) {
+	// BiMap<Annotation, Integer> mapAnnoToId = saveAnnoBase(jcas,
+	// setTypesToIgnore, documentId);
+	// // split the annotations up by type
+	// // create a map of class name to anno id
+	// SetMultimap<String, Integer> mapTypeToAnnoId = HashMultimap.create();
+	// for (Map.Entry<Annotation, Integer> annoEntry : mapAnnoToId.entrySet()) {
+	// mapTypeToAnnoId.put(annoEntry.getKey().getClass().getName(),
+	// annoEntry.getValue());
+	// }
+	// // allocate a list to store annotation links
+	// List<AnnoLink> listAnnoLinks = new ArrayList<AnnoLink>();
+	// // save annotation properties
+	// for (String annoClass : mapTypeToAnnoId.keySet()) {
+	// saveAnnoPrimitive(mapAnnoToId, mapTypeToAnnoId.get(annoClass),
+	// listAnnoLinks);
+	// }
+	// addAnnoLinks(jcas, mapAnnoToId, listAnnoLinks);
+	// // saveMarkablePairs(jcas, mapAnnoToId, listAnnoLinks);
+	// // saveCoref(jcas, mapAnnoToId, listAnnoLinks);
+	// saveAnnoLinks(listAnnoLinks);
+	// }
 
 	private void saveAnnotationsHib(JCas jcas,
 			boolean bInsertAnnotationContainmentLinks,
@@ -1222,11 +1317,13 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 					queryBuilder.append(DBUtil.formatFieldName(key));
 					queryBuilder.append("=? ");
 				}
+			} else {
+				// don't know what to do with this key attribute
+				log.warn("document_id: " + documentId
+						+ ", could not map key attribute " + kp.getKey());
 			}
 		}
 		if (args.size() > 0) {
-			// make sure the document has been saved
-			this.getSessionFactory().getCurrentSession().flush();
 			// have something to update - add the where condition
 			queryBuilder.append(" where document_id = ?");
 			args.add(documentId);
@@ -1235,8 +1332,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				log.debug(sql);
 			}
 			jdbcTemplate.update(sql, args.toArray());
-		} else {
-			log.warn("document_id: " + documentId + "could not map key");
 		}
 	}
 
@@ -1268,6 +1363,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 						Document doc = createDocument(jcas, analysisBatch,
 								bStoreDocText, bStoreCAS);
 						sessionFactory.getCurrentSession().save(doc);
+						// make sure the document has been saved
+						getSessionFactory().getCurrentSession().flush();
 						saveAnnotationsHib(jcas,
 								bInsertAnnotationContainmentLinks,
 								setTypesToIgnore, doc);
@@ -1275,28 +1372,6 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 						return doc.getDocumentID();
 					}
 				});
-		// // for some reason saveAnnotations runs using a different jdbc
-		// // connection! deadlocks because waiting on document to be inserted
-		// txTemplate.execute(new TransactionCallback<Object>() {
-		//
-		// @Override
-		// public Object doInTransaction(TransactionStatus arg0) {
-		// saveAnnotations(jcas, setTypesToIgnore, documentId);
-		// return null;
-		// }
-		// });
-		// // TODO change this to plain old sql
-		// txTemplate.execute(new TransactionCallback<Object>() {
-		//
-		// @Override
-		// public Object doInTransaction(TransactionStatus arg0) {
-		// Query q = sessionFactory.getCurrentSession().getNamedQuery(
-		// "insertAnnotationContainmentLinks");
-		// q.setInteger("documentID", documentId);
-		// q.executeUpdate();
-		// return null;
-		// }
-		// });
 		if (log.isTraceEnabled())
 			log.trace("end saveDocument");
 		return documentId;
@@ -1312,6 +1387,10 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		for (AnnoMappingInfo mi : annoMappingInfos) {
 			this.mapAnnoMappingInfo.put(mi.getAnnoClassName(), mi);
 		}
+	}
+
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
 	}
 
 	public void setDataSource(DataSource dataSource) {
