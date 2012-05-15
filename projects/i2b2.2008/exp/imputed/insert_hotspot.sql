@@ -54,7 +54,7 @@ inner join corpus_label a
   and a.corpus_name = d.corpus_name
 /* join to concept token via document - anno base - concept token */
 inner join document doc 
-    on doc.uid = d.instance_id 
+    on doc.instance_id = d.instance_id 
     and doc.analysis_batch = 'i2b2.2008'
 inner join anno_base wb 
     on wb.document_id = doc.document_id
