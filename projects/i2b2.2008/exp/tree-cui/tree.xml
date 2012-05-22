@@ -74,23 +74,20 @@ create index IX_tmp_sent on tmp_sent(anno_base_id)
 					<!-- map instances -->
 					<value><![CDATA[
 	select distinct instance_id, 
-        cast(concat(if(r.feature_name is null, '', if(negated > 0, 'neg_', 'pos_')), lower(covered_text)) as char(100)) word, 1
+        cast(concat(if(r.feature_name is null, '', if(negated > 0, 'neg_', 'pos_')), lower(coveredText)) as char(100)) word, 1
 	from
 	(
-		select hs.instance_id, covered_text, coalesce(wt.negated, 0) negated
+		select hs.instance_id, coveredText, coalesce(negated, 0) negated
         from tmp_sent hs
         /* get words and numbers in sentence */
         inner join anno_contain ac 
             on ac.parent_anno_base_id = hs.anno_base_id
             and ac.child_uima_type_id in (22,25,26)
         /* get covered text */
-        inner join anno_base ab
+        inner join anno_token ab
         	on ab.anno_base_id = ac.child_anno_base_id
-        	and covered_text is not null
-        	and length(covered_text) > 0
-        /* get negation status */
-        left join anno_word_token wt
-            on wt.anno_base_id = ac.child_anno_base_id
+        	and coveredText is not null
+        	and length(coveredText) > 0
     ) s
     left join
     (
@@ -110,7 +107,7 @@ create index IX_tmp_sent on tmp_sent(anno_base_id)
         and e.featureset_name = 'usword'
         and e.cv_fold_id = 0
         and e.label = '@export.label@'
-    ) r on r.feature_name = s.covered_text
+    ) r on r.feature_name = s.coveredText
     order by instance_id, word
     			]]></value>
 				</property>
