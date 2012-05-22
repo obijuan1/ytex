@@ -37,10 +37,10 @@ create unique index NK_cui on tmp_cui (cui)
 ]]></entry>
 	<entry key="numericWordQuery"><![CDATA[
 	select instance_id, 
-        cast(concat(if(r.feature_name is null, '', if(negated > 0, 'neg_', 'pos_')), lower(covered_text)) as char(100)) word, 1
+        cast(concat(if(r.feature_name is null, '', if(negated > 0, 'neg_', 'pos_')), lower(coveredText)) as char(100)) word, 1
 	from
 	(
-		select distinct hi.instance_id, covered_text, coalesce(wt.negated, 0) negated
+		select distinct hi.instance_id, coveredText, coalesce(negated, 0) negated
         from corpus_doc doc
 		inner join corpus_label a 
 			on doc.instance_id = a.instance_id 
@@ -60,13 +60,10 @@ create unique index NK_cui on tmp_cui (cui)
             on ac.parent_anno_base_id = hs.anno_base_id
             and ac.child_uima_type_id in (22,25,26)
         /* get covered text */
-        inner join anno_base ab
+        inner join anno_token ab
         	on ab.anno_base_id = ac.child_anno_base_id
-        	and covered_text is not null
-        	and length(covered_text) > 0
-        /* get negation status */
-        left join anno_word_token wt
-            on wt.anno_base_id = ac.child_anno_base_id
+        	and coveredText is not null
+        	and length(coveredText) > 0
         where doc.corpus_name = 'i2b2.2008'
         and doc.doc_group = 'train'
     ) s
@@ -88,7 +85,7 @@ create unique index NK_cui on tmp_cui (cui)
         and e.featureset_name = 'usword'
         and e.cv_fold_id = 0
         and e.label = :label
-    ) r on r.feature_name = s.covered_text
+    ) r on r.feature_name = s.coveredText
     
     union
     
