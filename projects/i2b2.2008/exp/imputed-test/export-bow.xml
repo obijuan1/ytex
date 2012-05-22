@@ -22,16 +22,7 @@
     	and hi.label = a.label
 		and hi.corpus_name = a.corpus_name
 		and hi.experiment = b.experiment
-	inner join feature_eval e
-		on e.corpus_name = a.corpus_name
-		and e.label = a.label
-		and e.type = 'infogain-propagated' 
-		and e.featureset_name = 'ctakes'
-		and e.param2 = 'rbpar'
-	inner join feature_rank r
-		on r.feature_eval_id = e.feature_eval_id
-		and r.rank = b.param1
-		and hi.max_evaluation >= r.evaluation
+		and hi.min_rank <= b.param1
 	where a.corpus_name = 'i2b2.2008'
 ]]></entry>
 	<entry key="numericWordQuery"><![CDATA[
