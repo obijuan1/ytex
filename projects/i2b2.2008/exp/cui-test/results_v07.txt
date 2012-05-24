@@ -1,0 +1,18 @@
+Asthma	0.974
+CAD	0.619
+CHF	0.607
+Depression	0.973
+Diabetes	0.962
+Gallstones	0.950
+GERD	0.579
+Gout	0.982
+Hypercholesterolemia	0.901
+Hypertension	0.929
+Hypertriglyceridemia	0.913
+OA	0.625
+Obesity	0.972
+OSA	0.659
+PVD	0.609
+VI	0.786
+macro f1	0.635538
+micro f1	0.959350
