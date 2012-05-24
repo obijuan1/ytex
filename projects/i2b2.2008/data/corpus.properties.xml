@@ -31,12 +31,12 @@ from
 	inner join corpus_label a 
         on a.instance_id = d.instance_id 
         and a.corpus_name = d.corpus_name    
-	inner join ytex.document yd 
+	inner join document yd 
         on yd.instance_id = d.instance_id 
         and yd.analysis_batch = d.corpus_name
-	inner join ytex.anno_base ac 
+	inner join anno_base ac 
         on ac.document_id = yd.document_id
-	inner join ytex.anno_ontology_concept c 
+	inner join anno_ontology_concept c 
         on ac.anno_base_id = c.anno_base_id
 	where d.doc_group = 'train'
     and d.corpus_name = 'i2b2.2008'

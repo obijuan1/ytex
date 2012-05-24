@@ -28,6 +28,10 @@ and exists
 	)
 )
 ;
+-- perhaps add 
+-- T119 Lipid
+-- T109	Organic Chemical
+-- T123	Biologically Active Substance
 
 create index idx_fword on v_i2b2_fword_lookup (fword);
 create index idx_cui on v_i2b2_fword_lookup (cui);
