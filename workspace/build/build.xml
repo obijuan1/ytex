@@ -219,6 +219,9 @@
 			<fileset refid="dependency.fileset" />
 			<mapper type="flatten" />
 		</copy>
+		<delete quiet="yes">
+			<fileset dir="../ytex.web/WebContent/WEB-INF/lib" includes="geronimo-servlet_2.5_spec-1.1.2.jar" />
+		</delete>
 	</target>
 	<target name="build.all" depends="copy.dependencies,clean.dist,build.jdl,build.ytex.model,build.ytex.kernel,build.ytex.uima,build.ytex.negex,build.ctakes-patches,copy.config,copy.scripts,copy.data,copy.examples,build.ytex.web,build.ytex.jar,zip.dist" />
 </project>
