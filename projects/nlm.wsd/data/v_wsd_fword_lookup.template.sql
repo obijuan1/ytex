@@ -8,47 +8,78 @@ create table v_wsd_fword_lookup (
   stem_str varchar(250) not null
 ) engine=myisam, comment 'umls lookup table, created from umls_aui_fword and mrconso' ;
 
--- get the tuis we want
--- these are the 'defaults'
-create temporary table tmp_tui
-as
-select ui from @UMLS_SCHEMA@.SRDEF where ui in 
-  (
-	'T017' /* Anatomical Structure */,
-	'T021','T022','T023','T024','T025','T026','T029','T030','T031',
-	'T059','T060','T061',
-	'T019','T020','T037','T046','T047','T048','T049','T050','T190','T191',
-	'T033','T034','T040','T041','T042','T043','T044','T045','T046','T056','T057','T184','T121'
-  )
-;
--- get additional tuis from the concepts from mesh wsd
-insert into tmp_tui
-select distinct tui
-from @UMLS_SCHEMA@.MRSTY sty
-inner join nlm_wsd_cui c on c.cui = sty.cui
-inner join nlm_wsd_word w on w.word = c.word
-;
-
--- get additional tuis from the concepts from nlm wsd
-insert into tmp_tui
-select distinct tui
-from @UMLS_SCHEMA@.MRSTY sty
-inner join nlm_wsd_cui c on c.cui = sty.cui
-inner join nlm_wsd_word w on w.word = c.word
-;
 -- do the insert
+-- maybe add T167
 insert into v_wsd_fword_lookup
 select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
 from umls_aui_fword c
 inner join @UMLS_SCHEMA@.MRCONSO mrc on c.aui = mrc.aui
-where  mrc.SAB in ('SNOMEDCT', 'MSH', 'MEDCIN', 'LNC', 'MTH', 'CSP', 'AOD')
-and exists
+inner join
 (
-    select *
-    from @UMLS_SCHEMA@.MRSTY sty
-    inner join (select distinct ui from tmp_tui) tt on sty.tui = tt.ui
-    where sty.cui = mrc.cui
-)
+	select distinct cui 
+	from @UMLS_SCHEMA@.MRSTY 
+	where tui in
+	(
+	'T015'
+	,'T016'
+	,'T017'
+	,'T019'
+	,'T020'
+	,'T021'
+	,'T022'
+	,'T023'
+	,'T024'
+	,'T025'
+	,'T026'
+	,'T029'
+	,'T030'
+	,'T031'
+	,'T032'
+	,'T033'
+	,'T034'
+	,'T037'
+	,'T038'
+	,'T039'
+	,'T040'
+	,'T041'
+	,'T042'
+	,'T043'
+	,'T044'
+	,'T045'
+	,'T046'
+	,'T047'
+	,'T048'
+	,'T049'
+	,'T050'
+	,'T054'
+	,'T055'
+	,'T056'
+	,'T057'
+	,'T058'
+	,'T059'
+	,'T060'
+	,'T061'
+	,'T067'
+	,'T070'
+	,'T074'
+	,'T078'
+	,'T079'
+	,'T080'
+	,'T081'
+	,'T091'
+	,'T098'
+	,'T118'
+	,'T119'
+	,'T121'
+	,'T123'
+	,'T169'
+	,'T170'
+	,'T184'
+	,'T190'
+	,'T191'
+	)
+) t on mrc.cui = t.cui
+where  mrc.SAB in ('SNOMEDCT', 'MSH', 'MEDCIN', 'LNC', 'MTH', 'CSP', 'AOD')
 ;
 
 -- create indices
