@@ -15,19 +15,19 @@ insert into feature_rank (feature_eval_id, feature_name, evaluation)
 select fe.feature_eval_id, s.code, s.tf
 from
 (
-select feature_eval_id 
-from feature_eval 
-where corpus_name = 'i2b2.2008'
-and featureset_name = 'cui'
-and type = 'tfidf'
+	select feature_eval_id 
+	from feature_eval 
+	where corpus_name = 'i2b2.2008'
+	and featureset_name = 'cui'
+	and type = 'tfidf'
 ) fe,
 (
   	select c.code, count(distinct d.instance_id) tf
-		from ytex.document d
-		inner join ytex.anno_base an on an.document_id = d.document_id
-		inner join ytex.anno_ontology_concept c on c.anno_base_id = an.anno_base_id
-		where analysis_batch = 'i2b2.2008'
-		group by c.code
+	from document d
+	inner join anno_base an on an.document_id = d.document_id
+	inner join anno_ontology_concept c on c.anno_base_id = an.anno_base_id
+	where analysis_batch = 'i2b2.2008'
+	group by c.code
 ) s
 ;
 
@@ -35,17 +35,17 @@ insert into tfidf_doclength (feature_eval_id, instance_id, length)
 select fe.feature_eval_id, s.instance_id, s.length
 from
 (
-select feature_eval_id 
-from feature_eval 
-where corpus_name = 'i2b2.2008'
-and featureset_name = 'cui'
-and type = 'tfidf'
+	select feature_eval_id 
+	from feature_eval 
+	where corpus_name = 'i2b2.2008'
+	and featureset_name = 'cui'
+	and type = 'tfidf'
 ) fe,
 (
 	select d.instance_id, count(*) length
-	from ytex.document d
-	inner join ytex.anno_base an on an.document_id = d.document_id
-	inner join ytex.anno_ontology_concept c on c.anno_base_id = an.anno_base_id
+	from document d
+	inner join anno_base an on an.document_id = d.document_id
+	inner join anno_ontology_concept c on c.anno_base_id = an.anno_base_id
 	where analysis_batch = 'i2b2.2008'
 	group by d.instance_id
 ) s
@@ -61,9 +61,9 @@ select 'i2b2.2008-cui', s.*
 from
 (
 	select d.uid, count(*)
-	from ytex.document d
-	inner join ytex.anno_base an on an.document_id = d.document_id
-	inner join ytex.anno_ontology_concept c on c.anno_base_id = an.anno_base_id
+	from document d
+	inner join anno_base an on an.document_id = d.document_id
+	inner join anno_ontology_concept c on c.anno_base_id = an.anno_base_id
 	where analysis_batch = 'i2b2.2008'
 	group by d.uid
 ) s;
@@ -77,9 +77,9 @@ from
 	from
 	(
 	  	select distinct c.code, d.uid
-		from ytex.document d
-		inner join ytex.anno_base an on an.document_id = d.document_id
-		inner join ytex.anno_ontology_concept c on c.anno_base_id = an.anno_base_id
+		from document d
+		inner join anno_base an on an.document_id = d.document_id
+		inner join anno_ontology_concept c on c.anno_base_id = an.anno_base_id
 		where analysis_batch = 'i2b2.2008'
 		group by c.code, d.uid
 	) s
@@ -93,9 +93,9 @@ select 'i2b2.2008-cui', s.*
 from
 (
 	select d.uid, c.code, count(*)
-	from ytex.document d
-	inner join ytex.anno_base an on an.document_id = d.document_id
-	inner join ytex.anno_ontology_concept c on c.anno_base_id = an.anno_base_id
+	from document d
+	inner join anno_base an on an.document_id = d.document_id
+	inner join anno_ontology_concept c on c.anno_base_id = an.anno_base_id
 	where analysis_batch = 'i2b2.2008'
 	group by d.uid, c.code
 ) s
