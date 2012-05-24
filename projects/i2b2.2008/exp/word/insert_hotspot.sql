@@ -10,7 +10,7 @@ inner join feature_eval e
 ;
 
 insert into hotspot (instance_id, anno_base_id, feature_rank_id)
-select a.instance_id,  wb.anno_base_id, r.feature_rank_id
+select a.instance_id, t.anno_base_id, r.feature_rank_id
 from corpus_doc d /* documents */
 /* document annotations - only intuitive */
 inner join corpus_label a
@@ -27,12 +27,13 @@ inner join feature_eval e
 inner join feature_rank r on r.feature_eval_id = e.feature_eval_id
 /* join to word token via dockey - anno base - document - anno base - word token */
 inner join document doc 
-	on doc.uid = d.instance_id 
+	on doc.instance_id = d.instance_id 
 	and doc.analysis_batch = d.corpus_name
-inner join anno_base wb 
-	on wb.document_id = doc.document_id 
-	and wb.uima_type_id = 26 
-	and wb.covered_text = r.feature_name
+inner join anno_base ab 
+	on ab.document_id = doc.document_id
+inner join anno_token t
+	on t.coveredtext = r.feature_name
+    and t.anno_base_id = ab.anno_base_id
 /* limit to top features */
 where r.evaluation >= 0.008
 	and d.corpus_name = 'i2b2.2008'
