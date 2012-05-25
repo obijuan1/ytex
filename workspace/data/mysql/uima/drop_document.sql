@@ -8,6 +8,11 @@ drop table if exists anno_umls_concept;
 drop table if exists anno_source_doc_info;
 drop table if exists anno_umls_concept;
 -- legacy end
+drop table if exists anno_mm_cuiconcept;
+drop table if exists anno_mm_candidate;
+drop table if exists anno_mm_acronym;
+drop table if exists anno_mm_utterance;
+drop table if exists anno_mm_negation;
 drop table if exists fracture_demo;
 drop table if exists anno_drug_mention;
 drop table if exists anno_markable;
