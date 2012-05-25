@@ -174,3 +174,38 @@ CREATE TABLE fracture_demo(
 	fracture varchar(20) NULL,
 	note_set varchar(10) NULL
 ) engine=myisam, comment 'demo data';
+
+
+-- metamap tables
+create table anno_mm_candidate (
+	anno_base_id int primary key,
+	cui char(8),
+	score int default 0,
+	head bit default 0,
+	overmatch bit default 0
+) engine=myisam comment 'org.metamap.uima.ts.Candidate';
+
+create table anno_mm_acronym (
+	anno_base_id int primary key,
+	acronym varchar(10),
+    `expansion` varchar(30)    
+) engine=myisam comment 'gov.nih.nlm.nls.metamap.uima.ts.AcronymAbbrev';
+
+create table anno_mm_utterance (
+	anno_base_id int primary key,
+	pmid varchar(10),
+    location varchar(30)    
+) engine=myisam comment 'org.metamap.uima.ts.Utterance';
+
+
+create table anno_mm_cuiconcept (
+    anno_mm_cuiconcept_id int auto_increment primary key,
+    anno_base_id int,
+    negExCui char(8)
+) engine=myisam comment 'org.metamap.uima.ts.CuiConcept';
+
+create table anno_mm_negation (
+    anno_base_id int primary key,
+    negType varchar(10),
+    negTrigger varchar(10)
+) engine=myisam comment 'org.metamap.uima.ts.Negation';
