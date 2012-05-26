@@ -14,7 +14,6 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.FSIterator;
-import org.apache.uima.cas.text.AnnotationIndex;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.tcas.Annotation;
@@ -53,7 +52,8 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 	WordSenseDisambiguator wsd;
 	Properties props;
 	boolean disabled = false;
-	private static final Log log = LogFactory.getLog(SenseDisambiguatorAnnotator.class);
+	private static final Log log = LogFactory
+			.getLog(SenseDisambiguatorAnnotator.class);
 
 	@Override
 	public void initialize(UimaContext aContext)
@@ -66,9 +66,10 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 				"ytex.sense.metric", "INTRINSIC_PATH"));
 		wsd = ApplicationContextHolder.getSimApplicationContext().getBean(
 				WordSenseDisambiguator.class);
-		ConceptSimilarityService simSvc =  ApplicationContextHolder.getSimApplicationContext().getBean(
-				ConceptSimilarityService.class);
-		if(simSvc.getConceptGraph() == null) {
+		ConceptSimilarityService simSvc = ApplicationContextHolder
+				.getSimApplicationContext().getBean(
+						ConceptSimilarityService.class);
+		if (simSvc.getConceptGraph() == null) {
 			log.warn("Concept Graph was not loaded - word sense disambiguation disabled");
 			disabled = true;
 		}
@@ -76,30 +77,31 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
-		if(disabled)
+		if (disabled)
 			return;
 		// iterate through sentences
-		AnnotationIndex<Annotation> namedEntityIdx = jcas
-				.getAnnotationIndex(NamedEntity.type);
+		FSIterator<Annotation> neIter = jcas.getAnnotationIndex(
+				NamedEntity.type).iterator();
+		List<NamedEntity> listNE = new ArrayList<NamedEntity>();
+		while (neIter.hasNext()) {
+			listNE.add((NamedEntity) neIter.next());
+		}
 		// disambiguate the named entities
-		disambiguate(jcas, namedEntityIdx.iterator());
+		disambiguate(jcas, listNE);
 	}
 
 	/**
 	 * 
-	 * @param neIter
+	 * @param jcas
+	 * @param listNE list of named entities to disambiguate
 	 */
-	private void disambiguate(JCas jcas, FSIterator<Annotation> neIter) {
+	protected void disambiguate(JCas jcas, List<NamedEntity> listNE) {
 		// allocate list to hold concepts in each named entity
 		List<Set<String>> listConcept = new ArrayList<Set<String>>();
-		// allocate corresponding named entity list
-		List<NamedEntity> listNE = new ArrayList<NamedEntity>();
-		while (neIter.hasNext()) {
+		for (NamedEntity ne : listNE) {
 			// add the concept senses from each named entity
 			Set<String> conceptSenses = new HashSet<String>();
 			listConcept.add(conceptSenses);
-			NamedEntity ne = (NamedEntity) neIter.next();
-			listNE.add(ne);
 			FSArray concepts = ne.getOntologyConceptArr();
 			for (int i = 0; i < concepts.size(); i++) {
 				if (concepts.get(i) != null
