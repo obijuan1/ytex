@@ -46,7 +46,7 @@
         cast(concat(if(r.feature_name is null, '', if(negated > 0, 'neg_', 'pos_')), lower(coveredText)) as char(100)) word, 1
 	from
 	(
-		select distinct hi.instance_id, covered_text, coalesce(wt.negated, 0) negated
+		select distinct hi.instance_id, coveredText, coalesce(negated, 0) negated
         from corpus_doc doc
 		inner join corpus_label a 
 			on doc.instance_id = a.instance_id 
