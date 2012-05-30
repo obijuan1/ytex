@@ -24,6 +24,24 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema)
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_contain]') AND type in (N'U'))
 	drop table $(db_schema).anno_contain
 ;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_link]') AND type in (N'U'))
+	drop table $(db_schema).anno_link
+;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_mm_cuiconcept]') AND type in (N'U'))
+	drop table $(db_schema).anno_mm_cuiconcept
+;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_mm_candidate]') AND type in (N'U'))
+	drop table $(db_schema).anno_mm_candidate
+;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_mm_acronym]') AND type in (N'U'))
+	drop table $(db_schema).anno_mm_acronym
+;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_mm_utterance]') AND type in (N'U'))
+	drop table $(db_schema).anno_mm_utterance
+;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_mm_negation]') AND type in (N'U'))
+	drop table $(db_schema).anno_mm_negation
+;
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_token]') AND type in (N'U'))
 	drop table $(db_schema).anno_token
 ;
@@ -50,9 +68,6 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema)
 ;
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_treebank_node]') AND type in (N'U'))
 	drop table $(db_schema).anno_treebank_node
-;
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_link]') AND type in (N'U'))
-	drop table $(db_schema).anno_link
 ;
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_base]') AND type in (N'U'))
 	drop table $(db_schema).anno_base

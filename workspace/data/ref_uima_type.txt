@@ -30,3 +30,11 @@
 41	org.chboston.cnlp.ctakes.parser.uima.type.TopTreebankNode	anno_treebank_node	
 42	org.chboston.cnlp.ctakes.parser.uima.type.TerminalTreebankNode	anno_treebank_node	
 50	ytex.uima.types.Date	
+100	gov.nih.nlm.nls.metamap.uima.ts.Document	
+101	org.metamap.uima.ts.Phrase	
+102	org.metamap.uima.ts.Candidate	anno_mm_candidate
+103	gov.nih.nlm.nls.metamap.uima.ts.AcronymAbbrev	anno_mm_acronym
+104	org.metamap.uima.ts.Utterance	anno_mm_utterance
+105	org.metamap.uima.ts.CuiConcept	anno_mm_cuiconcept
+106	org.metamap.uima.ts.Span	
+107	org.metamap.uima.ts.Negation	anno_mm_negation

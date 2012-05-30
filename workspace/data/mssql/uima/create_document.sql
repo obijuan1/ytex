@@ -198,3 +198,41 @@ CREATE TABLE $(db_schema).fracture_demo(
 	note_set varchar(10) NULL
 );
 
+
+-- metamap tables
+create table $(db_schema).anno_mm_candidate (
+	anno_base_id int primary key,
+	cui char(8),
+	score int default 0,
+	head bit default 0,
+	overmatch bit default 0,
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table $(db_schema).anno_mm_acronym (
+	anno_base_id int primary key,
+	acronym varchar(10),
+    [expansion] varchar(30),
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table $(db_schema).anno_mm_utterance (
+	anno_base_id int primary key,
+	pmid varchar(10),
+    location varchar(30),
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table $(db_schema).anno_mm_cuiconcept (
+    anno_mm_cuiconcept_id int auto_increment primary key,
+    anno_base_id int,
+    negExCui char(8),
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table $(db_schema).anno_mm_negation (
+    anno_base_id int primary key,
+    negType varchar(10),
+    negTrigger varchar(10),
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
+);
