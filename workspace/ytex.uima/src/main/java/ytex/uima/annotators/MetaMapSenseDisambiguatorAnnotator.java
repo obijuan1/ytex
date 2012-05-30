@@ -1,9 +1,12 @@
 package ytex.uima.annotators;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,10 +34,101 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 		SenseDisambiguatorAnnotator {
 	Log log = LogFactory.getLog(MetaMapSenseDisambiguatorAnnotator.class);
 
+	public static class NegSpan {
+		int begin;
+
+		public int getBegin() {
+			return begin;
+		}
+
+		public void setBegin(int begin) {
+			this.begin = begin;
+		}
+
+		public int getEnd() {
+			return end;
+		}
+
+		public void setEnd(int end) {
+			this.end = end;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + begin;
+			result = prime * result + end;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			NegSpan other = (NegSpan) obj;
+			if (begin != other.begin)
+				return false;
+			if (end != other.end)
+				return false;
+			return true;
+		}
+
+		public NegSpan(Annotation anno) {
+			super();
+			this.begin = anno.getBegin();
+			this.end = anno.getEnd();
+		}
+
+		int end;
+	}
+
+	/**
+	 * get all negated spans
+	 * 
+	 * @param jcas
+	 * @return
+	 */
+	private Set<NegSpan> getNegatedSpans(JCas jcas) {
+		Set<NegSpan> negSet = new HashSet<NegSpan>();
+		// get the Metamap type
+		Type negType = jcas.getTypeSystem().getType(
+				"org.metamap.uima.ts.Negation");
+		// abort if the type is not found
+		if (negType == null) {
+			log.debug("no negated concepts");
+		} else {
+			Feature spanFeature = negType.getFeatureByBaseName("ncSpans");
+			if (spanFeature == null) {
+				log.warn("no ncSpans feature!");
+			} else {
+				FSIterator<Annotation> negIter = jcas.getAnnotationIndex(
+						negType).iterator();
+				while (negIter.hasNext()) {
+					Annotation negAnno = negIter.next();
+					FSArray spanArr = (FSArray) negAnno
+							.getFeatureValue(spanFeature);
+					if (spanArr != null) {
+						for (int i = 0; i < spanArr.size(); i++) {
+							negSet.add(new NegSpan((Annotation) spanArr.get(i)));
+						}
+					}
+				}
+			}
+		}
+		return negSet;
+	}
+
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 		if (disabled)
 			return;
+		// get the negated spans
+		Set<NegSpan> negSet = getNegatedSpans(jcas);
 		// get the Metamap type
 		Type candidateType = jcas.getTypeSystem().getType(
 				"org.metamap.uima.ts.Candidate");
@@ -70,6 +164,9 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 				neLast = new NamedEntity(jcas);
 				neLast.setBegin(annoCandidate.getBegin());
 				neLast.setEnd(annoCandidate.getEnd());
+				// set negation flag
+				neLast.setCertainty(negSet.contains(new NegSpan(neLast)) ? -1
+						: 0);
 				concepts.add(annoCandidate.getStringValue(cuiFeature));
 			}
 		}
@@ -92,8 +189,7 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 	 * @param concepts
 	 */
 	private void addConcepts(JCas jcas, FSIterator<Annotation> candidateIter,
-			List<NamedEntity> listNE, NamedEntity neLast,
-			Set<String> concepts) {
+			List<NamedEntity> listNE, NamedEntity neLast, Set<String> concepts) {
 		if (neLast != null) {
 			// finalize the NamedEntity
 			FSArray ocArr = new FSArray(jcas, concepts.size());
