@@ -14,6 +14,9 @@
 @rem otherwise this is the directory where the ytex installer will put ictakes 
 @set ICTAKES_HOME=%YTEX_HOME%\..\icTAKES-1.3.2
 
+@rem where metamap is installed (optional)
+@set MM_HOME=%YTEX_HOME%\..\public_mm
+
 @rem -------------------------------------------
 @rem if you installed from ytex-with-dependencies.zip, 
 @rem you should not have to change anything below this line
@@ -48,7 +51,10 @@
 @rem tomcat classpath
 @set TOMCAT_CP=%JDBC_CP%;%YTEX_HOME%\config\desc
 
+@rem if metamap is defined, add metamap classes and libraries
+@if exist %MM_HOME%\src\javaapi\dist\MetaMapApi.jar set MM_CLASSPATH=%MM_HOME%\src\javaapi\dist\MetaMapApi.jar;%MM_HOME%\src\javaapi\dist\MetaMapApi.jar;%MM_HOME%\src\javaapi\dist\prologbeans.jar;%MM_HOME%\src\uima\lib\metamap-api-uima.jar;%MM_HOME%\src\uima\desc
+
 @rem YTEX classpath
-@set CLASSPATH=%YTEX_LIB_SYS_HOME%\ytex.jar;%ICTAKES_HOME%\cTAKES.jar;%ICTAKES_HOME%\cTAKESdesc;%ICTAKES_HOME%\resources
+@set CLASSPATH=%YTEX_LIB_SYS_HOME%\ytex.jar;%ICTAKES_HOME%\cTAKES.jar;%ICTAKES_HOME%\cTAKESdesc;%ICTAKES_HOME%\resources;%MM_CLASSPATH%
 @set JAVA_OPTS=-Xmx500m -Djava.util.logging.config.file=%YTEX_HOME%/config/desc/Logger.properties -Dlog4j.configuration=log4j.properties
 

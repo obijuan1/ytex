@@ -12,13 +12,22 @@ JAVA_HOME=/usr/lib/jvm/java-6-openjdk
 export JAVA_HOME
 
 # where ytex is installed
-YTEX_HOME=${HOME}/clinicalnlp/ytex
+YTEX_HOME=${HOME}/clinicalnlp/ytex-0.7
 export YTEX_HOME
 
-# where ant is installed - if you installed from ytex-with-dependencies.zip
-# there is no need to change this
+# where ant is installed
 ANT_HOME=${YTEX_HOME}/../apache-ant-1.8.0
 export ANT_HOME
+
+# where ictakes is/will be installed
+# if you have ictakes installed, set this variable to your ictakes directory
+# otherwise this is the directory where the ytex installer will put ictakes 
+ICTAKES_HOME=${YTEX_HOME}/../icTAKES-1.3.2
+export ICTAKES_HOME
+
+# where metamap is installed (optional)
+MM_HOME=/opt/public_mm
+export MM_HOME
 
 # PATH variable
 # add java and ant to the front of the path
@@ -48,7 +57,16 @@ JDBC_CP=${JDBC_CP}:${YTEX_LIB_SYS_HOME}/oracle11.2.0.1.0/ojdbc6.jar
 TOMCAT_CP=${JDBC_CP}:${YTEX_HOME}/config/desc
 export TOMCAT_CP
 
+# metamap classpath
+if [ -f ${MM_HOME}/src/uima/lib/metamap-api-uima.jar ]; then
+	MM_CLASSPATH=${MM_HOME}/src/javaapi/dist/MetaMapApi.jar:${MM_HOME}/src/javaapi/dist/MetaMapApi.jar:${MM_HOME}/src/javaapi/dist/prologbeans.jar:${MM_HOME}/src/uima/lib/metamap-api-uima.jar:${MM_HOME}/src/uima/desc
+fi
+
 # YTEX classpath
-CLASSPATH=${YTEX_LIB_SYS_HOME}/ctakes-patches.jar:${YTEX_LIB_SYS_HOME}/ytex.jar
+CLASSPATH=${YTEX_LIB_SYS_HOME}/ctakes-patches.jar:${YTEX_LIB_SYS_HOME}/ytex.jar:${MM_CLASSPATH}
 export CLASSPATH
+
+JAVA_OPTS="-Xmx500m -Djava.util.logging.config.file=${YTEX_HOME}/config/desc/Logger.properties -Dlog4j.configuration=log4j.properties"
+export JAVA_OPTS
+
 
