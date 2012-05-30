@@ -65,10 +65,8 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 	<property name="mysql.home" value="${env.MYSQL_HOME}" />
 	<property name="mysql.line" value="--user=${db.username} --password=${db.password} --host=${db.host} ${db.schema}" />
 	<property name="maxMemory" value="1500m" />
-	
-	<target name="setup.all2" description="annotate corpus, compute infogain" depends="setup.tfidf,eval.infogain,setup.generateConceptGraph,InfoContentEvaluator,ImputedFeatureEvaluator,setup.generateFolds" />
 
-	<target name="setup.all" description="annotate corpus, compute infogain" depends="setup.build.i2b2,setup.load.i2b2,setup.v_i2b2_fword_lookup,RunCPE.all,setup.tfidf,eval.infogain,setup.generateConceptGraph,InfoContentEvaluator,ImputedFeatureEvaluator,setup.generateFolds" />
+	<target name="setup.all" description="annotate corpus, compute infogain" depends="setup.build.i2b2,setup.load.i2b2,setup.v_i2b2_fword_lookup,RunCPE.all,setup.annoContain,setup.tfidf,eval.infogain,setup.generateConceptGraph,InfoContentEvaluator,ImputedFeatureEvaluator,setup.generateFolds" />
 	<target name="cv.all" description="cross validate all experiments on training set">
 		<antcall target="cv.word.all" />
 		<antcall target="cv.imputed.all" />
@@ -181,6 +179,12 @@ ant -Dytex.home=%YTEX_HOME% test.skip.cv test.all
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
+	</target>
+	<target name="setup.annoContain" description="calculate tfidf stats">
+		<antcall target="mysql">
+			<param name="mysql.dir" value="${basedir}/data" />
+			<param name="mysql.script" value="insert_anno_contain.sql" />
+		</antcall>
 	</target>
 	<target name="setup.tfidf" description="calculate tfidf stats">
 		<antcall target="mysql">
