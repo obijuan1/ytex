@@ -365,7 +365,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				|| analysisBatch.length() == 0 ? getDefaultAnalysisBatch()
 				: analysisBatch);
 		// look for the ctakes DocumentID anno
-		if (setUimaDocId(jcas, doc, "edu.mayo.bmi.uima.core.type.DocumentID",
+		if (setUimaDocId(jcas, doc, "edu.mayo.bmi.uima.core.type.structured.DocumentID",
 				"documentID") == null) {
 			// look for the uima SourceDocumentInformation anno
 			setUimaDocId(jcas, doc,
@@ -1446,12 +1446,13 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		if (docIDtype != null)
 			docIDFeature = docIDtype.getFeatureByBaseName(idFeature);
 		if (docIDtype != null && docIDFeature != null) {
-			AnnotationIndex<Annotation> idx = jcas
-					.getAnnotationIndex(docIDtype);
-			if (idx != null) {
-				FSIterator<Annotation> iter = idx.iterator();
+//			AnnotationIndex<Annotation> idx = jcas
+//					.getAnnotationIndex(docIDtype);
+			FSIterator<FeatureStructure> iter = jcas.getFSIndexRepository()
+					.getAllIndexedFS(docIDtype);
+			if (iter != null) {
 				if (iter.hasNext()) {
-					Annotation docId = iter.next();
+					FeatureStructure docId = iter.next();
 					String uimaDocId = docId.getStringValue(docIDFeature);
 					if (!Strings.isNullOrEmpty(uimaDocId)) {
 						uimaDocId = this.truncateString(uimaDocId, 256);

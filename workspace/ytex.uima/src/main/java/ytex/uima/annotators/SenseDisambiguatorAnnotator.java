@@ -24,7 +24,7 @@ import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.wsd.WordSenseDisambiguator;
 import ytex.uima.ApplicationContextHolder;
 import ytex.uima.types.OntologyConcept;
-import edu.mayo.bmi.uima.core.type.NamedEntity;
+import edu.mayo.bmi.uima.core.type.textsem.IdentifiedAnnotation;
 
 /**
  * Disambiguate named entities via adapated Lesk algorithm with semantic
@@ -81,10 +81,10 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 			return;
 		// iterate through sentences
 		FSIterator<Annotation> neIter = jcas.getAnnotationIndex(
-				NamedEntity.type).iterator();
-		List<NamedEntity> listNE = new ArrayList<NamedEntity>();
+				IdentifiedAnnotation.type).iterator();
+		List<IdentifiedAnnotation> listNE = new ArrayList<IdentifiedAnnotation>();
 		while (neIter.hasNext()) {
-			listNE.add((NamedEntity) neIter.next());
+			listNE.add((IdentifiedAnnotation) neIter.next());
 		}
 		// disambiguate the named entities
 		disambiguate(jcas, listNE);
@@ -93,21 +93,27 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 	/**
 	 * 
 	 * @param jcas
-	 * @param listNE list of named entities to disambiguate
+	 * @param listNE
+	 *            list of named entities to disambiguate
 	 */
-	protected void disambiguate(JCas jcas, List<NamedEntity> listNE) {
+	protected void disambiguate(JCas jcas, List<IdentifiedAnnotation> listNE) {
+		// allocate list to hold IdentifiedAnnotations with concepts
+		List<IdentifiedAnnotation> listNonTrivialNE = new ArrayList<IdentifiedAnnotation>();
 		// allocate list to hold concepts in each named entity
 		List<Set<String>> listConcept = new ArrayList<Set<String>>();
-		for (NamedEntity ne : listNE) {
-			// add the concept senses from each named entity
-			Set<String> conceptSenses = new HashSet<String>();
-			listConcept.add(conceptSenses);
+		for (IdentifiedAnnotation ne : listNE) {
 			FSArray concepts = ne.getOntologyConceptArr();
-			for (int i = 0; i < concepts.size(); i++) {
-				if (concepts.get(i) != null
-						&& ((OntologyConcept) concepts.get(i)).getCode() != null)
-					conceptSenses.add(((OntologyConcept) concepts.get(i))
-							.getCode());
+			// add the concept senses from each named entity
+			if (concepts != null && concepts.size() > 0) {
+				listNonTrivialNE.add(ne);
+				Set<String> conceptSenses = new HashSet<String>();
+				listConcept.add(conceptSenses);
+				for (int i = 0; i < concepts.size(); i++) {
+					if (concepts.get(i) != null
+							&& ((OntologyConcept) concepts.get(i)).getCode() != null)
+						conceptSenses.add(((OntologyConcept) concepts.get(i))
+								.getCode());
+				}
 			}
 		}
 		// iterate through named entities and disambiguate
@@ -118,7 +124,7 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 				Map<String, Double> scores = new HashMap<String, Double>();
 				String concept = this.wsd.disambiguate(listConcept, i, null,
 						windowSize, metric, scores);
-				NamedEntity ne = listNE.get(i);
+				IdentifiedAnnotation ne = listNonTrivialNE.get(i);
 				FSArray concepts = ne.getOntologyConceptArr();
 				for (int j = 0; j < concepts.size(); j++) {
 					OntologyConcept oc = (OntologyConcept) concepts.get(j);
@@ -143,9 +149,9 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 
 					}
 				}
-			} else {
+			} else if (conceptSenses.size() == 1) {
 				// only one concept - for ytex concept set the predicted concept
-				NamedEntity ne = listNE.get(i);
+				IdentifiedAnnotation ne = listNonTrivialNE.get(i);
 				FSArray concepts = ne.getOntologyConceptArr();
 				OntologyConcept oc = (OntologyConcept) concepts.get(0);
 				if (oc instanceof ytex.uima.types.OntologyConcept) {

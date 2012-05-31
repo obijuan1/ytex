@@ -9,7 +9,7 @@
 <mapAttribute key="org.eclipse.debug.core.preferred_launchers">
 <mapEntry key="[debug]" value="org.eclipse.visualvm.launch.java"/>
 </mapAttribute>
-<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk-6u17-windows-x32"/>
+<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_23"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="ytex.tools.RunCPE"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${workspace_loc}\config\desc\ytex\cdpdesc\collection_processing_engine\test_plaintext.xml"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="build"/>

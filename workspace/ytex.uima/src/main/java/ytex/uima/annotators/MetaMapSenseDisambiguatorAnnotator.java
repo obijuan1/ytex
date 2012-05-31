@@ -20,11 +20,12 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 import ytex.uima.types.OntologyConcept;
 
-import edu.mayo.bmi.uima.core.type.NamedEntity;
+import edu.mayo.bmi.uima.core.type.textsem.EntityMention;
+import edu.mayo.bmi.uima.core.type.textsem.IdentifiedAnnotation;
 
 /**
- * Disambiguate MetaMap Concepts. Create NamedEntity annotations for each set of
- * CandidateConcept annotations that span the same text. Pass these NamedEntity
+ * Disambiguate MetaMap Concepts. Create IdentifiedAnnotation annotations for each set of
+ * CandidateConcept annotations that span the same text. Pass these IdentifiedAnnotation
  * annotations to the disambiguator. Save these annotations.
  * 
  * @author vijay
@@ -146,9 +147,9 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 		// iterate through candidates
 		FSIterator<Annotation> candidateIter = jcas.getAnnotationIndex(
 				candidateType).iterator();
-		List<NamedEntity> listNE = new ArrayList<NamedEntity>();
+		List<IdentifiedAnnotation> listNE = new ArrayList<IdentifiedAnnotation>();
 		//
-		NamedEntity neLast = null;
+		IdentifiedAnnotation neLast = null;
 		Set<String> concepts = new HashSet<String>();
 		while (candidateIter.hasNext()) {
 			Annotation annoCandidate = candidateIter.next();
@@ -161,11 +162,11 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 				// moving on to a new named entity, finalize the old one
 				addConcepts(jcas, candidateIter, listNE, neLast, concepts);
 				// allocate a new named entity
-				neLast = new NamedEntity(jcas);
+				neLast = new EntityMention(jcas);
 				neLast.setBegin(annoCandidate.getBegin());
 				neLast.setEnd(annoCandidate.getEnd());
 				// set negation flag
-				neLast.setCertainty(negSet.contains(new NegSpan(neLast)) ? -1
+				neLast.setPolarity(negSet.contains(new NegSpan(neLast)) ? -1
 						: 0);
 				concepts.add(annoCandidate.getStringValue(cuiFeature));
 			}
@@ -174,7 +175,7 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 		// disambiguate the named entities
 		disambiguate(jcas, listNE);
 		// save the named entities
-		for (NamedEntity ne : listNE) {
+		for (IdentifiedAnnotation ne : listNE) {
 			ne.addToIndexes();
 		}
 	}
@@ -189,9 +190,9 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 	 * @param concepts
 	 */
 	private void addConcepts(JCas jcas, FSIterator<Annotation> candidateIter,
-			List<NamedEntity> listNE, NamedEntity neLast, Set<String> concepts) {
+			List<IdentifiedAnnotation> listNE, IdentifiedAnnotation neLast, Set<String> concepts) {
 		if (neLast != null) {
-			// finalize the NamedEntity
+			// finalize the IdentifiedAnnotation
 			FSArray ocArr = new FSArray(jcas, concepts.size());
 			int ocArrIdx = 0;
 			for (String c : concepts) {

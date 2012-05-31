@@ -12,7 +12,8 @@
 		<configurationParameters>
 			<configurationParameter>
 				<name>xmiOutputDirectory</name>
-				<description>if specified, will write CAS XMI for each document to this directory</description>
+				<description>if specified, will write CAS XMI for each document to
+					this directory</description>
 				<type>String</type>
 				<multiValued>false</multiValued>
 				<mandatory>false</mandatory>
@@ -26,21 +27,24 @@
 			</configurationParameter>
 			<configurationParameter>
 				<name>storeDocText</name>
-				<description>store document text in document table? default true</description>
+				<description>store document text in document table? default true
+				</description>
 				<type>Boolean</type>
 				<multiValued>false</multiValued>
 				<mandatory>false</mandatory>
 			</configurationParameter>
 			<configurationParameter>
 				<name>storeCAS</name>
-				<description>store gzipped CAS XML in document table? default true</description>
+				<description>store gzipped CAS XML in document table? default true
+				</description>
 				<type>Boolean</type>
 				<multiValued>false</multiValued>
 				<mandatory>false</mandatory>
 			</configurationParameter>
 			<configurationParameter>
 				<name>insertAnnotationContainmentLinks</name>
-				<description>should anno_contain entries be created for this document? default true</description>
+				<description>should anno_contain entries be created for this
+					document? default true</description>
 				<type>Boolean</type>
 				<multiValued>false</multiValued>
 				<mandatory>false</mandatory>
@@ -48,7 +52,8 @@
 			<configurationParameter>
 				<name>typesToIgnore</name>
 				<description>uima types (fully qualified class names) that should
-					not be saved in the database.</description>
+					not be saved in the database.
+				</description>
 				<type>String</type>
 				<multiValued>true</multiValued>
 				<mandatory>false</mandatory>
@@ -90,19 +95,24 @@
 				<value>
 					<array>
 						<string>edu.mayo.bmi.uima.core.type.ContractionToken</string>
-						<string>edu.mayo.bmi.uima.core.type.NewlineToken</string>
-						<string>edu.mayo.bmi.uima.core.type.PunctuationToken</string>
-						<string>edu.mayo.bmi.uima.core.type.SymbolToken</string>
-						<string>edu.mayo.bmi.uima.cdt.type.RomanNumeralAnnotation
+						<string>edu.mayo.bmi.uima.core.type.syntax.NewlineToken</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.PunctuationToken
 						</string>
-						<string>edu.mayo.bmi.uima.cdt.type.DateAnnotation</string>
-						<string>edu.mayo.bmi.uima.cdt.type.FractionAnnotation</string>
-						<string>edu.mayo.bmi.uima.cdt.type.MeasurementAnnotation</string>
-						<string>edu.mayo.bmi.uima.cdt.type.PersonTitleAnnotation</string>
-						<string>edu.mayo.bmi.uima.cdt.type.RangeAnnotation</string>
-						<string>edu.mayo.bmi.uima.cdt.type.TimeAnnotation</string>
-						<string>edu.mayo.bmi.uima.chunker.type.NP</string>
-						<string>edu.mayo.bmi.uima.chunker.type.VP</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.SymbolToken</string>
+						<string>edu.mayo.bmi.uima.cdt.type.textsem.RomanNumeralAnnotation
+						</string>
+						<string>edu.mayo.bmi.uima.cdt.type.textsem.DateAnnotation</string>
+						<string>edu.mayo.bmi.uima.cdt.type.textsem.FractionAnnotation
+						</string>
+						<string>edu.mayo.bmi.uima.cdt.type.textsem.MeasurementAnnotation
+						</string>
+						<string>edu.mayo.bmi.uima.cdt.type.textsem.PersonTitleAnnotation
+						</string>
+						<string>edu.mayo.bmi.uima.cdt.type.textsem.RangeAnnotation
+						</string>
+						<string>edu.mayo.bmi.uima.cdt.type.textsem.TimeAnnotation</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.NP</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.VP</string>
 					</array>
 				</value>
 			</nameValuePair>

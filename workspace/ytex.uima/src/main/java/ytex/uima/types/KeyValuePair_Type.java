@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Thu Apr 19 20:50:38 EDT 2012 */
+/* First created by JCasGen Wed May 30 20:52:02 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas;
@@ -14,10 +14,11 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.cas.TOP_Type;
 
 /** 
- * Updated by JCasGen Thu Apr 19 20:50:38 EDT 2012
+ * Updated by JCasGen Wed May 30 20:52:02 EDT 2012
  * @generated */
 public class KeyValuePair_Type extends TOP_Type {
   /** @generated */
+  @Override
   protected FSGenerator getFSGenerator() {return fsGenerator;}
   /** @generated */
   private final FSGenerator fsGenerator = 
@@ -36,9 +37,11 @@ public class KeyValuePair_Type extends TOP_Type {
   	  }
     };
   /** @generated */
+  @SuppressWarnings ("hiding")
   public final static int typeIndexID = KeyValuePair.typeIndexID;
   /** @generated 
      @modifiable */
+  @SuppressWarnings ("hiding")
   public final static boolean featOkTst = JCasRegistry.getFeatOkTst("ytex.uima.types.KeyValuePair");
  
   /** @generated */

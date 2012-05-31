@@ -23,16 +23,15 @@
  */
 package edu.mayo.bmi.uima.lvg.ae;
 
+import edu.mayo.bmi.uima.core.type.syntax.Lemma;
+import edu.mayo.bmi.uima.core.type.syntax.WordToken;
+import edu.mayo.bmi.uima.core.type.textspan.Segment;
+import edu.mayo.bmi.uima.core.util.ListFactory;
 import edu.mayo.bmi.uima.lvg.resource.LvgCmdApiResource;
 import gov.nih.nlm.nls.lvg.Api.LvgCmdApi;
 import gov.nih.nlm.nls.lvg.Api.LvgLexItemApi;
 import gov.nih.nlm.nls.lvg.Lib.Category;
 import gov.nih.nlm.nls.lvg.Lib.LexItem;
-
-import edu.mayo.bmi.uima.core.type.Lemma;
-import edu.mayo.bmi.uima.core.type.Segment;
-import edu.mayo.bmi.uima.core.type.WordToken;
-import edu.mayo.bmi.uima.core.util.ListFactory;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -50,17 +49,13 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-
-import org.apache.uima.analysis_engine.ResultSpecification;
-import org.apache.uima.analysis_engine.annotator.AnnotatorConfigurationException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorContext;
-import org.apache.uima.analysis_engine.annotator.AnnotatorContextException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorInitializationException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorProcessException;
-import org.apache.uima.analysis_engine.annotator.JTextAnnotator_ImplBase;
-import org.apache.uima.jcas.JFSIndexRepository;
+import org.apache.uima.UimaContext;
+import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
+import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.JFSIndexRepository;
 import org.apache.uima.jcas.cas.FSList;
+import org.apache.uima.resource.ResourceInitializationException;
 
 /**
  * UIMA annotator that uses the UMLS LVG package to find the canonical form of
@@ -74,7 +69,7 @@ import org.apache.uima.jcas.cas.FSList;
  *         the cache, this may be bad if it is misspelled in the case where the
  *         misspelling is a word in the lexicon.
  */
-public class LvgAnnotator extends JTextAnnotator_ImplBase {
+public class LvgAnnotator extends JCasAnnotator_ImplBase {
 	/**
 	 * Value is "PostLemmas". This parameter determines whether the feature
 	 * lemmaEntries will be populated for word annotations.
@@ -105,7 +100,7 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 
 	private LvgLexItemApi lvgLexItem;
 
-	private AnnotatorContext context;
+	private UimaContext context;
 
 	private boolean useSegments;
 
@@ -136,24 +131,19 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 	 * 
 	 * @see org.apache.uima.analysis_engine.annotator.BaseAnnotator#initialize(AnnotatorContext)
 	 */
-	public void initialize(AnnotatorContext aContext)
-			throws AnnotatorConfigurationException,
-			AnnotatorInitializationException {
+	public void initialize(UimaContext aContext)
+			throws ResourceInitializationException {
 		super.initialize(aContext);
 
 		context = aContext;
-		try {
 			configInit();
-		} catch (AnnotatorContextException ace) {
-			throw new AnnotatorConfigurationException(ace);
-		}
 
 		try {
 			LvgCmdApiResource lvgResource = (LvgCmdApiResource) context
 					.getResourceObject(LVGCMDAPI_RESRC_KEY);
 
 			if (lvgResource == null)
-				throw new AnnotatorInitializationException(new Exception(
+				throw new ResourceInitializationException(new Exception(
 						"Unable to locate resource with key="
 								+ LVGCMDAPI_RESRC_KEY + "."));
 
@@ -175,14 +165,14 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 			}
 
 		} catch (Exception e) {
-			throw new AnnotatorConfigurationException(e);
+			throw new ResourceInitializationException(e);
 		}
 	}
 
 	/**
 	 * Sets configuration parameters with values from the descriptor.
 	 */
-	private void configInit() throws AnnotatorContextException {
+	private void configInit() throws ResourceInitializationException {
 		useSegments = ((Boolean) context.getConfigParameterValue("UseSegments"))
 				.booleanValue();
 		String[] skipSegmentIDs = (String[]) context
@@ -233,7 +223,7 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 				lemmaCacheFileLocation = (String) context
 						.getConfigParameterValue(PARAM_LEMMA_CACHE_FILE_LOCATION);
 				if (lemmaCacheFileLocation == null)
-					throw new AnnotatorContextException(new Exception(
+					throw new ResourceInitializationException(new Exception(
 							"Parameter for " + PARAM_LEMMA_CACHE_FILE_LOCATION
 									+ " was not set."));
 				Integer lemmaCacheFreqCutoff = (Integer) context
@@ -249,10 +239,10 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 	/**
 	 * Invokes this annotator's analysis logic.
 	 */
-	public void process(JCas jcas, ResultSpecification resultSpec)
-			throws AnnotatorProcessException {
+	public void process(JCas jcas)
+			throws AnalysisEngineProcessException {
 
-		logger.info(" process(JCas, ResultSpecification)");
+		logger.info("process(JCas)");
 
 		String text = jcas.getDocumentText();
 
@@ -268,15 +258,15 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 					if (!skipSegmentsSet.contains(segmentID)) {
 						int start = segmentAnnotation.getBegin();
 						int end = segmentAnnotation.getEnd();
-						annotateRange(jcas, text, start, end, resultSpec);
+						annotateRange(jcas, text, start, end);
 					}
 				}
 			} else {
 				// annotate over full doc text
-				annotateRange(jcas, text, 0, text.length(), resultSpec);
+				annotateRange(jcas, text, 0, text.length());
 			}
 		} catch (Exception e) {
-			throw new AnnotatorProcessException(e);
+			throw new AnalysisEngineProcessException(e);
 		}
 
 	}
@@ -285,8 +275,8 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 	 * A utility method that annotates a given range.
 	 */
 	protected void annotateRange(JCas jcas, String text, int rangeBegin,
-			int rangeEnd, ResultSpecification resultSpec)
-			throws AnnotatorContextException {
+			int rangeEnd)
+			throws AnalysisEngineProcessException {
 		JFSIndexRepository indexes = jcas.getJFSIndexRepository();
 		Iterator wordItr = indexes.getAnnotationIndex(WordToken.type)
 				.iterator();
@@ -316,7 +306,7 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 	}
 
 	private void setCanonicalForm(WordToken wordAnnotation, String word)
-			throws AnnotatorContextException {
+			throws AnalysisEngineProcessException {
 		// apply LVG processing to get canonical form
 		String canonicalForm = null;
 		if (useCmdCache) {
@@ -343,7 +333,7 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 					canonicalForm = output[1];
 				}
 			} catch (Exception e) {
-				throw new AnnotatorContextException(e);
+				throw new AnalysisEngineProcessException(e);
 			}
 
 		}
@@ -354,7 +344,7 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 	}
 
 	private void setLemma(WordToken wordAnnotation, String word, JCas jcas)
-			throws AnnotatorContextException {
+			throws AnalysisEngineProcessException {
 		// apply LVG processing to get lemmas
 		// key = lemma string, value = Set of POS tags
 		Map lemmaMap = null;
@@ -404,7 +394,7 @@ public class LvgAnnotator extends JTextAnnotator_ImplBase {
 					}
 				}
 			} catch (Exception e) {
-				throw new AnnotatorContextException(e);
+				throw new AnalysisEngineProcessException(e);
 			}
 		}
 

@@ -68,8 +68,8 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	 * @see dao.KernelEvaluationDao#storeKernel(java.lang.String, int, int,
 	 * double)
 	 */
-	public void storeKernel(KernelEvaluation kernelEvaluation, long instanceId1,
-			long instanceId2, double kernel) {
+	public void storeKernel(KernelEvaluation kernelEvaluation,
+			long instanceId1, long instanceId2, double kernel) {
 		long instanceId1s = instanceId1 <= instanceId2 ? instanceId1
 				: instanceId2;
 		long instanceId2s = instanceId1 <= instanceId2 ? instanceId2
@@ -77,19 +77,20 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 		// don't bother with the delete so we can batch insert the kernel eval
 		// delete existing norm
 		// if (getKernel(name, instanceId1, instanceId2) != null) {
-//		Query q = this.getSessionFactory().getCurrentSession()
-//				.getNamedQuery("deleteKernelEvaluation");
-//		q.setInteger("kernelEvaluationId",
-//				kernelEvaluation.getKernelEvaluationId());
-//		q.setInteger("instanceId1", instanceId1s);
-//		q.setInteger("instanceId2", instanceId2s);
-//		q.executeUpdate();
+		// Query q = this.getSessionFactory().getCurrentSession()
+		// .getNamedQuery("deleteKernelEvaluation");
+		// q.setInteger("kernelEvaluationId",
+		// kernelEvaluation.getKernelEvaluationId());
+		// q.setInteger("instanceId1", instanceId1s);
+		// q.setInteger("instanceId2", instanceId2s);
+		// q.executeUpdate();
 		// if (log.isWarnEnabled())
 		// log.warn("replacing kernel, instanceId1: " + instanceId1s
 		// + ", instanceId2: " + instanceId2s + ", name: " + name);
 		// }
 		KernelEvaluationInstance g = new KernelEvaluationInstance(
-				kernelEvaluation.getKernelEvaluationId(), instanceId1s, instanceId2s, kernel);
+				kernelEvaluation.getKernelEvaluationId(), instanceId1s,
+				instanceId2s, kernel);
 		this.getSessionFactory().getCurrentSession().save(g);
 	}
 
@@ -98,8 +99,8 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 	 * 
 	 * @see dao.KernelEvaluationDao#getKernel(java.lang.String, int, int)
 	 */
-	public Double getKernel(KernelEvaluation kernelEvaluation, long instanceId1,
-			long instanceId2) {
+	public Double getKernel(KernelEvaluation kernelEvaluation,
+			long instanceId1, long instanceId2) {
 		long instanceId1s = instanceId1 <= instanceId2 ? instanceId1
 				: instanceId2;
 		long instanceId2s = instanceId1 <= instanceId2 ? instanceId2
@@ -156,9 +157,9 @@ public class KernelEvaluationDaoImpl implements KernelEvaluationDao {
 						getSessionFactory().getCurrentSession().save(
 								kernelEvaluation);
 					} catch (Exception e) {
-						log.warn(
-								"couldn't save kernel evaluation, maybe somebody else did. try to retrieve kernel eval",
-								e);
+						log.warn("couldn't save kernel evaluation, maybe somebody else did. try to retrieve kernel eval");
+						if (log.isDebugEnabled())
+							log.debug("error saving kernel eval", e);
 						txStatus.setRollbackOnly();
 					}
 					return null;

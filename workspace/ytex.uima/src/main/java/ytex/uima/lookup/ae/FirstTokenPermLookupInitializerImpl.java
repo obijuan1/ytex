@@ -35,10 +35,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.uima.analysis_engine.annotator.AnnotatorContext;
+
+import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.annotator.AnnotatorInitializationException;
-import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JFSIndexRepository;
+import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 
 import edu.mayo.bmi.dictionary.DictionaryEngine;
@@ -47,12 +48,12 @@ import edu.mayo.bmi.lookup.algorithms.LookupAlgorithm;
 import edu.mayo.bmi.lookup.phrasebuilder.PhraseBuilder;
 import edu.mayo.bmi.lookup.phrasebuilder.VariantPhraseBuilderImpl;
 import edu.mayo.bmi.lookup.vo.LookupToken;
-import edu.mayo.bmi.uima.core.type.BaseToken;
-import edu.mayo.bmi.uima.core.type.ContractionToken;
-import edu.mayo.bmi.uima.core.type.NewlineToken;
-import edu.mayo.bmi.uima.core.type.PunctuationToken;
-import edu.mayo.bmi.uima.core.type.SymbolToken;
-import edu.mayo.bmi.uima.core.type.WordToken;
+import edu.mayo.bmi.uima.core.type.syntax.BaseToken;
+import edu.mayo.bmi.uima.core.type.syntax.ContractionToken;
+import edu.mayo.bmi.uima.core.type.syntax.NewlineToken;
+import edu.mayo.bmi.uima.core.type.syntax.PunctuationToken;
+import edu.mayo.bmi.uima.core.type.syntax.SymbolToken;
+import edu.mayo.bmi.uima.core.type.syntax.WordToken;
 import edu.mayo.bmi.uima.core.util.JCasUtil;
 import edu.mayo.bmi.uima.lookup.ae.LookupAnnotationToJCasAdapter;
 import edu.mayo.bmi.uima.lookup.ae.LookupInitializer;
@@ -91,7 +92,7 @@ public class FirstTokenPermLookupInitializerImpl implements LookupInitializer {
 	/*
 	 * vng - to support lookup using stemmed words
 	 */
-	public FirstTokenPermLookupInitializerImpl(AnnotatorContext aCtx,
+	public FirstTokenPermLookupInitializerImpl(UimaContext aCtx,
 			Properties props) throws ClassNotFoundException,
 			IllegalAccessException, NoSuchFieldException {
 		// TODO property validation could be done here

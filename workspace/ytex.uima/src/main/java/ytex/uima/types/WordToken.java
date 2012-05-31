@@ -1,6 +1,6 @@
 
 
-/* First created by JCasGen Thu Apr 19 20:50:38 EDT 2012 */
+/* First created by JCasGen Wed May 30 20:52:02 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas; 
@@ -10,24 +10,27 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** Negatable Word Token
- * Updated by JCasGen Thu Apr 19 20:50:38 EDT 2012
+ * Updated by JCasGen Wed May 30 20:52:02 EDT 2012
  * XML source: ../config/desc/ytex/uima/YTEXTypes.xml
  * @generated */
-public class WordToken extends edu.mayo.bmi.uima.core.type.WordToken {
+public class WordToken extends edu.mayo.bmi.uima.core.type.syntax.WordToken {
   /** @generated
    * @ordered 
    */
+  @SuppressWarnings ("hiding")
   public final static int typeIndexID = JCasRegistry.register(WordToken.class);
   /** @generated
    * @ordered 
    */
+  @SuppressWarnings ("hiding")
   public final static int type = typeIndexID;
   /** @generated  */
+  @Override
   public              int getTypeIndexID() {return typeIndexID;}
  
   /** Never called.  Disable default constructor
    * @generated */
-  protected WordToken() {}
+  protected WordToken() {/* intentionally empty block */}
     
   /** Internal - constructor used by generator 
    * @generated */
@@ -54,7 +57,7 @@ public class WordToken extends edu.mayo.bmi.uima.core.type.WordToken {
     * Write your own initialization here
     * <!-- end-user-doc -->
   @generated modifiable */
-  private void readObject() {}
+  private void readObject() {/*default - does nothing empty block */}
      
  
     

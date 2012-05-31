@@ -8,7 +8,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 import ytex.tools.SetupAuiFirstWord;
 import edu.mayo.bmi.lookup.vo.LookupAnnotation;
 import edu.mayo.bmi.lookup.vo.LookupToken;
-import edu.mayo.bmi.uima.core.type.WordToken;
+import edu.mayo.bmi.uima.core.type.syntax.WordToken;
 
 /**
  * allow dictionary lookup with stemmed words

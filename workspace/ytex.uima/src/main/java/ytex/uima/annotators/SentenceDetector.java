@@ -53,8 +53,11 @@ import com.google.common.base.Strings;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.mayo.bmi.uima.core.resource.MaxentModelResource;
 import edu.mayo.bmi.uima.core.sentence.EndOfSentenceScannerImpl;
-import edu.mayo.bmi.uima.core.type.Segment;
-import edu.mayo.bmi.uima.core.type.Sentence;
+import edu.mayo.bmi.uima.core.sentence.SentenceDetectorCtakes;
+//vng change import edu.mayo.bmi.uima.core.sentence.SentenceSpan;
+import edu.mayo.bmi.uima.core.type.textspan.Segment;
+import edu.mayo.bmi.uima.core.type.textspan.Sentence;
+import edu.mayo.bmi.uima.core.util.ParamUtil;
 
 /**
  * Wraps the OpenNLP sentence detector in a UIMA annotator.
@@ -94,26 +97,35 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 	private final String MAXENT_MODEL_RESRC_KEY = "MaxentModel";
 
 	/**
-	 * split paragraphs on this pattern
+	 * vng change split paragraphs on this pattern
 	 */
 	public static final String PARAGRAPH_PATTERN = "(?m):\\r{0,1}\\n|\\r{0,1}\\n\\r{0,1}\\n";
 	/**
-	 * split sentences on this pattern, after the '.'
+	 * vng change split sentences on this pattern, after the '.'
 	 */
 	public static final String PERIOD_PATTERN = "(?m)[^Dr|Ms|Mr|Mrs|Ms|\\p{Upper}]\\.\\s+\\p{Upper}";
 	/**
-	 * split sentences on these patterns
+	 * vng change split sentences on these patterns
 	 */
 	public static final String SPLIT_PATTERN = "(?im)\\n[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]|[\\(\\[]\\s*[yesxno]{0,3}\\s*[\\)\\]]\\s*\\r{0,1}\\n|^[^:\\r\\n]{3,20}\\:[^\\r\\n]{3,20}$";
+	/**
+	 * vng change
+	 */
 	private Pattern paragraphPattern;
+	/**
+	 * vng change
+	 */
 	private Pattern splitPattern;
+	/**
+	 * vng change
+	 */
 	private Pattern periodPattern;
 
 	private UimaContext context;
 
 	private Set<?> skipSegmentsSet;
 
-	private SentenceDetectorME sentenceDetector;
+	private SentenceDetectorCtakes sentenceDetector;
 
 	private String NEWLINE = "\n";
 
@@ -126,61 +138,49 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 		System.out.println(Arrays.asList(aContext.getConfigParameterNames()));
 
 		context = aContext;
-		configInit();
+		try {
+			configInit();
+		} catch (ResourceAccessException ace) {
+			throw new ResourceInitializationException(ace);
+		}
 	}
 
 	/**
 	 * Reads configuration parameters.
 	 */
-	private void configInit() throws ResourceInitializationException {
-		MaxentModelResource mmResrc;
-		try {
-			mmResrc = (MaxentModelResource) context
-					.getResourceObject(MAXENT_MODEL_RESRC_KEY);
-			if (mmResrc == null) {
-				// TODO Consider throwing an exception here
-				logger.warn("Unable to locate resource with key="
-						+ MAXENT_MODEL_RESRC_KEY + ".");
-			} else {
-				EndOfSentenceScannerImpl eoss = new EndOfSentenceScannerImpl();
-				char[] eosc = eoss.getEndOfSentenceCharacters();
-				// SentenceDContextGenerator cg = new
-				// SentenceDContextGenerator();
-				DefaultSDContextGenerator cg = new DefaultSDContextGenerator(
-						eosc);
-				sentenceDetector = new SentenceDetectorME(mmResrc.getModel(),
-						cg, eoss);
-			}
-		} catch (ResourceAccessException e) {
-			throw new ResourceInitializationException(e);
-		}
+	private void configInit() throws ResourceAccessException {
+		MaxentModelResource mmResrc = (MaxentModelResource) context
+				.getResourceObject(MAXENT_MODEL_RESRC_KEY);
 		// <code>SuffixMaxentModelResourceImpl</code> will log the name of the
 		// resource at load() time
 		// logger.info("Sentence detector resource: " +
 		// mmResrc.getModel().toString());
 
+		if (mmResrc == null) {
+			// TODO Consider throwing an exception here
+			logger.warn("Unable to locate resource with key="
+					+ MAXENT_MODEL_RESRC_KEY + ".");
+		} else {
+			EndOfSentenceScannerImpl eoss = new EndOfSentenceScannerImpl();
+			char[] eosc = eoss.getEndOfSentenceCharacters();
+			// SentenceDContextGenerator cg = new SentenceDContextGenerator();
+			DefaultSDContextGenerator cg = new DefaultSDContextGenerator(eosc);
+			sentenceDetector = new SentenceDetectorCtakes(mmResrc.getModel(),
+					cg, eoss);
+		}
+		skipSegmentsSet = ParamUtil.getStringParameterValuesSet(
+				PARAM_SEGMENTS_TO_SKIP, context);
+		// vng change begin
 		paragraphPattern = compilePatternCheck("paragraphPattern",
 				PARAGRAPH_PATTERN);
 		splitPattern = compilePatternCheck("splitPattern", SPLIT_PATTERN);
 		periodPattern = compilePatternCheck("periodPattern", PERIOD_PATTERN);
-		skipSegmentsSet = getStringParameterValuesSet(PARAM_SEGMENTS_TO_SKIP,
-				context);
+		// vng change end
 	}
 
-	public static Set<String> getStringParameterValuesSet(String parameterName,
-			UimaContext annotatorContext) {
-		Set<String> returnValues = new HashSet<String>();
-		String[] strings = (String[]) annotatorContext
-				.getConfigParameterValue(parameterName);
-		if (strings == null)
-			return returnValues;
-
-		for (int i = 0; i < strings.length; i++) {
-			returnValues.add(strings[i]);
-		}
-		return returnValues;
-	}
-
+	/**
+	 * vng change
+	 */
 	private Pattern compilePatternCheck(String patternKey, String patternDefault) {
 		String strPattern = (String) context
 				.getConfigParameterValue(patternKey);
@@ -288,15 +288,23 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 	 *         Sentence annotations added to the CAS for this section
 	 * @throws AnnotatorProcessException
 	 */
+
 	protected int annotateRange(JCas jcas, String text, int b, int e,
 			int sentenceCount) {
+
+		// vng change begin
+		// int b = section.getBegin();
+		// int e = section.getEnd();
+		// vng chang end
 
 		// Use OpenNLP tools to split text into sentences
 		// The sentence detector returns the offsets of the sentence-endings it
 		// detects
 		// within the string
 		int[] sentenceBreaks = sentenceDetector.sentPosDetect(text.substring(b,
-				e));
+				e)); // OpenNLP tools 1.5 returns Spans rather than offsets that
+						// 1.4 did
+
 		int numSentences = sentenceBreaks.length;
 		// There might be text after the last sentence-ending found by detector,
 		// so +1
@@ -344,7 +352,8 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 																// type
 			}
 		}
-		// vng split at ".  "
+		// vng change begin
+		// split at ".  "
 		ArrayList<SentenceSpan> sentenceSpans = new ArrayList<SentenceSpan>(
 				sentenceSpans1.size());
 		for (SentenceSpan span : sentenceSpans1) {
@@ -353,6 +362,7 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 						splitPattern));
 			}
 		}
+		// vng change end
 
 		// Add sentence annotations to the CAS
 		int previousEnd = -1;
@@ -420,12 +430,16 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 
 		logger.info("Training new model from " + inFile.getAbsolutePath());
 		logger.info("Using " + numEosc + " end of sentence characters.");
-		GISModel mod = SentenceDetectorME.train(inFile, iters, cut, scanner);
-		SuffixSensitiveGISModelWriter ssgmw = new SuffixSensitiveGISModelWriter(
-				mod, outFile);
-		logger.info("Saving the model as: " + outFile.getAbsolutePath());
-		ssgmw.persist();
-
+		
+		logger.error("----------------------------------------------------------------------------------"); 
+		logger.error("Need to update yet for OpenNLP changes "); // TODO 
+		logger.error("Commented out code that no longer compiles due to OpenNLP API incompatible changes"); // TODO 
+		logger.error("----------------------------------------------------------------------------------"); 
+		//GISModel mod = SentenceDetectorME.train(inFile, iters, cut, scanner);
+		//SuffixSensitiveGISModelWriter ssgmw = new SuffixSensitiveGISModelWriter(
+		//		mod, outFile);
+		//logger.info("Saving the model as: " + outFile.getAbsolutePath());
+		//ssgmw.persist();
 	}
 
 	public static void usage(Logger log) {

@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Thu Apr 19 20:50:38 EDT 2012 */
+/* First created by JCasGen Wed May 30 20:52:02 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas;
@@ -13,10 +13,11 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Thu Apr 19 20:50:38 EDT 2012
+ * Updated by JCasGen Wed May 30 20:52:02 EDT 2012
  * @generated */
-public class OntologyConcept_Type extends edu.mayo.bmi.uima.core.type.OntologyConcept_Type {
+public class OntologyConcept_Type extends edu.mayo.bmi.uima.core.type.refsem.OntologyConcept_Type {
   /** @generated */
+  @Override
   protected FSGenerator getFSGenerator() {return fsGenerator;}
   /** @generated */
   private final FSGenerator fsGenerator = 
@@ -35,9 +36,11 @@ public class OntologyConcept_Type extends edu.mayo.bmi.uima.core.type.OntologyCo
   	  }
     };
   /** @generated */
+  @SuppressWarnings ("hiding")
   public final static int typeIndexID = OntologyConcept.typeIndexID;
   /** @generated 
      @modifiable */
+  @SuppressWarnings ("hiding")
   public final static boolean featOkTst = JCasRegistry.getFeatOkTst("ytex.uima.types.OntologyConcept");
  
   /** @generated */

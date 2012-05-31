@@ -7,8 +7,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 
-import org.apache.uima.analysis_engine.annotator.AnnotatorContext;
-import org.apache.uima.analysis_engine.annotator.AnnotatorProcessException;
+import org.apache.uima.UimaContext;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 
@@ -17,13 +16,11 @@ import ytex.uima.types.OntologyConcept;
 import ytex.umls.dao.UMLSDao;
 import edu.mayo.bmi.dictionary.MetaDataHit;
 import edu.mayo.bmi.lookup.vo.LookupHit;
-import edu.mayo.bmi.uima.core.type.NamedEntity;
-import edu.mayo.bmi.uima.core.util.TypeSystemConst;
+import edu.mayo.bmi.uima.core.type.constants.CONST;
+import edu.mayo.bmi.uima.core.type.textsem.EntityMention;
 import edu.mayo.bmi.uima.lookup.ae.BaseLookupConsumerImpl;
 import edu.mayo.bmi.uima.lookup.ae.LookupConsumer;
 import gnu.trove.set.TIntSet;
-import gnu.trove.set.TShortSet;
-import gnu.trove.set.hash.TShortHashSet;
 
 /**
  * Based on cTAKES NamedEntityLookupConsumerImpl. Modified to filter out
@@ -85,19 +82,18 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 		return iv_props.getProperty(CODING_SCHEME_PRP_KEY);
 	}
 
-	public NamedEntityLookupConsumerImpl(AnnotatorContext aCtx,
+	public NamedEntityLookupConsumerImpl(UimaContext aCtx,
 			Properties props, int maxListSize) {
 		iv_props = props;
 		initRxnormSet(props);
 	}
 
-	public NamedEntityLookupConsumerImpl(AnnotatorContext aCtx, Properties props) {
+	public NamedEntityLookupConsumerImpl(UimaContext aCtx, Properties props) {
 		iv_props = props;
 		initRxnormSet(props);
 	}
 
-	public void consumeHits(JCas jcas, Iterator lhItr)
-			throws AnnotatorProcessException {
+	public void consumeHits(JCas jcas, Iterator lhItr) {
 		Iterator hitsByOffsetItr = organizeByOffset(lhItr);
 		while (hitsByOffsetItr.hasNext()) {
 			Collection hitsAtOffsetCol = (Collection) hitsByOffsetItr.next();
@@ -129,10 +125,10 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 				ocArrIdx++;
 			}
 
-			NamedEntity neAnnot = new NamedEntity(jcas);
+			EntityMention neAnnot = new EntityMention(jcas);
 			neAnnot.setBegin(neBegin);
 			neAnnot.setEnd(neEnd);
-			neAnnot.setDiscoveryTechnique(TypeSystemConst.NE_DISCOVERY_TECH_DICT_LOOKUP);
+			neAnnot.setDiscoveryTechnique(CONST.NE_DISCOVERY_TECH_DICT_LOOKUP);
 			neAnnot.setOntologyConceptArr(ocArr);
 			neAnnot.addToIndexes();
 		}

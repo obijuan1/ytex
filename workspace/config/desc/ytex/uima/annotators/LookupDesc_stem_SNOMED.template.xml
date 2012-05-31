@@ -31,7 +31,7 @@
 				<properties>
 					<property key="textMetaFields" value="tok_str" />
 					<property key="maxPermutationLevel" value="5" />
-					<property key="windowAnnotations" value="edu.mayo.bmi.uima.core.type.Sentence" />
+					<property key="windowAnnotations" value="edu.mayo.bmi.uima.core.type.textspan.Sentence" />
 					<!-- <property key="windowAnnotations" value="edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation"/> -->
 					<property key="exclusionTags"
 						value="VB,VBD,VBG,VBN,VBP,VBZ,CC,CD,DT,EX,LS,MD,PDT,POS,PP,PP$,PRP,PRP$,RP,TO,WDT,WP,WPS,WRB" />

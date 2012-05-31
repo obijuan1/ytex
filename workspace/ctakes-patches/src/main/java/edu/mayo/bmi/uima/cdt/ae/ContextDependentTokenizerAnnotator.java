@@ -29,16 +29,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.uima.analysis_engine.ResultSpecification;
-import org.apache.uima.analysis_engine.annotator.AnnotatorConfigurationException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorContext;
-import org.apache.uima.analysis_engine.annotator.AnnotatorInitializationException;
-import org.apache.uima.analysis_engine.annotator.AnnotatorProcessException;
-import org.apache.uima.analysis_engine.annotator.JTextAnnotator_ImplBase;
+import org.apache.uima.UimaContext;
+import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
+import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.FSIterator;
 import org.apache.uima.cas.text.AnnotationIndex;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JFSIndexRepository;
+import org.apache.uima.resource.ResourceInitializationException;
 
 import edu.mayo.bmi.fsm.machine.DateFSM;
 import edu.mayo.bmi.fsm.machine.FractionFSM;
@@ -56,13 +54,6 @@ import edu.mayo.bmi.fsm.output.RomanNumeralToken;
 import edu.mayo.bmi.fsm.output.TimeToken;
 import edu.mayo.bmi.fsm.token.BaseToken;
 import edu.mayo.bmi.fsm.token.EolToken;
-import edu.mayo.bmi.uima.cdt.type.DateAnnotation;
-import edu.mayo.bmi.uima.cdt.type.FractionAnnotation;
-import edu.mayo.bmi.uima.cdt.type.MeasurementAnnotation;
-import edu.mayo.bmi.uima.cdt.type.PersonTitleAnnotation;
-import edu.mayo.bmi.uima.cdt.type.RangeAnnotation;
-import edu.mayo.bmi.uima.cdt.type.RomanNumeralAnnotation;
-import edu.mayo.bmi.uima.cdt.type.TimeAnnotation;
 import edu.mayo.bmi.uima.core.ae.TokenizerAnnotator;
 import edu.mayo.bmi.uima.core.fsm.adapters.ContractionTokenAdapter;
 import edu.mayo.bmi.uima.core.fsm.adapters.DecimalTokenAdapter;
@@ -71,22 +62,29 @@ import edu.mayo.bmi.uima.core.fsm.adapters.NewlineTokenAdapter;
 import edu.mayo.bmi.uima.core.fsm.adapters.PunctuationTokenAdapter;
 import edu.mayo.bmi.uima.core.fsm.adapters.SymbolTokenAdapter;
 import edu.mayo.bmi.uima.core.fsm.adapters.WordTokenAdapter;
-import edu.mayo.bmi.uima.core.type.ContractionToken;
-import edu.mayo.bmi.uima.core.type.NewlineToken;
-import edu.mayo.bmi.uima.core.type.NumToken;
-import edu.mayo.bmi.uima.core.type.PunctuationToken;
-import edu.mayo.bmi.uima.core.type.Sentence;
-import edu.mayo.bmi.uima.core.type.SymbolToken;
-import edu.mayo.bmi.uima.core.type.WordToken;
+import edu.mayo.bmi.uima.core.type.syntax.ContractionToken;
+import edu.mayo.bmi.uima.core.type.syntax.NewlineToken;
+import edu.mayo.bmi.uima.core.type.syntax.NumToken;
+import edu.mayo.bmi.uima.core.type.syntax.PunctuationToken;
+import edu.mayo.bmi.uima.core.type.syntax.SymbolToken;
+import edu.mayo.bmi.uima.core.type.syntax.WordToken;
+import edu.mayo.bmi.uima.core.type.textsem.DateAnnotation;
+import edu.mayo.bmi.uima.core.type.textsem.FractionAnnotation;
+import edu.mayo.bmi.uima.core.type.textsem.MeasurementAnnotation;
+import edu.mayo.bmi.uima.core.type.textsem.PersonTitleAnnotation;
+import edu.mayo.bmi.uima.core.type.textsem.RangeAnnotation;
+import edu.mayo.bmi.uima.core.type.textsem.RomanNumeralAnnotation;
+import edu.mayo.bmi.uima.core.type.textsem.TimeAnnotation;
+import edu.mayo.bmi.uima.core.type.textspan.Sentence;
 
 /**
  * Finds tokens based on context.
  * 
  * VNG: changed to avoid NPE in case BaseToken is null (see VNG CHANGE below)
- * 
+ *
  * @author Mayo Clinic
  */
-public class ContextDependentTokenizerAnnotator extends JTextAnnotator_ImplBase {
+public class ContextDependentTokenizerAnnotator extends JCasAnnotator_ImplBase {
 	// LOG4J logger based on class name
 	private Logger iv_logger = Logger.getLogger(getClass().getName());
 
@@ -98,9 +96,7 @@ public class ContextDependentTokenizerAnnotator extends JTextAnnotator_ImplBase 
 	private MeasurementFSM iv_measurementFSM;
 	private PersonTitleFSM iv_personTitleFSM;
 
-	public void initialize(AnnotatorContext annotCtx)
-			throws AnnotatorInitializationException,
-			AnnotatorConfigurationException {
+	public void initialize(UimaContext annotCtx) throws ResourceInitializationException {
 		super.initialize(annotCtx);
 
 		iv_dateFSM = new DateFSM();
@@ -113,20 +109,17 @@ public class ContextDependentTokenizerAnnotator extends JTextAnnotator_ImplBase 
 		iv_logger.info("Finite state machines loaded.");
 	}
 
-	public void process(JCas jcas, ResultSpecification rs)
-			throws AnnotatorProcessException {
+	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
 		try {
-
-			iv_logger.info(" process(JCas, ResultSpecification)");
+			
+	    	iv_logger.info("process(JCas)");
 
 			JFSIndexRepository indexes = jcas.getJFSIndexRepository();
-			Iterator<?> sentItr = indexes.getAnnotationIndex(Sentence.type)
-					.iterator();
-			AnnotationIndex baseTokenIndex = jcas.getJFSIndexRepository()
-					.getAnnotationIndex(
-							edu.mayo.bmi.uima.core.type.BaseToken.type);
-
+			Iterator<?> sentItr = indexes.getAnnotationIndex(Sentence.type).iterator();
+			AnnotationIndex baseTokenIndex = jcas.getJFSIndexRepository().getAnnotationIndex(
+					edu.mayo.bmi.uima.core.type.syntax.BaseToken.type);
+			
 			while (sentItr.hasNext()) {
 				Sentence sentAnnot = (Sentence) sentItr.next();
 				FSIterator btaItr = baseTokenIndex.subiterator(sentAnnot);
@@ -135,9 +128,10 @@ public class ContextDependentTokenizerAnnotator extends JTextAnnotator_ImplBase 
 				// machines
 				List<BaseToken> baseTokenList = new ArrayList<BaseToken>();
 				while (btaItr.hasNext()) {
-					edu.mayo.bmi.uima.core.type.BaseToken bta = (edu.mayo.bmi.uima.core.type.BaseToken) btaItr
+					edu.mayo.bmi.uima.core.type.syntax.BaseToken bta = (edu.mayo.bmi.uima.core.type.syntax.BaseToken) btaItr
 							.next();
 					// VNG CHANGE - ignore newlines, avoid null tokens
+					//baseTokenList.add(adaptToBaseToken(bta));
 					BaseToken bt = adaptToBaseToken(bta);
 					if (bt != null && !(bt instanceof EolToken))
 						baseTokenList.add(bt);
@@ -147,19 +141,17 @@ public class ContextDependentTokenizerAnnotator extends JTextAnnotator_ImplBase 
 				executeFSMs(jcas, baseTokenList);
 			}
 		} catch (Exception e) {
-			throw new AnnotatorProcessException(e);
+			throw new AnalysisEngineProcessException(e);
 		}
 	}
 
-	private void executeFSMs(JCas jcas, List<? extends BaseToken> baseTokenList)
-			throws AnnotatorProcessException {
+	private void executeFSMs(JCas jcas, List<? extends BaseToken> baseTokenList) throws AnalysisEngineProcessException {
 		try {
 			Set<DateToken> dateTokenSet = iv_dateFSM.execute(baseTokenList);
 			Iterator<DateToken> dateTokenItr = dateTokenSet.iterator();
 			while (dateTokenItr.hasNext()) {
 				DateToken dt = dateTokenItr.next();
-				DateAnnotation dta = new DateAnnotation(jcas,
-						dt.getStartOffset(), dt.getEndOffset());
+				DateAnnotation dta = new DateAnnotation(jcas, dt.getStartOffset(), dt.getEndOffset());
 				dta.addToIndexes();
 			}
 
@@ -167,66 +159,51 @@ public class ContextDependentTokenizerAnnotator extends JTextAnnotator_ImplBase 
 			Iterator<TimeToken> timeTokenItr = timeTokenSet.iterator();
 			while (timeTokenItr.hasNext()) {
 				TimeToken tt = timeTokenItr.next();
-				TimeAnnotation ta = new TimeAnnotation(jcas,
-						tt.getStartOffset(), tt.getEndOffset());
+				TimeAnnotation ta = new TimeAnnotation(jcas, tt.getStartOffset(), tt.getEndOffset());
 				ta.addToIndexes();
 			}
 
-			Set<RomanNumeralToken> romanNumeralTokenSet = iv_romanNumeralFSM
-					.execute(baseTokenList);
-			Iterator<RomanNumeralToken> romanNumeralTokenItr = romanNumeralTokenSet
-					.iterator();
+			Set<RomanNumeralToken> romanNumeralTokenSet = iv_romanNumeralFSM.execute(baseTokenList);
+			Iterator<RomanNumeralToken> romanNumeralTokenItr = romanNumeralTokenSet.iterator();
 			while (romanNumeralTokenItr.hasNext()) {
 				RomanNumeralToken rnt = romanNumeralTokenItr.next();
-				RomanNumeralAnnotation rna = new RomanNumeralAnnotation(jcas,
-						rnt.getStartOffset(), rnt.getEndOffset());
+				RomanNumeralAnnotation rna = new RomanNumeralAnnotation(jcas, rnt.getStartOffset(), rnt.getEndOffset());
 				rna.addToIndexes();
 			}
 
-			Set<FractionToken> fractionTokenSet = iv_fractionFSM
-					.execute(baseTokenList);
-			Iterator<FractionToken> fractionTokenItr = fractionTokenSet
-					.iterator();
+			Set<FractionToken> fractionTokenSet = iv_fractionFSM.execute(baseTokenList);
+			Iterator<FractionToken> fractionTokenItr = fractionTokenSet.iterator();
 			while (fractionTokenItr.hasNext()) {
 				FractionToken ft = fractionTokenItr.next();
-				FractionAnnotation fa = new FractionAnnotation(jcas,
-						ft.getStartOffset(), ft.getEndOffset());
+				FractionAnnotation fa = new FractionAnnotation(jcas, ft.getStartOffset(), ft.getEndOffset());
 				fa.addToIndexes();
 			}
 
-			Set<RangeToken> rangeTokenSet = iv_rangeFSM.execute(baseTokenList,
-					romanNumeralTokenSet);
+			Set<RangeToken> rangeTokenSet = iv_rangeFSM.execute(baseTokenList, romanNumeralTokenSet);
 			Iterator<RangeToken> rangeTokenItr = rangeTokenSet.iterator();
 			while (rangeTokenItr.hasNext()) {
 				RangeToken rt = rangeTokenItr.next();
-				RangeAnnotation ra = new RangeAnnotation(jcas,
-						rt.getStartOffset(), rt.getEndOffset());
+				RangeAnnotation ra = new RangeAnnotation(jcas, rt.getStartOffset(), rt.getEndOffset());
 				ra.addToIndexes();
 			}
 
-			Set<MeasurementToken> measurementTokenSet = iv_measurementFSM
-					.execute(baseTokenList, rangeTokenSet);
-			Iterator<MeasurementToken> measurementTokenItr = measurementTokenSet
-					.iterator();
+			Set<MeasurementToken> measurementTokenSet = iv_measurementFSM.execute(baseTokenList, rangeTokenSet);
+			Iterator<MeasurementToken> measurementTokenItr = measurementTokenSet.iterator();
 			while (measurementTokenItr.hasNext()) {
 				MeasurementToken mt = measurementTokenItr.next();
-				MeasurementAnnotation ma = new MeasurementAnnotation(jcas,
-						mt.getStartOffset(), mt.getEndOffset());
+				MeasurementAnnotation ma = new MeasurementAnnotation(jcas, mt.getStartOffset(), mt.getEndOffset());
 				ma.addToIndexes();
 			}
 
-			Set<PersonTitleToken> personTitleTokenSet = iv_personTitleFSM
-					.execute(baseTokenList);
-			Iterator<PersonTitleToken> personTitleTokenItr = personTitleTokenSet
-					.iterator();
+			Set<PersonTitleToken> personTitleTokenSet = iv_personTitleFSM.execute(baseTokenList);
+			Iterator<PersonTitleToken> personTitleTokenItr = personTitleTokenSet.iterator();
 			while (personTitleTokenItr.hasNext()) {
 				PersonTitleToken ptt = personTitleTokenItr.next();
-				PersonTitleAnnotation pta = new PersonTitleAnnotation(jcas,
-						ptt.getStartOffset(), ptt.getEndOffset());
+				PersonTitleAnnotation pta = new PersonTitleAnnotation(jcas, ptt.getStartOffset(), ptt.getEndOffset());
 				pta.addToIndexes();
 			}
 		} catch (Exception e) {
-			throw new AnnotatorProcessException(e);
+			throw new AnalysisEngineProcessException(e);
 		}
 	}
 
@@ -237,8 +214,7 @@ public class ContextDependentTokenizerAnnotator extends JTextAnnotator_ImplBase 
 	 * @param obj
 	 * @return
 	 */
-	private BaseToken adaptToBaseToken(edu.mayo.bmi.uima.core.type.BaseToken obj)
-			throws Exception {
+	private BaseToken adaptToBaseToken(edu.mayo.bmi.uima.core.type.syntax.BaseToken obj) throws Exception {
 		if (obj instanceof WordToken) {
 			WordToken wta = (WordToken) obj;
 			return new WordTokenAdapter(wta);
@@ -263,8 +239,6 @@ public class ContextDependentTokenizerAnnotator extends JTextAnnotator_ImplBase 
 			return new SymbolTokenAdapter(sta);
 		}
 
-		throw new Exception(
-				"No Context Dependent Tokenizer adapter for class: "
-						+ obj.getClass());
+		throw new Exception("No Context Dependent Tokenizer adapter for class: " + obj.getClass());
 	}
 }

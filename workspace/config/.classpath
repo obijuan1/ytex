@@ -9,7 +9,7 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/ytex.negex"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ytex.uima"/>
-	<classpathentry exported="true" kind="var" path="ICTAKES_HOME/resources"/>
-	<classpathentry exported="true" kind="var" path="ICTAKES_HOME/cTAKESdesc"/>
+	<classpathentry exported="true" kind="var" path="CTAKES_HOME/resources"/>
+	<classpathentry exported="true" kind="var" path="CTAKES_HOME/cTAKESdesc"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

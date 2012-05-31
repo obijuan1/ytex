@@ -22,7 +22,7 @@ SELECT
   da.anno_base_id,
   d.analysis_batch,
   da.document_id,
-  ne.certainty,
+  ne.polarity,
   o.code,
   o.cui,
   substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text,
@@ -44,7 +44,7 @@ INNER JOIN document d on da.document_id = d.document_id
 
 CREATE VIEW v_document_ontoanno
 AS
-SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.code, o.cui, d.analysis_batch, o.disambiguated
+SELECT d.document_id, da.span_begin, da.span_end, ne.polarity, o.code, o.cui, d.analysis_batch, o.disambiguated
 FROM document AS d INNER JOIN
 anno_base AS da ON d.document_id = da.document_id INNER JOIN
 anno_named_entity AS ne ON da.anno_base_id = ne.anno_base_id INNER JOIN

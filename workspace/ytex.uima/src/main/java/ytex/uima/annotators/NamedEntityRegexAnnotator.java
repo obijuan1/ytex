@@ -17,8 +17,8 @@ import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 
-import edu.mayo.bmi.uima.core.type.NamedEntity;
-import edu.mayo.bmi.uima.core.type.Segment;
+import edu.mayo.bmi.uima.core.type.textsem.IdentifiedAnnotation;
+import edu.mayo.bmi.uima.core.type.textspan.Segment;
 
 import ytex.uima.ApplicationContextHolder;
 import ytex.uima.dao.NamedEntityRegexDao;
@@ -114,7 +114,7 @@ public class NamedEntityRegexAnnotator extends JCasAnnotator_ImplBase {
 		int nOffset = anno != null ? anno.getBegin() : 0;
 		Matcher matcher = pattern.matcher(annoText);
 		while (matcher.find()) {
-			NamedEntity ne = new NamedEntity(aJCas);
+			IdentifiedAnnotation ne = new IdentifiedAnnotation(aJCas);
 			ne.setBegin(nOffset + matcher.start());
 			ne.setEnd(nOffset + matcher.end());
 			FSArray ocArr = new FSArray(aJCas, 1);

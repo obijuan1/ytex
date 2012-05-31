@@ -19,10 +19,11 @@ import org.apache.uima.resource.ResourceInitializationException;
 
 import com.google.common.base.Strings;
 
+import edu.mayo.bmi.uima.core.type.textspan.Segment;
+
 import ytex.uima.ApplicationContextHolder;
 import ytex.uima.dao.SegmentRegexDao;
 import ytex.uima.model.SegmentRegex;
-import edu.mayo.bmi.uima.core.type.Segment;
 
 /**
  * Annotate segments (i.e. sections). Use regexs to find segments. Read the

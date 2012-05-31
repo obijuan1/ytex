@@ -27,9 +27,9 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 
-import edu.mayo.bmi.uima.context.type.ContextAnnotation;
-import edu.mayo.bmi.uima.core.type.NamedEntity;
-import edu.mayo.bmi.uima.core.type.Sentence;
+import edu.mayo.bmi.uima.core.type.textsem.ContextAnnotation;
+import edu.mayo.bmi.uima.core.type.textsem.IdentifiedAnnotation;
+import edu.mayo.bmi.uima.core.type.textspan.Sentence;
 
 /**
  * Negex adapted to cTAKES. Checks negation status of named entities. Loads
@@ -44,21 +44,21 @@ import edu.mayo.bmi.uima.core.type.Sentence;
  * <li>negatePossibilities : should possibilities be negated, default = true? if
  * true,
  * <ul>
- * <li>negated: certainty=-1, confidence=0
- * <li>possible: certainty=-1, confidence=-1
- * <li>affirmed: certainty=0, confidence=0
+ * <li>negated: polarity=-1, confidence=1
+ * <li>possible: polarity=-1, confidence=-1
+ * <li>affirmed: polarity=1, confidence=1
  * </ul
  * if false
  * <ul>
- * <li>negated: certainty=-1, confidence=0
- * <li>possible: certainty=0, confidence=-1
- * <li>affirmed: certainty=0, confidence=0
+ * <li>negated: polarity=-1, confidence=1
+ * <li>possible: polarity=1, confidence=-1
+ * <li>affirmed: polarity=1, confidence=1
  * </ul>
  * <li>storeAsInterval
  * <ul>
- * <li>negated: certainty=-1, confidence = -1
- * <li>possible: certainty=-1, confidence = 0.5
- * <li>affirmed: certainty=0, confidence = 1
+ * <li>negated: polarity=-1, confidence = -1
+ * <li>possible: polarity=1, confidence = 0.5
+ * <li>affirmed: polarity=1, confidence = 1
  * </ul>
  * 
  * Added support for negating arbitrary annotations. Set the targetTypeName to
@@ -192,20 +192,44 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 
 	}
 
+	public static interface TargetAnnoFilter {
+		public boolean filter(Annotation anno);
+	}
+
+	/**
+	 * only bother with IdentifiedAnnotations that have concepts
+	 * 
+	 * @author vijay
+	 * 
+	 */
+	public static class NamedEntityTargetAnnoFilter implements TargetAnnoFilter {
+
+		@Override
+		public boolean filter(Annotation anno) {
+			if (!(anno instanceof IdentifiedAnnotation))
+				return false;
+			IdentifiedAnnotation ia = (IdentifiedAnnotation) anno;
+			return ia.getOntologyConceptArr() != null
+					&& ia.getOntologyConceptArr().size() > 0;
+		}
+
+	}
+
 	@Override
 	public void process(JCas aJCas) {
 		AnnotationIndex sentenceIdx = aJCas
 				.getAnnotationIndex(Sentence.typeIndexID);
 		AnnotationIndex neIdx = aJCas
-				.getAnnotationIndex(NamedEntity.typeIndexID);
-		negateAnnotations(aJCas, sentenceIdx, neIdx);
+				.getAnnotationIndex(IdentifiedAnnotation.typeIndexID);
+		negateAnnotations(aJCas, sentenceIdx, neIdx,
+				new NamedEntityTargetAnnoFilter());
 		if (targetTypeName != null) {
 			try {
 				negateAnnotations(
 						aJCas,
 						sentenceIdx,
 						aJCas.getAnnotationIndex(aJCas.getTypeSystem().getType(
-								targetTypeName)));
+								targetTypeName)), null);
 			} catch (Exception e) {
 				log.error("error getting typeSystemId for " + targetTypeName, e);
 			}
@@ -213,14 +237,15 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 	}
 
 	private void negateAnnotations(JCas aJCas, AnnotationIndex sentenceIdx,
-			AnnotationIndex targetIdx) {
+			AnnotationIndex targetIdx, TargetAnnoFilter filter) {
 		FSIterator sentenceIter = sentenceIdx.iterator();
 		while (sentenceIter.hasNext()) {
 			Sentence s = (Sentence) sentenceIter.next();
 			FSIterator neIter = targetIdx.subiterator(s);
 			while (neIter.hasNext()) {
 				Annotation ne = (Annotation) neIter.next();
-				checkNegation(aJCas, s, ne);
+				if (filter.filter(ne))
+					checkNegation(aJCas, s, ne);
 				// checkNegation2(aJCas, s, ne);
 			}
 		}
@@ -421,9 +446,9 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 	 *            should possiblities be negated?
 	 */
 	private void checkNegation(JCas aJCas, Sentence s, Annotation ne) {
-		if (storeAsInterval && ne instanceof NamedEntity) {
+		if (storeAsInterval && ne instanceof IdentifiedAnnotation) {
 			// default is affirmed, which is coded as confidence = 1
-			((NamedEntity) ne).setConfidence(1);
+			((IdentifiedAnnotation) ne).setConfidence(1);
 		}
 		// need to add . on either side due to the way the regexs are built
 		String sentence = "." + s.getCoveredText() + ".";
@@ -497,8 +522,8 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 		}
 	}
 
-	private void checkNegation2(JCas aJCas, Sentence s, NamedEntity ne,
-			boolean negPoss) {
+	private void checkNegation2(JCas aJCas, Sentence s,
+			IdentifiedAnnotation ne, boolean negPoss) {
 		// Sorter s = new Sorter();
 		String sToReturn = "";
 		String sScope = "";
@@ -769,15 +794,15 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 	 */
 	private void annotateNegation(JCas aJCas, Sentence s, Annotation anno,
 			NegexToken t, boolean negated, boolean possible) {
-		if (anno instanceof NamedEntity) {
-			NamedEntity ne = (NamedEntity) anno;
+		if (anno instanceof IdentifiedAnnotation) {
+			IdentifiedAnnotation ne = (IdentifiedAnnotation) anno;
 			if (!storeAsInterval) {
 				if (possible)
 					ne.setConfidence(-1);
 				if (negated || (this.negatePossibilities && possible))
-					ne.setCertainty(-1);
+					ne.setPolarity(-1);
 			} else {
-				ne.setCertainty(negated || possible ? -1 : 0);
+				ne.setPolarity(negated || possible ? -1 : 0);
 				float confidence = negated ? -1 : 1;
 				if (possible)
 					confidence *= 0.5;

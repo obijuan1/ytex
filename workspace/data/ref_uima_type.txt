@@ -1,34 +1,28 @@
-1	edu.mayo.bmi.uima.cdt.type.DateAnnotation	
-2	edu.mayo.bmi.uima.cdt.type.FractionAnnotation	
-3	edu.mayo.bmi.uima.cdt.type.MeasurementAnnotation	
-4	edu.mayo.bmi.uima.cdt.type.PersonTitleAnnotation	
-5	edu.mayo.bmi.uima.cdt.type.RangeAnnotation	
-6	edu.mayo.bmi.uima.cdt.type.RomanNumeralAnnotation	
-7	edu.mayo.bmi.uima.cdt.type.TimeAnnotation	
-8	edu.mayo.bmi.uima.core.type.NamedEntity	anno_named_entity
-9	edu.mayo.bmi.uima.core.type.Sentence	
-12	edu.mayo.bmi.uima.core.type.Segment	
-13	org.apache.uima.examples.SourceDocumentInformation	
-20	edu.mayo.bmi.uima.core.type.ContractionToken	
-21	edu.mayo.bmi.uima.core.type.NewlineToken	
-22	edu.mayo.bmi.uima.core.type.NumToken	anno_token
-23	edu.mayo.bmi.uima.core.type.PunctuationToken	
-24	edu.mayo.bmi.uima.core.type.SymbolToken	
-25	edu.mayo.bmi.uima.core.type.WordToken	anno_token
+1	edu.mayo.bmi.uima.core.type.textsem.DateAnnotation	
+2	edu.mayo.bmi.uima.core.type.textsem.FractionAnnotation	
+3	edu.mayo.bmi.uima.core.type.textsem.MeasurementAnnotation	
+4	edu.mayo.bmi.uima.core.type.textsem.PersonTitleAnnotation	
+5	edu.mayo.bmi.uima.core.type.textsem.RangeAnnotation	
+6	edu.mayo.bmi.uima.core.type.textsem.RomanNumeralAnnotation	
+7	edu.mayo.bmi.uima.core.type.textsem.TimeAnnotation	
+8	edu.mayo.bmi.uima.core.type.textsem.EntityMention	anno_named_entity
+9	edu.mayo.bmi.uima.core.type.textspan.Sentence	anno_sentence
+12	edu.mayo.bmi.uima.core.type.textspan.Segment	anno_segment	
+20	edu.mayo.bmi.uima.core.type.syntax.ContractionToken	
+21	edu.mayo.bmi.uima.core.type.syntax.NewlineToken	
+22	edu.mayo.bmi.uima.core.type.syntax.NumToken	anno_token
+23	edu.mayo.bmi.uima.core.type.syntax.PunctuationToken	
+24	edu.mayo.bmi.uima.core.type.syntax.SymbolToken	
+25	edu.mayo.bmi.uima.core.type.syntax.WordToken	anno_token
 26	ytex.uima.types.WordToken	anno_token
-27	edu.mayo.bmi.uima.chunker.type.NP	
-28	edu.mayo.bmi.uima.chunker.type.VP	
-29	edu.mayo.bmi.uima.core.type.OntologyConcept	anno_ontology_concept
+27	edu.mayo.bmi.uima.core.type.syntax.NP	
+28	edu.mayo.bmi.uima.core.type.syntax.VP	
+29	edu.mayo.bmi.uima.core.type.refsem.OntologyConcept	anno_ontology_concept
 30	ytex.uima.types.OntologyConcept	anno_ontology_concept
-31	edu.mayo.bmi.uima.core.type.UmlsConcept	anno_ontology_concept
-32	edu.mayo.bmi.uima.drugner.type.DrugMentionAnnotation	anno_drug_mention
-33	edu.mayo.bmi.uima.coref.type.Markable	anno_markable	
-34	edu.mayo.bmi.uima.coref.type.DemMarkable	anno_markable	
-35	edu.mayo.bmi.uima.coref.type.NEMarkable	anno_markable	
-36	edu.mayo.bmi.uima.coref.type.PronounMarkable	anno_markable	
-40	org.chboston.cnlp.ctakes.parser.uima.type.TreebankNode	anno_treebank_node
-41	org.chboston.cnlp.ctakes.parser.uima.type.TopTreebankNode	anno_treebank_node	
-42	org.chboston.cnlp.ctakes.parser.uima.type.TerminalTreebankNode	anno_treebank_node	
+31	edu.mayo.bmi.uima.core.type.refsem.UmlsConcept	anno_ontology_concept
+40	edu.mayo.bmi.uima.core.type.syntax.TreebankNode	anno_treebank_node
+41	edu.mayo.bmi.uima.core.type.syntax.TopTreebankNode	anno_treebank_node	
+42	edu.mayo.bmi.uima.core.type.syntax.TerminalTreebankNode	anno_treebank_node	
 50	ytex.uima.types.Date	
 100	gov.nih.nlm.nls.metamap.uima.ts.Document	
 101	org.metamap.uima.ts.Phrase	

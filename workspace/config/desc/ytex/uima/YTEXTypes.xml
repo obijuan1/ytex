@@ -5,13 +5,13 @@
   <version>1.0</version>
   <vendor/>
   <imports>
-    <import name="typesystem.cTAKESTypes"/>
+    <import name="typesystem.common_type_system"/>
   </imports>
   <types>
     <typeDescription>
       <name>ytex.uima.types.WordToken</name>
       <description>Negatable Word Token</description>
-      <supertypeName>edu.mayo.bmi.uima.core.type.WordToken</supertypeName>
+      <supertypeName>edu.mayo.bmi.uima.core.type.syntax.WordToken</supertypeName>
       <features>
         <featureDescription>
           <name>negated</name>
@@ -76,7 +76,7 @@ yyyy-MM-dd'T'HH:mm:ssZ</description>
     <typeDescription>
       <name>ytex.uima.types.OntologyConcept</name>
       <description/>
-      <supertypeName>edu.mayo.bmi.uima.core.type.OntologyConcept</supertypeName>
+      <supertypeName>edu.mayo.bmi.uima.core.type.refsem.OntologyConcept</supertypeName>
       <features>
         <featureDescription>
           <name>score</name>

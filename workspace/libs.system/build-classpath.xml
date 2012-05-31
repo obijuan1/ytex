@@ -30,16 +30,16 @@
 	<property name="ytex.properties" value="${config.local}/ytex.properties" />
 	<property file="${ytex.properties}" />
 	<property name="ytex.conceptGraphDir" value="${ytex.home}/conceptGraph" />
-	<condition property="ictakes.home" value="${env.ICTAKES_HOME}" else="${ytex.home}/../icTAKES-1.3.2">
-		<isset property="env.ICTAKES_HOME" />
+	<condition property="ctakes.home" value="${env.CTAKES_HOME}" else="${ytex.home}/../icTAKES-1.3.2">
+		<isset property="env.CTAKES_HOME" />
 	</condition>
 	<path id="kernel.cp.common">
 		<!-- make sure ctakes patches come first -->
 		<fileset dir="${ytex.home}/libs.system" includes="ctakes-patches.jar" />
 		<fileset dir="${ytex.home}/libs.system" includes="**/*.jar" excludes="ctakes-patches.jar" />
-		<pathelement location="${ictakes.home}/cTAKESdesc" />
-		<pathelement location="${ictakes.home}/resources" />
-		<pathelement location="${ictakes.home}/cTAKES.jar" />
+		<pathelement location="${ctakes.home}/cTAKESdesc" />
+		<pathelement location="${ctakes.home}/resources" />
+		<pathelement location="${ctakes.home}/cTAKES.jar" />
 	</path>
 	<path id="kernel.cp.dev">
 		<pathelement location="${config.local}" />

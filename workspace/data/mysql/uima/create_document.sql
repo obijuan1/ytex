@@ -53,7 +53,10 @@ create table anno_named_entity (
 	anno_base_id int not null comment 'fk anno_base',
 	discoveryTechnique int,
 	status int,
-	certainty int,
+	polarity int,
+	uncertainty int,
+	conditional bit,
+	generic bit,
 	typeID int,
 	confidence float,
 	segmentID varchar(20),
@@ -116,27 +119,6 @@ create table anno_date (
 	primary key (anno_base_id) 
 ) engine=myisam;
 
-create table anno_drug_mention (
-	anno_base_id int not null primary key comment 'fk anno_base',
-	status int not null default 0,
-	frequency varchar(20),
-	duration varchar(20),
-	route varchar(20),
-	drugChangeStatus varchar(10),
-	dosage varchar(20),
-	strength varchar(20),
-	form varchar(20),
-	frequencyUnit varchar(20),
-	startDate varchar(20)
-) engine=myisam;
-
-create table anno_markable (
-	anno_base_id int not null primary key comment 'fk anno_base',
-	id int default 0,
-	anaphoric_prob double default 0,
-	content int default 0
-) engine=myisam;
-
 create table anno_treebank_node (
 	anno_base_id int not null primary key comment 'fk anno_base',
 	parent int default 0,
@@ -165,7 +147,6 @@ create table anno_contain (
   key IX_parent_id_child_type (parent_anno_base_id, child_uima_type_id),
   key IX_child_id_parent_type (child_anno_base_id, parent_uima_type_id)
 ) engine=myisam, comment 'containment relationships between annotations';
-
 
 CREATE TABLE fracture_demo(
 	note_id int auto_increment NOT NULL primary key,
