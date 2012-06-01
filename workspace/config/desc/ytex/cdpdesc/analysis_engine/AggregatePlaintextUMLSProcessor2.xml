@@ -101,7 +101,7 @@
 				<node>LookupWindowAnnotator</node>
 				<node>DictionaryLookupAnnotatorDB</node>
 				<node>DependencyParser</node>
-				<node>AssertionAnnotator</node>
+				<!-- <node>AssertionAnnotator</node> -->
 				<node>StatusAnnotator</node>
 				<node>NegationAnnotator</node>
 				<node>ExtractionPrepAnnotator</node>

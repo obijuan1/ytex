@@ -16,6 +16,7 @@
 			<lookupField fieldName="fword" />
 			<metaFields>
 				<metaField fieldName="cui" />
+				<metaField fieldName="tui" />
 				<metaField fieldName="tok_str" />
 			</metaFields>
 		</dictionary>
@@ -43,6 +44,7 @@
 				<properties>
 					<property key="codingScheme" value="UMLS" />
 					<property key="codeMetaField" value="cui" />
+					<property key="tuiMetaField" value="tui" />
 				</properties>
 			</lookupConsumer>
 		</lookupBinding>

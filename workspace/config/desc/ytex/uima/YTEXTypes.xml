@@ -76,7 +76,7 @@ yyyy-MM-dd'T'HH:mm:ssZ</description>
     <typeDescription>
       <name>ytex.uima.types.OntologyConcept</name>
       <description/>
-      <supertypeName>edu.mayo.bmi.uima.core.type.refsem.OntologyConcept</supertypeName>
+      <supertypeName>edu.mayo.bmi.uima.core.type.refsem.UmlsConcept</supertypeName>
       <features>
         <featureDescription>
           <name>score</name>

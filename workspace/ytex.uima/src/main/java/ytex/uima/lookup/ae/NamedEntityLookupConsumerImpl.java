@@ -1,10 +1,10 @@
 package ytex.uima.lookup.ae;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Matcher;
 
 import org.apache.uima.UimaContext;
@@ -18,6 +18,8 @@ import edu.mayo.bmi.dictionary.MetaDataHit;
 import edu.mayo.bmi.lookup.vo.LookupHit;
 import edu.mayo.bmi.uima.core.type.constants.CONST;
 import edu.mayo.bmi.uima.core.type.textsem.EntityMention;
+import edu.mayo.bmi.uima.core.type.textsem.IdentifiedAnnotation;
+import edu.mayo.bmi.uima.core.type.textsem.MedicationEventMention;
 import edu.mayo.bmi.uima.lookup.ae.BaseLookupConsumerImpl;
 import edu.mayo.bmi.uima.lookup.ae.LookupConsumer;
 import gnu.trove.set.TIntSet;
@@ -34,6 +36,9 @@ import gnu.trove.set.TIntSet;
  * <li>preload - preload all RXNORM CUIs. Checking if a cui is from RXNORM is
  * very fast. recommended for large corpora.
  * 
+ * if we are checking for RXNORM, and the concept list contains an RXNORM cui,
+ * create a MedicationEventMention else create an entity mention.
+ * 
  * @author vijay
  * 
  */
@@ -41,9 +46,11 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 		implements LookupConsumer {
 
 	private final String CODE_MF_PRP_KEY = "codeMetaField";
+	private final String CODE_MF_TUI_KEY = "tuiMetaField";
 
 	private final String CODING_SCHEME_PRP_KEY = "codingScheme";
 	private final String RXNORM_PRP_KEY = "RXNORM";
+	private final String RXNORM_TYPE = "RXNORM";
 
 	private Properties iv_props;
 
@@ -73,17 +80,17 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 			Matcher m = UMLSDao.cuiPattern.matcher(cui);
 			if (m.find()) {
 				if (rxnormSet.contains(Integer.parseInt(m.group(1)))) {
-					return "RXNORM";
+					return RXNORM_TYPE;
 				}
 			}
 		} else if (bOnDemand && umlsDao.isRXNORMCui(cui)) {
-			return "RXNORM";
+			return RXNORM_TYPE;
 		}
 		return iv_props.getProperty(CODING_SCHEME_PRP_KEY);
 	}
 
-	public NamedEntityLookupConsumerImpl(UimaContext aCtx,
-			Properties props, int maxListSize) {
+	public NamedEntityLookupConsumerImpl(UimaContext aCtx, Properties props,
+			int maxListSize) {
 		iv_props = props;
 		initRxnormSet(props);
 	}
@@ -93,18 +100,20 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 		initRxnormSet(props);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void consumeHits(JCas jcas, Iterator lhItr) {
-		Iterator hitsByOffsetItr = organizeByOffset(lhItr);
+		Iterator<LookupHit> hitsByOffsetItr = organizeByOffset(lhItr);
 		while (hitsByOffsetItr.hasNext()) {
-			Collection hitsAtOffsetCol = (Collection) hitsByOffsetItr.next();
+			Collection<LookupHit> hitsAtOffsetCol = (Collection<LookupHit>) hitsByOffsetItr
+					.next();
 
 			// iterate over the LookupHit objects and create
 			// a corresponding JCas OntologyConcept object that will
 			// be placed in a FSArray
-			Iterator lhAtOffsetItr = hitsAtOffsetCol.iterator();
+			Iterator<LookupHit> lhAtOffsetItr = hitsAtOffsetCol.iterator();
 			int neBegin = -1;
 			int neEnd = -1;
-			Set<String> concepts = new HashSet<String>();
+			Map<String, String> concepts = new HashMap<String, String>();
 			while (lhAtOffsetItr.hasNext()) {
 				LookupHit lh = (LookupHit) lhAtOffsetItr.next();
 				neBegin = lh.getStartOffset();
@@ -112,20 +121,28 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 				MetaDataHit mdh = lh.getDictMetaDataHit();
 				String code = mdh.getMetaFieldValue(iv_props
 						.getProperty(CODE_MF_PRP_KEY));
-				concepts.add(code);
+				String tui = mdh.getMetaFieldValue(iv_props
+						.getProperty(CODE_MF_TUI_KEY));
+				concepts.put(code, tui);
 			}
 			FSArray ocArr = new FSArray(jcas, concepts.size());
 			int ocArrIdx = 0;
-			for (String code : concepts) {
+			boolean bRxConcept = false;
+			for (Map.Entry<String, String> conceptEntry : concepts.entrySet()) {
 				OntologyConcept oc = new OntologyConcept(jcas);
 				// set the cui field if this is in fact a cui
-				oc.setCode(code);
-				oc.setCodingScheme(getCodingScheme(code));
+				oc.setCode(conceptEntry.getKey());
+				oc.setCui(conceptEntry.getKey());
+				oc.setTui(conceptEntry.getValue());
+				oc.setCodingScheme(getCodingScheme(conceptEntry.getKey()));
+				if (RXNORM_TYPE.equals(oc.getCodingScheme())) {
+					bRxConcept = true;
+				}
 				ocArr.set(ocArrIdx, oc);
 				ocArrIdx++;
 			}
-
-			EntityMention neAnnot = new EntityMention(jcas);
+			IdentifiedAnnotation neAnnot = bRxConcept ? new MedicationEventMention(
+					jcas) : new EntityMention(jcas);
 			neAnnot.setBegin(neBegin);
 			neAnnot.setEnd(neEnd);
 			neAnnot.setDiscoveryTechnique(CONST.NE_DISCOVERY_TECH_DICT_LOOKUP);

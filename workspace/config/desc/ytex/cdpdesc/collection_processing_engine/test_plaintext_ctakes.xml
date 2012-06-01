@@ -10,7 +10,7 @@
 				<nameValuePair>
 					<name>InputDirectory</name>
 					<value>
-						<string>examples/pubmed/abstracts</string>
+						<string>E:/projects/ytex/examples/pubmed/abstracts</string>
 					</value>
 				</nameValuePair>
 			</configurationParameterSettings>
@@ -19,7 +19,7 @@
 	<casProcessors casPoolSize="3" processingUnitThreadCount="1">
 		<casProcessor deployment="integrated" name="AggregatePlaintextUMLSProcessor">
 			<descriptor>
-				<import name="ytex.cdpdesc.analysis_engine.AggregatePlaintextUMLSProcessor" />
+				<import name="cdpdesc.analysis_engine.AggregatePlaintextUMLSProcessorCTakes" />
 			</descriptor>
 			<deploymentParameters />
 			<errorHandling>

@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Wed May 30 20:52:02 EDT 2012 */
+/* First created by JCasGen Thu May 31 11:19:55 EDT 2012 */
 package ytex.uima.types;
 
 import org.apache.uima.jcas.JCas;
@@ -11,11 +11,12 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
+import edu.mayo.bmi.uima.core.type.refsem.UmlsConcept_Type;
 
 /** 
- * Updated by JCasGen Wed May 30 20:52:02 EDT 2012
+ * Updated by JCasGen Thu May 31 11:19:55 EDT 2012
  * @generated */
-public class OntologyConcept_Type extends edu.mayo.bmi.uima.core.type.refsem.OntologyConcept_Type {
+public class OntologyConcept_Type extends UmlsConcept_Type {
   /** @generated */
   @Override
   protected FSGenerator getFSGenerator() {return fsGenerator;}

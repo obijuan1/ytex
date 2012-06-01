@@ -12,21 +12,27 @@
 		<delegateAnalysisEngine key="ContextDependentTokenizerAnnotator">
 			<import name="cdtdesc.analysis_engine.ContextDependentTokenizerAnnotator" />
 		</delegateAnalysisEngine>
+		<!-- <delegateAnalysisEngine key="DictionaryLookupAnnotatorDB"> <import 
+			name="lookupdesc.analysis_engine.DictionaryLookupAnnotatorUMLS"/> </delegateAnalysisEngine> -->
 		<delegateAnalysisEngine key="DictionaryLookupAnnotatorDB">
 			<import name="ytex.uima.annotators.DictionaryLookupAnnotator" />
 		</delegateAnalysisEngine>
+
 		<delegateAnalysisEngine key="StatusAnnotator">
 			<import name="necontextdesc.analysis_engine.StatusAnnotator" />
 		</delegateAnalysisEngine>
 		<delegateAnalysisEngine key="NegationAnnotator">
-			<import name="ytex.uima.annotators.NegexAnnotator" />
+			<import name="necontextdesc.analysis_engine.NegationAnnotator" />
 		</delegateAnalysisEngine>
 		<delegateAnalysisEngine key="ExtractionPrepAnnotator">
 			<import name="cdpdesc.analysis_engine.ExtractionPrepAnnotator" />
 		</delegateAnalysisEngine>
+		<!-- <delegateAnalysisEngine key="SentenceDetectorAnnotator"> <import name="coredesc.analysis_engine.SentenceDetectorAnnotator"/> 
+			</delegateAnalysisEngine> -->
 		<delegateAnalysisEngine key="SentenceDetectorAnnotator">
 			<import name="ytex.uima.annotators.SentenceDetectorAnnotator" />
 		</delegateAnalysisEngine>
+
 		<delegateAnalysisEngine key="LookupWindowAnnotator">
 			<import name="cdpdesc.analysis_engine.LookupWindowAnnotator" />
 		</delegateAnalysisEngine>
@@ -38,8 +44,8 @@
 			<import
 				name="chunkerdesc.analysis_engine.AdjustNounPhraseToIncludeFollowingPPNP" />
 		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="SegmentRegexAnnotator">
-			<import name="ytex.uima.annotators.SegmentRegexAnnotator" />
+		<delegateAnalysisEngine key="SimpleSegmentAnnotator">
+			<import name="cdpdesc.analysis_engine.SimpleSegmentAnnotator" />
 		</delegateAnalysisEngine>
 		<delegateAnalysisEngine key="POSTagger">
 			<import name="posdesc.analysis_engine.POSTagger" />
@@ -60,15 +66,23 @@
 			documents in plain text format using the built in UMLS (SNOMEDCT and
 			RxNORM) dictionaries. This uses the dictionary
 			lookup/desc/DictionaryLookupAnnotatorUMLS.xml
-			and requires an UMLS
-			license. Please update
-			DictionaryLookupAnnotatorUMLS.xml file with
-			your UMLS username and
+			and requires an UMLS license. Please update
+			DictionaryLookupAnnotatorUMLS.xml file with your UMLS username and
 			password.
 		</description>
 		<version />
 		<vendor />
 		<configurationParameters searchStrategy="language_fallback">
+			<configurationParameter>
+				<name>SegmentID</name>
+				<description />
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>SimpleSegmentAnnotator/SegmentID</parameter>
+				</overrides>
+			</configurationParameter>
 			<configurationParameter>
 				<name>ChunkCreatorClass</name>
 				<type>String</type>
@@ -89,7 +103,7 @@
 		</configurationParameterSettings>
 		<flowConstraints>
 			<fixedFlow>
-				<node>SegmentRegexAnnotator</node>
+				<node>SimpleSegmentAnnotator</node>
 				<node>SentenceDetectorAnnotator</node>
 				<node>TokenizerAnnotator</node>
 				<node>LvgAnnotator</node>
@@ -102,8 +116,7 @@
 				<node>DictionaryLookupAnnotatorDB</node>
 				<node>DependencyParser</node>
 				<node>AssertionAnnotator</node>
-				<node>StatusAnnotator</node>
-				<node>NegationAnnotator</node>
+				<!-- <node>StatusAnnotator</node> <node>NegationAnnotator</node> -->
 				<node>ExtractionPrepAnnotator</node>
 			</fixedFlow>
 		</flowConstraints>

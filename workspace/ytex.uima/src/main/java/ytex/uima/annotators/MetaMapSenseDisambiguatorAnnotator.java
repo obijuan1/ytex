@@ -16,6 +16,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.cas.Type;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
+import org.apache.uima.jcas.cas.StringArray;
 import org.apache.uima.jcas.tcas.Annotation;
 
 import ytex.uima.types.OntologyConcept;
@@ -144,6 +145,12 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 			log.warn("no cui feature!");
 			return;
 		}
+		Feature tuiFeature = candidateType.getFeatureByBaseName("semanticTypes");
+		if (tuiFeature == null) {
+			log.warn("no semanticTypes feature!");
+			return;
+		}
+		
 		// iterate through candidates
 		FSIterator<Annotation> candidateIter = jcas.getAnnotationIndex(
 				candidateType).iterator();
@@ -168,6 +175,7 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 				// set negation flag
 				neLast.setPolarity(negSet.contains(new NegSpan(neLast)) ? -1
 						: 0);
+				// TODO: add tui
 				concepts.add(annoCandidate.getStringValue(cuiFeature));
 			}
 		}
@@ -199,6 +207,8 @@ public class MetaMapSenseDisambiguatorAnnotator extends
 				// set the cui field if this is in fact a cui
 				OntologyConcept oc = new OntologyConcept(jcas);
 				oc.setCode(c);
+				oc.setCui(c);
+				
 				ocArr.set(ocArrIdx, oc);
 				ocArrIdx++;
 			}

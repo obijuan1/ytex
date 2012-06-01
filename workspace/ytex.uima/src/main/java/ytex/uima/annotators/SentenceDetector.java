@@ -254,14 +254,14 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 			Matcher m = paragraphPattern.matcher(text);
 			while (m.find()) {
 				if (m.end() > b && m.end() < e) {
-					sentenceCount += annotateRange(jcas, text, lastEnd,
+					sentenceCount = annotateRange(jcas, text, lastEnd,
 							m.end(), sentenceCount);
 					lastEnd = m.end();
 				} else if (m.end() >= e) {
 					break;
 				}
 			}
-			sentenceCount += annotateRange(jcas, text, lastEnd, e,
+			sentenceCount = annotateRange(jcas, text, lastEnd, e,
 					sentenceCount);
 			return sentenceCount;
 		}
