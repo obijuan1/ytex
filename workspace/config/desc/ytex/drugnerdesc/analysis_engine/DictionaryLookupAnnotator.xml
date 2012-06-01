@@ -37,15 +37,18 @@
 		<capabilities>
 			<capability>
 				<inputs>
-					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.BaseToken
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.BaseToken
+					
 					</type>
-					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textspan.LookupWindowAnnotation
 					</type>
-					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Sentence
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textspan.Sentence
 					</type>
 				</inputs>
 				<outputs>
-					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NamedEntity
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.MedicationEventMention
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.EntityMention
 					</type>
 				</outputs>
 				<languagesSupported />
