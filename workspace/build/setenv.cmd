@@ -12,7 +12,7 @@
 @rem where ictakes is/will be installed
 @rem if you have ictakes installed, set this variable to your ictakes directory
 @rem otherwise this is the directory where the ytex installer will put ictakes 
-@set ICTAKES_HOME=%YTEX_HOME%\..\icTAKES-1.3.2
+@set CTAKES_HOME=%YTEX_HOME%\..\cTAKES-2.5.0
 
 @rem where metamap is installed (optional)
 @set MM_HOME=%YTEX_HOME%\..\public_mm
@@ -55,6 +55,6 @@
 @if exist %MM_HOME%\src\javaapi\dist\MetaMapApi.jar set MM_CLASSPATH=%MM_HOME%\src\javaapi\dist\MetaMapApi.jar;%MM_HOME%\src\javaapi\dist\prologbeans.jar;%MM_HOME%\src\uima\lib\metamap-api-uima.jar;%MM_HOME%\src\uima\desc
 
 @rem YTEX classpath
-@set CLASSPATH=%YTEX_LIB_SYS_HOME%\ytex.jar;%ICTAKES_HOME%\cTAKES.jar;%ICTAKES_HOME%\cTAKESdesc;%ICTAKES_HOME%\resources;%MM_CLASSPATH%
+@set CLASSPATH=%YTEX_LIB_SYS_HOME%\ytex.jar;%CTAKES_HOME%\cTAKES.jar;%CTAKES_HOME%\cTAKESdesc;%CTAKES_HOME%\resources;%MM_CLASSPATH%
 @set JAVA_OPTS=-Xmx500m -Djava.util.logging.config.file=%YTEX_HOME%/config/desc/Logger.properties -Dlog4j.configuration=log4j.properties
 
