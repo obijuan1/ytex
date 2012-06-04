@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<analysisEngineDescription xmlns="http://uima.apache.org/resourceSpecifier">
+	<frameworkImplementation>org.apache.uima.java</frameworkImplementation>
+	<primitive>true</primitive>
+	<annotatorImplementationName>ytex.uima.annotators.MetaMapToCTakesAnnotator
+	</annotatorImplementationName>
+	<analysisEngineMetaData>
+		<name>MetaMapToCTakesAnnotator</name>
+		<description />
+		<version>1.0</version>
+		<vendor />
+		<configurationParameters>
+			<configurationParameter>
+				<name>checkMedications</name>
+				<type>Boolean</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
+		</configurationParameters>
+		<configurationParameterSettings>
+			<nameValuePair>
+				<name>checkMedications</name>
+				<value>
+					<boolean>false</boolean>
+				</value>
+			</nameValuePair>
+		</configurationParameterSettings>
+		<typeSystemDescription>
+			<imports>
+				<import name="ytex.uima.YTEXTypes" />
+				<import name="MetaMapApiTypeSystem" />
+			</imports>
+		</typeSystemDescription>
+		<typePriorities />
+		<fsIndexCollection />
+		<capabilities>
+			<capability>
+				<inputs>
+					<type allAnnotatorFeatures="true">org.metamap.uima.ts.Candidate
+					</type>
+				</inputs>
+				<outputs>
+					<type>edu.mayo.bmi.uima.core.type.textsem.EntityMention</type>
+					<type>edu.mayo.bmi.uima.core.type.textsem.IdentifiedAnnotation
+					</type>
+					<type>edu.mayo.bmi.uima.core.type.textsem.MedicationEventMention
+					</type>
+				</outputs>
+				<languagesSupported />
+			</capability>
+		</capabilities>
+		<operationalProperties>
+			<modifiesCas>true</modifiesCas>
+			<multipleDeploymentAllowed>true</multipleDeploymentAllowed>
+			<outputsNewCASes>false</outputsNewCASes>
+		</operationalProperties>
+	</analysisEngineMetaData>
+	<resourceManagerConfiguration />
+</analysisEngineDescription>
