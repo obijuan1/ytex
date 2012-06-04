@@ -8,6 +8,7 @@ public class ColumnMappingInfo {
 	private Converter converter;
 	private String jxpath;
 	private int size;
+	private int sqlType;
 
 	private Class<?> targetType;
 
@@ -23,6 +24,8 @@ public class ColumnMappingInfo {
 		n.columnName = this.columnName;
 		n.targetType = this.targetType;
 		n.targetTypeName = this.targetTypeName;
+		n.sqlType = this.sqlType;
+		n.jxpath = this.jxpath;
 		return n;
 	}
 
@@ -63,6 +66,10 @@ public class ColumnMappingInfo {
 		return size;
 	}
 
+	public int getSqlType() {
+		return sqlType;
+	}
+
 	public Class<?> getTargetType() {
 		return targetType;
 	}
@@ -98,6 +105,10 @@ public class ColumnMappingInfo {
 
 	public void setSize(int size) {
 		this.size = size;
+	}
+
+	public void setSqlType(int sqlType) {
+		this.sqlType = sqlType;
 	}
 
 	public void setTargetTypeName(String targetTypeName) {

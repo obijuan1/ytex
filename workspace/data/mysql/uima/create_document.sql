@@ -63,6 +63,27 @@ create table anno_named_entity (
 	primary key (anno_base_id)
 )engine=myisam;
 
+create table anno_med_event (
+	anno_base_id int not null comment 'fk anno_base',
+	discoveryTechnique int,
+	status int,
+	polarity int,
+	uncertainty int,
+	conditional bit,
+	generic bit,
+	typeID int,
+	confidence float,
+	segmentID varchar(20),
+	freqNumber varchar(10) comment 'MedicationFrequency.number',
+	freqUnit varchar(10) comment 'MedicationFrequency.unit',
+	strengthNumber varchar(10) comment 'MedicationStrength.number',
+	strengthUnit varchar(10) comment 'MedicationStrength.unit',
+	`change` varchar(10),
+	dosage varchar(10),
+	primary key (anno_base_id)
+)engine=myisam;
+
+
 create table anno_ontology_concept (
 	anno_ontology_concept_id int auto_increment not null,
 	anno_base_id int not null comment 'fk anno_base',

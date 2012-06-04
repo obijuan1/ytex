@@ -24,6 +24,7 @@ drop table if exists anno_token;
 drop table if exists anno_segment;
 drop table if exists anno_ontology_concept;
 drop table if exists anno_named_entity;
+drop table if exists anno_med_event;
 drop table if exists anno_sentence;
 drop table if exists anno_date;
 drop table if exists anno_base;

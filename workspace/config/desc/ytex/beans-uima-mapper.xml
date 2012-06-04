@@ -77,6 +77,45 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</set>
 					</property>
 				</bean>
+				<bean class="ytex.uima.mapper.AnnoMappingInfo">
+					<property name="annoClassName"
+						value="edu.mayo.bmi.uima.core.type.textsem.MedicationEventMention" />
+					<property name="tableName" value="anno_med_event" />
+					<property name="columnMappingInfos">
+						<set>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="medicationFrequency" />
+								<property name="columnName" value="freqNumber" />
+								<property name="jxpath" value="number" />
+							</bean>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="medicationFrequency" />
+								<property name="columnName" value="freqUnit" />
+								<property name="jxpath" value="unit" />
+							</bean>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="medicationStrength" />
+								<property name="columnName" value="strengthNumber" />
+								<property name="jxpath" value="number" />
+							</bean>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="medicationStrength" />
+								<property name="columnName" value="strengthUnit" />
+								<property name="jxpath" value="unit" />
+							</bean>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="medicationStatusChange" />
+								<property name="columnName" value="change" />
+								<property name="jxpath" value="value" />
+							</bean>
+							<bean class="ytex.uima.mapper.ColumnMappingInfo">
+								<property name="annoFieldName" value="medicationDosage" />
+								<property name="columnName" value="dosage" />
+								<property name="jxpath" value="value" />
+							</bean>
+						</set>
+					</property>
+				</bean>
 			</set>
 		</property>
 	</bean>

@@ -365,7 +365,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 				|| analysisBatch.length() == 0 ? getDefaultAnalysisBatch()
 				: analysisBatch);
 		// look for the ctakes DocumentID anno
-		if (setUimaDocId(jcas, doc, "edu.mayo.bmi.uima.core.type.structured.DocumentID",
+		if (setUimaDocId(jcas, doc,
+				"edu.mayo.bmi.uima.core.type.structured.DocumentID",
 				"documentID") == null) {
 			// look for the uima SourceDocumentInformation anno
 			setUimaDocId(jcas, doc,
@@ -650,7 +651,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 							// possibility 1: the column is already mapped to
 							// the field
 							// if so, then just set the size
-							if (!updateSize(mapInfo, colName, colSize)) {
+							if (!updateSize(mapInfo, colName, colSize, dataType)) {
 								// possibility 2: the column is not mapped - see
 								// if
 								// it matches a field
@@ -666,6 +667,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 										fmap.setAnnoFieldName(annoFieldName);
 										fmap.setColumnName(colName);
 										fmap.setSize(colSize);
+										fmap.setSqlType(dataType);
 										mapInfo.getMapField()
 												.put(colName, fmap);
 										break;
@@ -686,6 +688,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 										fmap.setAnnoFieldName(annoFieldName);
 										fmap.setColumnName(colName);
 										fmap.setSize(colSize);
+										fmap.setSqlType(dataType);
 										mapInfo.getMapField()
 												.put(colName, fmap);
 										break;
@@ -916,16 +919,41 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 					throw new RuntimeException(e);
 				}
 			} else if (!feat.getRange().isPrimitive()) {
-				// reference to another annotation - get the other anno's id
+				// feature is a structure/annotation
 				FeatureStructure fs = anno.getFeatureValue(feat);
-				Integer refAnnoId = null;
-				if (fs != null && fs instanceof Annotation) {
-					refAnnoId = mapAnnoToId.get(fs);
-				}
-				if (refAnnoId != null) {
-					ps.setInt(argIdx, refAnnoId);
+				if (fs == null) {
+					// feature is null - set the column to null
+					ps.setNull(argIdx, fieldMapInfo.getSqlType());
 				} else {
-					ps.setNull(argIdx, Types.INTEGER);
+					if (fieldMapInfo.getJxpath() != null) {
+						// jxpath to pull out feature attribute
+						Object o = this.extractFeature(
+								fieldMapInfo.getJxpath(), fs);
+						if (o == null) {
+							// extracted value null - set column to null
+							ps.setNull(argIdx, fieldMapInfo.getSqlType());
+						} else if (o instanceof String) {
+							// string - truncate as needed
+							String trunc = truncateString((String) o,
+									fieldMapInfo.getSize());
+							ps.setString(argIdx, trunc);
+						} else {
+							// set value
+							ps.setObject(argIdx, o);
+						}
+					} else {
+						// reference to another annotation - get the other
+						// anno's id
+						Integer refAnnoId = null;
+						if (fs instanceof Annotation) {
+							refAnnoId = mapAnnoToId.get(fs);
+						}
+						if (refAnnoId != null) {
+							ps.setInt(argIdx, refAnnoId);
+						} else {
+							ps.setNull(argIdx, Types.INTEGER);
+						}
+					}
 				}
 			} else {
 				if ("uima.cas.Integer".equals(feat.getRange().getName())) {
@@ -1446,8 +1474,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		if (docIDtype != null)
 			docIDFeature = docIDtype.getFeatureByBaseName(idFeature);
 		if (docIDtype != null && docIDFeature != null) {
-//			AnnotationIndex<Annotation> idx = jcas
-//					.getAnnotationIndex(docIDtype);
+			// AnnotationIndex<Annotation> idx = jcas
+			// .getAnnotationIndex(docIDtype);
 			FSIterator<FeatureStructure> iter = jcas.getFSIndexRepository()
 					.getAllIndexedFS(docIDtype);
 			if (iter != null) {
@@ -1486,9 +1514,10 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 	 * @return true column is mapped to a field
 	 */
 	private boolean updateSize(AnnoMappingInfo mapInfo, String colName,
-			int colSize) {
+			int colSize, int sqlType) {
 		ColumnMappingInfo fi = mapInfo.getMapField().get(colName);
 		if (fi != null) {
+			fi.setSqlType(sqlType);
 			if (fi.getSize() <= 0)
 				fi.setSize(colSize);
 			return true;
