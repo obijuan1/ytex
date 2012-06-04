@@ -140,6 +140,13 @@ create table anno_date (
 	primary key (anno_base_id) 
 ) engine=myisam;
 
+create table anno_markable (
+	anno_base_id int not null primary key comment 'fk anno_base',
+	id int default 0,
+	anaphoric_prob double default 0,
+	content int default 0
+) engine=myisam;
+
 create table anno_treebank_node (
 	anno_base_id int not null primary key comment 'fk anno_base',
 	parent int default 0,
