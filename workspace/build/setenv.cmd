@@ -52,7 +52,7 @@
 @set TOMCAT_CP=%JDBC_CP%;%YTEX_HOME%\config\desc
 
 @rem if metamap is defined, add metamap classes and libraries
-@if exist %MM_HOME%\src\javaapi\dist\MetaMapApi.jar set MM_CLASSPATH=%MM_HOME%\src\javaapi\dist\MetaMapApi.jar;%MM_HOME%\src\javaapi\dist\MetaMapApi.jar;%MM_HOME%\src\javaapi\dist\prologbeans.jar;%MM_HOME%\src\uima\lib\metamap-api-uima.jar;%MM_HOME%\src\uima\desc
+@if exist %MM_HOME%\src\javaapi\dist\MetaMapApi.jar set MM_CLASSPATH=%MM_HOME%\src\javaapi\dist\MetaMapApi.jar;%MM_HOME%\src\javaapi\dist\prologbeans.jar;%MM_HOME%\src\uima\lib\metamap-api-uima.jar;%MM_HOME%\src\uima\desc
 
 @rem YTEX classpath
 @set CLASSPATH=%YTEX_LIB_SYS_HOME%\ytex.jar;%ICTAKES_HOME%\cTAKES.jar;%ICTAKES_HOME%\cTAKESdesc;%ICTAKES_HOME%\resources;%MM_CLASSPATH%
