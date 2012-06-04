@@ -21,6 +21,10 @@
 30	ytex.uima.types.OntologyConcept	anno_ontology_concept
 31	edu.mayo.bmi.uima.core.type.refsem.UmlsConcept	anno_ontology_concept
 32	edu.mayo.bmi.uima.core.type.textsem.MedicationEventMention	anno_med_event
+33	edu.mayo.bmi.uima.coref.type.Markable	anno_markable	
+34	edu.mayo.bmi.uima.coref.type.DemMarkable	anno_markable	
+35	edu.mayo.bmi.uima.coref.type.NEMarkable	anno_markable	
+36	edu.mayo.bmi.uima.coref.type.PronounMarkable	anno_markable	
 40	edu.mayo.bmi.uima.core.type.syntax.TreebankNode	anno_treebank_node
 41	edu.mayo.bmi.uima.core.type.syntax.TopTreebankNode	anno_treebank_node	
 42	edu.mayo.bmi.uima.core.type.syntax.TerminalTreebankNode	anno_treebank_node	
