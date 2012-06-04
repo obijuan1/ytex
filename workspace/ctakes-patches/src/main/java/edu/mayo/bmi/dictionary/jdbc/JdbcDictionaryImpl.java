@@ -165,8 +165,10 @@ public class JdbcDictionaryImpl extends BaseDictionaryImpl implements
 				while (metaFieldNameItr.hasNext()) {
 					String metaFieldName = metaFieldNameItr.next();
 					String metaFieldValue = rs.getString(metaFieldName);
-					// nameValMap.put(metaFieldName, metaFieldValue);
-					mb.put(metaFieldName, metaFieldValue);
+					if (metaFieldValue != null) {
+						// nameValMap.put(metaFieldName, metaFieldValue);
+						mb.put(metaFieldName, metaFieldValue);
+					}
 				}
 				// MetaDataHit mdh = new GenericMetaDataHitImpl(nameValMap);
 				// metaDataHitSet.add(mdh);
