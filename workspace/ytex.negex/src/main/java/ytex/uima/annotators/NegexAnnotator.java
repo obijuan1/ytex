@@ -244,7 +244,7 @@ public class NegexAnnotator extends JCasAnnotator_ImplBase {
 			FSIterator neIter = targetIdx.subiterator(s);
 			while (neIter.hasNext()) {
 				Annotation ne = (Annotation) neIter.next();
-				if (filter.filter(ne))
+				if (filter == null || filter.filter(ne))
 					checkNegation(aJCas, s, ne);
 				// checkNegation2(aJCas, s, ne);
 			}

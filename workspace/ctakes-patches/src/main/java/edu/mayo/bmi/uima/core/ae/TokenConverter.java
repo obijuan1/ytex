@@ -32,7 +32,7 @@ import edu.mayo.bmi.uima.core.type.syntax.NewlineToken;
 import edu.mayo.bmi.uima.core.type.syntax.NumToken;
 import edu.mayo.bmi.uima.core.type.syntax.PunctuationToken;
 import edu.mayo.bmi.uima.core.type.syntax.SymbolToken;
-import edu.mayo.bmi.uima.core.type.syntax.WordToken;
+import ytex.uima.types.WordToken;
 
 /**
  * Utilities methods for converting between Java Tokenizer objects and their
