@@ -30,7 +30,7 @@
 	<property name="ytex.properties" value="${config.local}/ytex.properties" />
 	<property file="${ytex.properties}" />
 	<property name="ytex.conceptGraphDir" value="${ytex.home}/conceptGraph" />
-	<condition property="ctakes.home" value="${env.CTAKES_HOME}" else="${ytex.home}/../icTAKES-1.3.2">
+	<condition property="ctakes.home" value="${env.CTAKES_HOME}" else="${ytex.home}/../cTAKES-2.5.0">
 		<isset property="env.CTAKES_HOME" />
 	</condition>
 	<path id="kernel.cp.common">

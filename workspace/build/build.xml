@@ -20,7 +20,7 @@
 		</path>
 		<path id="cp.all">
 			<path refid="cp.ytex" />
-			<pathelement location="${ictakes.home}/cTAKES.jar" />
+			<pathelement location="${ctakes.home}/cTAKES.jar" />
 		</path>
 	</target>
 	<target name="build.jdl" depends="init">
