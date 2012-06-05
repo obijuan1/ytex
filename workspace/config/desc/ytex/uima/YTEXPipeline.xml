@@ -130,6 +130,17 @@
 					<parameter>DBConsumer/typesToIgnore</parameter>
 				</overrides>
 			</configurationParameter>
+			<configurationParameter>
+				<name>insertAnnotationContainmentLinks</name>
+				<description>should containment links be added
+				</description>
+				<type>Boolean</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>DBConsumer/insertAnnotationContainmentLinks</parameter>
+				</overrides>
+			</configurationParameter>
 		</configurationParameters>
 		<configurationParameterSettings>
 			<nameValuePair>
@@ -158,6 +169,12 @@
 			</nameValuePair>
 			<nameValuePair>
 				<name>storeCAS</name>
+				<value>
+					<boolean>true</boolean>
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>insertAnnotationContainmentLinks</name>
 				<value>
 					<boolean>true</boolean>
 				</value>
@@ -231,88 +248,88 @@
 			<capability>
 				<inputs />
 				<outputs>
-				
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.NewlineToken
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.IdentifiedAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.WordToken
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.VP
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.refsem.UmlsConcept
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.UCP
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.TimeAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.SymbolToken
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textspan.Sentence
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textspanSegment
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.SBAR
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.RomanNumeralAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.RangeAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.PunctuationToken
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Property
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Properties
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.PersonTitleAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.PRT
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.PP
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.OntologyConcept
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.NumToken
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.MeasurementAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.Lemma
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.LST
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.INTJ
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.FractionAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.structured.DocumentID
-				</type>
-				<type allAnnotatorFeatures="true">uima.tcas.DocumentAnnotation</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.DateAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.CopySrcAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.CopyDestAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.ContractionToken
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.ContextAnnotation
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.Chunk
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.CONJP
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.BaseToken
-				</type>
-				<type allAnnotatorFeatures="true">uima.cas.AnnotationBase</type>
-				<type allAnnotatorFeatures="true">uima.tcas.Annotation</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.ADVP
-				</type>
-				<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.ADJP
-				</type>
+
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.NewlineToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.IdentifiedAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.WordToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.VP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.refsem.UmlsConcept
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.UCP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.TimeAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.SymbolToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textspan.Sentence
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textspanSegment
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.SBAR
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.RomanNumeralAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.RangeAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.PunctuationToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Property
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.Properties
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.PersonTitleAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.PRT
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.PP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.OntologyConcept
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.NumToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.MeasurementAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.Lemma
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.LST
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.INTJ
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.FractionAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.structured.DocumentID
+					</type>
+					<type allAnnotatorFeatures="true">uima.tcas.DocumentAnnotation</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.DateAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.CopySrcAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.CopyDestAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.ContractionToken
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.ContextAnnotation
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.Chunk
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.CONJP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.BaseToken
+					</type>
+					<type allAnnotatorFeatures="true">uima.cas.AnnotationBase</type>
+					<type allAnnotatorFeatures="true">uima.tcas.Annotation</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.ADVP
+					</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.ADJP
+					</type>
 				</outputs>
 				<languagesSupported />
 			</capability>

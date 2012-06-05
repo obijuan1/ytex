@@ -134,6 +134,17 @@
 					<parameter>DBConsumer/typesToIgnore</parameter>
 				</overrides>
 			</configurationParameter>
+			<configurationParameter>
+				<name>insertAnnotationContainmentLinks</name>
+				<description>should containment links be added
+				</description>
+				<type>Boolean</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>DBConsumer/insertAnnotationContainmentLinks</parameter>
+				</overrides>
+			</configurationParameter>
 		</configurationParameters>
 		<configurationParameterSettings>
 			<nameValuePair>
@@ -162,6 +173,12 @@
 			</nameValuePair>
 			<nameValuePair>
 				<name>storeCAS</name>
+				<value>
+					<boolean>true</boolean>
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>insertAnnotationContainmentLinks</name>
 				<value>
 					<boolean>true</boolean>
 				</value>
