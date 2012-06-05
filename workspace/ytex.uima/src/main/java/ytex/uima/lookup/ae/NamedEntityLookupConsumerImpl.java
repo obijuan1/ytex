@@ -121,8 +121,9 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 				MetaDataHit mdh = lh.getDictMetaDataHit();
 				String code = mdh.getMetaFieldValue(iv_props
 						.getProperty(CODE_MF_PRP_KEY));
-				String tui = mdh.getMetaFieldValue(iv_props
-						.getProperty(CODE_MF_TUI_KEY));
+				String tui = iv_props.containsKey(CODE_MF_TUI_KEY) ? mdh
+						.getMetaFieldValue(iv_props
+								.getProperty(CODE_MF_TUI_KEY)) : null;
 				concepts.put(code, tui);
 			}
 			FSArray ocArr = new FSArray(jcas, concepts.size());
