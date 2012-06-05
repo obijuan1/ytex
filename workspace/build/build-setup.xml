@@ -192,7 +192,7 @@ Call with option -projecthelp for more info.
 				</untar>
 				<echo>copying HSqlDb to ${ctakes.home}/resources/lvgresources/lvg/data</echo>
 				<copy todir="${ctakes.home}/resources/lvgresources/lvg/data/HSqlDb" overwrite="yes">
-					<fileset dir="${java.io.tmpdir}/lvg/lvg${lvg.basename}lite/data/HSqlDB">
+					<fileset dir="${java.io.tmpdir}/lvg/lvg${lvg.basename}lite/data/HSqlDb">
 						<include name="**/*.*" />
 						<exclude name="**/lvg.properties" />
 					</fileset>
