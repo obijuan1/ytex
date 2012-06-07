@@ -48,6 +48,7 @@
 				<properties>
 					<property key="codingScheme" value="UMLS" />
 					<property key="codeMetaField" value="cui" />
+					<property key="cuiMetaField" value="cui" />
 					<property key="tuiMetaField" value="tui" />
 				</properties>
 			</lookupConsumer>
