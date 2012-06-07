@@ -22,7 +22,7 @@ public interface PageRankService {
 	 * @param dampingFactor
 	 * @return pageRank 'vector'. key = concept (page), value = rank
 	 */
-	public abstract Map<String, Double> rank(Map<String, Double> dampingVector,
+	public abstract double[] rank(Map<String, Double> dampingVector,
 			ConceptGraph cg, int iter, double threshold, double dampingFactor);
 
 	/**
@@ -33,7 +33,7 @@ public interface PageRankService {
 	 * @param cg
 	 * @return
 	 */
-	public abstract Map<String, Double> rank(Map<String, Double> dampingVector,
+	public abstract double[] rank(Map<String, Double> dampingVector,
 			ConceptGraph cg);
 
 	public abstract double sim(String concept1, String concept2, ConceptGraph cg,

@@ -821,30 +821,33 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		int maxDepth = this.cg.getDepthMax();
 		this.similarityMetricMap = new HashMap<SimilarityMetricEnum, SimilarityMetric>(
 				SimilarityMetricEnum.values().length);
-		this.similarityMetricMap.put(SimilarityMetricEnum.LCH, new LCHMetric(
-				this, maxDepth));
-		this.similarityMetricMap.put(SimilarityMetricEnum.LIN, new LinMetric(
-				this, false));
-		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_LIN,
-				new LinMetric(this, true));
-		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_LCH,
-				new IntrinsicLCHMetric(this, maxIC));
-		this.similarityMetricMap.put(SimilarityMetricEnum.PATH, new PathMetric(
-				this));
-		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_PATH,
-				new IntrinsicPathMetric(this, maxIC));
-		this.similarityMetricMap.put(SimilarityMetricEnum.RADA, new RadaMetric(
-				this, maxDepth));
-		this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_RADA,
-				new IntrinsicRadaMetric(this, maxIC));
-		this.similarityMetricMap.put(SimilarityMetricEnum.SOKAL,
-				new SokalSneathMetric(this));
-		this.similarityMetricMap.put(SimilarityMetricEnum.JACCARD,
-				new JaccardMetric(this));
-		this.similarityMetricMap.put(SimilarityMetricEnum.WUPALMER,
-				new WuPalmerMetric(this));
-		this.similarityMetricMap.put(SimilarityMetricEnum.PAGERANK,
-				new PageRankMetric(this, this.getPageRankService()));
+		if (maxDepth > 0) {
+			this.similarityMetricMap.put(SimilarityMetricEnum.LCH,
+					new LCHMetric(this, maxDepth));
+			this.similarityMetricMap.put(SimilarityMetricEnum.LIN,
+					new LinMetric(this, false));
+			this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_LIN,
+					new LinMetric(this, true));
+			this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_LCH,
+					new IntrinsicLCHMetric(this, maxIC));
+			this.similarityMetricMap.put(SimilarityMetricEnum.PATH,
+					new PathMetric(this));
+			this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_PATH,
+					new IntrinsicPathMetric(this, maxIC));
+			this.similarityMetricMap.put(SimilarityMetricEnum.RADA,
+					new RadaMetric(this, maxDepth));
+			this.similarityMetricMap.put(SimilarityMetricEnum.INTRINSIC_RADA,
+					new IntrinsicRadaMetric(this, maxIC));
+			this.similarityMetricMap.put(SimilarityMetricEnum.SOKAL,
+					new SokalSneathMetric(this));
+			this.similarityMetricMap.put(SimilarityMetricEnum.JACCARD,
+					new JaccardMetric(this));
+			this.similarityMetricMap.put(SimilarityMetricEnum.WUPALMER,
+					new WuPalmerMetric(this));
+		} else {
+			this.similarityMetricMap.put(SimilarityMetricEnum.PAGERANK,
+					new PageRankMetric(this, this.getPageRankService()));
+		}
 	}
 
 	public boolean isPreload() {

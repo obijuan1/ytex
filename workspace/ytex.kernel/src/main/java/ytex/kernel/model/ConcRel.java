@@ -344,6 +344,7 @@ public class ConcRel implements java.io.Serializable {
 		childrenArray = null;
 		this.nodeIndex = nodeIndex;
 	}
+
 	/**
 	 * reconstruct the relationships to other ConcRel objects
 	 * 
@@ -362,6 +363,7 @@ public class ConcRel implements java.io.Serializable {
 		children = cBuilder.build();
 		childrenArray = null;
 	}
+
 	public int depthMax() {
 		int d = 0;
 		for (Iterator<ConcRel> it = children.iterator(); it.hasNext();) {
@@ -373,10 +375,26 @@ public class ConcRel implements java.io.Serializable {
 		return d;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ConcRel other = (ConcRel) obj;
+		if (nodeIndex != other.nodeIndex)
+			return false;
+		return true;
+	}
+
 	public Set<ConcRel> getChildren() {
 		return children;
 	}
-
+	public int[] getChildrenArray() {
+		return childrenArray;
+	}
 	public String getConceptID() {
 		return nodeCUI;
 	}
@@ -395,6 +413,10 @@ public class ConcRel implements java.io.Serializable {
 
 	public Set<ConcRel> getParents() {
 		return parents;
+	}
+
+	public int[] getParentsArray() {
+		return parentsArray;
 	}
 
 	/**
@@ -451,22 +473,27 @@ public class ConcRel implements java.io.Serializable {
 		return nodeIndex;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ConcRel other = (ConcRel) obj;
-		if (nodeIndex != other.nodeIndex)
-			return false;
-		return true;
-	}
-
 	public boolean isLeaf() {
 		return children.isEmpty();
+	}
+
+	public boolean isRoot() {
+		return parents.isEmpty();
+	}
+
+	/**
+	 * read parent/children concept ids, not the objects
+	 */
+	private void readObject(java.io.ObjectInputStream in)
+			throws java.io.IOException, ClassNotFoundException {
+		nodeCUI = (String) in.readObject();
+		this.nodeIndex = in.readInt();
+		this.intrinsicInfoContent = in.readDouble();
+		this.depth = in.readShort();
+		parentsArray = (int[]) in.readObject();
+		childrenArray = (int[]) in.readObject();
+		parents = new HashSet<ConcRel>(parentsArray.length);
+		children = new HashSet<ConcRel>(childrenArray.length);
 	}
 
 	// public static ObjPair<ConcRel, Integer> getLeastCommonConcept(
@@ -519,23 +546,8 @@ public class ConcRel implements java.io.Serializable {
 	// return common;
 	// }
 
-	public boolean isRoot() {
-		return parents.isEmpty();
-	}
-
-	/**
-	 * read parent/children concept ids, not the objects
-	 */
-	private void readObject(java.io.ObjectInputStream in)
-			throws java.io.IOException, ClassNotFoundException {
-		nodeCUI = (String) in.readObject();
-		this.nodeIndex = in.readInt();
-		this.intrinsicInfoContent = in.readDouble();
-		this.depth = in.readShort();
-		parentsArray = (int[]) in.readObject();
-		childrenArray = (int[]) in.readObject();
-		parents = new HashSet<ConcRel>(parentsArray.length);
-		children = new HashSet<ConcRel>(childrenArray.length);
+	public void setChildrenArray(int[] childrenArray) {
+		this.childrenArray = childrenArray;
 	}
 
 	public void setConceptID(String nodeCUI) {
@@ -552,6 +564,10 @@ public class ConcRel implements java.io.Serializable {
 
 	public void setNodeIndex(int nodeIndex) {
 		this.nodeIndex = nodeIndex;
+	}
+
+	public void setParentsArray(int[] parentsArray) {
+		this.parentsArray = parentsArray;
 	}
 
 	@Override

@@ -35,6 +35,7 @@ import gnu.trove.set.TIntSet;
  * RXNORM. will use caching, but this is not efficient.
  * <li>preload - preload all RXNORM CUIs. Checking if a cui is from RXNORM is
  * very fast. recommended for large corpora.
+ * </ul>
  * 
  * if we are checking for RXNORM, and the concept list contains an RXNORM cui,
  * create a MedicationEventMention else create an entity mention.
@@ -47,7 +48,7 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 
 	private final String CODE_MF_PRP_KEY = "codeMetaField";
 	private final String CODE_MF_TUI_KEY = "tuiMetaField";
-
+	private final String CUI_MF_PRP_KEY = "cuiMetaField";
 	private final String CODING_SCHEME_PRP_KEY = "codingScheme";
 	private final String RXNORM_PRP_KEY = "RXNORM";
 	private final String RXNORM_TYPE = "RXNORM";
@@ -113,7 +114,9 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 			Iterator<LookupHit> lhAtOffsetItr = hitsAtOffsetCol.iterator();
 			int neBegin = -1;
 			int neEnd = -1;
-			Map<String, String> concepts = new HashMap<String, String>();
+			Map<String, OntologyConcept> concepts = new HashMap<String, OntologyConcept>();
+			boolean bRxConcept = false;
+			// create OntologyConcepts, filter duplicates
 			while (lhAtOffsetItr.hasNext()) {
 				LookupHit lh = (LookupHit) lhAtOffsetItr.next();
 				neBegin = lh.getStartOffset();
@@ -121,27 +124,33 @@ public class NamedEntityLookupConsumerImpl extends BaseLookupConsumerImpl
 				MetaDataHit mdh = lh.getDictMetaDataHit();
 				String code = mdh.getMetaFieldValue(iv_props
 						.getProperty(CODE_MF_PRP_KEY));
-				String tui = iv_props.containsKey(CODE_MF_TUI_KEY) ? mdh
-						.getMetaFieldValue(iv_props
-								.getProperty(CODE_MF_TUI_KEY)) : null;
-				concepts.put(code, tui);
+				if (!concepts.containsKey(code)) {
+					String tui = iv_props.containsKey(CODE_MF_TUI_KEY) ? mdh
+							.getMetaFieldValue(iv_props
+									.getProperty(CODE_MF_TUI_KEY)) : null;
+					String cui = iv_props.containsKey(CUI_MF_PRP_KEY) ? mdh
+							.getMetaFieldValue(iv_props
+									.getProperty(CUI_MF_PRP_KEY)) : null;
+					OntologyConcept oc = new OntologyConcept(jcas);
+					// set the cui field if this is in fact a cui
+					oc.setCode(code);
+					oc.setCui(cui);
+					oc.setTui(tui);
+					oc.setCodingScheme(getCodingScheme(code));
+					if (RXNORM_TYPE.equals(oc.getCodingScheme())) {
+						bRxConcept = true;
+					}
+					concepts.put(code, oc);
+				}
 			}
+			// create an FSArray to hold the concepts
 			FSArray ocArr = new FSArray(jcas, concepts.size());
 			int ocArrIdx = 0;
-			boolean bRxConcept = false;
-			for (Map.Entry<String, String> conceptEntry : concepts.entrySet()) {
-				OntologyConcept oc = new OntologyConcept(jcas);
-				// set the cui field if this is in fact a cui
-				oc.setCode(conceptEntry.getKey());
-				oc.setCui(conceptEntry.getKey());
-				oc.setTui(conceptEntry.getValue());
-				oc.setCodingScheme(getCodingScheme(conceptEntry.getKey()));
-				if (RXNORM_TYPE.equals(oc.getCodingScheme())) {
-					bRxConcept = true;
-				}
+			for (OntologyConcept oc : concepts.values()) {
 				ocArr.set(ocArrIdx, oc);
 				ocArrIdx++;
 			}
+			// create a NamedEntity
 			IdentifiedAnnotation neAnnot = bRxConcept ? new MedicationEventMention(
 					jcas) : new EntityMention(jcas);
 			neAnnot.setBegin(neBegin);

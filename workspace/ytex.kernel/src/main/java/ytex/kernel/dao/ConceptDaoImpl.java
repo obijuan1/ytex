@@ -390,7 +390,10 @@ public class ConceptDaoImpl implements ConceptDao {
 	private ConceptGraph initializeConceptGraph(ConceptGraph cg) {
 		ImmutableMap.Builder<String, ConcRel> mb = new ImmutableMap.Builder<String, ConcRel>();
 		for (ConcRel cr : cg.getConceptList()) {
-			cr.constructRel(cg.getConceptList());
+			// use adjacency list representation for concept graphs that have
+			// cycles
+			if (cg.getDepthMax() > 0)
+				cr.constructRel(cg.getConceptList());
 			mb.put(cr.getConceptID(), cr);
 		}
 		cg.setConceptMap(mb.build());
@@ -484,7 +487,7 @@ public class ConceptDaoImpl implements ConceptDao {
 		try {
 			os = new ObjectOutputStream(new BufferedOutputStream(
 					new GZIPOutputStream(new FileOutputStream(cgFile))));
-			//replace the writable list with an immutable list
+			// replace the writable list with an immutable list
 			cg.setConceptList(ImmutableList.copyOf(cg.getConceptList()));
 			os.writeObject(cg);
 		} catch (IOException ioe) {

@@ -1,22 +1,16 @@
 package ytex.tools;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,9 +28,8 @@ import org.xml.sax.SAXException;
 import ytex.kernel.KernelContextHolder;
 import ytex.umls.dao.UMLSDao;
 import ytex.umls.model.UmlsAuiFirstWord;
-import edu.mayo.bmi.nlp.tokenizer.OffsetComparator;
 import edu.mayo.bmi.nlp.tokenizer.Token;
-import edu.mayo.bmi.nlp.tokenizer.Tokenizer;
+import edu.mayo.bmi.nlp.tokenizer.TokenizerPTB;
 import gov.nih.nlm.nls.lvg.Api.LvgCmdApi;
 
 /**
@@ -48,40 +41,9 @@ import gov.nih.nlm.nls.lvg.Api.LvgCmdApi;
 public class SetupAuiFirstWord {
 	private static final Log log = LogFactory.getLog(SetupAuiFirstWord.class);
 	// private static final Pattern nonWord = Pattern.compile("\\W");
-	private Tokenizer tokenizer;
+	private TokenizerPTB tokenizer;
 	private LvgCmdApi lvgCmd;
 	private Set<String> exclusionSet = null;
-
-	/**
-	 * copied from CreateLuceneIndexFromDelimitedFile Loads hyphenated words and
-	 * a frequency value for each, from a file.
-	 * 
-	 * @param filename
-	 * @return
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 */
-	public static Map<String, Integer> loadHyphMap(String filename)
-			throws FileNotFoundException, IOException {
-		Map<String, Integer> hyphMap = new HashMap<String, Integer>();
-		File f = new File(filename);
-		BufferedReader br = new BufferedReader(new FileReader(f));
-		String line = br.readLine();
-		while (line != null) {
-			StringTokenizer st = new StringTokenizer(line, "|");
-			if (st.countTokens() == 2) {
-				String hyphWord = st.nextToken();
-				Integer freq = new Integer(st.nextToken());
-				hyphMap.put(hyphWord.toLowerCase(), freq);
-			} else {
-				System.out.println("Invalid hyphen file line: " + line);
-			}
-			line = br.readLine();
-		}
-		br.close();
-
-		return hyphMap;
-	}
 
 	/**
 	 * Initialize tokenizer using the hyphen map from
@@ -191,19 +153,7 @@ public class SetupAuiFirstWord {
 	 * @throws IOException
 	 */
 	private void initTokenizer() throws FileNotFoundException, IOException {
-		URL uriTok = this
-				.getClass()
-				.getClassLoader()
-				.getResource("resources/coreresources/tokenizer/hyphenated.txt");
-		Map<String, Integer> hyphMap;
-		if (uriTok != null) {
-			log.info("loading hyphMap from:" + uriTok.getPath());
-			hyphMap = loadHyphMap(uriTok.getPath());
-		} else {
-			log.warn("hyphenated.txt not available, will use empty hyphenated word list");
-			hyphMap = new HashMap<String, Integer>();
-		}
-		this.tokenizer = new Tokenizer(hyphMap, 0);
+		this.tokenizer = new TokenizerPTB();
 	}
 
 	/**
@@ -247,10 +197,10 @@ public class SetupAuiFirstWord {
 							log.error("Error tokenizing aui=" + aui + ", str="
 									+ str);
 						else if (fw.getFword().length() > 70)
-							log.warn("fword too long: aui=" + aui + ", str="
+							log.debug("fword too long: aui=" + aui + ", str="
 									+ fw.getFword());
 						else if (fw.getTokenizedStr().length() > 250)
-							log.warn("string too long: aui=" + aui + ", str="
+							log.debug("string too long: aui=" + aui + ", str="
 									+ str);
 						else {
 							if (log.isDebugEnabled())
@@ -262,7 +212,7 @@ public class SetupAuiFirstWord {
 								+ str, e);
 					}
 				} else {
-					log.warn("Skipping aui because str to long: aui=" + aui
+					log.debug("Skipping aui because str to long: aui=" + aui
 							+ ", str=" + str);
 				}
 			}
@@ -287,10 +237,8 @@ public class SetupAuiFirstWord {
 	 */
 	public UmlsAuiFirstWord tokenizeStr(String aui, String str)
 			throws Exception {
-		List<Token> list = tokenizer.tokenize(str);
-		Collections.sort(list, new OffsetComparator());
-
-		Iterator<Token> tokenItr = list.iterator();
+		List<?> list = tokenizer.tokenize(str);
+		Iterator<?> tokenItr = list.iterator();
 		int tCount = 0;
 		String firstTokenText = "";
 		StringBuilder tokenizedDesc = new StringBuilder();
@@ -304,13 +252,15 @@ public class SetupAuiFirstWord {
 			if (tCount == 1) {
 				firstTokenText = t.getText(); // first token (aka "first word")
 				tokenizedDesc.append(firstTokenText);
-				firstTokenStem = stemToken(t);
-				stemmedDesc.append(firstTokenStem);
+				if (this.lvgCmd != null) {
+					firstTokenStem = stemToken(t);
+					stemmedDesc.append(firstTokenStem);
+				}
 			} else { // use blank to separate tokens
 				tokenizedDesc.append(" ").append(t.getText());
 				// stem the next token, add it to the stemmed desc only if there
 				// is a valid first word
-				if (firstTokenStem != null) {
+				if (this.lvgCmd != null && firstTokenStem != null) {
 					String stemmedWord = stemToken(t);
 					stemmedDesc.append(" ").append(stemmedWord);
 				}
@@ -320,8 +270,10 @@ public class SetupAuiFirstWord {
 		fw.setAui(aui);
 		fw.setFword(firstTokenText.toLowerCase(Locale.ENGLISH));
 		fw.setTokenizedStr(tokenizedDesc.toString());
-		fw.setFstem(firstTokenStem.toLowerCase(Locale.ENGLISH));
-		fw.setStemmedStr(stemmedDesc.toString());
+		if (this.lvgCmd != null) {
+			fw.setFstem(firstTokenStem.toLowerCase(Locale.ENGLISH));
+			fw.setStemmedStr(stemmedDesc.toString());
+		}
 		return fw;
 	}
 
@@ -335,7 +287,7 @@ public class SetupAuiFirstWord {
 	 */
 	private String stemToken(Token t) throws Exception {
 		String stemmedWord = t.getText();
-		if (Token.TYPE_WORD == t.getType()) {
+		if (Token.TYPE_WORD == t.getType() || Token.TYPE_UNKNOWN == t.getType()) {
 			stemmedWord = this.getCanonicalForm(t.getText());
 			if (stemmedWord == null || stemmedWord.length() == 0) {
 				stemmedWord = t.getText();
