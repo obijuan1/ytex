@@ -196,4 +196,7 @@
 			</zipfileset>
 		</zip>
 	</target>
+	<target name="ukb.fix">
+		<fixcrlf srcDir="./data/ukb" includes="*.sh,*.txt" />
+	</target>
 </project>
