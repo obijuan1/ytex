@@ -3,8 +3,8 @@
 export DATA_HOME=${HOME}/ytex/projects/simbenchmark/data
 export UKB_HOME=${HOME}/bin/ukb-0.1.6
 
-cd $DATA_HOME/ukb
+cd ${UKB_HOME}/UKBsim
 PREFIX=$1
 KB=$2
 
-cat ../${PREFIX}_id.txt | ${UKB_HOME}/similarity.pl --sim dot --ukbargs "--concept_graph --only_synsets --nopos --dict_file ${PREFIX}_dict.txt --kb_binfile ./${kb}.bin" > ${PREFIX}_ppr.txt
+cat ${DATA_HOME}/${PREFIX}_id.txt | ./similarity.pl --sim dot --ukbargs "--concept_graph --only_synsets --nopos --dict_file ${DATA_HOME}/ukb/${PREFIX}_dict.txt --kb_binfile ${DATA_HOME}/ukb/${KB}.bin" > ${DATA_HOME}/ukb/${PREFIX}_ppr.txt
