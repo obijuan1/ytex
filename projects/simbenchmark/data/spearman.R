@@ -1,5 +1,8 @@
 library(plyr)
 # results
+
+# cg concept graph
+# con concept benchmark
 eval.con = function(cg, con) {
 	gold = read.delim(paste(con, ".csv", sep=""), header=T, stringsAsFactors=F, sep=",")
 	sim = read.delim(paste(cg, "/", con, "_id_sim.txt", sep=""), sep="\t", header=T, stringsAsFactors=F)
@@ -11,6 +14,19 @@ eval.con = function(cg, con) {
 	return(res.m)
 }
  
+eval.con.ppr = function(cg, con) {
+  ppr = paste("ukb/", cg, "/", con, "_ppr.txt", sep="")
+  if(!file.exists(ppr))
+    return(data.frame(cg = cg, metric="ppr", con = con, spearman=0, p.value=0))
+  gold = read.delim(paste(con, ".csv", sep=""), header=T, stringsAsFactors=F, sep=",")
+  sim = read.delim(ppr, sep=" ", header=F, stringsAsFactors=F)
+  cor = cor.test(gold$Mean, sim[,3], method="spearman")
+  spearman = cor$estimate
+  p.value = cor$p.value
+  res.m = data.frame(cg = cg, metric="ppr", con = con, spearman=spearman, p.value=p.value)
+  return(res.m)
+}
+
 eval.mini = function(cg, prefix="MiniMayoSRS") {
 	gold = read.delim("MiniMayoSRS.csv", header=T, stringsAsFactors=F, sep=",")
 	sim = read.delim(paste(cg, "/", prefix, "_id_sim.txt", sep=""), sep="\t", header=T, stringsAsFactors=F)
@@ -38,23 +54,54 @@ eval.mini = function(cg, prefix="MiniMayoSRS") {
 	return(res.m)
 }
 
+eval.mini.ppr = function(cg, prefix="MiniMayoSRS") {
+  ppr = paste("ukb/", cg, "/", prefix, "_ppr.txt", sep="")
+  if(!file.exists(ppr))
+    return(data.frame(cg = rep(cg, 3),
+                      metric = rep("ppr", 3),
+                      con = c("MiniMayoSRS_Physicians", "MiniMayoSRS_Coders", "MiniMayoSRS_Combined"),
+                      spearman = rep(0, 3),
+                      p.value = rep(0, 3)))
+  gold = read.delim("MiniMayoSRS.csv", header=T, stringsAsFactors=F, sep=",")
+  sim = read.delim(ppr, sep=" ", header=F, stringsAsFactors=F)
+  res = data.frame(cg = cg, 
+                   metric="ppr", 
+                   con = "MiniMayoSRS_Physicians",
+                   spearman=cor.test(gold$Physicians, sim[,3], method="spearman")$estimate, 
+                   p.value=cor.test(gold$Physicians, sim[,3], method="spearman")$p.value)
+  res = rbind(res, 
+              data.frame(cg = cg, metric="ppr", con = "MiniMayoSRS_Coders", 
+                         spearman=cor.test(gold$Coders, sim[,3], method="spearman")$estimate, 
+                         p.value=cor.test(gold$Coders, sim[,3], method="spearman")$p.value))
+  comb = apply(gold[,c("Coders","Physicians"), ], 1, mean)
+  res = rbind(res, 
+              data.frame(cg = cg, metric="ppr", con = "MiniMayoSRS_Combined", 
+                         spearman=cor.test(comb, sim[,3], method="spearman")$estimate, 
+                         p.value=cor.test(comb, sim[,3], method="spearman")$p.value))
+  return(res)
+}
+
 # main
-res = data.frame(cg=c(), file=c(), spearman=c(),p.value=c())
+res = data.frame()
 
 cgs = c("sct-umls", "msh-umls", "sct-msh-csp-aod", "umls") 
 cons = c("UMNSRS_similarity", "UMNSRS_relatedness", "MayoSRS")
 
 for(cg in cgs) {
 	for(con in cons) {
-		res.con = eval.con(cg, con)
-		res = rbind(res, res.con)
+		res = rbind(res, eval.con(cg, con))
+		res = rbind(res, eval.con.ppr(cg, con))
 	}
 	res = rbind(res, eval.mini(cg))
+	res = rbind(res, eval.mini.ppr(cg))
 }
 
 res = rbind(res, eval.mini("sct", prefix="MiniMayoSRS_snomed"))
+res = rbind(res, eval.mini.ppr("sct", prefix="MiniMayoSRS_snomed"))
 res = rbind(res, eval.mini("msh", prefix="MiniMayoSRS_mesh"))
+res = rbind(res, eval.mini.ppr("msh", prefix="MiniMayoSRS_mesh"))
 res = rbind(res, eval.mini("msh-umls", prefix="MiniMayoSRS_mesh_umls"))
+res = rbind(res, eval.mini.ppr("msh-umls", prefix="MiniMayoSRS_mesh_umls"))
 
 write.csv(res, file="simbenchmark-spearman.csv", row.names=F)
 
@@ -65,8 +112,12 @@ res.sum = ddply(res, .(con, cg), function(x) {
 		PATH=x[x$metric=="PATH","spearman"], 
 		INTRINSIC_LIN=x[x$metric=="INTRINSIC_LIN","spearman"], 
 		INTRINSIC_PATH=x[x$metric=="INTRINSIC_PATH","spearman"], 
-		INTRINSIC_LCH=x[x$metric=="INTRINSIC_LCH","spearman"])
+		INTRINSIC_LCH=x[x$metric=="INTRINSIC_LCH","spearman"], 
+		PPR=x[x$metric=="ppr","spearman"])
 	})
+
+
+
 
 # compare correlation between path and intrinsic lch
 
