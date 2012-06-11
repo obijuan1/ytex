@@ -16,3 +16,5 @@ from
 	    and char_length(p.treenumber) + 4 = char_length(c.treenumber)
 ) s
 ;
+
+create index IX_conceptString on mesh_concept(conceptString);
