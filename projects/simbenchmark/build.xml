@@ -3,6 +3,7 @@
 <project name="simbenchmark">
 	<property name="ytex.home" value="../.." />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
+	<import file="${ytex.home}/data/build.xml" />
 	<!--
 	desc2012.xml from http://www.nlm.nih.gov/mesh/termscon.html
 	http://www.nlm.nih.gov/mesh/2012/download/desc2012.dtd
@@ -102,6 +103,7 @@
 		<property name="eval.concepts" value="MiniMayoSRS_id.txt" />
 		<basename property="eval.base" file="${eval.concepts}" suffix=".txt" />
 		<property name="eval.out" value="${eval.base}_sim.txt" />
+		<property name="eval.metrics" value="LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
 		<mkdir dir="${basedir}/data/${ytex.conceptGraphName}" />
 		<java classname="ytex.kernel.metric.ConceptSimilarityServiceImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes" dir="${basedir}/data/${ytex.conceptGraphName}">
 			<syspropertyset>
@@ -109,13 +111,14 @@
 			</syspropertyset>
 			<jvmarg value="-Xmx${ytex.mx}" />
 			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
+			<jvmarg value="-Dytex.corpusName=${ytex.corpusName}" />
 			<!--
 			<jvmarg value="-Dytex.conceptPreload=${ytex.conceptPreload}" />
 			-->
 			<arg value="-concepts" />
 			<arg value="../${eval.concepts}" />
 			<arg value="-metrics" />
-			<arg value="LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,RADA,INTRINSIC_RADA,JACCARD,SOKAL,WUPALMER" />
+			<arg value="${eval.metrics}" />
 			<arg value="-out" />
 			<arg value="${eval.out}" />
 			<arg value="-lcs" />
@@ -128,14 +131,30 @@
 		</antcall>
 	</target>
 	<target name="msh.eval.sim" description="evaluate mesh benchmark">
+		<property name="eval.metrics" value="LIN,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_mesh_id.txt" />
 			<param name="ytex.conceptGraphName" value="msh" />
+			<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
+			<param name="eval.metrics" value="${eval.metrics}" />
 		</antcall>
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_mesh_umls_id.txt" />
 			<param name="ytex.conceptGraphName" value="msh-umls" />
+			<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
+			<param name="eval.metrics" value="${eval.metrics}" />
 		</antcall>
+		<property name="input.files" value="UMNSRS_similarity_id.txt,UMNSRS_relatedness_id.txt,MayoSRS_id.txt" />
+		<for param="eval.concepts" list="${input.files}">
+			<sequential>
+				<antcall target="eval.sim">
+					<param name="eval.concepts" value="@{eval.concepts}" />
+					<param name="ytex.conceptGraphName" value="msh-umls" />
+					<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
+					<param name="eval.metrics" value="${eval.metrics}" />
+				</antcall>
+			</sequential>
+		</for>		
 	</target>
 	<target name="spearman.eval" description="compute correlation for all benchmarks">
 		<exec executable="${R.bin}/R" dir="${basedir}/data">
@@ -198,5 +217,51 @@
 	</target>
 	<target name="ukb.fix">
 		<fixcrlf srcDir="./data/ukb" includes="*.sh,*.txt" />
+	</target>
+	<target name="mesh.freq" depends="init.conn">
+		<!--
+		<mkdir dir="data/freq" />
+		<copy todir="data/freq" flatten="true" >
+			<resources>
+				<url url="http://mbr.nlm.nih.gov/Download/2012/FreqCounts/Chemical_freq_count.gz" />
+				<url url="http://mbr.nlm.nih.gov/Download/2012/FreqCounts/MH_freq_count.gz" />
+			</resources>
+		</copy>
+		<gunzip src="data/freq/Chemical_freq_count.gz" />
+		<java classpathref="${kernel.cp}" classname="my.mas.AppMain" fork="yes" failonerror="yes">
+			<jvmarg value="-Dfile.encoding=UTF-8" />
+			<arg value="-c" />
+			<arg value="${ytex.home}/data/conn.xml" />
+			<arg value="-d" />
+			<arg value="data/freq/Chemical_freq_count" />
+			<arg value="-l" />
+			<arg value="data/Chemical_freq_count.xml" />
+		</java>
+		<gunzip src="data/freq/MH_freq_count.gz" />
+		<java classpathref="${kernel.cp}" classname="my.mas.AppMain" fork="yes" failonerror="yes">
+			<jvmarg value="-Dfile.encoding=UTF-8" />
+			<arg value="-c" />
+			<arg value="${ytex.home}/data/conn.xml" />
+			<arg value="-d" />
+			<arg value="data/freq/MH_freq_count" />
+			<arg value="-l" />
+			<arg value="data/MH_freq_count.xml" />
+		</java>
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/update_mesh_freq.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
+		-->
+		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+			<arg value="-prop" />
+			<arg value="msh-ic.properties.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+			<arg value="-prop" />
+			<arg value="msh-umls-ic.properties.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
 	</target>
 </project>
