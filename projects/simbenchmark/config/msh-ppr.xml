@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.conceptGraphName">msh-ppr</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+	select chdUI, parUI
+	from mesh_hier
+	union
+	select parUI, chdUI
+	from mesh_hier 
+	]]></entry>
+	<entry key="ytex.checkCycle">false</entry>
+</properties>
