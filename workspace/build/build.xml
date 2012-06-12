@@ -115,7 +115,7 @@
 	</target>
 	<target name="compile" depends="init">
 		<property name="project.home" value="../${project.name}" />
-		<property name="project.bin.home" value="${project.home}/bin" />
+		<property name="project.bin.home" value="${project.home}/target/classes" />
 		<property name="project.src.home" value="${project.home}/src/main/java" />
 		<property name="project.jar.name" value="${project.home}.jar" />
 		<property name="project.classpathref" value="cp.all" />
