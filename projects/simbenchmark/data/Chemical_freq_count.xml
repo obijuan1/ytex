@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="mesh_freq" commit="10000" delimiter="|">
+		<column name="freq" />
+		<column name="freq_star" skip="true"/>
+		<column name="term" />
+	</csv>
+</load>
