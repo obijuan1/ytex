@@ -130,17 +130,12 @@
 			<param name="ytex.conceptGraphName" value="sct" />
 		</antcall>
 	</target>
-	<target name="msh.eval.sim" description="evaluate mesh benchmark">
+	<target name="msh-umls.eval.sim" description="evaluate mesh benchmark">
 		<property name="eval.metrics" value="LIN,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
-		<antcall target="eval.sim">
-			<param name="eval.concepts" value="MiniMayoSRS_mesh_id.txt" />
-			<param name="ytex.conceptGraphName" value="msh" />
-			<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
-			<param name="eval.metrics" value="${eval.metrics}" />
-		</antcall>
+		<property name="cg.suffix" value="" />
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_mesh_umls_id.txt" />
-			<param name="ytex.conceptGraphName" value="msh-umls" />
+			<param name="ytex.conceptGraphName" value="msh-umls${cg.suffix}" />
 			<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
 			<param name="eval.metrics" value="${eval.metrics}" />
 		</antcall>
@@ -149,7 +144,29 @@
 			<sequential>
 				<antcall target="eval.sim">
 					<param name="eval.concepts" value="@{eval.concepts}" />
-					<param name="ytex.conceptGraphName" value="msh-umls" />
+					<param name="ytex.conceptGraphName" value="msh-umls${cg.suffix}" />
+					<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
+					<param name="eval.metrics" value="${eval.metrics}" />
+				</antcall>
+			</sequential>
+		</for>		
+	</target>
+	
+	<target name="msh.eval.sim" description="evaluate mesh benchmark">
+		<property name="eval.metrics" value="LIN,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
+		<property name="cg.suffix" value="" />
+		<antcall target="eval.sim">
+			<param name="eval.concepts" value="MiniMayoSRS_mesh_umls_id.txt" />
+			<param name="ytex.conceptGraphName" value="msh${cg.suffix}" />
+			<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
+			<param name="eval.metrics" value="${eval.metrics}" />
+		</antcall>
+		<property name="input.files" value="UMNSRS_similarity_mesh_id.txt,UMNSRS_relatedness_mesh_id.txt,MayoSRS_mesh_id.txt" />
+		<for param="eval.concepts" list="${input.files}">
+			<sequential>
+				<antcall target="eval.sim">
+					<param name="eval.concepts" value="@{eval.concepts}" />
+					<param name="ytex.conceptGraphName" value="msh${cg.suffix}" />
 					<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
 					<param name="eval.metrics" value="${eval.metrics}" />
 				</antcall>
@@ -219,7 +236,6 @@
 		<fixcrlf srcDir="./data/ukb" includes="*.sh,*.txt" />
 	</target>
 	<target name="mesh.freq" depends="init.conn">
-		<!--
 		<mkdir dir="data/freq" />
 		<copy todir="data/freq" flatten="true" >
 			<resources>
@@ -248,7 +264,6 @@
 			<arg value="data/MH_freq_count.xml" />
 		</java>
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/update_mesh_freq.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
-		-->
 		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
 			<arg value="-prop" />
 			<arg value="msh-ic.properties.xml" />
