@@ -1,6 +1,7 @@
 drop table if exists mesh_concept;
 drop table if exists mesh_treenumber;
 drop table if exists mesh_hier;
+drop table if exists mesh_freq;
 
 CREATE TABLE `mesh_concept` (
 	descriptorUI CHAR(7) NOT NULL,
