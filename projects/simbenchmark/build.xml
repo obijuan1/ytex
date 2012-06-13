@@ -16,6 +16,9 @@
 	<property name="cg.list" value="sct,msh,${cg.umls.list}" />
 	<property name="ytex.conceptPreload" value="false" />
 	<property name="maxMemory" value="1500m" />
+	<property name="parallel.folds" value="no" />
+	<property name="kernel.threads" value="1" />
+	
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
 	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier,mesh.freq" description="load mesh into db" />
 	<target name="cg.all" depends="cg.generateDesc,cg.setup.all" description="setup concept graphs" />
@@ -81,7 +84,7 @@
 		</java>
 	</target>
 	<target name="umls.eval.sim" description="evaluate all umls concept graphs">
-		<for param="cg" list="${cg.umls.list}">
+		<for param="cg" list="${cg.umls.list}" parallel="${parallel.folds}" threadCount="${kernel.threads}">
 			<sequential>
 				<antcall target="umls.eval.sim.cg">
 					<param name="ytex.conceptGraphName" value="@{cg}" />
