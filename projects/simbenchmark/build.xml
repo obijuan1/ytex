@@ -12,14 +12,14 @@
 	<property name="mesh.desc" value="${mesh.home}/desc2012.xml" />
 	<property name="mesh.supp" value="${mesh.home}/supp2012.xml" />
 	<property name="ytex.mx" value="1500m" />
-	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh-csp-aod,umls" />
+	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh,umls" />
 	<property name="cg.list" value="sct,msh,${cg.umls.list}" />
 	<property name="ytex.conceptPreload" value="false" />
 	<property name="maxMemory" value="1500m" />
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
-	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier" description="load mesh into db" />
+	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier,mesh.freq" description="load mesh into db" />
 	<target name="cg.all" depends="cg.generateDesc,cg.setup.all" description="setup concept graphs" />
-	<target name="eval.all" depends="msh.eval.sim,sct.eval.sim,umls.eval.sim,spearman.eval,concat.all" description="evaluate semantic similarity measures for all benchmarks" />
+	<target name="eval.all" depends="msh.eval.sim,msh-umls.eval.sim,sct.eval.sim,umls.eval.sim,spearman.eval,concat.all" description="evaluate semantic similarity measures for all benchmarks" />
 	<target name="build">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
