@@ -12,7 +12,7 @@
 	<property name="mesh.desc" value="${mesh.home}/desc2012.xml" />
 	<property name="mesh.supp" value="${mesh.home}/supp2012.xml" />
 	<property name="ytex.mx" value="1500m" />
-	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh,umls" />
+	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh,sct-msh-csp-aod,umls" />
 	<property name="cg.list" value="sct,msh,${cg.umls.list}" />
 	<property name="ytex.conceptPreload" value="false" />
 	<property name="maxMemory" value="1500m" />
@@ -86,7 +86,7 @@
 	</target>
 	<target name="umls.eval.sim" description="evaluate all umls concept graphs">
 		<property name="cg.suffix" value="" />
-		<for param="cg" list="${cg.umls.list}" parallel="${parallel.folds}" threadCount="${kernel.threads}">
+		<for param="cg" list="${cg.umls.list}">
 			<sequential>
 				<antcall target="umls.eval.sim.cg">
 					<param name="ytex.conceptGraphName" value="@{cg}${cg.suffix}" />
@@ -95,6 +95,7 @@
 		</for>
 	</target>
 	<target name="umls.eval.sim.cg" description="evaluate all benchmarks for the given umls cocnept graph ${cg}">
+		<echo>umls.eval.sim.cg ${ytex.conceptGraphName}</echo>
 		<property name="input.files" value="UMNSRS_similarity_id.txt,UMNSRS_relatedness_id.txt,MayoSRS_id.txt,MiniMayoSRS_id.txt" />
 		<for param="eval.concepts" list="${input.files}">
 			<sequential>
@@ -110,6 +111,7 @@
 		<property name="eval.out" value="${eval.base}_sim.txt" />
 		<property name="eval.metrics" value="LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
 		<mkdir dir="${basedir}/data/${ytex.conceptGraphName}" />
+		<echo>eval.sim ${ytex.conceptGraphName} ${eval.concepts}</echo>
 		<java classname="ytex.kernel.metric.ConceptSimilarityServiceImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes" dir="${basedir}/data/${ytex.conceptGraphName}">
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
@@ -137,6 +139,7 @@
 		</antcall>
 	</target>
 	<target name="msh-umls.eval.sim" description="evaluate mesh benchmark">
+		<echo>msh-umls.eval.sim</echo>
 		<property name="eval.metrics" value="LIN,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
 		<property name="cg.suffix" value="" />
 		<antcall target="eval.sim">
@@ -162,7 +165,7 @@
 		<property name="eval.metrics" value="LIN,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
 		<property name="cg.suffix" value="" />
 		<antcall target="eval.sim">
-			<param name="eval.concepts" value="MiniMayoSRS_mesh_umls_id.txt" />
+			<param name="eval.concepts" value="MiniMayoSRS_mesh_id.txt" />
 			<param name="ytex.conceptGraphName" value="msh${cg.suffix}" />
 			<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
 			<param name="eval.metrics" value="${eval.metrics}" />
