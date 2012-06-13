@@ -18,12 +18,18 @@
 	<property name="maxMemory" value="1500m" />
 	<property name="parallel.folds" value="no" />
 	<property name="kernel.threads" value="1" />
-	
+
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
 	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier" description="load mesh into db" />
 	<target name="cg.all" depends="cg.generateDesc,cg.setup.all,mesh.freq" description="setup concept graphs" />
 	<target name="eval.all" depends="msh.eval.sim,msh-umls.eval.sim,sct.eval.sim,umls.eval.sim,spearman.eval,concat.all" description="evaluate semantic similarity measures for all benchmarks" />
-	<target name="ppr.eval.all"></target>
+	<target name="ppr.all" depends="ppr.cg.setup.all,ppr.eval.all" description="evaluate ppr for all concept graphs and benchmarks" />
+	<target name="ppr.eval.all">
+		<antcall target="eval.all">
+			<param name="cg.suffix" value="-ppr" />
+		</antcall>
+	</target>
+
 	<target name="build">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
@@ -58,7 +64,13 @@
 			</filterset>
 		</copy>
 	</target>
+	<target name="ppr.cg.setup.all" description="generate ppr concept graphs">
+		<antcall target="cg.setup.all">
+			<param name="cg.suffix" value="-ppr" />
+		</antcall>
+	</target>
 	<target name="cg.setup.all" description="generate all concept graphs">
+		<property name="cg.suffix" value="" />
 		<for param="cg.name" list="${cg.list}">
 			<!--
 			<fileset dir="${basedir}/config" includes="*.xml" excludes="*.template.xml" />
@@ -66,13 +78,13 @@
 			<sequential>
 				<echo>@{cg}</echo>
 				<antcall target="cg.setup">
-					<param name="cg.name" value="@{cg.name}" />
+					<param name="cg.name" value="@{cg.name}${cg.suffix}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
 	<target name="cg.setup" description="setup concept graph ${cg}, compute intrinsic info content">
-		<property name="cg.name" value="${ytex.conceptGraphName}" />
+		<property name="cg.name" value="sct-umls" />
 		<echo>${cg.name}</echo>
 		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
 			<syspropertyset>
@@ -89,13 +101,13 @@
 		<for param="cg" list="${cg.umls.list}">
 			<sequential>
 				<antcall target="umls.eval.sim.cg">
-					<param name="ytex.conceptGraphName" value="@{cg}${cg.suffix}" />
+					<param name="cg.name" value="@{cg}${cg.suffix}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
 	<target name="umls.eval.sim.cg" description="evaluate all benchmarks for the given umls cocnept graph ${cg}">
-		<echo>umls.eval.sim.cg ${ytex.conceptGraphName}</echo>
+		<echo>umls.eval.sim.cg ${cg.name}</echo>
 		<property name="input.files" value="UMNSRS_similarity_id.txt,UMNSRS_relatedness_id.txt,MayoSRS_id.txt,MiniMayoSRS_id.txt" />
 		<for param="eval.concepts" list="${input.files}">
 			<sequential>
@@ -110,14 +122,14 @@
 		<basename property="eval.base" file="${eval.concepts}" suffix=".txt" />
 		<property name="eval.out" value="${eval.base}_sim.txt" />
 		<property name="eval.metrics" value="LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
-		<mkdir dir="${basedir}/data/${ytex.conceptGraphName}" />
-		<echo>eval.sim ${ytex.conceptGraphName} ${eval.concepts}</echo>
-		<java classname="ytex.kernel.metric.ConceptSimilarityServiceImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes" dir="${basedir}/data/${ytex.conceptGraphName}">
+		<mkdir dir="${basedir}/data/${cg.name}" />
+		<echo>eval.sim ${cg.name} ${eval.concepts}</echo>
+		<java classname="ytex.kernel.metric.ConceptSimilarityServiceImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes" dir="${basedir}/data/${cg.name}">
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
 			<jvmarg value="-Xmx${ytex.mx}" />
-			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
+			<jvmarg value="-Dytex.conceptGraphName=${cg.name}" />
 			<jvmarg value="-Dytex.corpusName=${ytex.corpusName}" />
 			<!--
 			<jvmarg value="-Dytex.conceptPreload=${ytex.conceptPreload}" />
@@ -135,7 +147,7 @@
 		<property name="cg.suffix" value="" />
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_snomed_id.txt" />
-			<param name="ytex.conceptGraphName" value="sct${cg.suffix}" />
+			<param name="cg.name" value="sct${cg.suffix}" />
 		</antcall>
 	</target>
 	<target name="msh-umls.eval.sim" description="evaluate mesh benchmark">
@@ -144,7 +156,7 @@
 		<property name="cg.suffix" value="" />
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_mesh_umls_id.txt" />
-			<param name="ytex.conceptGraphName" value="msh-umls${cg.suffix}" />
+			<param name="cg.name" value="msh-umls${cg.suffix}" />
 			<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
 			<param name="eval.metrics" value="${eval.metrics}" />
 		</antcall>
@@ -153,20 +165,20 @@
 			<sequential>
 				<antcall target="eval.sim">
 					<param name="eval.concepts" value="@{eval.concepts}" />
-					<param name="ytex.conceptGraphName" value="msh-umls${cg.suffix}" />
+					<param name="cg.name" value="msh-umls${cg.suffix}" />
 					<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
 					<param name="eval.metrics" value="${eval.metrics}" />
 				</antcall>
 			</sequential>
-		</for>		
+		</for>
 	</target>
-	
+
 	<target name="msh.eval.sim" description="evaluate mesh benchmark">
 		<property name="eval.metrics" value="LIN,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
 		<property name="cg.suffix" value="" />
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_mesh_id.txt" />
-			<param name="ytex.conceptGraphName" value="msh${cg.suffix}" />
+			<param name="cg.name" value="msh${cg.suffix}" />
 			<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
 			<param name="eval.metrics" value="${eval.metrics}" />
 		</antcall>
@@ -175,12 +187,12 @@
 			<sequential>
 				<antcall target="eval.sim">
 					<param name="eval.concepts" value="@{eval.concepts}" />
-					<param name="ytex.conceptGraphName" value="msh${cg.suffix}" />
+					<param name="cg.name" value="msh${cg.suffix}" />
 					<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
 					<param name="eval.metrics" value="${eval.metrics}" />
 				</antcall>
 			</sequential>
-		</for>		
+		</for>
 	</target>
 	<target name="spearman.eval" description="compute correlation for all benchmarks">
 		<exec executable="${R.bin}/R" dir="${basedir}/data">
@@ -246,7 +258,7 @@
 	</target>
 	<target name="mesh.freq" depends="init.conn">
 		<mkdir dir="data/freq" />
-		<copy todir="data/freq" flatten="true" >
+		<copy todir="data/freq" flatten="true">
 			<resources>
 				<url url="http://mbr.nlm.nih.gov/Download/2012/FreqCounts/Chemical_freq_count.gz" />
 				<url url="http://mbr.nlm.nih.gov/Download/2012/FreqCounts/MH_freq_count.gz" />
