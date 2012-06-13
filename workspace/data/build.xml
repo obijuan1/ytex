@@ -455,7 +455,7 @@ ${sql.delimiter}
 		</antcall>
 	</target>
 	<target name="init.conn">
-		<copy file="${basedir}/conn.xml.template" tofile="${basedir}/conn.xml" overwrite="yes">
+		<copy file="${ytex.home}/data/conn.xml.template" tofile="${ytex.home}/data/conn.xml" overwrite="yes">
 			<filterset>
 				<filter token="db.driver" value="${db.driver}" />
 				<filter token="db.url" value="${db.url}" />
