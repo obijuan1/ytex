@@ -23,3 +23,14 @@ create table mesh_hier (
     primary key (parUI, chdUI, rel)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8
 ;
+
+create table mesh_freq (
+	mesh_freq_id int auto_increment not null primary key,
+	year tinyint,
+	source varchar(30),
+	freq int,
+	term varchar(200),
+	cui char(8),
+	code char(7)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8
+;
