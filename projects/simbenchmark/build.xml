@@ -20,9 +20,10 @@
 	<property name="kernel.threads" value="1" />
 	
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
-	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier,mesh.freq" description="load mesh into db" />
-	<target name="cg.all" depends="cg.generateDesc,cg.setup.all" description="setup concept graphs" />
+	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier" description="load mesh into db" />
+	<target name="cg.all" depends="cg.generateDesc,cg.setup.all,mesh.freq" description="setup concept graphs" />
 	<target name="eval.all" depends="msh.eval.sim,msh-umls.eval.sim,sct.eval.sim,umls.eval.sim,spearman.eval,concat.all" description="evaluate semantic similarity measures for all benchmarks" />
+	<target name="ppr.eval.all"></target>
 	<target name="build">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
@@ -84,10 +85,11 @@
 		</java>
 	</target>
 	<target name="umls.eval.sim" description="evaluate all umls concept graphs">
+		<property name="cg.suffix" value="" />
 		<for param="cg" list="${cg.umls.list}" parallel="${parallel.folds}" threadCount="${kernel.threads}">
 			<sequential>
 				<antcall target="umls.eval.sim.cg">
-					<param name="ytex.conceptGraphName" value="@{cg}" />
+					<param name="ytex.conceptGraphName" value="@{cg}${cg.suffix}" />
 				</antcall>
 			</sequential>
 		</for>
@@ -128,9 +130,10 @@
 		</java>
 	</target>
 	<target name="sct.eval.sim" description="evaluate snomed benchmark">
+		<property name="cg.suffix" value="" />
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_snomed_id.txt" />
-			<param name="ytex.conceptGraphName" value="sct" />
+			<param name="ytex.conceptGraphName" value="sct${cg.suffix}" />
 		</antcall>
 	</target>
 	<target name="msh-umls.eval.sim" description="evaluate mesh benchmark">

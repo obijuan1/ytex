@@ -30,7 +30,7 @@ create table mesh_freq (
 	year tinyint,
 	source varchar(30),
 	freq int,
-	term varchar(200),
+	term varchar(300),
 	cui char(8),
 	code char(7)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8
