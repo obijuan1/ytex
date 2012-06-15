@@ -19,15 +19,15 @@ export YTEX_HOME
 ANT_HOME=${YTEX_HOME}/../apache-ant-1.8.0
 export ANT_HOME
 
-# where ictakes is/will be installed
-# if you have ictakes installed, set this variable to your ictakes directory
-# otherwise this is the directory where the ytex installer will put ictakes 
-ICTAKES_HOME=${YTEX_HOME}/../icTAKES-1.3.2
-export ICTAKES_HOME
+# where ctakes is/will be installed
+# if you have ctakes 2.5.0 installed, set this variable to your ctakes directory
+# otherwise this is the directory where the ytex installer will put ctakes 
+CTAKES_HOME=${YTEX_HOME}/../cTAKES-2.5.0
+export CTAKES_HOME
 
 # where metamap is installed (optional)
-MM_HOME=/opt/public_mm
-export MM_HOME
+#MM_HOME=/opt/public_mm
+#export MM_HOME
 
 # PATH variable
 # add java and ant to the front of the path
@@ -59,7 +59,7 @@ export TOMCAT_CP
 
 # metamap classpath
 if [ -f ${MM_HOME}/src/uima/lib/metamap-api-uima.jar ]; then
-	MM_CLASSPATH=${MM_HOME}/src/javaapi/dist/MetaMapApi.jar:${MM_HOME}/src/javaapi/dist/MetaMapApi.jar:${MM_HOME}/src/javaapi/dist/prologbeans.jar:${MM_HOME}/src/uima/lib/metamap-api-uima.jar:${MM_HOME}/src/uima/desc
+	MM_CLASSPATH=${MM_HOME}/src/javaapi/dist/MetaMapApi.jar:${MM_HOME}/src/javaapi/dist/prologbeans.jar:${MM_HOME}/src/uima/lib/metamap-api-uima.jar:${MM_HOME}/src/uima/desc
 fi
 
 # YTEX classpath
