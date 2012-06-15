@@ -24,6 +24,12 @@ CREATE NONCLUSTERED INDEX [IX_uid] ON $(db_schema).[document]
 )
 ;
 
+CREATE NONCLUSTERED INDEX [IX_instance_key] ON $(db_schema).[document] 
+(
+	[instance_key]
+)
+;
+
 create table $(db_schema).anno_base (
 	anno_base_id int /* identity */ not null, 
 	document_id int not null, 
@@ -51,13 +57,38 @@ create table $(db_schema).anno_named_entity (
 	anno_base_id int not null, 
 	discoveryTechnique int,
 	status int,
-	certainty int,
+	polarity int,
+	uncertainty int,
+	conditional bit,
+	generic bit,
 	typeID int,
 	confidence float,
 	segmentID varchar(20),
 	primary key (anno_base_id),
 	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id)  ON DELETE CASCADE
 );
+
+create table $(db_schema).anno_med_event (
+	anno_base_id int not null,
+	discoveryTechnique int,
+	status int,
+	polarity int,
+	uncertainty int,
+	conditional bit,
+	generic bit,
+	typeID int,
+	confidence float,
+	segmentID varchar(20),
+	freqNumber varchar(10),
+	freqUnit varchar(10),
+	strengthNumber varchar(10),
+	strengthUnit varchar(10),
+	[change] varchar(10),
+	dosage varchar(10),
+	primary key (anno_base_id),
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id)  ON DELETE CASCADE
+);
+
 
 create table $(db_schema).anno_ontology_concept (
 	anno_ontology_concept_id int identity not null, 
@@ -70,6 +101,7 @@ create table $(db_schema).anno_ontology_concept (
 );
 
 create index IX_onto_concept_code on $(db_schema).anno_ontology_concept (code);
+create index IX_onto_concept_anno_cui on $(db_schema).anno_ontology_concept (anno_base_id, cui);
 create index IX_onto_concept_anno_code on $(db_schema).anno_ontology_concept (anno_base_id, code);
 
 CREATE TABLE $(db_schema).[anno_segment](
@@ -125,21 +157,6 @@ create table $(db_schema).anno_date (
 	anno_base_id int not null,
 	tstamp datetime,
 	primary key (anno_base_id),
-	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
-);
-
-create table $(db_schema).anno_drug_mention (
-	anno_base_id int not null primary key ,
-	status int not null default 0,
-	frequency varchar(20),
-	duration varchar(20),
-	route varchar(20),
-	drugChangeStatus varchar(10),
-	dosage varchar(20),
-	strength varchar(20),
-	form varchar(20),
-	frequencyUnit varchar(20),
-	startDate varchar(20),
 	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
 );
 
@@ -224,7 +241,7 @@ create table $(db_schema).anno_mm_utterance (
 );
 
 create table $(db_schema).anno_mm_cuiconcept (
-    anno_mm_cuiconcept_id int auto_increment primary key,
+    anno_mm_cuiconcept_id int identity primary key,
     anno_base_id int,
     negExCui char(8),
 	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE

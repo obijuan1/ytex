@@ -25,6 +25,11 @@ CREATE INDEX IX_instance_id ON document
 )
 ;
 
+CREATE INDEX IX_instance_key ON document 
+(
+	instance_key
+)
+;
 create table anno_base (
 	anno_base_id int /* AUTO_INCREMENT */  not null,
 	document_id int not null  comment 'fk document',
@@ -93,7 +98,8 @@ create table anno_ontology_concept (
 	primary key (anno_ontology_concept_id),
 	KEY `IX_anno_base_id` (`anno_base_id`),
 	KEY `IX_code` (`code`),
-	KEY `IX_anno_code` (`anno_base_id`,`code`)
+	KEY `IX_anno_code` (`anno_base_id`,`code`),
+	KEY `IX_anno_cui` (`anno_base_id`,`cui`)
 )engine=myisam;
 
 CREATE TABLE anno_segment(

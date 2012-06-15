@@ -54,14 +54,14 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema)
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_named_entity]') AND type in (N'U'))
 	drop table $(db_schema).anno_named_entity
 ;
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_med_event]') AND type in (N'U'))
+	drop table $(db_schema).anno_med_event
+;
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_sentence]') AND type in (N'U'))
 	drop table $(db_schema).anno_sentence
 ;
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_date]') AND type in (N'U'))
 	drop table $(db_schema).anno_date
-;
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_drug_mention]') AND type in (N'U'))
-	drop table $(db_schema).anno_drug_mention
 ;
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'$(db_schema).[anno_markable]') AND type in (N'U'))
 	drop table $(db_schema).anno_markable

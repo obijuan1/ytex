@@ -22,7 +22,7 @@ SELECT
   da.anno_base_id,
   d.analysis_batch,
   da.document_id, 
-  ne.certainty, 
+  ne.polarity, 
   o.code, 
   substring(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, 
   substring(d.doc_text, s.span_begin+1, s.span_end-s.span_begin) sentence_text,
@@ -49,7 +49,7 @@ go
 
 CREATE VIEW $(db_schema).[v_document_ontoanno]
 AS
-SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.code, o.cui, d.analysis_batch, substring(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, o.disambiguated
+SELECT d.document_id, da.span_begin, da.span_end, ne.polarity, o.code, o.cui, d.analysis_batch, substring(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, o.disambiguated
 FROM $(db_schema).v_document AS d INNER JOIN
 $(db_schema).anno_base AS da ON d.document_id = da.document_id INNER JOIN
 $(db_schema).anno_named_entity AS ne ON da.anno_base_id = ne.anno_base_id INNER JOIN
