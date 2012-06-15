@@ -165,11 +165,43 @@ eval.mini.ppr = function(cg, prefix="MiniMayoSRS") {
   return(res)
 }
 
+# concatenate all similarity results
+concat.results = function(cgs, cons, ppr=F) {
+  sim = data.frame()
+  for(cg in cgs) {
+    for(con in cons) {
+      cgPrefix = cg
+      if(ppr)
+        cgPrefix = paste(cg, "-ppr", sep="")
+      f = paste(cgPrefix, "/", con, "_id_sim.txt", sep="")
+      if(file.exists(f)) {
+        sim1 = read.delim(f, sep="\t", header=T, stringsAsFactors=F)
+        sim1 = cbind(
+          cg = rep(cg, nrow(sim1)),
+          con = rep(con, nrow(sim1)),
+          sim1)
+        sim = rbind(sim, sim1)
+      }
+    }
+  }
+  return(sim)
+}
+
+
 # main
 res = data.frame()
 
 cgs = c("sct-umls", "sct-msh", "sct-msh-csp-aod", "umls") 
 cons = c("UMNSRS_similarity", "UMNSRS_relatedness", "MayoSRS")
+
+# concatenate and save results
+sim.sum = concat.results(cgs = c(cgs, "MiniMayoSRS"), cons=cons)
+sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed")))
+write.csv(sim.sum, file="sim.csv", row.names=F)
+sim.sum = concat.results(cgs = c(cgs, "MiniMayoSRS"), cons=cons, ppr=T)
+sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed"), ppr=T))
+write.csv(sim.sum, file="sim-ppr.csv", row.names=F)
+
 
 for(cg in cgs) {
 	for(con in cons) {
@@ -341,6 +373,16 @@ eval.con.msh = function(cg, con, ppr=F) {
   res.m = cbind(res.m, N=rep(nrow(all), nrow(res.m)))
   return(res.m)
 }
+
+# concatenate and save results
+sim.sum = concat.results(cgs = "msh", cons=c("MiniMayoSRS_mesh", "MayoSRS_mesh", "UMNSRS_similarity_mesh", "UMNSRS_relatedness_mesh"))
+sim.sum = rbind(sim.sum, concat.results("msh-umls", cons=c("MiniMayoSRS_mesh_umls", "MayoSRS", "UMNSRS_similarity", "UMNSRS_relatedness")))
+write.csv(sim.sum, file="sim-mesh.csv", row.names=F)
+
+sim.sum = concat.results(cgs = "msh", cons=c("MiniMayoSRS_mesh", "MayoSRS_mesh", "UMNSRS_similarity_mesh", "UMNSRS_relatedness_mesh"), ppr=T)
+sim.sum = rbind(sim.sum, concat.results("msh-umls", cons=c("MiniMayoSRS_mesh_umls", "MayoSRS", "UMNSRS_similarity", "UMNSRS_relatedness"), ppr=T))
+write.csv(sim.sum, file="sim-mesh-ppr.csv", row.names=F)
+
 
 
 # mesh
