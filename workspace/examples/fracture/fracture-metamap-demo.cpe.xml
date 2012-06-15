@@ -9,13 +9,13 @@
                 <nameValuePair>
                     <name>queryGetDocumentKeys</name>
                     <value>
-                        <string>select note_id INSTANCE_ID, SITE_ID from @db.schema@.fracture_demo</string>
+                        <string>select note_id INSTANCE_ID, SITE_ID from ytex2.fracture_demo</string>
                     </value>
                 </nameValuePair>
                 <nameValuePair>
                     <name>queryGetDocument</name>
                     <value>
-                        <string>select note_text from @db.schema@.fracture_demo where note_id = :INSTANCE_ID and site_id = :SITE_ID</string>
+                        <string>select note_text from ytex2.fracture_demo where note_id = :INSTANCE_ID and site_id = :SITE_ID</string>
                     </value>
                 </nameValuePair>
             </configurationParameterSettings>
@@ -24,7 +24,7 @@
     <casProcessors casPoolSize="3" processingUnitThreadCount="1">
         <casProcessor deployment="integrated" name="AggregateAllAnnotation">
             <descriptor>
-                <import name="ytex.uima.YTEXPipeline"/>
+                <import name="ytex.uima.YTEXMetamapPipeline"/>
             </descriptor>
             <deploymentParameters/>
             <errorHandling>
@@ -37,7 +37,7 @@
                 <nameValuePair>
                     <name>analysisBatch</name>
                     <value>
-                        <string>cpe-fracture</string>
+                        <string>metamap-fracture</string>
                     </value>
                 </nameValuePair>
                 <nameValuePair>
