@@ -43,7 +43,7 @@
 @set PATH=%JAVA_HOME%\bin;%SystemRoot%;%SystemRoot%\System32;%SystemRoot%\System32\wbem;%ANT_HOME%\bin;%SQLJDBC_HOME%\auth\x86
 
 @rem add JDBC dependencies
-@set JDBC_CP=%SQLJDBC_HOME%\enu\sqljdbc4.jar;%YTEX_LIB_SYS_HOME%\mysql-connector-java-5.1.17\mysql-connector-java-5.1.17-bin.jar;%YTEX_LIB_SYS_HOME%\oracle11.2.0.1.0\ojdbc6.jar
+@set JDBC_CP=%SQLJDBC_HOME%\sqljdbc4.jar;%YTEX_LIB_SYS_HOME%\mysql-connector-java-5.1.17\mysql-connector-java-5.1.17-bin.jar;%YTEX_LIB_SYS_HOME%\oracle11.2.0.1.0\ojdbc6.jar
 
 @rem we have a tomcat configuration in this directory
 @set CATALINA_BASE=%YTEX_HOME%\web
