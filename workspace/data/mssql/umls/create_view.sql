@@ -1,4 +1,4 @@
-select mrc.cui, c.fword, c.fstem, c.tok_str, c.stem_str
+select mrc.cui, t.tui, c.fword, c.fstem, c.tok_str, c.stem_str
 into $(db_schema).v_snomed_fword_lookup
 from $(db_schema).umls_aui_fword c
 inner join $(umls_catalog).$(umls_schema).MRCONSO mrc 
