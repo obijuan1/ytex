@@ -22,7 +22,7 @@
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
 	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier" description="load mesh into db" />
 	<target name="cg.all" depends="cg.generateDesc,cg.setup.all,mesh.freq" description="setup concept graphs" />
-	<target name="eval.all" depends="msh.eval.sim,msh-umls.eval.sim,sct.eval.sim,umls.eval.sim,spearman.eval,concat.all" description="evaluate semantic similarity measures for all benchmarks" />
+	<target name="eval.all" depends="msh.eval.sim,msh-umls.eval.sim,sct.eval.sim,umls.eval.sim,spearman.eval" description="evaluate semantic similarity measures for all benchmarks" />
 	<target name="ppr.all" depends="ppr.cg.setup.all,ppr.eval.all" description="evaluate ppr for all concept graphs and benchmarks" />
 	<target name="ppr.eval.all">
 		<antcall target="eval.all">
@@ -218,28 +218,6 @@
 				</antcall>
 			</sequential>
 		</for>
-	</target>
-	<target name="concat.all" description="concatenate evaluations into single file">
-		<delete file="${basedir}/data/sim.txt" quiet="yes" />
-		<antcall target="concat.cg.file">
-			<param name="cg" value="sct" />
-			<param name="concat.skip" value="0" />
-		</antcall>
-		<antcall target="concat.cg.file">
-			<param name="cg" value="msh" />
-		</antcall>
-		<antcall target="concat.cg.file">
-			<param name="cg" value="msh-umls" />
-		</antcall>
-		<antcall target="concat.cg">
-			<param name="cg" value="sct-umls" />
-		</antcall>
-		<antcall target="concat.cg">
-			<param name="cg" value="sct-msh-csp-aod" />
-		</antcall>
-		<antcall target="concat.cg">
-			<param name="cg" value="umls" />
-		</antcall>
 	</target>
 	<target name="package" description="pack up simbenchmark for distribution">
 		<zip destfile="../simbenchmark.zip">
