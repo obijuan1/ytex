@@ -21,7 +21,7 @@ SELECT
   da.anno_base_id,
   d.analysis_batch,
   da.document_id, 
-  ne.certainty, 
+  ne.polarity, 
   o.code, 
   substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, 
   substr(d.doc_text, s.span_begin+1, s.span_end-s.span_begin) sentence_text,
@@ -39,15 +39,15 @@ left join
   select ac.child_anno_base_id, s.span_begin, s.span_end
   from anno_contain ac 
   INNER join anno_base s on ac.parent_anno_base_id = s.anno_base_id
-  where s.uima_type_id in (select uima_type_id from ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.type.Sentence')
-  and ac.child_uima_type_id in (select uima_type_id from ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.type.NamedEntity')
+  where s.uima_type_id in (select uima_type_id from ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.type.textspan.Sentence')
+  and ac.child_uima_type_id in (select uima_type_id from ref_uima_type where uima_type_name = 'edu.mayo.bmi.uima.core.type.textsem.EntityMention')
 ) s on da.anno_base_id = s.child_anno_base_id
 INNER JOIN v_document d on da.document_id = d.document_id
 ;
 
 CREATE VIEW v_document_ontoanno
 AS
-SELECT d.document_id, da.span_begin, da.span_end, ne.certainty, o.code, d.analysis_batch, substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, da.anno_base_id, o.disambiguated, o.cui 
+SELECT d.document_id, da.span_begin, da.span_end, ne.polarity, o.code, d.analysis_batch, substr(d.doc_text, da.span_begin+1, da.span_end-da.span_begin) cui_text, da.anno_base_id, o.disambiguated, o.cui 
 FROM v_document d INNER JOIN
 anno_base  da ON d.document_id = da.document_id INNER JOIN
 anno_named_entity  ne ON da.anno_base_id = ne.anno_base_id INNER JOIN
