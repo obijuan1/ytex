@@ -4,11 +4,12 @@ create sequence anno_onto_concept_id_sequence;
 create sequence anno_contain_id_sequence;
 create sequence anno_link_id_sequence;
 create sequence demo_note_id_sequence;
+create sequence anno_mm_cuiconcept_id_sequence;
 
 CREATE TABLE document(
 	document_id int  NOT NULL,
 	instance_id NUMBER(19) default 0 not null,
-	instance_key varchar(256) null,
+	instance_key varchar2(256) null,
 	analysis_batch varchar2(50) default ' ' NOT NULL,
 	cas blob NULL,
 	doc_text clob NULL,
@@ -32,6 +33,11 @@ CREATE INDEX IX_instance_id ON document
 )
 ;
 
+CREATE INDEX IX_instance_key ON document 
+(
+	instance_key
+)
+;
 
 create table anno_base (
 	anno_base_id int  not null,
@@ -61,10 +67,34 @@ create table anno_named_entity (
 	anno_base_id int not null,
 	discoveryTechnique int,
 	status int,
-	certainty int,
+	polarity int,
+	uncertainty int,
+	conditional numeric(1),
+	generic numeric(1),
 	typeID int,
 	confidence float,
 	segmentID varchar2(20),
+	primary key (anno_base_id),
+	foreign key (anno_base_id) references anno_base(anno_base_id)  ON DELETE CASCADE
+);
+
+create table anno_med_event (
+	anno_base_id int,
+	discoveryTechnique int,
+	status int,
+	polarity int,
+	uncertainty int,
+	conditional numeric(1),
+	generic numeric(1),
+	typeID int,
+	confidence float,
+	segmentID varchar2(20),
+	freqNumber varchar2(10),
+	freqUnit varchar2(10),
+	strengthNumber varchar2(10),
+	strengthUnit varchar2(10),
+	"change" varchar2(10),
+	dosage varchar2(10),
 	primary key (anno_base_id),
 	foreign key (anno_base_id) references anno_base(anno_base_id)  ON DELETE CASCADE
 );
@@ -76,7 +106,7 @@ create table anno_ontology_concept (
 	cui char(8),
 	disambiguated numeric(1) default 0 not null,
 	primary key (anno_ontology_concept_id),
-	foreign key (anno_base_id) references anno_named_entity(anno_base_id)  ON DELETE CASCADE
+	foreign key (anno_base_id) references anno_base(anno_base_id)  ON DELETE CASCADE
 );
 
 CREATE INDEX IX_ontology_concept_code ON anno_ontology_concept (code)
@@ -131,22 +161,6 @@ create table anno_date (
 	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE 
 ) ;
 
-create table anno_drug_mention (
-	anno_base_id int not null,
-	status int default 0 not null,
-	frequency varchar2(20),
-	duration varchar2(20),
-	route varchar2(20),
-	drugChangeStatus varchar2(10),
-	dosage varchar2(20),
-	strength varchar2(20),
-	form varchar2(20),
-	frequencyUnit varchar2(20),
-	startDate varchar2(20),
-	primary key (anno_base_id),
-	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE 
-);
-
 create table anno_markable (
 	anno_base_id int not null,
 	id int default 0,
@@ -199,9 +213,53 @@ CREATE INDEX IX_anno_contain_c ON anno_contain (child_anno_base_id, parent_uima_
 
 CREATE TABLE fracture_demo (
 	note_id int NOT NULL primary key,
-	site_id varchar(10) NULL,
+	site_id varchar2(10) NULL,
 	note_text clob NULL,
 	fracture varchar2(20) NULL,
 	note_set varchar2(10) NULL
 );
 
+
+-- metamap tables
+create table anno_mm_candidate (
+	anno_base_id int not null,
+	cui char(8),
+	score int default 0,
+	head numeric(1) default 0,
+	overmatch numeric(1) default 0,
+	primary key (anno_base_id),
+	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table anno_mm_acronym (
+	anno_base_id int not null,
+	acronym varchar2(10),
+    "expansion" varchar2(30),
+	primary key (anno_base_id),
+	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table anno_mm_utterance (
+	anno_base_id int not null,
+	pmid varchar2(10),
+    location varchar2(30),
+	primary key (anno_base_id),
+	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+
+create table anno_mm_cuiconcept (
+    anno_mm_cuiconcept_id int not null,
+    anno_base_id int,
+    negExCui char(8),
+	primary key (anno_mm_cuiconcept_id),
+	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE
+);
+
+create table anno_mm_negation (
+    anno_base_id int not null,
+    negType varchar2(10),
+    negTrigger varchar2(10),
+	primary key (anno_base_id),
+	foreign key (anno_base_id) references anno_base(anno_base_id) ON DELETE CASCADE
+);

@@ -97,7 +97,7 @@ create table $(db_schema).anno_ontology_concept (
 	cui char(8),
 	disambiguated bit not null default 0,
 	primary key (anno_ontology_concept_id),
-	foreign key (anno_base_id) references $(db_schema).anno_named_entity(anno_base_id)  ON DELETE CASCADE
+	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id)  ON DELETE CASCADE
 );
 
 create index IX_onto_concept_code on $(db_schema).anno_ontology_concept (code);
