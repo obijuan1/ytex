@@ -262,6 +262,11 @@
 			<arg value="-l" />
 			<arg value="data/MH_freq_count.xml" />
 		</java>
+		<copy file="data/update_mesh_freq.template.sql" tofile="${basedir}/data/update_mesh_freq.sql" overwrite="yes">
+			<filterset>
+				<filter token="umls.schema" value="${umls.prefix}" />
+			</filterset>
+		</copy>
 		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${basedir}/data/update_mesh_freq.sql" onerror="abort" classpathref="${kernel.cp}" delimiter=";" />
 		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
 			<arg value="-prop" />
