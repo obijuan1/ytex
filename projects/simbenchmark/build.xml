@@ -246,7 +246,7 @@
 			<zipfileset dir="${basedir}" prefix="simbenchmark">
 				<include name="build.xml" />
 				<include name="README.txt" />
-				<include name="data/*.*" />
+				<include name="data/**/*.*" />
 				<include name="config/**/*.*" />
 				<include name="src/**/*.*" />
 				<exclude name="**/.svn/**/*.*" />
