@@ -9,9 +9,9 @@
 @rem where ytex is intalled (the directory this file is in)
 @set YTEX_HOME=C:\java\clinicalnlp\ytex-0.7
 
-@rem where ictakes is/will be installed
-@rem if you have ictakes installed, set this variable to your ictakes directory
-@rem otherwise this is the directory where the ytex installer will put ictakes 
+@rem where ctakes is/will be installed
+@rem if you have ctakes installed, set this variable to your ctakes directory
+@rem otherwise this is the directory where the ytex installer will put ctakes 
 @set CTAKES_HOME=%YTEX_HOME%\..\cTAKES-2.5.0
 
 @rem where metamap is installed (optional)
