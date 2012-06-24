@@ -11,6 +11,8 @@ drop sequence anno_onto_concept_id_sequence;
 drop sequence anno_link_id_sequence;
 drop sequence anno_contain_id_sequence;
 drop sequence demo_note_id_sequence;
+drop sequence anno_mm_cuiconcept_id_sequence;
+
 
 drop index IX_anno_contain_c;
 drop index IX_anno_contain_p;
