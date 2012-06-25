@@ -50,7 +50,7 @@ YTEX_LIB_SYS_HOME=${YTEX_HOME}/libs.system
 
 # jdbc driver classpath
 JDBC_CP=${YTEX_LIB_SYS_HOME}/mysql-connector-java-5.1.17/mysql-connector-java-5.1.17-bin.jar
-JDBC_CP=${JDBC_CP}:${YTEX_LIB_SYS_HOME}/sqljdbc_3.0/enu/sqljdbc4.jar
+JDBC_CP=${JDBC_CP}:${YTEX_LIB_SYS_HOME}/sqljdbc_3.0/sqljdbc4.jar
 JDBC_CP=${JDBC_CP}:${YTEX_LIB_SYS_HOME}/oracle11.2.0.1.0/ojdbc6.jar
 
 # tomcat classpath
