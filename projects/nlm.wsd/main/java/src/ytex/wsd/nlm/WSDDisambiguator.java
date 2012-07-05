@@ -57,10 +57,12 @@ public class WSDDisambiguator {
 	public static void main(String[] args) throws IOException {
 		String[] metrics = args[0].split(",");
 		int windowSize = Integer.parseInt(args[1]);
+		String analysisBatch = args.length > 2 ? args[2] : "nlm.wsd";
 		WSDDisambiguator wsd = new WSDDisambiguator();
-		wsd.load();
+		wsd.load(analysisBatch);
 		for (String metricName : metrics) {
-			SimilarityMetricEnum metric = SimilarityMetricEnum.valueOf(metricName);
+			SimilarityMetricEnum metric = SimilarityMetricEnum
+					.valueOf(metricName);
 			wsd.disambiguate(metric, windowSize);
 		}
 	}
@@ -221,10 +223,11 @@ public class WSDDisambiguator {
 		return wordCuis;
 	}
 
-	public Map<Long, Set<String>> loadTitleConcepts() {
+	public Map<Long, Set<String>> loadTitleConcepts(final String analysisBatch) {
 		titleConcepts = new HashMap<Long, Set<String>>();
 		jdbcTemplate
-				.query("select instance_id, code from document d inner join anno_base abt on abt.document_id = d.document_id inner join anno_segment s on s.anno_base_id = abt.anno_base_id and s.id = 'nlm.wsd.TI' inner join anno_contain ac on ac.parent_anno_base_id = abt.anno_base_id inner join anno_ontology_concept c on c.anno_base_id = ac.child_anno_base_id where d.analysis_batch = 'nlm.wsd' order by instance_id",
+				.query("select instance_id, code from document d inner join anno_base abt on abt.document_id = d.document_id inner join anno_segment s on s.anno_base_id = abt.anno_base_id and s.id = 'nlm.wsd.TI' inner join anno_contain ac on ac.parent_anno_base_id = abt.anno_base_id inner join anno_ontology_concept c on c.anno_base_id = ac.child_anno_base_id where d.analysis_batch = '"
+						+ analysisBatch + "' order by instance_id",
 						new RowCallbackHandler() {
 							long wordCurrent = -1;
 							Set<String> cuisCurrent = null;
@@ -262,10 +265,12 @@ public class WSDDisambiguator {
 		return words;
 	}
 
-	public Map<Long, Sentence> loadSentences() {
+	public Map<Long, Sentence> loadSentences(final String analysisBatch) {
 		sentences = new TreeMap<Long, Sentence>();
 		jdbcTemplate
-				.query("select d.instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'nlm.wsd' order by d.instance_id, span_begin, span_end",
+				.query("select d.instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = '"
+						+ analysisBatch
+						+ "' order by d.instance_id, span_begin, span_end",
 						new RowCallbackHandler() {
 							int currentSpanBegin = -1;
 							int currentSpanEnd = -1;
@@ -410,10 +415,10 @@ public class WSDDisambiguator {
 		}
 	}
 
-	private void load() {
+	private void load(String analysisBatch) {
 		this.loadWordCuis();
 		this.loadWords();
-		this.loadSentences();
-		this.loadTitleConcepts();
+		this.loadSentences(analysisBatch);
+		this.loadTitleConcepts(analysisBatch);
 	}
 }

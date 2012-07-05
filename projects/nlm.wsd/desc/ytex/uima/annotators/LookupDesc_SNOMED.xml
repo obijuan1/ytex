@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Removed RXNorm and Orange Book lookups Modified to use a table/view that filters 
-	on snomed and desired tuis Modified to use NamedEntityLookupConsumerImpl 
+<!-- Removed RXNorm and Orange Book lookups Modified to use a table/view 
+	that filters on snomed and desired tuis Modified to use NamedEntityLookupConsumerImpl 
 	to just store CUI - don't need snomed code -->
 <lookupSpecification>
 	<!-- Defines what dictionaries will be used in terms of implementation specifics 
@@ -31,15 +31,15 @@
 				<properties>
 					<property key="textMetaFields" value="tok_str" />
 					<property key="maxPermutationLevel" value="5" />
-					<property key="windowAnnotations"
-						value="edu.mayo.bmi.uima.core.type.Sentence" />
+					<property key="windowAnnotations" value="edu.mayo.bmi.uima.core.type.textspan.Sentence" />
 					<!-- <property key="windowAnnotations" value="edu.mayo.bmi.uima.lookup.type.LookupWindowAnnotation"/> -->
 					<property key="exclusionTags"
 						value="VB,VBD,VBG,VBN,VBP,VBZ,CC,CD,DT,EX,LS,MD,PDT,POS,PP,PP$,PRP,PRP$,RP,TO,WDT,WP,WPS,WRB" />
 				</properties>
 			</lookupInitializer>
-			<lookupConsumer
-				className="ytex.uima.lookup.ae.NamedEntityLookupConsumerImpl">
+			<!-- The YTEX consumer is based on cTAKES NamedEntityLookupConsumerImpl. 
+				It differs in that it filters out duplicate cuis -->
+			<lookupConsumer className="ytex.uima.lookup.ae.NamedEntityLookupConsumerImpl">
 				<properties>
 					<property key="codingScheme" value="UMLS" />
 					<property key="codeMetaField" value="cui" />

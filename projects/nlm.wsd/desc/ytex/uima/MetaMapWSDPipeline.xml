@@ -3,58 +3,14 @@
 	<frameworkImplementation>org.apache.uima.java</frameworkImplementation>
 	<primitive>false</primitive>
 	<delegateAnalysisEngineSpecifiers>
-		<delegateAnalysisEngine key="TokenizerAnnotator">
-			<import name="coredesc.analysis_engine.TokenizerAnnotator" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="ContextDependentTokenizerAnnotator">
-			<import name="cdtdesc.analysis_engine.ContextDependentTokenizerAnnotator" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="StatusAnnotator">
-			<import name="necontextdesc.analysis_engine.StatusAnnotator" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="NegationAnnotator">
-			<import name="ytex.uima.annotators.NegexAnnotator" />
-		</delegateAnalysisEngine>
 		<delegateAnalysisEngine key="SegmentRegexAnnotator">
 			<import name="ytex.uima.annotators.SegmentRegexAnnotator" />
 		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="SentenceDetectorAnnotator">
-			<import name="coredesc.analysis_engine.SentenceDetectorAnnotator" />
+		<delegateAnalysisEngine key="YTEXMetaMapApiAE">
+			<import name="ytex.metamap.YTEXMetaMapApiAE" />
 		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="SenseDisambiguatorAnnotator">
-			<import name="ytex.uima.annotators.SenseDisambiguatorAnnotator" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="AdjustNounPhraseToIncludeFollowingNP">
-			<import
-				name="chunkerdesc.analysis_engine.AdjustNounPhraseToIncludeFollowingNP" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="AdjustNounPhraseToIncludeFollowingPPNP">
-			<import
-				name="chunkerdesc.analysis_engine.AdjustNounPhraseToIncludeFollowingPPNP" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="POSTagger">
-			<import name="posdesc.analysis_engine.POSTagger" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="Chunker">
-			<import name="chunkerdesc.analysis_engine.Chunker" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="DateAnnotator">
-			<import name="ytex.uima.annotators.DateAnnotator" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="ExtractionPrepAnnotator">
-			<import name="cdpdesc.analysis_engine.ExtractionPrepAnnotator" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="LookupWindowAnnotator">
-			<import name="cdpdesc.analysis_engine.LookupWindowAnnotator" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="NamedEntityRegexAnnotator">
-			<import name="ytex.uima.annotators.NamedEntityRegexAnnotator" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="DictionaryLookupAnnotator">
-			<import name="ytex.uima.annotators.DictionaryLookupAnnotator" />
-		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="LvgAnnotator">
-			<import name="lvgdesc.analysis_engine.LvgAnnotator" />
+		<delegateAnalysisEngine key="MetaMapToCTakesAnnotator">
+			<import name="ytex.uima.annotators.MetaMapToCTakesAnnotator" />
 		</delegateAnalysisEngine>
 		<delegateAnalysisEngine key="DBConsumer">
 			<import name="ytex.uima.annotators.DBConsumer" />
@@ -62,24 +18,30 @@
 	</delegateAnalysisEngineSpecifiers>
 	<analysisEngineMetaData>
 		<name>YTEXPipeline</name>
-		<description>ctakes AggregatePlaintextUMLSProcessor with following
-			changes: Replaced cTAKES NegationAnnotator with YTEX NegexAnnotator,
-			replaced cTAKES SimpleSegment with YTEX SegmentRegexAnnotator.
-			Reconfigured DictionaryLookup to use YTEX dictionary.
-			Added
-			DateAnnotator, SenseDisambiguatorAnnotator,
-			NamedEntityRegexAnnotator, DBConsumer
+		<description>
 		</description>
 		<version />
 		<vendor />
 		<configurationParameters searchStrategy="language_fallback">
 			<configurationParameter>
-				<name>ChunkCreatorClass</name>
+				<name>metamap_server_port</name>
+				<description>mmserver port</description>
+				<type>Integer</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+				<overrides>
+					<parameter>YTEXMetaMapApiAE/metamap_server_port</parameter>
+				</overrides>
+			</configurationParameter>
+			<configurationParameter>
+				<name>metamap_options</name>
+				<description>options to pass metamap server before processing input.
+				</description>
 				<type>String</type>
 				<multiValued>false</multiValued>
-				<mandatory>true</mandatory>
+				<mandatory>false</mandatory>
 				<overrides>
-					<parameter>Chunker/ChunkCreatorClass</parameter>
+					<parameter>YTEXMetaMapApiAE/metamap_options</parameter>
 				</overrides>
 			</configurationParameter>
 			<configurationParameter>
@@ -141,14 +103,9 @@
 					<parameter>DBConsumer/insertAnnotationContainmentLinks</parameter>
 				</overrides>
 			</configurationParameter>
+
 		</configurationParameters>
 		<configurationParameterSettings>
-			<nameValuePair>
-				<name>ChunkCreatorClass</name>
-				<value>
-					<string>edu.mayo.bmi.uima.chunker.PhraseTypeChunkCreator</string>
-				</value>
-			</nameValuePair>
 			<nameValuePair>
 				<name>xmiOutputDirectory</name>
 				<value>
@@ -176,7 +133,7 @@
 			<nameValuePair>
 				<name>insertAnnotationContainmentLinks</name>
 				<value>
-					<boolean>false</boolean>
+					<boolean>true</boolean>
 				</value>
 			</nameValuePair>
 			<nameValuePair>
@@ -203,23 +160,38 @@
 						<string>edu.mayo.bmi.uima.core.type.syntax.NP</string>
 						<string>edu.mayo.bmi.uima.core.type.syntax.VP</string>
 						<string>edu.mayo.bmi.uima.core.type.syntax.WordToken</string>
+						<string>gov.nih.nlm.nls.metamap.uima.ts.Document</string>
+						<string>org.metamap.uima.ts.Phrase</string>
+						<string>gov.nih.nlm.nls.metamap.uima.ts.AcronymAbbrev</string>
+						<string>org.metamap.uima.ts.Utterance</string>
+						<string>org.metamap.uima.ts.CuiConcept</string>
+						<string>org.metamap.uima.ts.Span</string>
+						<string>org.metamap.uima.ts.Negation</string>
 					</array>
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>metamap_server_port</name>
+				<value>
+					<integer>8011</integer>
+				</value>
+			</nameValuePair>
+			<nameValuePair>
+				<name>metamap_options</name>
+				<value>
+					<string>--restrict_to_sources SNOMEDCT,MSH,MEDCIN,LNC,MTH,CSP,AOD
+						--restrict_to_sts
+						mamm,humn,anst,cgab,acab,ffas,bdsy,bpoc,tisu,cell,celc,blor,bsoj,bdsu,orga,fndg,lbtr,inpo,biof,phsf,orgf,menp,ortf,celf,moft,genf,patf,dsyn,mobd,comd,emod,socb,inbe,dora,ocac,hlca,lbpr,diap,topp,phpr,npop,medd,idcn,tmco,qlco,qnco,bmod,popg,carb,lipd,phsu,bacs,ftcn,inpr,sosy,anab,neop
+						--word_sense_disambiguation
+					</string>
 				</value>
 			</nameValuePair>
 		</configurationParameterSettings>
 		<flowConstraints>
 			<fixedFlow>
 				<node>SegmentRegexAnnotator</node>
-				<node>SentenceDetectorAnnotator</node>
-				<node>TokenizerAnnotator</node>
-				<node>LvgAnnotator</node>
-				<node>ContextDependentTokenizerAnnotator</node>
-				<node>POSTagger</node>
-				<node>Chunker</node>
-				<node>AdjustNounPhraseToIncludeFollowingNP</node>
-				<node>AdjustNounPhraseToIncludeFollowingPPNP</node>
-				<node>LookupWindowAnnotator</node>
-				<node>DictionaryLookupAnnotator</node>
+				<node>YTEXMetaMapApiAE</node>
+				<node>MetaMapToCTakesAnnotator</node>
 				<node>DBConsumer</node>
 			</fixedFlow>
 		</flowConstraints>

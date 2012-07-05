@@ -3,8 +3,22 @@
 	<property name="ytex.home" value=".." />
 	<property name="ytex.mx" value="1500m" />
 	<property name="window" value="10" />
+	<property name="mm.home" value="${env.MM_HOME}" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
+
+	<path id="wsd.cp">
+		<dirset dir="${basedir}">
+			<include name="bin" />
+			<include name="${basedir}/desc" />
+		</dirset>		
+		<path refid="${kernel.cp}" />
+		<pathelement location="${mm.home}/src/javaapi/dist/MetaMapApi.jar" />
+		<pathelement location="${mm.home}/src/javaapi/dist/prologbeans.jar" />
+		<pathelement location="${mm.home}/src/uima/lib/metamap-api-uima.jar" />
+		<pathelement location="${mm.home}/src/uima/desc" />
+	</path>
+
 	<target name="all" depends="build,load.all,RunCPE.all,eval.wsd.all,eval.msh.wsd.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
 	<target name="build" description="compile java source">
 		<mkdir dir="${basedir}/bin" />
@@ -124,13 +138,7 @@
 				<filter token="kernel.threads" value="${kernel.threads}" />
 			</filterset>
 		</copy>
-		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc">
-			<classpath>
-				<dirset dir="${basedir}">
-					<include name="${basedir}/desc" />
-				</dirset>
-				<path refid="${kernel.cp}" />
-			</classpath>
+		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc" classpathref="wsd.cp">
 			<arg value="${prefix}-cpe.xml.${kernel.slice}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.arg}" />
@@ -141,30 +149,43 @@
 		<for param="cg" list="sct-msh-csp-aod,umls">
 			<sequential>
 				<antcall target="eval.msh.wsd">
-					<param name="ytex.conceptGraphName" value="@{cg}" />
+					<param name="cg.name" value="@{cg}" />
 				</antcall>
 				<antcall target="eval.msh.R">
-					<param name="ytex.conceptGraphName" value="@{cg}" />
+					<param name="cg.name" value="@{cg}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
 	<target name="eval.wsd.all" description="perform wsd for all concept graphs">
-		<for param="cg" list="sct-msh-csp-aod,umls">
+		<property name="windows" value="10,20,30,40,50" />
+		<for param="window" list="${windows}" parallel="yes" threadCount="${kernel.threads}">
+			<sequential>
+				<antcall target="eval.wsd.cg.all">
+					<param name="window" value="@{window}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="eval.wsd.cg.all" description="perform wsd for all concept graphs">
+		<for param="cg" list="umls">
 			<sequential>
 				<antcall target="eval.wsd">
-					<param name="ytex.conceptGraphName" value="@{cg}" />
+					<param name="cg.name" value="@{cg}" />
 				</antcall>
 				<antcall target="eval.R">
-					<param name="ytex.conceptGraphName" value="@{cg}" />
+					<param name="cg.name" value="@{cg}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
 	<target name="eval.wsd" description="perform wsd">
+		<property name="analysisBatch" value="nlm.wsd" />
+		<property name="window" value="10" />
+		<property name="cg.name" value="sct-msh-csp-aod" />
 		<property name="metrics" value="WUPALMER,RADA,INTRINSIC_RADA,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" />
-		<mkdir dir="${basedir}/eval/${ytex.conceptGraphName}-${window}" />
-		<java classname="ytex.wsd.nlm.WSDDisambiguator" fork="yes" dir="${basedir}/eval/${ytex.conceptGraphName}-${window}">
+		<mkdir dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}" />
+		<java classname="ytex.wsd.nlm.WSDDisambiguator" fork="yes" dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}">
 			<classpath>
 				<dirset dir="${basedir}">
 					<include name="bin" />
@@ -174,15 +195,16 @@
 			<jvmarg value="-Xmx${ytex.mx}" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
-			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
+			<jvmarg value="-Dytex.conceptGraphName=${cg.name}" />
 			<arg value="${metrics}" />
 			<arg value="${window}" />
+			<arg value="${analysisBatch}" />
 		</java>
 	</target>
 	<target name="eval.msh.wsd" description="perform wsd">
 		<property name="metrics" value="WUPALMER,RADA,INTRINSIC_RADA,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" />
-		<mkdir dir="${basedir}/eval/msh/${ytex.conceptGraphName}-${window}" />
-		<java classname="ytex.wsd.msh.MshWSDDisambiguator" fork="yes" dir="${basedir}/eval/msh/${ytex.conceptGraphName}-${window}">
+		<mkdir dir="${basedir}/eval/msh/${cg.name}-${window}" />
+		<java classname="ytex.wsd.msh.MshWSDDisambiguator" fork="yes" dir="${basedir}/eval/msh/${cg.name}-${window}">
 			<classpath>
 				<dirset dir="${basedir}">
 					<include name="bin" />
@@ -192,18 +214,21 @@
 			<jvmarg value="-Xmx${ytex.mx}" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
-			<jvmarg value="-Dytex.conceptGraphName=${ytex.conceptGraphName}" />
+			<jvmarg value="-Dytex.conceptGraphName=${cg.name}" />
 			<arg value="${metrics}" />
 			<arg value="${window}" />
 		</java>
 	</target>
 	<target name="eval.R" description="compute accuracy">
-		<exec executable="${R.bin}/R" dir="${basedir}/eval/${ytex.conceptGraphName}-${window}">
+		<property name="analysisBatch" value="nlm.wsd" />
+		<property name="window" value="10" />
+		<property name="cg.name" value="sct-msh-csp-aod" />		
+		<exec executable="${R.bin}/R" dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}">
 			<arg line="--slave --file=${basedir}/eval.R" />
 		</exec>
 	</target>
 	<target name="eval.msh.R" description="compute accuracy">
-		<exec executable="${R.bin}/R" dir="${basedir}/eval/msh/${ytex.conceptGraphName}-${window}">
+		<exec executable="${R.bin}/R" dir="${basedir}/eval/msh/${cg.name}-${window}">
 			<arg line="--slave --file=${basedir}/eval-msh.R" />
 		</exec>
 	</target>
