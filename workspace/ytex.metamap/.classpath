@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="main/src/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry exported="true" kind="var" path="MM_HOME/src/uima/lib/metamap-api-uima.jar" sourcepath="/MM_HOME/src/uima/src"/>
+	<classpathentry exported="true" kind="var" path="MM_HOME/src/javaapi/dist/MetaMapApi.jar" sourcepath="/MM_HOME/src/javaapi/sources"/>
+	<classpathentry exported="true" kind="var" path="MM_HOME/src/javaapi/dist/prologbeans.jar"/>
+	<classpathentry exported="true" kind="var" path="MM_HOME/src/uima/desc"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/libs.ytex"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
