@@ -217,6 +217,8 @@ public class MetaMapToCTakesAnnotator extends JCasAnnotator_ImplBase {
 				jcas) : new EntityMention(jcas);
 		neLast.setPolarity(negSet.contains(new NegSpan(begin, end)) ? CONST.NE_POLARITY_NEGATION_PRESENT
 				: CONST.NE_POLARITY_NEGATION_ABSENT);
+		neLast.setBegin(begin);
+		neLast.setEnd(end);
 		FSArray ocArr = new FSArray(jcas, concepts.size());
 		int ocArrIdx = 0;
 		for (OntologyConcept oc : concepts.values()) {
