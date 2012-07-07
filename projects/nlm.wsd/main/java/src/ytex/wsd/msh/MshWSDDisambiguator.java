@@ -41,13 +41,14 @@ public class MshWSDDisambiguator {
 	public static void main(String[] args) throws IOException {
 		String[] metrics = args[0].split(",");
 		int windowSize = Integer.parseInt(args[1]);
+		String analysisBatch = args.length > 2 ? args[2] : "msh-wsd-ctakes";
 		MshWSDDisambiguator wsd = new MshWSDDisambiguator();
 		wsd.load();
 		SortedSet<SimilarityMetricEnum> metricSet = new TreeSet<SimilarityMetricEnum>();
 		for (String metricName : metrics) {
 			metricSet.add(SimilarityMetricEnum.valueOf(metricName));
 		}
-		wsd.disambiguate(metricSet, windowSize);
+		wsd.disambiguate(metricSet, windowSize, analysisBatch);
 	}
 
 	/**
@@ -216,7 +217,7 @@ public class MshWSDDisambiguator {
 	public Map<Long, Word> loadWords() {
 		words = new HashMap<Long, Word>();
 		jdbcTemplate
-				.query("select w.instance_id, w.pmid, w.word, w.cui, ab.span_begin, ab.span_end from msh_wsd w inner join document d on d.instance_id = w.instance_id and d.analysis_batch = 'msh.wsd' inner join anno_base ab on d.document_id = ab.document_id inner join anno_segment s on s.anno_base_id = ab.anno_base_id and s.id = 'msh.wsd.target'",
+				.query("select w.instance_id, w.pmid, w.word, w.cui, w.abs_ambiguity_start, w.abs_ambiguity_end from msh_wsd w",
 						new RowCallbackHandler() {
 							@Override
 							public void processRow(ResultSet rs)
@@ -350,7 +351,7 @@ public class MshWSDDisambiguator {
 	 */
 	public void processSentences(
 			final Set<ConceptSimilarityService.SimilarityMetricEnum> metrics,
-			final int windowSize, final PrintStream ps) {
+			final int windowSize, final PrintStream ps, final String analysisBatch) {
 		WSDRowCallbackHandler ch = new WSDRowCallbackHandler(metrics,
 				windowSize, ps);
 		PreparedStatement s = null;
@@ -359,7 +360,7 @@ public class MshWSDDisambiguator {
 		try {
 			conn = this.jdbcTemplate.getDataSource().getConnection();
 			s = conn.prepareStatement(
-					"select d.instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = 'msh.wsd' order by d.instance_id, span_begin, span_end",
+					"select d.instance_id, b.span_begin, b.span_end, c.code from document d inner join anno_base b on d.document_id = b.document_id inner join anno_ontology_concept c on c.anno_base_id = b.anno_base_id where d.analysis_batch = '"+analysisBatch+"' order by d.instance_id, span_begin, span_end",
 					java.sql.ResultSet.TYPE_FORWARD_ONLY,
 					java.sql.ResultSet.CONCUR_READ_ONLY);
 			s.setFetchSize(Integer.MIN_VALUE);
@@ -408,13 +409,14 @@ public class MshWSDDisambiguator {
 
 	public void disambiguate(
 			Set<ConceptSimilarityService.SimilarityMetricEnum> metrics,
-			int windowSize) throws IOException {
+			int windowSize,
+			String analysisBatch) throws IOException {
 		PrintStream ps = null;
 		try {
 			ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(
 					"msh-wsd.txt")));
 			log.info("disambiguate start: " + (new Date()));
-			this.processSentences(metrics, windowSize, ps);
+			this.processSentences(metrics, windowSize, ps, analysisBatch);
 			log.info("disambiguate end: " + (new Date()));
 		} finally {
 			if (ps != null) {

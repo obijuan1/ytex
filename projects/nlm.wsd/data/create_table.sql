@@ -58,7 +58,9 @@ create table msh_wsd (
     pmid int,
     word varchar(50),
     cui char(8),
-    abs text
+    abs text,
+    abs_ambiguity_start int not null,
+    abs_ambiguity_end int not null,
 ) engine = myisam;
 
 create index IX_msh_wsd on msh_wsd(pmid, word);

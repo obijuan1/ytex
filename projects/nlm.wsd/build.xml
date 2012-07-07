@@ -109,10 +109,10 @@
 	</target>
 	<target name="RunCPE.all">
 		<antcall target="RunCPE.threads">
-			<param name="prefix" value="nlm-wsd" />
+			<param name="analysisBatch" value="nlm-wsd" />
 		</antcall>
 		<antcall target="RunCPE.threads">
-			<param name="prefix" value="msh-wsd" />
+			<param name="analysisBatch" value="msh-wsd" />
 		</antcall>
 	</target>
 	<target name="RunCPE.threads" description="annotate i2b2 2008 corpus in parallel">
@@ -126,11 +126,11 @@
 	</target>
 	<target name="RunCPE.slice">
 		<property name="kernel.slice" value="1" />
-		<property name="prefix" value="msh-wsd" />
+		<property name="analysisBatch" value="msh-wsd" />
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
 		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
-		<copy file="desc/${prefix}-cpe.template.xml" tofile="desc/${prefix}-cpe.xml.${kernel.slice}" overwrite="yes">
+		<copy file="desc/${analysisBatch}-cpe.template.xml" tofile="desc/${analysisBatch}-cpe.xml.${kernel.slice}" overwrite="yes">
 			<filterset id="exp.filter">
 				<filter token="collectionreader.url" value="${collectionreader.url}" />
 				<filter token="pipeline.url" value="${pipeline.url}" />
@@ -139,13 +139,23 @@
 			</filterset>
 		</copy>
 		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc" classpathref="wsd.cp">
-			<arg value="${prefix}-cpe.xml.${kernel.slice}" />
+			<arg value="${analysisBatch}-cpe.xml.${kernel.slice}" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
 	<target name="eval.msh.wsd.all" description="perform wsd for all concept graphs">
+		<property name="windows" value="10,30,50,70" />
+		<for param="window" list="${windows}" parallel="yes" threadCount="${kernel.threads}">
+			<sequential>
+				<antcall target="eval.msh.wsd.cg.all">
+					<param name="window" value="@{window}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>	
+	<target name="eval.msh.wsd.cg.all" description="perform wsd for all concept graphs">
 		<for param="cg" list="sct-msh-csp-aod,umls">
 			<sequential>
 				<antcall target="eval.msh.wsd">
@@ -168,7 +178,7 @@
 		</for>
 	</target>
 	<target name="eval.wsd.cg.all" description="perform wsd for all concept graphs">
-		<for param="cg" list="umls">
+		<for param="cg" list="sct-msh-csp-aod,umls">
 			<sequential>
 				<antcall target="eval.wsd">
 					<param name="cg.name" value="@{cg}" />
@@ -202,9 +212,13 @@
 		</java>
 	</target>
 	<target name="eval.msh.wsd" description="perform wsd">
-		<property name="metrics" value="WUPALMER,RADA,INTRINSIC_RADA,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" />
-		<mkdir dir="${basedir}/eval/msh/${cg.name}-${window}" />
-		<java classname="ytex.wsd.msh.MshWSDDisambiguator" fork="yes" dir="${basedir}/eval/msh/${cg.name}-${window}">
+		<property name="analysisBatch" value="msh-wsd-metamap" />
+		<property name="window" value="10" />
+		<property name="metrics" value="WUPALMER,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" />
+		<property name="cg.name" value="sct-msh-csp-aod" />
+		<delete dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}" quiet="yes"/>
+		<mkdir dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}" />
+		<java classname="ytex.wsd.msh.MshWSDDisambiguator" fork="yes" dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}">
 			<classpath>
 				<dirset dir="${basedir}">
 					<include name="bin" />
@@ -217,6 +231,7 @@
 			<jvmarg value="-Dytex.conceptGraphName=${cg.name}" />
 			<arg value="${metrics}" />
 			<arg value="${window}" />
+			<arg value="${analysisBatch}" />
 		</java>
 	</target>
 	<target name="eval.R" description="compute accuracy">
@@ -228,7 +243,10 @@
 		</exec>
 	</target>
 	<target name="eval.msh.R" description="compute accuracy">
-		<exec executable="${R.bin}/R" dir="${basedir}/eval/msh/${cg.name}-${window}">
+		<property name="analysisBatch" value="nlm.wsd" />
+		<property name="window" value="10" />
+		<property name="cg.name" value="sct-msh-csp-aod" />		
+		<exec executable="${R.bin}/R" dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}">
 			<arg line="--slave --file=${basedir}/eval-msh.R" />
 		</exec>
 	</target>
