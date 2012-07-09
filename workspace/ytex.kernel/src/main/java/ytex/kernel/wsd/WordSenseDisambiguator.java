@@ -12,4 +12,9 @@ public interface WordSenseDisambiguator {
 			int index, Set<String> contextConcepts, int windowSize,
 			SimilarityMetricEnum metric, Map<String, Double> scoreMap);
 
+	String disambiguate(List<Set<String>> sentenceConcepts, int index,
+			Set<String> contextConcepts, int windowSize,
+			SimilarityMetricEnum metric, Map<String, Double> scoreMap,
+			boolean weighted);
+
 }

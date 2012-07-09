@@ -1,6 +1,7 @@
 package ytex.kernel.wsd;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,22 +25,36 @@ public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 		this.conceptSimilarityService = conceptSimilarityService;
 	}
 
-	/* (non-Javadoc)
-	 * @see ytex.kernel.wsd.WordSenseDisambiguator#disambiguate(java.util.List, int, java.util.Set, int, ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum, java.util.Map)
-	 */
 	@Override
 	public String disambiguate(List<Set<String>> sentenceConcepts, int index,
 			Set<String> contextConcepts, int windowSize,
 			SimilarityMetricEnum metric, Map<String, Double> scoreMap) {
+		return disambiguate(sentenceConcepts, index, contextConcepts,
+				windowSize, metric, scoreMap, false);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ytex.kernel.wsd.WordSenseDisambiguator#disambiguate(java.util.List,
+	 * int, java.util.Set, int,
+	 * ytex.kernel.ConceptSimilarityService.SimilarityMetricEnum, java.util.Map)
+	 */
+	@Override
+	public String disambiguate(List<Set<String>> sentenceConcepts, int index,
+			Set<String> contextConcepts, int windowSize,
+			SimilarityMetricEnum metric, Map<String, Double> scoreMap,
+			boolean weighted) {
 		// get the candidate concepts that we want to disambiguate
 		Set<String> candidateConcepts = sentenceConcepts.get(index);
 		if (candidateConcepts.size() == 1)
 			return candidateConcepts.iterator().next();
 		// allocate set to hold all the concepts to compare to
-		Set<String> windowContextConcepts = new HashSet<String>();
+		Map<String, Integer> windowContextConcepts = new HashMap<String, Integer>();
 		// add context concepts (e.g. title concepts)
-		if (contextConcepts != null)
-			windowContextConcepts.addAll(contextConcepts);
+		if (contextConcepts != null) {
+			addConcepts(windowContextConcepts, contextConcepts);
+		}
 		// add windowSize concepts from the sentence
 		// get left, then right concepts
 		// case 1 - enough tokens on both sides
@@ -63,20 +78,21 @@ public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 		if (indexLeftStart < index - 1) {
 			for (Set<String> cs : sentenceConcepts.subList(indexLeftStart,
 					index - 1)) {
-				windowContextConcepts.addAll(cs);
+				addConcepts(windowContextConcepts, cs);
 			}
 		}
 		if (indexRightStart > index + 1) {
 			for (Set<String> cs : sentenceConcepts.subList(index + 1,
 					indexRightStart)) {
-				windowContextConcepts.addAll(cs);
+				addConcepts(windowContextConcepts, cs);
 			}
 		}
 		// allocate map to hold scores
 		SortedMap<Double, String> scoreConceptMap = new TreeMap<Double, String>();
 		for (String c : candidateConcepts) {
-			scoreConceptMap.put(scoreConcept(c, windowContextConcepts, metric),
-					c);
+			scoreConceptMap
+					.put(scoreConcept(c, windowContextConcepts, metric,
+							weighted), c);
 		}
 		// if scoreMap is not null, fill it in with the concept scores - invert
 		// scoreConceptMap
@@ -90,14 +106,32 @@ public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 		return scoreConceptMap.get(scoreConceptMap.lastKey());
 	}
 
+	private void addConcepts(Map<String, Integer> windowContextConcepts,
+			Set<String> contextConcepts) {
+		for (String c : contextConcepts) {
+			Integer cn = windowContextConcepts.get(c);
+			if (cn != null) {
+				windowContextConcepts.put(c, cn + 1);
+			} else {
+				windowContextConcepts.put(c, 1);
+			}
+		}
+	}
+
 	private double scoreConcept(String concept,
-			Set<String> windowContextConcepts, SimilarityMetricEnum metric) {
+			Map<String, Integer> windowContextConcepts,
+			SimilarityMetricEnum metric, boolean weighted) {
 		List<SimilarityMetricEnum> metrics = Arrays.asList(metric);
 		double score = 0d;
-		for (String windowConcept : windowContextConcepts) {
-			ConceptPairSimilarity csim = conceptSimilarityService
-					.similarity(metrics, concept, windowConcept, null, false);
-			score += csim.getSimilarities().get(0);
+		for (Map.Entry<String, Integer> windowConcept : windowContextConcepts
+				.entrySet()) {
+			ConceptPairSimilarity csim = conceptSimilarityService.similarity(
+					metrics, concept, windowConcept.getKey(), null, false);
+			if (weighted)
+				score += csim.getSimilarities().get(0)
+						* windowConcept.getValue().doubleValue();
+			else
+				score += csim.getSimilarities().get(0);
 		}
 		return score;
 	}
