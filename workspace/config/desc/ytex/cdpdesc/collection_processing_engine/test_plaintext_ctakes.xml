@@ -10,7 +10,7 @@
 				<nameValuePair>
 					<name>InputDirectory</name>
 					<value>
-						<string>E:/projects/ytex/examples/pubmed/abstracts</string>
+						<string>examples/pubmed/abstracts</string>
 					</value>
 				</nameValuePair>
 			</configurationParameterSettings>
