@@ -313,6 +313,8 @@
 				</tokenfilter>
 			</filterchain>
 		</copy>
+		<chmod dir="${mm.home}/bin" includes="${port.index}_*" perm="ug+x">
+		</chmod>
 	</target>
 	<target name="mm.start.all" description="start all metamap servers">
 		<for list="${kernel.slices}" param="kernel.slice">
@@ -339,6 +341,26 @@
 			<arg value="/c" />
 			<arg value="start" />
 			<arg value="${port.index}_mmserver${mm.version}.bat" />
+		</exec>
+	</target>
+	<target name="mm.start.all.linux" description="start all metamap servers">
+		<for list="${kernel.slices}" param="kernel.slice">
+			<sequential>
+				<antcall target="mm.start.port.linux">
+					<param name="port.index" value="@{kernel.slice}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="mm.start.port.linux" description="start a metamap server">
+		<property name="port.index" value="1" />
+		<exec executable="${mm.home}/bin/${port.index}_skrmedpostctl" dir="${mm.home}/bin">
+			<arg value="start" />
+		</exec>
+		<exec executable="${mm.home}/bin/${port.index}_wsdserverctl" dir="${mm.home}/bin">
+			<arg value="start" />
+		</exec>
+		<exec executable="${mm.home}/bin/${port.index}_mmserver${mm.version}" dir="${mm.home}/bin" spawn="yes">
 		</exec>
 	</target>
 </project>
