@@ -60,10 +60,24 @@ public class WSDDisambiguator {
 		String analysisBatch = args.length > 2 ? args[2] : "nlm.wsd";
 		WSDDisambiguator wsd = new WSDDisambiguator();
 		wsd.load(analysisBatch);
-		for (String metricName : metrics) {
-			SimilarityMetricEnum metric = SimilarityMetricEnum
-					.valueOf(metricName);
-			wsd.disambiguate(metric, windowSize);
+		Map<SimilarityMetricEnum, PrintStream> simMetricOut = new HashMap<SimilarityMetricEnum, PrintStream>();
+		try {
+			for (String metricName : metrics) {
+				SimilarityMetricEnum metric = SimilarityMetricEnum
+						.valueOf(metricName);
+				simMetricOut.put(metric,
+						new PrintStream(new BufferedOutputStream(
+								new FileOutputStream(metric.name() + ".txt"))));
+			}
+			wsd.disambiguate(simMetricOut, windowSize);
+		} finally {
+			for (PrintStream ps : simMetricOut.values()) {
+				try {
+					ps.close();
+				} catch (Exception ignore) {
+
+				}
+			}
 		}
 	}
 
@@ -378,18 +392,20 @@ public class WSDDisambiguator {
 	}
 
 	public void disambiguate(
-			ConceptSimilarityService.SimilarityMetricEnum metric, int windowSize)
+			Map<SimilarityMetricEnum, PrintStream> simMetricOut, int windowSize)
 			throws IOException {
-		PrintStream ps = null;
-		try {
-			log.info("disambiguate start: " + (new Date()));
-			ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(
-					metric.name() + ".txt")));
-			for (Map.Entry<Long, Sentence> sentEntry : sentences.entrySet()) {
-				long instanceId = sentEntry.getKey();
-				Sentence s = sentEntry.getValue();
-				Word w = words.get(instanceId);
-				Set<String> title = titleConcepts.get(instanceId);
+		log.info("disambiguate start: " + (new Date()));
+		//iterate over sentences
+		for (Map.Entry<Long, Sentence> sentEntry : sentences.entrySet()) {
+			long instanceId = sentEntry.getKey();
+			Sentence s = sentEntry.getValue();
+			Word w = words.get(instanceId);
+			Set<String> title = titleConcepts.get(instanceId);
+			// iterate over metrics
+			for (Map.Entry<SimilarityMetricEnum, PrintStream> metricOut : simMetricOut
+					.entrySet()) {
+				SimilarityMetricEnum metric = metricOut.getKey();
+				PrintStream ps = metricOut.getValue();
 				ps.print(instanceId);
 				ps.print("\t");
 				ps.print(w.getWord());
@@ -399,20 +415,13 @@ public class WSDDisambiguator {
 				Map<String, Double> scoreMap = new HashMap<String, Double>();
 				String cui = this.wordSenseDisambiguator.disambiguate(
 						s.getConcepts(), s.getIndex(), title, windowSize,
-						metric, scoreMap);
+						metric, scoreMap, true);
 				ps.print(cui);
 				ps.print("\t");
 				ps.println(scoreMap);
 			}
-			log.info("disambiguate end: " + (new Date()));
-		} finally {
-			if (ps != null) {
-				try {
-					ps.close();
-				} catch (Exception e) {
-				}
-			}
 		}
+		log.info("disambiguate end: " + (new Date()));
 	}
 
 	private void load(String analysisBatch) {

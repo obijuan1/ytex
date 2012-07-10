@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cpeDescription xmlns="http://uima.apache.org/resourceSpecifier">
+	<collectionReader>
+		<collectionIterator>
+			<descriptor>
+				<import name="ytex.uima.DBCollectionReader" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>queryGetDocumentKeys</name>
+					<value>
+						<string>select w.instance_id from nlm_wsd w left join document d
+							on d.instance_id = w.instance_id and d.analysis_batch =
+							'mm-test' where d.document_id is null limit 10</string>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>queryGetDocument</name>
+					<value>
+						<string>select abstract from nlm_wsd where instance_id =
+							:instance_id
+						</string>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</collectionIterator>
+	</collectionReader>
+	<casProcessors casPoolSize="3" processingUnitThreadCount="1">
+		<casProcessor deployment="integrated" name="MetaMapApiAE">
+			<descriptor>
+				<import name="ytex.metamap.YTEXMetaMapApiAE" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>metamap_options</name>
+					<value>
+						<string></string>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>metamap_server_port</name>
+					<value>
+						<integer>8011</integer>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</casProcessor>
+		<casProcessor deployment="integrated" name="MetaMapToCTakesAnnotator">
+			<descriptor>
+				<import name="ytex.uima.annotators.MetaMapToCTakesAnnotator" />
+			</descriptor>
+		</casProcessor>
+		<casProcessor deployment="integrated" name="YTEX DBConsumer">
+			<descriptor>
+				<import name="ytex.uima.annotators.DBConsumer" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>analysisBatch</name>
+					<value>
+						<string>mm-test</string>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>storeDocText</name>
+					<value>
+						<boolean>false</boolean>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>typesToIgnore</name>
+					<value>
+						<array>
+							<string>gov.nih.nlm.nls.metamap.uima.ts.Document</string>
+							<string>org.metamap.uima.ts.Phrase</string>
+							<string>gov.nih.nlm.nls.metamap.uima.ts.AcronymAbbrev</string>
+							<string>org.metamap.uima.ts.Utterance</string>
+							<string>org.metamap.uima.ts.CuiConcept</string>
+							<string>org.metamap.uima.ts.Span</string>
+							<string>org.metamap.uima.ts.Negation</string>
+						</array>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</casProcessor>
+	</casProcessors>
+	<cpeConfig>
+		<numToProcess>-1</numToProcess>
+		<deployAs>immediate</deployAs>
+		<checkpoint batch="0" time="300000ms" />
+		<timerImpl />
+	</cpeConfig>
+</cpeDescription>

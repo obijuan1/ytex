@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cpeDescription xmlns="http://uima.apache.org/resourceSpecifier">
+	<collectionReader>
+		<collectionIterator>
+			<descriptor>
+				<import name="ytex.uima.DBCollectionReader" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>queryGetDocumentKeys</name>
+					<value>
+						<string>select w.instance_id from nlm_wsd w left join document d
+							on d.instance_id = w.instance_id and d.analysis_batch =
+							'mm-test' where d.document_id is null limit 3</string>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>queryGetDocument</name>
+					<value>
+						<string>select abstract from nlm_wsd where instance_id =
+							:instance_id
+						</string>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</collectionIterator>
+	</collectionReader>
+	<casProcessors casPoolSize="3" processingUnitThreadCount="1">
+		<casProcessor deployment="integrated" name="MetaMapApiAE">
+			<descriptor>
+				<import name="ytex.uima.MetaMapWSDPipeline" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>metamap_server_port</name>
+					<value>
+						<integer>8021</integer>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>analysisBatch</name>
+					<value>
+						<string>mm-test</string>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</casProcessor>
+	</casProcessors>
+	<cpeConfig>
+		<numToProcess>-1</numToProcess>
+		<deployAs>immediate</deployAs>
+		<checkpoint batch="0" time="300000ms" />
+		<timerImpl />
+	</cpeConfig>
+</cpeDescription>

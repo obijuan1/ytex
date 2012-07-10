@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cpeDescription xmlns="http://uima.apache.org/resourceSpecifier">
+	<collectionReader>
+		<collectionIterator>
+			<descriptor>
+				<import name="ytex.uima.DBCollectionReader" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>queryGetDocumentKeys</name>
+					<value>
+						<string>select w.instance_id from msh_wsd w left join document d
+							on d.instance_id = w.instance_id and d.analysis_batch =
+							'test-msh-mm3' where d.document_id is null limit 3</string>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>queryGetDocument</name>
+					<value>
+						<string>select abs from msh_wsd where instance_id = :instance_id
+						</string>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</collectionIterator>
+	</collectionReader>
+	<casProcessors casPoolSize="3" processingUnitThreadCount="1">
+		<casProcessor deployment="integrated" name="MetaMapApiAE">
+			<descriptor>
+				<import name="ytex.uima.MetaMapWSDPipeline" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>analysisBatch</name>
+					<value>
+						<string>test-msh-mm3</string>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>insertAnnotationContainmentLinks</name>
+					<value>
+						<boolean>false</boolean>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>metamap_server_port</name>
+					<value>
+						<integer>8011</integer>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>metamap_options</name>
+					<value>
+						<string>--restrict_to_sources
+							SNOMEDCT,CSP,MTHICD9,CHV,NCBI,MSH,NDFRT,PDQ,MTH,NCI,HUGO,OMIM,COSTAR,LCH,MEDLINEPLUS,VANDF,UWDA,FMA,DXP,AOD,GO,HL7V3.0,RXNORM,LNC,CST,HL7V2.5,ICD9CM,AIR,QMR,USPMG,CCS,MTHSPL,ICPC
+							--restrict_to_sts
+							plnt,fngs,virs,bact,fish,mamm,emst,cgab,acab,bdsy,bpoc,tisu,cell,celc,gngm,bsoj,bdsu,orga,fndg,lbtr,inpo,phsf,orgf,menp,ortf,celf,genf,patf,dsyn,mobd,inbe,dora,ocac,hlca,lbpr,diap,topp,mbrt,mcha,npop,mnob,medd,resd,qnco,geoa,bmod,orgt,hcro,pros,shro,prog,grpa,chvs,orch,strd,nnon,opco,aapp,carb,lipd,phsu,bodm,bacs,nsba,horm,enzy,vita,imft,irda,hops,food,ftcn,inpr,lang,sosy,neop,rcpt,antb,elii,inch,euka
+							--word_sense_disambiguation
+						</string>
+					</value>
+				</nameValuePair>				
+			</configurationParameterSettings>
+		</casProcessor>
+	</casProcessors>
+	<cpeConfig>
+		<numToProcess>-1</numToProcess>
+		<deployAs>immediate</deployAs>
+		<checkpoint batch="0" time="300000ms" />
+		<timerImpl />
+	</cpeConfig>
+</cpeDescription>
