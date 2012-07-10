@@ -4,6 +4,7 @@
 	<property name="ytex.mx" value="1500m" />
 	<property name="window" value="10" />
 	<property name="mm.home" value="${env.MM_HOME}" />
+	<property name="mm.version" value="11v2" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
 
@@ -11,7 +12,7 @@
 		<dirset dir="${basedir}">
 			<include name="bin" />
 			<include name="${basedir}/desc" />
-		</dirset>		
+		</dirset>
 		<path refid="${kernel.cp}" />
 		<pathelement location="${mm.home}/src/javaapi/dist/MetaMapApi.jar" />
 		<pathelement location="${mm.home}/src/javaapi/dist/prologbeans.jar" />
@@ -154,7 +155,7 @@
 				</antcall>
 			</sequential>
 		</for>
-	</target>	
+	</target>
 	<target name="eval.msh.wsd.cg.all" description="perform wsd for all concept graphs">
 		<for param="cg" list="sct-msh-csp-aod,umls">
 			<sequential>
@@ -193,7 +194,7 @@
 		<property name="analysisBatch" value="nlm.wsd" />
 		<property name="window" value="10" />
 		<property name="cg.name" value="sct-msh-csp-aod" />
-		<property name="metrics" value="WUPALMER,RADA,INTRINSIC_RADA,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" />
+		<property name="metrics" value="WUPALMER,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" />
 		<mkdir dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}" />
 		<java classname="ytex.wsd.nlm.WSDDisambiguator" fork="yes" dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}">
 			<classpath>
@@ -216,7 +217,7 @@
 		<property name="window" value="10" />
 		<property name="metrics" value="WUPALMER,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,JACCARD,SOKAL" />
 		<property name="cg.name" value="sct-msh-csp-aod" />
-		<delete dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}" quiet="yes"/>
+		<delete dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}" quiet="yes" />
 		<mkdir dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}" />
 		<java classname="ytex.wsd.msh.MshWSDDisambiguator" fork="yes" dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}">
 			<classpath>
@@ -237,7 +238,7 @@
 	<target name="eval.R" description="compute accuracy">
 		<property name="analysisBatch" value="nlm.wsd" />
 		<property name="window" value="10" />
-		<property name="cg.name" value="sct-msh-csp-aod" />		
+		<property name="cg.name" value="sct-msh-csp-aod" />
 		<exec executable="${R.bin}/R" dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}">
 			<arg line="--slave --file=${basedir}/eval.R" />
 		</exec>
@@ -245,7 +246,7 @@
 	<target name="eval.msh.R" description="compute accuracy">
 		<property name="analysisBatch" value="nlm.wsd" />
 		<property name="window" value="10" />
-		<property name="cg.name" value="sct-msh-csp-aod" />		
+		<property name="cg.name" value="sct-msh-csp-aod" />
 		<exec executable="${R.bin}/R" dir="${basedir}/eval/${analysisBatch}/${cg.name}/${window}">
 			<arg line="--slave --file=${basedir}/eval-msh.R" />
 		</exec>
@@ -263,5 +264,81 @@
 				<exclude name="**/.svn/**/*.*" />
 			</zipfileset>
 		</zip>
+	</target>
+	<target name="mm.copy.all" description="create scripts for starting multiple metamap servers">
+		<for list="${kernel.slices}" param="kernel.slice">
+			<sequential>
+				<antcall target="mm.copy.port">
+					<param name="port.index" value="@{kernel.slice}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="mm.copy.port" description="create scripts for starting a metamap server instance">
+		<property name="port.index" value="1" />
+		<property name="port.prefix" value="80${port.index}" />
+		<property name="port.mmserver" value="${port.prefix}1" />
+		<property name="port.skr" value="${port.prefix}5" />
+		<property name="port.wsd" value="${port.prefix}4" />
+		<property name="port.jd" value="${port.prefix}7" />
+
+		<copy todir="${mm.home}/bin" overwrite="yes">
+			<fileset dir="${mm.home}/bin">
+				<include name="SKRrun.${mm.version}" />
+				<include name="mmserver${mm.version}" />
+				<include name="mmserver${mm.version}.bat" />
+				<include name="skrmedpostctl" />
+				<include name="skrmedpostctl_start.bat" />
+				<include name="wsdserverctl" />
+				<include name="wsdserverctl_start.bat" />
+			</fileset>
+			<globmapper from="*" to="${port.index}_*" />
+		</copy>
+		<replace dir="${mm.home}/bin" includes="${port.index}_*">
+			<replacefilter token="8066" value="${port.mmserver}" />
+			<replacefilter token="5554" value="${port.wsd}" />
+			<replacefilter token="1795" value="${port.skr}" />
+			<replacefilter token="6767" value="${port.jd}" />
+			<replacefilter token="SKRrun.${mm.version}" value="${port.index}_SKRrun.${mm.version}" />
+			<replacefilter token="bin\mmserver${mm.version}" value="bin\${port.index}_mmserver${mm.version}" />
+			<replacefilter token="/log/" value="/log/${port.index}_" />
+			<replacefilter token="\log\" value="\log\${port.index}_" />
+			<replacefilter token="/disambServer.cfg" value="/${port.index}_disambServer.cfg" />
+		</replace>
+		<copy file="${mm.home}/WSD_Server/config/disambServer.cfg" tofile="${mm.home}/WSD_Server/config/${port.index}_disambServer.cfg" overwrite="yes">
+			<filterchain>
+				<tokenfilter>
+					<replacestring from="5554" to="${port.wsd}" />
+					<replacestring from="6767" to="${port.jd}" />
+				</tokenfilter>
+			</filterchain>
+		</copy>
+	</target>
+	<target name="mm.start.all" description="start all metamap servers">
+		<for list="${kernel.slices}" param="kernel.slice">
+			<sequential>
+				<antcall target="mm.start.port">
+					<param name="port.index" value="@{kernel.slice}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="mm.start.port" description="start a metamap server">
+		<property name="port.index" value="1" />
+		<exec executable="cmd" dir="${mm.home}/bin" spawn="yes">
+			<arg value="/c" />
+			<arg value="start" />
+			<arg value="${port.index}_skrmedpostctl_start.bat" />
+		</exec>
+		<exec executable="cmd" dir="${mm.home}/bin" spawn="yes">
+			<arg value="/c" />
+			<arg value="start" />
+			<arg value="${port.index}_wsdserverctl_start.bat" />
+		</exec>
+		<exec executable="cmd" dir="${mm.home}/bin" spawn="yes">
+			<arg value="/c" />
+			<arg value="start" />
+			<arg value="${port.index}_mmserver${mm.version}.bat" />
+		</exec>
 	</target>
 </project>
