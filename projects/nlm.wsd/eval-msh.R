@@ -4,7 +4,7 @@ wsd = read.table("msh-wsd.txt",
 	stringsAsFactors=F,
 	header = FALSE)
 
-jim = read.csv("../../../data/jimeno.csv", header = TRUE, stringsAsFactors=F)
+jim = read.csv("../../../../data/jimeno.csv", header = TRUE, stringsAsFactors=F)
 words.A = jim$Term[jim$Type == "A "]
 words.AT = jim$Term[jim$Type == "AT "]
 words.T = jim$Term[jim$Type == "T "]

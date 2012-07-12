@@ -1,5 +1,5 @@
 library(plyr)
-metrics = c("LCH", "INTRINSIC_LCH", "INTRINSIC_LIN", "PATH", "INTRINSIC_PATH", "INTRINSIC_RADA", "JACCARD", "SOKAL", "WUPALMER", "RADA")
+metrics = c("LCH", "INTRINSIC_LCH", "INTRINSIC_LIN", "PATH", "INTRINSIC_PATH", "JACCARD", "SOKAL", "WUPALMER")
 words.notsim =  c("extraction", "failure", "radiation", "transport")
 words.unsup = c("adjustment", "blood_pressure", "degree", "evaluation", "growth", "immunosuppression", "mosaic", "nutrition", "radiation", "repair", "scale", "sensitivity", "white")
 
