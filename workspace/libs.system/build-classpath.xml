@@ -33,6 +33,9 @@
 	<condition property="ctakes.home" value="${env.CTAKES_HOME}" else="${ytex.home}/../cTAKES-2.5.0">
 		<isset property="env.CTAKES_HOME" />
 	</condition>
+	<condition property="mm.home" value="${env.MM_HOME}" else="../public_mm">
+		<isset property="env.MM_HOME" />
+	</condition>
 	<path id="kernel.cp.common">
 		<!-- make sure ctakes patches come first -->
 		<fileset dir="${ytex.home}/libs.system" includes="ctakes-patches.jar" />
@@ -40,6 +43,10 @@
 		<pathelement location="${ctakes.home}/cTAKESdesc" />
 		<pathelement location="${ctakes.home}/resources" />
 		<pathelement location="${ctakes.home}/cTAKES.jar" />
+		<pathelement location="${mm.home}/src/javaapi/dist/MetaMapApi.jar" />
+		<pathelement location="${mm.home}/src/javaapi/dist/prologbeans.jar" />
+		<pathelement location="${mm.home}/src/uima/lib/metamap-api-uima.jar" />
+		<pathelement location="${mm.home}/src/uima/desc" />
 	</path>
 	<path id="kernel.cp.dev">
 		<pathelement location="${config.local}" />
@@ -48,6 +55,7 @@
 		<pathelement location="${ytex.home}/ytex.model/target/classes" />
 		<pathelement location="${ytex.home}/ytex.uima/target/classes" />
 		<pathelement location="${ytex.home}/ytex.negex/target/classes" />
+		<pathelement location="${ytex.home}/ytex.metamap/target/classes" />
 		<pathelement location="${ytex.home}/ctakes-patches/target/classes" />
 		<pathelement location="${ytex.home}/jdl/target/classes" />
 		<fileset dir="${ytex.home}/ytex.web/WebContent/WEB-INF/lib" includes="**/*.jar" />
