@@ -68,6 +68,16 @@
 			<param name="project.classpathref" value="cp.ytex.patches" />
 		</antcall>
 	</target>
+	<target name="build.ytex.metamap" depends="init">
+		<path id="cp.ytex.metamap">
+			<path refid="cp.all" />
+			<fileset dir="${ytex.dist.home}/libs.system" includes="ytex.uima.jar" />
+		</path>
+		<antcall target="compile">
+			<param name="project.name" value="ytex.metamap" />
+			<param name="project.classpathref" value="cp.ytex.metamap" />
+		</antcall>
+	</target>
 	<target name="copy.config">
 		<copy todir="${ytex.dist.home}/config">
 			<fileset dir="../config">
