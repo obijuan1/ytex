@@ -53,9 +53,6 @@
 		<delegateAnalysisEngine key="DictionaryLookupAnnotator">
 			<import name="ytex.uima.annotators.DictionaryLookupAnnotator" />
 		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="LvgAnnotator">
-			<import name="lvgdesc.analysis_engine.LvgAnnotator" />
-		</delegateAnalysisEngine>
 		<delegateAnalysisEngine key="DBConsumer">
 			<import name="ytex.uima.annotators.DBConsumer" />
 		</delegateAnalysisEngine>
@@ -212,7 +209,6 @@
 				<node>SegmentRegexAnnotator</node>
 				<node>SentenceDetectorAnnotator</node>
 				<node>TokenizerAnnotator</node>
-				<node>LvgAnnotator</node>
 				<node>ContextDependentTokenizerAnnotator</node>
 				<node>POSTagger</node>
 				<node>Chunker</node>
