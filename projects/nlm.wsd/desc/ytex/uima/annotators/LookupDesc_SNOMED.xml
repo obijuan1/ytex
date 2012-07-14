@@ -10,7 +10,7 @@
 		<dictionary id="DICT_UMLS_MS" externalResourceKey="DbConnection"
 			caseSensitive="false">
 			<implementation>
-				<jdbcImpl tableName="v_wsd_fword_lookup"
+				<jdbcImpl tableName="v_nlm_wsd_fword_lookup"
 					cacheSize="500" />
 			</implementation>
 			<lookupField fieldName="fword" />
