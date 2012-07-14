@@ -21,9 +21,6 @@
 		<delegateAnalysisEngine key="SentenceDetectorAnnotator">
 			<import name="coredesc.analysis_engine.SentenceDetectorAnnotator" />
 		</delegateAnalysisEngine>
-		<delegateAnalysisEngine key="SenseDisambiguatorAnnotator">
-			<import name="ytex.uima.annotators.SenseDisambiguatorAnnotator" />
-		</delegateAnalysisEngine>
 		<delegateAnalysisEngine key="AdjustNounPhraseToIncludeFollowingNP">
 			<import
 				name="chunkerdesc.analysis_engine.AdjustNounPhraseToIncludeFollowingNP" />
@@ -64,7 +61,7 @@
 			replaced cTAKES SimpleSegment with YTEX SegmentRegexAnnotator.
 			Reconfigured DictionaryLookup to use YTEX dictionary.
 			Added
-			DateAnnotator, SenseDisambiguatorAnnotator,
+			DateAnnotator, 
 			NamedEntityRegexAnnotator, DBConsumer
 		</description>
 		<version />
