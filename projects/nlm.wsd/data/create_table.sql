@@ -48,9 +48,6 @@ create table nlm_wsd_word (
 ) engine=myisam;  
 
 -- msh wsd tables
-delete from ref_segment_regex where segment_id in ('msh.wsd.target');
-insert into ref_segment_regex (regex, segment_id, limit_to_regex) values ('<e>(.*)<\\/e>', 'msh.wsd.target', 1);
-
 drop table if exists msh_wsd;
 
 create table msh_wsd (
@@ -60,7 +57,7 @@ create table msh_wsd (
     cui char(8),
     abs text,
     abs_ambiguity_start int not null,
-    abs_ambiguity_end int not null,
+    abs_ambiguity_end int not null
 ) engine = myisam;
 
 create index IX_msh_wsd on msh_wsd(pmid, word);
