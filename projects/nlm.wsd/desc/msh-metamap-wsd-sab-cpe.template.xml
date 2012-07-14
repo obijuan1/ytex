@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <cpeDescription xmlns="http://uima.apache.org/resourceSpecifier">
 	<collectionReader>
 		<collectionIterator>
@@ -11,7 +12,8 @@
 					<value>
 						<string>select w.instance_id from msh_wsd w left join document d
 							on d.instance_id = w.instance_id and d.analysis_batch =
-							'test-msh-mm3' where d.document_id is null limit 3</string>
+							'msh-metamap-wsd-sab' where d.document_id is null and ((w.instance_id
+							% @kernel.threads@ + 1) = @kernel.slice@)</string>
 					</value>
 				</nameValuePair>
 				<nameValuePair>
@@ -25,15 +27,21 @@
 		</collectionIterator>
 	</collectionReader>
 	<casProcessors casPoolSize="3" processingUnitThreadCount="1">
-		<casProcessor deployment="integrated" name="MetaMapApiAE">
+		<casProcessor deployment="integrated" name="MetaMapWSDPipeline">
 			<descriptor>
 				<import name="ytex.uima.MetaMapWSDPipeline" />
 			</descriptor>
 			<configurationParameterSettings>
 				<nameValuePair>
+					<name>metamap_server_port</name>
+					<value>
+						<integer>80@kernel.slice@1</integer>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
 					<name>analysisBatch</name>
 					<value>
-						<string>test-msh-mm3</string>
+						<string>msh-metamap-wsd-sab</string>
 					</value>
 				</nameValuePair>
 				<nameValuePair>
@@ -43,17 +51,17 @@
 					</value>
 				</nameValuePair>
 				<nameValuePair>
-					<name>metamap_server_port</name>
+					<name>storeCAS</name>
 					<value>
-						<integer>8011</integer>
+						<boolean>false</boolean>
 					</value>
 				</nameValuePair>
 				<nameValuePair>
 					<name>metamap_options</name>
 					<value>
-						<string></string>
+						<string><![CDATA[--restrict_to_sources AIR,AOD,CCS,CHV,COSTAR,CSP,CST,DXP,FMA,GO,HL7V2.5,HL7V3.0,HUGO,ICD9CM,ICPC,LCH,LNC,MEDLINEPLUS,MSH,MTH,MTHICD9,MTHSPL,NCBI,NCI,NDFRT,OMIM,PDQ,QMR,RXNORM,SNOMEDCT,USPMG,UWDA,VANDF --restrict_to_sts aapp,acab,anab,anst,antb,bacs,bact,bdsu,bdsy,blor,bmod,bodm,bpoc,bsoj,carb,celc,celf,cell,cgab,chem,chvf,chvs,clnd,comd,diap,dora,dsyn,edac,eico,elii,emod,emst,enzy,euka,ffas,fish,fndg,fngs,food,ftcn,genf,geoa,gngm,grpa,hcro,hlca,hops,horm,imft,inbe,inch,inpo,inpr,irda,lang,lbpr,lbtr,lipd,mamm,mbrt,mcha,medd,menp,mnob,mobd,neop,nnon,npop,nsba,ocac,opco,orch,orga,orgf,orgt,ortf,patf,phsf,phsu,plnt,prog,pros,qnco,rcpt,resa,resd,shro,sosy,strd,tisu,topp,virs,vita --word_sense_disambiguation]]></string>
 					</value>
-				</nameValuePair>				
+				</nameValuePair>
 			</configurationParameterSettings>
 		</casProcessor>
 	</casProcessors>

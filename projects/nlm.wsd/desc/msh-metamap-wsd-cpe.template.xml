@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <cpeDescription xmlns="http://uima.apache.org/resourceSpecifier">
 	<collectionReader>
 		<collectionIterator>
@@ -11,7 +12,8 @@
 					<value>
 						<string>select w.instance_id from msh_wsd w left join document d
 							on d.instance_id = w.instance_id and d.analysis_batch =
-							'test-msh-mm3' where d.document_id is null limit 3</string>
+							'msh-metamap-wsd' where d.document_id is null and ((w.instance_id
+							% @kernel.threads@ + 1) = @kernel.slice@)</string>
 					</value>
 				</nameValuePair>
 				<nameValuePair>
@@ -25,15 +27,21 @@
 		</collectionIterator>
 	</collectionReader>
 	<casProcessors casPoolSize="3" processingUnitThreadCount="1">
-		<casProcessor deployment="integrated" name="MetaMapApiAE">
+		<casProcessor deployment="integrated" name="MetaMapWSDPipeline">
 			<descriptor>
 				<import name="ytex.uima.MetaMapWSDPipeline" />
 			</descriptor>
 			<configurationParameterSettings>
 				<nameValuePair>
+					<name>metamap_server_port</name>
+					<value>
+						<integer>80@kernel.slice@1</integer>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
 					<name>analysisBatch</name>
 					<value>
-						<string>test-msh-mm3</string>
+						<string>msh-metamap-wsd</string>
 					</value>
 				</nameValuePair>
 				<nameValuePair>
@@ -43,17 +51,17 @@
 					</value>
 				</nameValuePair>
 				<nameValuePair>
-					<name>metamap_server_port</name>
+					<name>storeCAS</name>
 					<value>
-						<integer>8011</integer>
+						<boolean>false</boolean>
 					</value>
 				</nameValuePair>
 				<nameValuePair>
 					<name>metamap_options</name>
 					<value>
-						<string></string>
+						<string><![CDATA[--word_sense_disambiguation]]></string>
 					</value>
-				</nameValuePair>				
+				</nameValuePair>
 			</configurationParameterSettings>
 		</casProcessor>
 	</casProcessors>
