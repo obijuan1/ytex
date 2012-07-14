@@ -1,11 +1,11 @@
 <project name="nlm.wsd">
 	<property environment="env" />
 	<property name="ytex.home" value=".." />
+	<include file="${ytex.home}/libs.system/build-classpath.xml" />
+	<import file="${ytex.home}/data/build.xml" />
 	<property name="ytex.mx" value="1500m" />
 	<property name="window" value="10" />
 	<property name="mm.version" value="11" />
-	<include file="${ytex.home}/libs.system/build-classpath.xml" />
-	<import file="${ytex.home}/data/build.xml" />
 
 	<path id="wsd.cp">
 		<dirset dir="${basedir}">
@@ -123,6 +123,7 @@
 	<target name="RunCPE.slice">
 		<property name="kernel.slice" value="1" />
 		<property name="analysisBatch" value="msh-wsd" />
+		<property name="ytex.mx.cpe" value="250m" />
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
 		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
@@ -136,7 +137,7 @@
 		</copy>
 		<java classname="ytex.tools.RunCPE" fork="yes" dir="${basedir}/desc" classpathref="wsd.cp">
 			<arg value="${analysisBatch}-cpe.xml.${kernel.slice}" />
-			<jvmarg value="-Xmx1g" />
+			<jvmarg value="-Xmx${ytex.mx.cpe}" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
 		</java>
