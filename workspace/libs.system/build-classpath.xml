@@ -33,7 +33,7 @@
 	<condition property="ctakes.home" value="${env.CTAKES_HOME}" else="${ytex.home}/../cTAKES-2.5.0">
 		<isset property="env.CTAKES_HOME" />
 	</condition>
-	<condition property="mm.home" value="${env.MM_HOME}" else="../public_mm">
+	<condition property="mm.home" value="${env.MM_HOME}">
 		<isset property="env.MM_HOME" />
 	</condition>
 	<path id="kernel.cp.common">
