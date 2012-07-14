@@ -8,6 +8,9 @@
 	<property name="tomcat.dir" value="apache-tomcat-7.0.25" />
 	<property name="ant.dir" value="apache-ant-1.8.0" />
 	<path id="maven-ant-tasks.classpath" path="${ytex.home}/libs.system/ant-dependencies/maven-ant-tasks-2.1.3.jar" />
+	<condition property="mm.home" value="${env.MM_HOME}">
+		<isset property="env.MM_HOME" />
+	</condition>
 	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
 	<target name="clean.dist">
 		<delete dir="${dist.home}" quiet="yes" />
@@ -68,10 +71,11 @@
 			<param name="project.classpathref" value="cp.ytex.patches" />
 		</antcall>
 	</target>
-	<target name="build.ytex.metamap" depends="init">
+	<target name="build.ytex.metamap" depends="init" if="mm.home">
 		<path id="cp.ytex.metamap">
 			<path refid="cp.all" />
 			<fileset dir="${ytex.dist.home}/libs.system" includes="ytex.uima.jar" />
+			<pathelement location="${mm.home}/src/uima/lib/metamap-api-uima.jar" />
 		</path>
 		<antcall target="compile" inheritRefs="true">
 			<param name="project.name" value="ytex.metamap" />
