@@ -76,6 +76,8 @@
 			<path refid="cp.all" />
 			<fileset dir="${ytex.dist.home}/libs.system" includes="ytex.uima.jar" />
 			<pathelement location="${mm.home}/src/uima/lib/metamap-api-uima.jar" />
+			<pathelement location="${mm.home}/src/javaapi/dist/MetaMapApi.jar" />
+			<pathelement location="${mm.home}/src/javaapi/dist/prologbeans.jar" />
 		</path>
 		<antcall target="compile" inheritRefs="true">
 			<param name="project.name" value="ytex.metamap" />
