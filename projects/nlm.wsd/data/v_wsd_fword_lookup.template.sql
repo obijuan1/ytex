@@ -73,3 +73,5 @@ inner join
     inner join tmp_tui t on st.tui = t.tui
 ) c on c.cui = mrc.cui
 ;
+
+create index IX_fword on v_nlm_wsd_fword_lookup(fword);
