@@ -123,7 +123,7 @@
 	<target name="RunCPE.slice">
 		<property name="kernel.slice" value="1" />
 		<property name="analysisBatch" value="msh-wsd" />
-		<property name="ytex.mx.cpe" value="250m" />
+		<property name="ytex.mx.cpe" value="500m" />
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
 		<makeurl property="pipeline.url" file="${ytex.home}/config/desc/ytex/uima/YTEXPipeline.xml" />
