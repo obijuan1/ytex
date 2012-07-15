@@ -153,7 +153,7 @@
 		</for>
 	</target>
 	<target name="eval.msh.wsd.cg.all" description="perform wsd for all concept graphs">
-		<for param="cg" list="sct-msh-csp-aod,umls">
+		<for param="cg" list="msh-umls,sct-msh-csp-aod,umls">
 			<sequential>
 				<antcall target="eval.msh.wsd">
 					<param name="cg.name" value="@{cg}" />
@@ -175,16 +175,22 @@
 		</for>
 	</target>
 	<target name="eval.wsd.cg.all" description="perform wsd for all concept graphs">
+		<property name="eval.target" value="eval.WSD.R" />
 		<for param="cg" list="sct-msh-csp-aod,umls">
 			<sequential>
-				<antcall target="eval.wsd">
-					<param name="cg.name" value="@{cg}" />
-				</antcall>
-				<antcall target="eval.R">
+				<antcall target="${eval.target}">
 					<param name="cg.name" value="@{cg}" />
 				</antcall>
 			</sequential>
 		</for>
+	</target>
+	<target name="eval.WSD.R">
+		<antcall target="eval.wsd">
+			<param name="cg.name" value="@{cg}" />
+		</antcall>
+		<antcall target="eval.R">
+			<param name="cg.name" value="@{cg}" />
+		</antcall>
 	</target>
 	<target name="eval.wsd" description="perform wsd">
 		<property name="analysisBatch" value="nlm.wsd" />
