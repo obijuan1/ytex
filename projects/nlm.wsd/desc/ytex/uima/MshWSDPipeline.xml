@@ -46,7 +46,7 @@
       <import name="ytex.uima.annotators.NamedEntityRegexAnnotator"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="DictionaryLookupAnnotator">
-      <import name="ytex.uima.annotators.DictionaryLookupAnnotator"/>
+      <import name="ytex.uima.annotators.MshDictionaryLookupAnnotator"/>
     </delegateAnalysisEngine>
     <delegateAnalysisEngine key="DBConsumer">
       <import name="ytex.uima.annotators.DBConsumer"/>
@@ -172,20 +172,41 @@
         <name>typesToIgnore</name>
         <value>
           <array>
-            <string>edu.mayo.bmi.uima.core.type.ContractionToken</string>
-            <string>edu.mayo.bmi.uima.core.type.syntax.NewlineToken</string>
-            <string>edu.mayo.bmi.uima.core.type.syntax.PunctuationToken</string>
-            <string>edu.mayo.bmi.uima.core.type.syntax.SymbolToken</string>
-            <string>edu.mayo.bmi.uima.cdt.type.textsem.RomanNumeralAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.textsem.DateAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.textsem.FractionAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.textsem.MeasurementAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.textsem.PersonTitleAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.textsem.RangeAnnotation</string>
-            <string>edu.mayo.bmi.uima.cdt.type.textsem.TimeAnnotation</string>
-            <string>edu.mayo.bmi.uima.core.type.syntax.NP</string>
-            <string>edu.mayo.bmi.uima.core.type.syntax.VP</string>
-            <string>edu.mayo.bmi.uima.core.type.syntax.WordToken</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.ContractionToken</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.NewlineToken</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.NP</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.NumToken</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.PunctuationToken</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.SymbolToken</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.TerminalTreebankNode</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.TopTreebankNode</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.TreebankNode</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.VP</string>
+						<string>edu.mayo.bmi.uima.core.type.syntax.WordToken</string>
+						<string>edu.mayo.bmi.uima.core.type.textsem.DateAnnotation</string>
+						<string>edu.mayo.bmi.uima.core.type.textsem.FractionAnnotation</string>
+						<string>edu.mayo.bmi.uima.core.type.textsem.MeasurementAnnotation</string>
+						<string>edu.mayo.bmi.uima.core.type.textsem.MedicationEventMention</string>
+						<string>edu.mayo.bmi.uima.core.type.textsem.PersonTitleAnnotation</string>
+						<string>edu.mayo.bmi.uima.core.type.textsem.RangeAnnotation</string>
+						<string>edu.mayo.bmi.uima.core.type.textsem.RomanNumeralAnnotation</string>
+						<string>edu.mayo.bmi.uima.core.type.textsem.TimeAnnotation</string>
+						<string>edu.mayo.bmi.uima.core.type.textspan.Segment</string>
+						<string>edu.mayo.bmi.uima.core.type.textspan.Sentence</string>
+						<string>edu.mayo.bmi.uima.coref.type.DemMarkable</string>
+						<string>edu.mayo.bmi.uima.coref.type.Markable</string>
+						<string>edu.mayo.bmi.uima.coref.type.NEMarkable</string>
+						<string>edu.mayo.bmi.uima.coref.type.PronounMarkable</string>
+						<string>gov.nih.nlm.nls.metamap.uima.ts.AcronymAbbrev</string>
+						<string>gov.nih.nlm.nls.metamap.uima.ts.Document</string>
+						<string>org.metamap.uima.ts.Candidate</string>
+						<string>org.metamap.uima.ts.CuiConcept</string>
+						<string>org.metamap.uima.ts.Negation</string>
+						<string>org.metamap.uima.ts.Phrase</string>
+						<string>org.metamap.uima.ts.Span</string>
+						<string>org.metamap.uima.ts.Utterance</string>
+						<string>ytex.uima.types.Date</string>
+						<string>ytex.uima.types.WordToken</string>
           </array>
         </value>
       </nameValuePair>
@@ -233,7 +254,6 @@
           <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.TimeAnnotation</type>
           <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.SymbolToken</type>
           <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textspan.Sentence</type>
-          <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textspanSegment</type>
           <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.syntax.SBAR</type>
           <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.RomanNumeralAnnotation</type>
           <type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.textsem.RangeAnnotation</type>
