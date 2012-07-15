@@ -176,7 +176,8 @@
 	</target>
 	<target name="eval.wsd.cg.all" description="perform wsd for all concept graphs">
 		<property name="eval.target" value="eval.WSD.R" />
-		<for param="cg" list="sct-msh-csp-aod,umls">
+		<property name="cg.list" value="sct-msh-csp-aod,umls" />
+		<for param="cg" list="${cg.list}">
 			<sequential>
 				<antcall target="${eval.target}">
 					<param name="cg.name" value="@{cg}" />
