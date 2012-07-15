@@ -93,13 +93,13 @@ from
     (
     select distinct cui from msh_wsd
     ) c
-    inner join umls2011ab.MRSTY st on c.cui = st.cui
+    inner join @UMLS_SCHEMA@.MRSTY st on c.cui = st.cui
     
     union
     
     /* the default semantic types */
     select ui
-    from umls2011ab.SRDEF 
+    from @UMLS_SCHEMA@.SRDEF 
     where ui in (
     /* diseasesAndDisordersTuis */
     'T019', 'T020', 'T037', 'T046', 'T047', 'T048', 'T049', 'T050', 
@@ -128,7 +128,7 @@ create temporary table tmp_sab
 select distinct sab
 from
     (select distinct word, cui from msh_wsd) m
-    inner join umls2011ab.MRCONSO c on m.word = c.str and m.cui = c.cui and c.lat = 'ENG'
+    inner join @UMLS_SCHEMA@.MRCONSO c on m.word = c.str and m.cui = c.cui and c.lat = 'ENG'
 ;
 
 
@@ -141,16 +141,16 @@ create table v_msh_wsd_fword_lookup (
 ) engine=myisam, comment 'umls lookup table, created from umls_aui_fword and mrconso' ;
 
 -- do the insert
-insert into v_nlm_wsd_fword_lookup
+insert into v_msh_wsd_fword_lookup
 select mrc.cui, c.fword, c.tok_str
 from umls_aui_fword c
-inner join umls2011ab.MRCONSO mrc on c.aui = mrc.aui
+inner join @UMLS_SCHEMA@.MRCONSO mrc on c.aui = mrc.aui
 inner join tmp_sab s on s.sab = mrc.sab
 inner join
 (
     select distinct cui 
-    from umls2011ab.MRSTY st
+    from @UMLS_SCHEMA@.MRSTY st
     inner join tmp_tui t on st.tui = t.tui
 ) c on c.cui = mrc.cui
 ;
-create index IX_fword on v_nlm_wsd_fword_lookup(fword);
+create index IX_fword on v_msh_wsd_fword_lookup(fword);
