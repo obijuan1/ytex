@@ -31,6 +31,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
@@ -57,6 +60,7 @@ public class JdbcDictionaryImpl extends BaseDictionaryImpl implements
 	private PreparedStatement iv_mdPrepStmt;
 	private PreparedStatement iv_cntPrepStmt;
 	private Cache cache;
+	private static final Log log = LogFactory.getLog(JdbcDictionaryImpl.class);
 
 	public JdbcDictionaryImpl(Connection conn, String tableName,
 			String lookupFieldName) {
@@ -180,7 +184,10 @@ public class JdbcDictionaryImpl extends BaseDictionaryImpl implements
 				cache.put(new Element(str, metaDataHitSet));
 			}
 			return metaDataHitSet;
-		} catch (SQLException e) {
+//		} catch (SQLException e) {
+//			throw new DictionaryException(e);
+		} catch (Exception e) {
+			log.error("error on: " + str, e);
 			throw new DictionaryException(e);
 		}
 	}
