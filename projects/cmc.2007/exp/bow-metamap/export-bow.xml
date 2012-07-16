@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="instanceClassQuery"><![CDATA[
+select i.instance_id, a.class, i.train, f.label, f.fold, f.run
+from cv_fold f
+inner join cv_fold_instance i 
+    on f.cv_fold_id = i.cv_fold_id
+inner join corpus_label a 
+    on a.label = f.label 
+    and a.instance_id = i.instance_id
+    and a.corpus_name = f.corpus_name
+where f.corpus_name = 'cmc.2007'
+]]></entry>
+	<entry key="numericWordQuery"><![CDATA[
+select distinct d.instance_id, concat(s.id, '_', c.code), 1
+from document d
+/* limit to training documents */
+inner join corpus_doc cd 
+    on cd.instance_id = d.instance_id
+    and cd.corpus_name = 'cmc.2007'
+    and cd.doc_group = 'train'
+/* get sections */
+inner join anno_base ab 
+    on ab.document_id = d.document_id
+inner join anno_segment s
+    on s.anno_base_id = ab.anno_base_id
+    and s.id  in ('CMC_HISTORY', 'CMC_IMPRESSION')
+/* get section concepts */
+inner join anno_contain ac 
+    on ac.parent_anno_base_id = ab.anno_base_id
+inner join anno_ontology_concept c 
+    on c.anno_base_id = ac.child_anno_base_id
+where d.analysis_batch = 'cmc.2007-metamap'
+]]></entry>
+</properties>
