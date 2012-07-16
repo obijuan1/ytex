@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<ehcache>
-	<defaultCache maxBytesLocalHeap="50M" eternal="false"
+<ehcache maxBytesLocalHeap="50M" >
+	<defaultCache eternal="false"
 		timeToIdleSeconds="120" timeToLiveSeconds="120" overflowToDisk="false"
 		memoryStoreEvictionPolicy="LRU" />
 	<cache name="jdbcDictionaryCache" maxElementsInMemory="10000"
