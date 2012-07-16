@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<cpeDescription xmlns="http://uima.apache.org/resourceSpecifier">
+	<collectionReader>
+		<collectionIterator>
+			<descriptor>
+				<import name="ytex.uima.DBCollectionReader" />
+			</descriptor>
+			<configurationParameterSettings>
+                <nameValuePair>
+                    <name>queryGetDocumentKeys</name>
+                    <value>
+                        <string>select w.instance_id from nlm_wsd w left join document d on d.instance_id = w.instance_id and d.analysis_batch = 'nlm-metamap-sab' where d.document_id is null and ((w.instance_id % @kernel.threads@ + 1) = @kernel.slice@)</string>
+                    </value>
+                </nameValuePair>
+                <nameValuePair>
+                    <name>queryGetDocument</name>
+                    <value>
+                        <string>select abstract from nlm_wsd where instance_id = :instance_id</string>
+                    </value>
+                </nameValuePair>
+			</configurationParameterSettings>
+		</collectionIterator>
+	</collectionReader>
+	<casProcessors casPoolSize="3" processingUnitThreadCount="1">
+		<casProcessor deployment="integrated" name="MetaMapWSDPipeline">
+			<descriptor>
+				<import name="ytex.uima.MetaMapWSDPipeline" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>metamap_server_port</name>
+					<value>
+						<integer>80@kernel.slice@1</integer>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>analysisBatch</name>
+					<value>
+						<string>nlm-metamap-sab</string>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>insertAnnotationContainmentLinks</name>
+					<value>
+						<boolean>false</boolean>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>storeCAS</name>
+					<value>
+						<boolean>false</boolean>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>metamap_options</name>
+					<value>
+						<string><![CDATA[--restrict_to_sources AIR,AOD,CHV,COSTAR,CSP,CST,DXP,FMA,GO,HL7V2.5,HL7V3.0,HUGO,LCH,LNC,MEDLINEPLUS,MSH,MTH,MTHSPL,NCBI,NCI,NDFRT,OMIM,PDQ,QMR,RXNORM,SNOMEDCT,UWDA,VANDF --restrict_to_sts aapp,acab,anab,anst,antb,bacs,bdsu,bdsy,biof,blor,bmod,bodm,bpoc,bsoj,carb,celc,celf,cell,cgab,chem,chvf,chvs,clnd,comd,diap,dsyn,edac,eico,elii,emod,emst,enzy,ffas,fndg,ftcn,gora,hlca,hops,horm,humn,idcn,imft,inbe,inch,inpo,inpr,irda,lang,lbpr,lipd,mamm,mbrt,medd,menp,mobd,moft,neop,nnon,npop,nsba,opco,orch,orga,orgf,ortf,patf,phpr,phsf,phsu,popg,qlco,qnco,rcpt,resa,resd,sbst,socb,sosy,spco,strd,tisu,tmco,topp,vita ]]></string>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</casProcessor>
+	</casProcessors>
+	<cpeConfig>
+		<numToProcess>-1</numToProcess>
+		<deployAs>immediate</deployAs>
+		<checkpoint batch="0" time="300000ms" />
+		<timerImpl />
+	</cpeConfig>
+</cpeDescription>
