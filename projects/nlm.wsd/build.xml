@@ -335,11 +335,16 @@
 			<arg value="start" />
 			<arg value="${port.index}_skrmedpostctl_start.bat" />
 		</exec>
-		<exec executable="cmd" dir="${mm.home}/bin" spawn="yes">
-			<arg value="/c" />
-			<arg value="start" />
-			<arg value="${port.index}_wsdserverctl_start.bat" />
-		</exec>
+		<if>
+			<isset property="mm.wsd" />
+			<then>
+				<exec executable="cmd" dir="${mm.home}/bin" spawn="yes">
+					<arg value="/c" />
+					<arg value="start" />
+					<arg value="${port.index}_wsdserverctl_start.bat" />
+				</exec>
+			</then>
+		</if>
 		<exec executable="cmd" dir="${mm.home}/bin" spawn="yes">
 			<arg value="/c" />
 			<arg value="start" />
@@ -360,9 +365,14 @@
 		<exec executable="${mm.home}/bin/${port.index}_skrmedpostctl" dir="${mm.home}/bin">
 			<arg value="start" />
 		</exec>
-		<exec executable="${mm.home}/bin/${port.index}_wsdserverctl" dir="${mm.home}/bin">
-			<arg value="start" />
-		</exec>
+		<if>
+			<isset property="mm.wsd" />
+			<then>
+				<exec executable="${mm.home}/bin/${port.index}_wsdserverctl" dir="${mm.home}/bin">
+					<arg value="start" />
+				</exec>
+			</then>
+		</if>
 		<exec executable="${mm.home}/bin/${port.index}_mmserver${mm.version}" dir="${mm.home}/bin" spawn="yes">
 		</exec>
 	</target>
