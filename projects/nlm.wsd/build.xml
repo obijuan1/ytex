@@ -110,13 +110,13 @@
 		</antcall>
 		<antcall target="eval.analysisBatch">
 			<param name="analysisBatch" value="msh-ctakes" />
-			<param name="eval.target" value="eval.nlm.wsd.all" />
+			<param name="eval.target" value="eval.msh.wsd.all" />
 		</antcall>
 	</target>
 	<target name="eval.metamap.all" description="all metamap wsd">
 		<antcall target="eval.analysisBatch">
 			<param name="analysisBatch" value="nlm-metamap-default" />
-			<param name="eval.target" value="eval.msh.wsd.all" />
+			<param name="eval.target" value="eval.nlm.wsd.all" />
 			<param name="ytex.mx.cpe" value="150m"/>
 		</antcall>
 		<antcall target="eval.analysisBatch">
@@ -197,11 +197,11 @@
 		</for>
 	</target>
 	<target name="eval.nlm.wsd.cg.all" description="nlm wsd for all concept graphs">
-		<property name="eval.target" value="eval.nlm.all" />
+		<property name="eval.nlm.wsd.cg.target" value="eval.nlm.all" />
 		<property name="cg.list" value="sct-msh-csp-aod,umls" />
 		<for param="cg" list="${cg.list}">
 			<sequential>
-				<antcall target="${eval.target}">
+				<antcall target="${eval.nlm.wsd.cg.target}">
 					<param name="cg.name" value="@{cg}" />
 				</antcall>
 			</sequential>
