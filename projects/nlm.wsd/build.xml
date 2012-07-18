@@ -4,7 +4,6 @@
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
 	<property name="ytex.mx" value="1500m" />
-	<property name="window" value="10" />
 	<property name="mm.version" value="11" />
 
 	<path id="wsd.cp">
@@ -15,7 +14,8 @@
 		<path refid="${kernel.cp}" />
 	</path>
 
-	<target name="all" depends="build,load.all,RunCPE.all,eval.wsd.all,eval.msh.wsd.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
+	<target name="all" depends="setup.all,eval.ctakes.all,eval.metamap.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
+	<target name="setup.all" depends="build,load.all" description="call build,load.all" />
 	<target name="build" description="compile java source">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/main/java/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
@@ -103,15 +103,37 @@
 			<arg value="${msh.wsd.home}" />
 		</java>
 	</target>
-	<target name="RunCPE.all">
-		<antcall target="RunCPE.threads">
-			<param name="analysisBatch" value="nlm-wsd" />
+	<target name="eval.ctakes.all" description="all ctakes wsd">
+		<antcall target="eval.analysisBatch">
+			<param name="analysisBatch" value="nlm-ctakes" />
+			<param name="eval.target" value="eval.nlm.wsd.all" />
 		</antcall>
-		<antcall target="RunCPE.threads">
-			<param name="analysisBatch" value="msh-wsd" />
+		<antcall target="eval.analysisBatch">
+			<param name="analysisBatch" value="msh-ctakes" />
+			<param name="eval.target" value="eval.nlm.wsd.all" />
 		</antcall>
 	</target>
-	<target name="RunCPE.threads" description="annotate i2b2 2008 corpus in parallel">
+	<target name="eval.metamap.all" description="all metamap wsd">
+		<antcall target="eval.analysisBatch">
+			<param name="analysisBatch" value="nlm-metamap-default" />
+			<param name="eval.target" value="eval.msh.wsd.all" />
+			<param name="ytex.mx.cpe" value="150m"/>
+		</antcall>
+		<antcall target="eval.analysisBatch">
+			<param name="analysisBatch" value="msh-metamap-default" />
+			<param name="eval.target" value="eval.msh.wsd.all" />
+			<param name="ytex.mx.cpe" value="150m"/>
+		</antcall>
+	</target>
+	<target name="eval.analysisBatch" description="annotate dataset, do wsd">
+		<antcall target="RunCPE.threads">
+			<param name="analysisBatch" value="${analysisBatch}" />
+		</antcall>
+		<antcall target="${eval.target}">
+			<param name="analysisBatch" value="${analysisBatch}" />
+		</antcall>
+	</target>
+	<target name="RunCPE.threads" description="annotate corpus in parallel">
 		<for list="${kernel.slices}" param="kernel.slice" parallel="yes" threadCount="${kernel.threads}">
 			<sequential>
 				<antcall target="RunCPE.slice">
@@ -122,7 +144,7 @@
 	</target>
 	<target name="RunCPE.slice">
 		<property name="kernel.slice" value="1" />
-		<property name="analysisBatch" value="msh-wsd" />
+		<property name="analysisBatch" value="nlm-ctakes" />
 		<property name="ytex.mx.cpe" value="500m" />
 		<echo>kernel.slice ${kernel.slice}</echo>
 		<makeurl property="collectionreader.url" file="${ytex.home}/config/desc/ytex/uima/DBCollectionReader.xml" />
@@ -164,18 +186,18 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="eval.wsd.all" description="perform wsd for all concept graphs">
+	<target name="eval.nlm.wsd.all" description="nlm wsd for all windows and concept graphs">
 		<property name="windows" value="10,30,50,70" />
 		<for param="window" list="${windows}" parallel="yes" threadCount="${kernel.threads}">
 			<sequential>
-				<antcall target="eval.wsd.cg.all">
+				<antcall target="eval.nlm.wsd.cg.all">
 					<param name="window" value="@{window}" />
 				</antcall>
 			</sequential>
 		</for>
 	</target>
-	<target name="eval.wsd.cg.all" description="perform wsd for all concept graphs">
-		<property name="eval.target" value="eval.wsd.R" />
+	<target name="eval.nlm.wsd.cg.all" description="nlm wsd for all concept graphs">
+		<property name="eval.target" value="eval.nlm.all" />
 		<property name="cg.list" value="sct-msh-csp-aod,umls" />
 		<for param="cg" list="${cg.list}">
 			<sequential>
@@ -185,15 +207,15 @@
 			</sequential>
 		</for>
 	</target>
-	<target name="eval.wsd.R">
-		<antcall target="eval.wsd">
+	<target name="eval.nlm.all" description="nlm wsd for specified concept graph and window">
+		<antcall target="eval.nlm.wsd">
 			<param name="cg.name" value="${cg.name}" />
 		</antcall>
-		<antcall target="eval.R">
+		<antcall target="eval.nlm.R">
 			<param name="cg.name" value="${cg.name}" />
 		</antcall>
 	</target>
-	<target name="eval.wsd" description="perform wsd">
+	<target name="eval.nlm.wsd" description="perform wsd">
 		<property name="analysisBatch" value="nlm.wsd" />
 		<property name="window" value="10" />
 		<property name="cg.name" value="sct-msh-csp-aod" />
@@ -238,7 +260,7 @@
 			<arg value="${analysisBatch}" />
 		</java>
 	</target>
-	<target name="eval.R" description="compute accuracy">
+	<target name="eval.nlm.R" description="compute accuracy">
 		<property name="analysisBatch" value="nlm.wsd" />
 		<property name="window" value="10" />
 		<property name="cg.name" value="sct-msh-csp-aod" />
