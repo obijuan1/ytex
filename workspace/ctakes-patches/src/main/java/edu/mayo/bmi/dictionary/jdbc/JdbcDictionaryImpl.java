@@ -31,12 +31,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -92,6 +92,7 @@ public class JdbcDictionaryImpl extends BaseDictionaryImpl implements
 		return iv_cntPrepStmt;
 	}
 
+	@SuppressWarnings("rawtypes")
 	private PreparedStatement initMetaDataPrepStmt(String text)
 			throws SQLException {
 		if (iv_mdPrepStmt == null) {
@@ -147,7 +148,7 @@ public class JdbcDictionaryImpl extends BaseDictionaryImpl implements
 	 * ImmutableList because there is no implementation of equals on the
 	 * MetaDataHit
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Collection getEntries(String str) throws DictionaryException {
 		// Set metaDataHitSet = new HashSet();
 		// check cache
