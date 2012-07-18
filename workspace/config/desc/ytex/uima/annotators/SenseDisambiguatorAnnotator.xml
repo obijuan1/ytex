@@ -9,7 +9,20 @@
 		<description />
 		<version>1.0</version>
 		<vendor />
-		<configurationParameters />
+		<configurationParameters>
+			<configurationParameter>
+				<name>metric</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
+			<configurationParameter>
+				<name>windowSize</name>
+				<type>Integer</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
+		</configurationParameters>
 		<configurationParameterSettings />
 		<typeSystemDescription>
 			<imports>
@@ -21,7 +34,8 @@
 		<capabilities>
 			<capability>
 				<inputs>
-					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NamedEntity</type>
+					<type allAnnotatorFeatures="true">edu.mayo.bmi.uima.core.type.NamedEntity
+					</type>
 				</inputs>
 				<outputs />
 				<languagesSupported />
