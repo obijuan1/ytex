@@ -106,6 +106,6 @@ from
 (
 select distinct sab
 from
-(select distinct word from msh_wsd) m
-inner join umls2011ab.MRCONSO c on m.word = c.str and c.lat = 'ENG'
+(select distinct word, cui from msh_wsd) m
+inner join umls2011ab.MRCONSO c on m.word = c.str and m.cui = c.cui and c.lat = 'ENG'
 ) s;

@@ -52,29 +52,6 @@
                         <boolean>false</boolean>
                     </value>
                 </nameValuePair>
-                <nameValuePair>
-                    <name>typesToIgnore</name>
-                    <value>
-                        <array>
-                            <string>edu.mayo.bmi.uima.core.ae.type.ContractionToken</string>
-                            <string>edu.mayo.bmi.uima.core.ae.type.NewlineToken</string>
-                            <string>edu.mayo.bmi.uima.core.ae.type.PunctuationToken</string>
-                            <string>edu.mayo.bmi.uima.core.ae.type.SymbolToken</string>
-                            <string>edu.mayo.bmi.uima.cdt.ae.type.RomanNumeralAnnotation</string>
-                            <string>edu.mayo.bmi.uima.cdt.ae.type.DateAnnotation</string>
-                            <string>edu.mayo.bmi.uima.cdt.ae.type.FractionAnnotation</string>
-                            <string>edu.mayo.bmi.uima.cdt.ae.type.MeasurementAnnotation</string>
-                            <string>edu.mayo.bmi.uima.cdt.ae.type.PersonTitleAnnotation</string>
-                            <string>edu.mayo.bmi.uima.cdt.ae.type.RangeAnnotation</string>
-                            <string>edu.mayo.bmi.uima.cdt.ae.type.TimeAnnotation</string>
-                            <string>ytex.uima.types.Date</string>
-                            <string>edu.mayo.bmi.uima.chunker.type.NP</string>
-                            <string>edu.mayo.bmi.uima.chunker.type.VP</string>
-                            <string>ytex.uima.types.WordToken</string>
-                            <string>edu.mayo.bmi.uima.core.ae.type.NumToken</string>
-                        </array>
-                    </value>
-                </nameValuePair>                
             </configurationParameterSettings>
         </casProcessor>
     </casProcessors>

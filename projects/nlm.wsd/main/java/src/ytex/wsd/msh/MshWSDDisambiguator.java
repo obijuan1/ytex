@@ -237,6 +237,7 @@ public class MshWSDDisambiguator {
 		Sentence currentSentence = null;
 		Set<String> currentConcepts = null;
 		int currentConceptIndex = -1;
+		boolean bFirstRow = true;
 
 		public WSDRowCallbackHandler(Set<SimilarityMetricEnum> metrics,
 				int windowSize, PrintStream ps) {
@@ -252,6 +253,10 @@ public class MshWSDDisambiguator {
 
 		@Override
 		public void processRow(ResultSet rs) throws SQLException {
+			if(bFirstRow) {
+				log.info("disambiguate start: " + (new Date()));
+				bFirstRow = false;
+			}
 			long instanceId = rs.getLong(1);
 			int spanBegin = rs.getInt(2);
 			int spanEnd = rs.getInt(3);
@@ -415,7 +420,6 @@ public class MshWSDDisambiguator {
 		try {
 			ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(
 					"msh-wsd.txt")));
-			log.info("disambiguate start: " + (new Date()));
 			this.processSentences(metrics, windowSize, ps, analysisBatch);
 			log.info("disambiguate end: " + (new Date()));
 		} finally {
@@ -447,7 +451,7 @@ public class MshWSDDisambiguator {
 			Map<String, Double> scoreMap = new HashMap<String, Double>();
 			String cui = this.wordSenseDisambiguator.disambiguate(
 					s.getConcepts(), s.getIndex(), null, windowSize, metric,
-					scoreMap);
+					scoreMap, true);
 			ps.print(cui);
 			ps.print("\t");
 			ps.println(scoreMap);
