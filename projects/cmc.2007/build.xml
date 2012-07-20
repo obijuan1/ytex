@@ -4,7 +4,7 @@
 		<isset property="env.YTEX_HOME" />
 	</condition>
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
-	<property name="ytex.mx.cpe" value="500m" />
+	<property name="ytex.mx.cpe" value="1g" />
 	<property name="cmc.kernel.name" value="cmc.2007" />
 
 	<target name="jdbc.sqlcmd">
@@ -60,6 +60,7 @@
 			<jvmarg value="-Xmx${ytex.mx.cpe}" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
+			<jvmarg value="-Dytex.conceptGraphName=sct-msh-csp-aod" />
 		</java>
 	</target>
 	<target name="ctakes.all" description="ctakes evaluation">
@@ -137,7 +138,7 @@
 		</java>
 	</target>
 	<target name="test.init" description="initialize variables for exporting test results">
-		<property name="test.export.dir" value="${basedir}/libsvm/${kernel.experiment}-test" />
+		<property name="test.export.dir" value="${basedir}/libsvm/${cmc.kernel.experiment}-test" />
 		<filterset id="export.filterset">
 			<filter token="kernel.experiment" value="${cmc.kernel.experiment}" />
 			<filter token="kernel.name" value="${cmc.kernel.name}" />
@@ -166,6 +167,6 @@
 		<copy file="${basedir}/data/test_results.sql" todir="${test.export.dir}" overwrite="yes">
 			<filterset refid="export.filterset" />
 		</copy>
-		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${test.export.dir}/test_results.sql" classpathref="${kernel.cp}" output="${export.dir}/results.txt" print="yes" showheaders="yes" showtrailers="no" />
+		<sql driver="${db.driver}" url="${db.url}" userid="${db.username}" password="${db.password}" src="${test.export.dir}/test_results.sql" classpathref="${kernel.cp}" output="${test.export.dir}/results.csv" print="yes" showheaders="yes" showtrailers="no" />
 	</target>
 </project>
