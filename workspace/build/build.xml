@@ -1,4 +1,8 @@
 <project name="build" xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+	<property environment="env" />
+	<condition property="ytex.home" value="${env.YTEX_HOME}" else="..">
+		<isset property="env.YTEX_HOME" />
+	</condition>
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="dist.home" value="../dist" />
 	<property name="ytex.version" value="0.7" />
@@ -8,9 +12,6 @@
 	<property name="tomcat.dir" value="apache-tomcat-7.0.25" />
 	<property name="ant.dir" value="apache-ant-1.8.0" />
 	<path id="maven-ant-tasks.classpath" path="${ytex.home}/libs.system/ant-dependencies/maven-ant-tasks-2.1.3.jar" />
-	<condition property="mm.home" value="${env.MM_HOME}">
-		<isset property="env.MM_HOME" />
-	</condition>
 	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
 	<target name="clean.dist">
 		<delete dir="${dist.home}" quiet="yes" />
