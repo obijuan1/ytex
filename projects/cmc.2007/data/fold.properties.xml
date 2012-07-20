@@ -9,6 +9,7 @@ inner join corpus_doc_anno cda
     on cd.corpus_doc_id = cda.corpus_doc_id 
     and cda.corpus_doc_id
 where doc_set = 'train'
+and cd.corpus_name = 'cmc.2007'
 ]]></entry>
 </properties>
    
