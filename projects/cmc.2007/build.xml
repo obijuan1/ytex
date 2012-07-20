@@ -180,6 +180,7 @@
 				<include name="data/insert_corpus_label.sql" />
 				<include name="data/best_params.sql" />
 				<include name="data/test_results.sql" />
+				<include name="data/corpus.properties.xml" />
 				<include name="exp/bow*/*.*" />
 				<exclude name="**/.svn/**/*.*" />
 			</zipfileset>
