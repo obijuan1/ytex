@@ -3,6 +3,6 @@
 	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
 	<csv table="@db.schema@.hibernate_sequences" commit="10000" delimiter="&#009;">
 		<column name="sequence_name" />
-		<column name="nextval" />
+		<column name="next_val" />
 	</csv>
 </load>
