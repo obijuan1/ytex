@@ -1,10 +1,13 @@
 <project name="nlm.wsd">
 	<property environment="env" />
-	<property name="ytex.home" value=".." />
+	<condition property="ytex.home" value="${env.YTEX_HOME}" else="..">
+		<isset property="env.YTEX_HOME" />
+	</condition>
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
 	<property name="ytex.mx" value="1500m" />
 	<property name="mm.version" value="11" />
+	<property name="maxMemory" value="${ytex.mx}" />
 
 	<path id="wsd.cp">
 		<dirset dir="${basedir}">
@@ -14,8 +17,8 @@
 		<path refid="${kernel.cp}" />
 	</path>
 
-	<target name="all" depends="setup.all,eval.ctakes.all,eval.metamap.all" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
-	<target name="setup.all" depends="build,load.all" description="call build,load.all" />
+	<target name="all" depends="setup.all,eval.ctakes.all,eval.metamap.all,summary.R" description="do it all - load wsd tables, annotate abstracts, perform wsd" />
+	<target name="setup.all" depends="build,load.all,cg.setup.all" description="call build,load.all,cg.setup.all" />
 	<target name="build" description="compile java source">
 		<mkdir dir="${basedir}/bin" />
 		<javac srcdir="${basedir}/main/java/src" destdir="${basedir}/bin" classpathref="${kernel.cp}" />
@@ -103,6 +106,33 @@
 			<arg value="${msh.wsd.home}" />
 		</java>
 	</target>
+	<target name="cg.setup.all" description="generate all concept graphs">
+		<for param="cg.name" list="msh-umls,sct-msh-csp-aod,umls">
+			<sequential>
+				<antcall target="cg.setup">
+					<param name="cg.name" value="@{cg.name}" />
+				</antcall>
+			</sequential>
+		</for>
+	</target>
+	<target name="cg.setup" description="setup concept graph ${cg}, compute intrinsic info content">
+		<property name="cg.name" value="${ytex.conceptGraphName}" />
+		<echo>${cg.name}</echo>
+		<copy file="${basedir}/desc/${cg.name}.template.xml" tofile="${basedir}/desc/${cg.name}.xml" overwrite="yes">
+			<filterset>
+				<filter token="umls.schema" value="${umls.prefix}" />
+			</filterset>
+		</copy>
+		<java classname="ytex.kernel.dao.ConceptDaoImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
+			<syspropertyset>
+				<propertyset refid="ytex.jvm.props" />
+			</syspropertyset>
+			<jvmarg value="-Xms${maxMemory}" />
+			<jvmarg value="-Xmx${maxMemory}" />
+			<arg value="-prop" />
+			<arg value="${basedir}/desc/${cg.name}.xml" />
+		</java>
+	</target>
 	<target name="eval.ctakes.all" description="all ctakes wsd">
 		<antcall target="eval.analysisBatch">
 			<param name="analysisBatch" value="nlm-ctakes" />
@@ -117,12 +147,12 @@
 		<antcall target="eval.analysisBatch">
 			<param name="analysisBatch" value="nlm-metamap-default" />
 			<param name="eval.target" value="eval.nlm.wsd.all" />
-			<param name="ytex.mx.cpe" value="150m"/>
+			<param name="ytex.mx.cpe" value="500m" />
 		</antcall>
 		<antcall target="eval.analysisBatch">
 			<param name="analysisBatch" value="msh-metamap-default" />
 			<param name="eval.target" value="eval.msh.wsd.all" />
-			<param name="ytex.mx.cpe" value="150m"/>
+			<param name="ytex.mx.cpe" value="500m" />
 		</antcall>
 	</target>
 	<target name="eval.analysisBatch" description="annotate dataset, do wsd">
@@ -396,6 +426,11 @@
 			</then>
 		</if>
 		<exec executable="${mm.home}/bin/${port.index}_mmserver${mm.version}" dir="${mm.home}/bin" spawn="yes">
+		</exec>
+	</target>
+	<target name="summary.R" description="fit linear models to wsd accuracy, consolidate results">
+		<exec executable="${R.bin}/R" dir="${basedir}">
+			<arg line="--slave --file=${basedir}/summary.R" />
 		</exec>
 	</target>
 </project>
