@@ -29,7 +29,10 @@ will be dropped first.
 Database connection parameters are taken from ytex.properties.
 	]]>
 	</description>
-	<property name="ytex.home" value=".." />
+	<property environment="env" />
+	<condition property="ytex.home" value="${env.YTEX_HOME}" else="..">
+		<isset property="env.YTEX_HOME" />
+	</condition>
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 
 	<!-- by default umls in same database/catalog as ytex -->
