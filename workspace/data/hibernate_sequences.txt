@@ -1,0 +1,2 @@
+document_id_sequence	1
+anno_base_id_sequence	1

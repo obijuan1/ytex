@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<load xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jdl-prj.googlecode.com/files/xdl.xsd">
+	<csv table="@db.schema@.hibernate_sequences" commit="10000" delimiter="&#009;">
+		<column name="sequence_name" />
+		<column name="nextval" />
+	</csv>
+</load>
