@@ -1,7 +1,9 @@
 <project name="ytex-tools" default="help">
 	<description>this ant build script is used to start ytex/uima tools.</description>
 	<property environment="env" />
-	<property name="ytex.home" value="${env.YTEX_HOME}" />
+	<condition property="ytex.home" value="${env.YTEX_HOME}" else="..">
+		<isset property="env.YTEX_HOME" />
+	</condition>
 	<property name="ytex.tools.Xmx" value="1g" />
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<target name="help">
@@ -9,7 +11,7 @@
 	</target>
 	<target name="DBAnnotationViewer" description="start ytex DBAnnotationViewer">
 		<java classname="ytex.tools.DBAnnotationViewerMain" classpathref="${kernel.cp}" fork="yes">
-			<jvmarg value="-Xmx${ytex.tools.Xmx}"/>
+			<jvmarg value="-Xmx${ytex.tools.Xmx}" />
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
@@ -17,7 +19,7 @@
 	</target>
 	<target name="DocumentAnalyzer" description="start uima document analyzer">
 		<java classname="org.apache.uima.tools.docanalyzer.DocumentAnalyzer" classpathref="${kernel.cp}" fork="yes">
-			<jvmarg value="-Xmx${ytex.tools.Xmx}"/>
+			<jvmarg value="-Xmx${ytex.tools.Xmx}" />
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
@@ -25,7 +27,7 @@
 	</target>
 	<target name="CPE" description="start uima collection processing engine">
 		<java classname="org.apache.uima.tools.cpm.CpmFrame" classpathref="${kernel.cp}" fork="yes">
-			<jvmarg value="-Xmx${ytex.tools.Xmx}"/>
+			<jvmarg value="-Xmx${ytex.tools.Xmx}" />
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
@@ -33,7 +35,7 @@
 	</target>
 	<target name="RunCPE" description="start uima collection processing engine via console app. requires cpe param">
 		<java classname="ytex.tools.RunCPE" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
-			<jvmarg value="-Xmx${ytex.tools.Xmx}"/>
+			<jvmarg value="-Xmx${ytex.tools.Xmx}" />
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
@@ -42,7 +44,7 @@
 	</target>
 	<target name="SparseDataExporter" description="ytex sparse data exporter.  Specify export property file and type with -Dprop=xxx and -Dtype options, e.g. -Dprop=fracture-word.xml -Dtype=weka">
 		<java classname="ytex.kernel.SparseDataExporterImpl" classpathref="${kernel.cp}" fork="yes" failonerror="yes">
-			<jvmarg value="-Xmx${ytex.tools.Xmx}"/>
+			<jvmarg value="-Xmx${ytex.tools.Xmx}" />
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>

@@ -22,7 +22,10 @@ execute setup.lvg and templateToConfig
 	]]>
 	</description>
 	<!-- override these variables using eclipse settings/command line -->
-	<property name="ytex.home" value=".." />
+	<property environment="env" />
+	<condition property="ytex.home" value="${env.YTEX_HOME}" else="..">
+		<isset property="env.YTEX_HOME" />
+	</condition>
 	<import file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="download.dir" value="${ytex.home}/.." />
 	<property name="lvg.basename" value="2008" />
