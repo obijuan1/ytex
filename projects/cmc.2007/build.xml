@@ -173,6 +173,7 @@
 		<zip file="../cmc.2007.zip">
 			<zipfileset dir="${basedir}" prefix="cmc.2007">
 				<include name="build.xml" />
+				<include name="readme.txt" />
 				<include name="desc/**/*.*" />
 				<include name="src/**/*.*" />
 				<include name="data/genLibsvmParams.sql" />

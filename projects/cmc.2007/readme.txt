@@ -1,0 +1,1 @@
+See http://code.google.com/p/ytex/wiki/WordSenseDisambiguation_V08#Reproducing_results_on_CMC_2007_challenge
