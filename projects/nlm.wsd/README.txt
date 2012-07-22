@@ -1,1 +1,1 @@
-see http://code.google.com/p/ytex/wiki/WordSenseDisambiguation_V06 for instructions on how to run the NLM WSD and MSH WSD examples.
+see http://code.google.com/p/ytex/wiki/WordSenseDisambiguation_V08 for instructions on how to run the NLM WSD and MSH WSD examples.
