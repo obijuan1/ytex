@@ -78,6 +78,8 @@ Call with option -projecthelp for more info.
 				<filtersfile file="${ytex.properties}" />
 				<filter token="umls.schema" value="${umls.schema}" />
 				<filter token="filter.umls.catalog" value="${filter.umls.catalog}" />
+				<filter token="ytex.home" value="${ytex.home}" />
+				<filter token="ctakes.home" value="${ctakes.home}" />
 			</filterset>
 		</copy>
 	</target>
