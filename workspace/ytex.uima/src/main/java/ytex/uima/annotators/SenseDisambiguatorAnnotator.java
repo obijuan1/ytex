@@ -19,6 +19,8 @@ import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import com.google.common.base.Strings;
+
 import ytex.kernel.metric.ConceptSimilarityService;
 import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
 import ytex.kernel.wsd.WordSenseDisambiguator;
@@ -60,10 +62,19 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 			throws ResourceInitializationException {
 		super.initialize(aContext);
 		props = ApplicationContextHolder.getYtexProperties();
-		windowSize = Integer.parseInt(props.getProperty(
-				"ytex.sense.windowSize", "10"));
-		metric = SimilarityMetricEnum.valueOf(props.getProperty(
-				"ytex.sense.metric", "INTRINSIC_PATH"));
+		Integer nWindowSize = (Integer) aContext
+				.getConfigParameterValue("windowSize");
+		if (nWindowSize != null && nWindowSize.intValue() > 0)
+			windowSize = nWindowSize.intValue();
+		else
+			windowSize = Integer.parseInt(props.getProperty(
+					"ytex.sense.windowSize", "50"));
+		String uMetric = (String)aContext.getConfigParameterValue("metric");
+		if (!Strings.isNullOrEmpty(uMetric))
+			metric = SimilarityMetricEnum.valueOf(uMetric);
+		else
+			metric = SimilarityMetricEnum.valueOf(props.getProperty(
+					"ytex.sense.metric", "INTRINSIC_PATH"));
 		wsd = ApplicationContextHolder.getSimApplicationContext().getBean(
 				WordSenseDisambiguator.class);
 		ConceptSimilarityService simSvc = ApplicationContextHolder
@@ -123,7 +134,7 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 			if (conceptSenses.size() > 1) {
 				Map<String, Double> scores = new HashMap<String, Double>();
 				String concept = this.wsd.disambiguate(listConcept, i, null,
-						windowSize, metric, scores);
+						windowSize, metric, scores, true);
 				IdentifiedAnnotation ne = listNonTrivialNE.get(i);
 				FSArray concepts = ne.getOntologyConceptArr();
 				for (int j = 0; j < concepts.size(); j++) {
@@ -133,15 +144,14 @@ public class SenseDisambiguatorAnnotator extends JCasAnnotator_ImplBase {
 						// the
 						// predicted concept field
 						ytex.uima.types.OntologyConcept yoc = (ytex.uima.types.OntologyConcept) oc;
-						if (concept.equals(oc.getCode()))
+						if (concept == null || concept.equals(oc.getCode()))
 							yoc.setDisambiguated(true);
 						if (scores.containsKey(oc.getCode()))
 							yoc.setScore(scores.get(oc.getCode()));
 					} else {
 						// for other ontology concepts, throw out the concepts
-						// that
-						// didn't get the top score
-						if (concept.equals(oc.getCode())) {
+						// that didn't get the top score
+						if (concept != null && concept.equals(oc.getCode())) {
 							FSArray ocArr = new FSArray(jcas, 1);
 							ocArr.set(0, oc);
 							ne.setOntologyConceptArr(ocArr);
