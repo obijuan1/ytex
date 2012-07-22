@@ -8,6 +8,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -22,6 +25,7 @@ import java.util.TreeSet;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -165,78 +169,125 @@ public class KernelUtilImpl implements KernelUtil {
 		return gramMatrix;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see ytex.kernel.DataExporter#loadInstances(java.lang.String,
-	 * java.util.SortedMap)
+	/**
+	 * this can be very large - avoid loading the entire jdbc ResultSet into
+	 * memory
 	 */
 	@Override
 	public InstanceData loadInstances(String strQuery) {
 		final InstanceData instanceLabel = new InstanceData();
-		jdbcTemplate.query(strQuery, new RowCallbackHandler() {
+		PreparedStatement s = null;
+		Connection conn = null;
+		ResultSet rs = null;
+		try {
+			// jdbcTemplate.query(strQuery, new RowCallbackHandler() {
+			RowCallbackHandler ch = new RowCallbackHandler() {
 
-			@Override
-			public void processRow(ResultSet rs) throws SQLException {
-				String label = "";
-				int run = 0;
-				int fold = 0;
-				boolean train = true;
-				long instanceId = rs.getLong(1);
-				String className = rs.getString(2);
-				if (rs.getMetaData().getColumnCount() >= 3)
-					train = rs.getBoolean(3);
-				if (rs.getMetaData().getColumnCount() >= 4) {
-					label = rs.getString(4);
-					if (label == null)
-						label = "";
+				@Override
+				public void processRow(ResultSet rs) throws SQLException {
+					String label = "";
+					int run = 0;
+					int fold = 0;
+					boolean train = true;
+					long instanceId = rs.getLong(1);
+					String className = rs.getString(2);
+					if (rs.getMetaData().getColumnCount() >= 3)
+						train = rs.getBoolean(3);
+					if (rs.getMetaData().getColumnCount() >= 4) {
+						label = rs.getString(4);
+						if (label == null)
+							label = "";
+					}
+					if (rs.getMetaData().getColumnCount() >= 5)
+						fold = rs.getInt(5);
+					if (rs.getMetaData().getColumnCount() >= 6)
+						run = rs.getInt(6);
+					// get runs for label
+					SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> runToInstanceMap = instanceLabel
+							.getLabelToInstanceMap().get(label);
+					if (runToInstanceMap == null) {
+						runToInstanceMap = new TreeMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>();
+						instanceLabel.getLabelToInstanceMap().put(label,
+								runToInstanceMap);
+					}
+					// get folds for run
+					SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>> foldToInstanceMap = runToInstanceMap
+							.get(run);
+					if (foldToInstanceMap == null) {
+						foldToInstanceMap = new TreeMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>();
+						runToInstanceMap.put(run, foldToInstanceMap);
+					}
+					// get train/test set for fold
+					SortedMap<Boolean, SortedMap<Long, String>> ttToClassMap = foldToInstanceMap
+							.get(fold);
+					if (ttToClassMap == null) {
+						ttToClassMap = new TreeMap<Boolean, SortedMap<Long, String>>();
+						foldToInstanceMap.put(fold, ttToClassMap);
+					}
+					// get instances for train/test set
+					SortedMap<Long, String> instanceToClassMap = ttToClassMap
+							.get(train);
+					if (instanceToClassMap == null) {
+						instanceToClassMap = new TreeMap<Long, String>();
+						ttToClassMap.put(train, instanceToClassMap);
+					}
+					// set the instance class
+					instanceToClassMap.put(instanceId, className);
+					// add the class to the labelToClassMap
+					SortedSet<String> labelClasses = instanceLabel
+							.getLabelToClassMap().get(label);
+					if (labelClasses == null) {
+						labelClasses = new TreeSet<String>();
+						instanceLabel.getLabelToClassMap().put(label,
+								labelClasses);
+					}
+					if (!labelClasses.contains(className))
+						labelClasses.add(className);
 				}
-				if (rs.getMetaData().getColumnCount() >= 5)
-					fold = rs.getInt(5);
-				if (rs.getMetaData().getColumnCount() >= 6)
-					run = rs.getInt(6);
-				// get runs for label
-				SortedMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>> runToInstanceMap = instanceLabel
-						.getLabelToInstanceMap().get(label);
-				if (runToInstanceMap == null) {
-					runToInstanceMap = new TreeMap<Integer, SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>>();
-					instanceLabel.getLabelToInstanceMap().put(label,
-							runToInstanceMap);
+			};
+			conn = this.jdbcTemplate.getDataSource().getConnection();
+			s = conn.prepareStatement(strQuery,
+					java.sql.ResultSet.TYPE_FORWARD_ONLY,
+					java.sql.ResultSet.CONCUR_READ_ONLY);
+			if ("MySQL".equals(conn.getMetaData().getDatabaseProductName())) {
+				s.setFetchSize(Integer.MIN_VALUE);
+			} else if (s.getClass().getName()
+					.equals("com.microsoft.sqlserver.jdbc.SQLServerStatement")) {
+				try {
+					BeanUtils.setProperty(s, "responseBuffering", "adaptive");
+				} catch (IllegalAccessException e) {
+					log.warn("error setting responseBuffering", e);
+				} catch (InvocationTargetException e) {
+					log.warn("error setting responseBuffering", e);
 				}
-				// get folds for run
-				SortedMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>> foldToInstanceMap = runToInstanceMap
-						.get(run);
-				if (foldToInstanceMap == null) {
-					foldToInstanceMap = new TreeMap<Integer, SortedMap<Boolean, SortedMap<Long, String>>>();
-					runToInstanceMap.put(run, foldToInstanceMap);
-				}
-				// get train/test set for fold
-				SortedMap<Boolean, SortedMap<Long, String>> ttToClassMap = foldToInstanceMap
-						.get(fold);
-				if (ttToClassMap == null) {
-					ttToClassMap = new TreeMap<Boolean, SortedMap<Long, String>>();
-					foldToInstanceMap.put(fold, ttToClassMap);
-				}
-				// get instances for train/test set
-				SortedMap<Long, String> instanceToClassMap = ttToClassMap
-						.get(train);
-				if (instanceToClassMap == null) {
-					instanceToClassMap = new TreeMap<Long, String>();
-					ttToClassMap.put(train, instanceToClassMap);
-				}
-				// set the instance class
-				instanceToClassMap.put(instanceId, className);
-				// add the class to the labelToClassMap
-				SortedSet<String> labelClasses = instanceLabel
-						.getLabelToClassMap().get(label);
-				if (labelClasses == null) {
-					labelClasses = new TreeSet<String>();
-					instanceLabel.getLabelToClassMap().put(label, labelClasses);
-				}
-				if (!labelClasses.contains(className))
-					labelClasses.add(className);
 			}
-		});
+			rs = s.executeQuery();
+			while (rs.next()) {
+				ch.processRow(rs);
+			}
+		} catch (SQLException j) {
+			log.error("loadInstances failed", j);
+			throw new RuntimeException(j);
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+				}
+			}
+			if (s != null) {
+				try {
+					s.close();
+				} catch (SQLException e) {
+				}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+				}
+			}
+		}
 		return instanceLabel;
 	}
 
@@ -324,6 +375,7 @@ public class KernelUtilImpl implements KernelUtil {
 			}
 		}
 	}
+
 	/**
 	 * export the class id to class name map.
 	 * 

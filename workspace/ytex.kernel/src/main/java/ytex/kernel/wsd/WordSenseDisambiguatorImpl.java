@@ -7,11 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.TreeMultimap;
 
 import ytex.kernel.metric.ConceptPairSimilarity;
 import ytex.kernel.metric.ConceptSimilarityService;
 import ytex.kernel.metric.ConceptSimilarityService.SimilarityMetricEnum;
+import ytex.kernel.model.ConcRel;
 
 public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 	ConceptSimilarityService conceptSimilarityService;
@@ -30,7 +35,7 @@ public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 			Set<String> contextConcepts, int windowSize,
 			SimilarityMetricEnum metric, Map<String, Double> scoreMap) {
 		return disambiguate(sentenceConcepts, index, contextConcepts,
-				windowSize, metric, scoreMap, false);
+				windowSize, metric, scoreMap, true);
 	}
 
 	/*
@@ -88,7 +93,7 @@ public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 			}
 		}
 		// allocate map to hold scores
-		SortedMap<Double, String> scoreConceptMap = new TreeMap<Double, String>();
+		TreeMultimap<Double, String> scoreConceptMap = TreeMultimap.create();
 		for (String c : candidateConcepts) {
 			scoreConceptMap
 					.put(scoreConcept(c, windowContextConcepts, metric,
@@ -96,14 +101,37 @@ public class WordSenseDisambiguatorImpl implements WordSenseDisambiguator {
 		}
 		// if scoreMap is not null, fill it in with the concept scores - invert
 		// scoreConceptMap
+		boolean bNonZero = false;
 		if (scoreMap != null) {
 			for (Map.Entry<Double, String> scoreConcept : scoreConceptMap
-					.entrySet()) {
+					.entries()) {
 				scoreMap.put(scoreConcept.getValue(), scoreConcept.getKey());
 			}
 		}
+		SortedSet<String> bestConcepts = scoreConceptMap.get(scoreConceptMap
+				.keySet().last());
+		String bestConcept = null;
+		if (bestConcepts.size() == 1) {
+			// only 1 concept with high score
+			bestConcept = bestConcepts.iterator().next();
+		} else if (bestConcepts.size() == candidateConcepts.size()) {
+			// all concepts have same score
+			bestConcept = null;
+		} else {
+			// multiple best candidates - pick concept with lowest ic - most
+			// general concept
+			double ic = 1e6;
+			Map<String, ConcRel> conceptMap = this.getConceptSimilarityService().getConceptGraph().getConceptMap();
+			for(String c : bestConcepts) {
+				ConcRel cr = conceptMap.get(c);
+				if(cr != null && cr.getIntrinsicInfoContent() < ic) {
+					ic = cr.getIntrinsicInfoContent();
+					bestConcept = c;
+				}
+			}
+		}
 		// get the best scoring concept
-		return scoreConceptMap.get(scoreConceptMap.lastKey());
+		return bestConcept;
 	}
 
 	private void addConcepts(Map<String, Integer> windowContextConcepts,
