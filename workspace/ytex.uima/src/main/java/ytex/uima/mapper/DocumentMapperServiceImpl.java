@@ -187,8 +187,8 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 		stringTypes.addAll(Arrays.asList(Types.CHAR, Types.NCHAR,
 				Types.VARCHAR, Types.NVARCHAR));
 		numericTypes.addAll(Arrays.asList(Types.BIGINT, Types.BIT,
-				Types.BOOLEAN, Types.DECIMAL, Types.FLOAT, Types.DOUBLE,
-				Types.INTEGER));
+				Types.BOOLEAN, Types.TINYINT, Types.SMALLINT, Types.DECIMAL,
+				Types.FLOAT, Types.DOUBLE, Types.INTEGER));
 	}
 	private Set<AnnoMappingInfo> annoMappingInfos;
 	private int batchSize = 100;
@@ -1344,6 +1344,7 @@ public class DocumentMapperServiceImpl implements DocumentMapperService,
 					}
 					queryBuilder.append(DBUtil.formatFieldName(key));
 					queryBuilder.append("=? ");
+					bFirstArg = false;
 				}
 			} else {
 				// don't know what to do with this key attribute
