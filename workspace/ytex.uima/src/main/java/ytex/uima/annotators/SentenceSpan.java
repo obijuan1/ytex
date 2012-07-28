@@ -41,6 +41,9 @@ public class SentenceSpan {
 	// private static Pattern splitPattern;
 	private static final Logger log = Logger.getLogger(SentenceSpan.class
 			.getName());
+	private static final Pattern dotPattern = Pattern.compile("\\.");
+	private static final Pattern nonWhiteSpacePattern = Pattern.compile("\\S");
+	
 	// /**
 	// * load split pattern from ytex.properties
 	// */
@@ -279,10 +282,10 @@ public class SentenceSpan {
 	 * 
 	 * @return
 	 */
-	public List<SentenceSpan> splitAtPeriodAndTrim(Pattern periodPattern,
-			Pattern splitPattern) {
+	public List<SentenceSpan> splitAtPeriodAndTrim(Pattern acronymPattern,
+			Pattern periodPattern, Pattern splitPattern) {
 		ArrayList<SentenceSpan> subspans = new ArrayList<SentenceSpan>();
-		if (periodPattern == null) {
+		if (acronymPattern == null && periodPattern == null) {
 			// don't split at periods
 			subspans.add(this);
 		} else {
@@ -314,21 +317,59 @@ public class SentenceSpan {
 			// or return just one sentence if no end-of-line characters are
 			// within
 			// the trimmed string
-			String spans[] = periodPattern.split(trimmedText);
+			Matcher dotMatcher = dotPattern.matcher(trimmedText);
 			int position = trimmedStart;
-			Matcher matcher = periodPattern.matcher(trimmedText);
 			int currentStartPos = 0;
-			while (matcher.find()) {
-				// matcher.start() + 1 because we want to include the "."
-				String t = trimmedText.substring(currentStartPos,
-						matcher.start() + 1);
-				subspans.add(new SentenceSpan(position + currentStartPos,
-						position + currentStartPos + t.length() + 1, t));
-				// matcher.end() - 1 because we want to include the 1st letter
-				// of
-				// the sentence
-				currentStartPos += (matcher.end() - currentStartPos - 1);
+			while (dotMatcher.find()) {
+				// found a period within the span
+				// see if an acronym precedes it
+				boolean ok = true;
+				if (acronymPattern != null && dotMatcher.start() > 0) {
+					String precedingText = trimmedText.substring(
+							currentStartPos, dotMatcher.start());
+					ok = !acronymPattern.matcher(precedingText).find();
+				}
+				// acronym not preceding period
+				// make sure the subsequent text matches the specified
+				// pattern
+				if (ok && periodPattern != null
+						&& dotMatcher.end() < trimmedText.length()) {
+					String followingText = trimmedText.substring(dotMatcher
+							.end());
+					ok = periodPattern.matcher(followingText).find();
+				}
+				if (ok) {
+					// ok to split on this period
+					String t = trimmedText.substring(currentStartPos,
+							dotMatcher.end());
+					subspans.add(new SentenceSpan(position + currentStartPos,
+							position + currentStartPos + t.length(), t));
+					currentStartPos += t.length();
+					if(currentStartPos < trimmedText.length()) {
+						// skip ahead to next non-whitespace character
+						Matcher nwsMatcher = nonWhiteSpacePattern.matcher(trimmedText.substring(currentStartPos));
+						if(nwsMatcher.find()) {
+							currentStartPos+= nwsMatcher.start();
+						}
+					}
+				}
 			}
+
+			// String spans[] = periodPattern.split(trimmedText);
+			// int position = trimmedStart;
+			// Matcher matcher = periodPattern.matcher(trimmedText);
+			// int currentStartPos = 0;
+			// while (matcher.find()) {
+			// // matcher.start() + 1 because we want to include the "."
+			// String t = trimmedText.substring(currentStartPos,
+			// matcher.start() + 1);
+			// subspans.add(new SentenceSpan(position + currentStartPos,
+			// position + currentStartPos + t.length() + 1, t));
+			// // matcher.end() - 1 because we want to include the 1st letter
+			// // of
+			// // the sentence
+			// currentStartPos += (matcher.end() - currentStartPos - 1);
+			// }
 			if (currentStartPos < trimmedText.length()) {
 				String t = trimmedText.substring(currentStartPos);
 				subspans.add(new SentenceSpan(position + currentStartPos,

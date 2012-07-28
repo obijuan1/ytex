@@ -26,17 +26,13 @@ package ytex.uima.annotators;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import opennlp.maxent.GISModel;
-import opennlp.maxent.io.SuffixSensitiveGISModelWriter;
 import opennlp.tools.sentdetect.DefaultSDContextGenerator;
-import opennlp.tools.sentdetect.SentenceDetectorME;
 
 import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
@@ -54,7 +50,6 @@ import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.mayo.bmi.uima.core.resource.MaxentModelResource;
 import edu.mayo.bmi.uima.core.sentence.EndOfSentenceScannerImpl;
 import edu.mayo.bmi.uima.core.sentence.SentenceDetectorCtakes;
-//vng change import edu.mayo.bmi.uima.core.sentence.SentenceSpan;
 import edu.mayo.bmi.uima.core.type.textspan.Segment;
 import edu.mayo.bmi.uima.core.type.textspan.Sentence;
 import edu.mayo.bmi.uima.core.util.ParamUtil;
@@ -73,7 +68,10 @@ import edu.mayo.bmi.uima.core.util.ParamUtil;
  * Parameters (optional):
  * <ul>
  * <li>paragraphPattern: regex to split paragraphs. default PARAGRAPH_PATTERN
- * <li>periodPattern: regex to split at periods. default PERIOD_PATTERN
+ * <li>acronymPattern: default ACRONYM_PATTERN. If the text preceding period
+ * matches this pattern, we do not split at the period
+ * <li>periodPattern: default PERIOD_PATTERN. If the text following period
+ * matches this pattern, we split it.
  * <li>splitPattern: regex to split at semi-structured fields. default
  * SPLIT_PATTERN
  * </ul>
@@ -101,9 +99,14 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 	 */
 	public static final String PARAGRAPH_PATTERN = "(?m):\\r{0,1}\\n|\\r{0,1}\\n\\r{0,1}\\n";
 	/**
-	 * vng change split sentences on this pattern, after the '.'
+	 * vng change split sentences periods that do not have this acronym
+	 * preceding it
 	 */
-	public static final String PERIOD_PATTERN = "(?m)[^Dr|Ms|Mr|Mrs|Ms|\\p{Upper}]\\.\\s+\\p{Upper}";
+	public static final String ACRONYM_PATTERN = "(?m)Dr\\z|Ms\\z|Mr\\z|Mrs\\z|Ms\\z|\\p{Upper}\\z";
+	/**
+	 * vng change split sentences periods after which this pattern is seen
+	 */
+	public static final String PERIOD_PATTERN = "(?m)\\A\\s+\\p{Upper}|\\A\\s+\\d\\.";
 	/**
 	 * vng change split sentences on these patterns
 	 */
@@ -120,6 +123,10 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 	 * vng change
 	 */
 	private Pattern periodPattern;
+	/**
+	 * vng change
+	 */
+	private Pattern acronymPattern;
 
 	private UimaContext context;
 
@@ -175,6 +182,7 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 				PARAGRAPH_PATTERN);
 		splitPattern = compilePatternCheck("splitPattern", SPLIT_PATTERN);
 		periodPattern = compilePatternCheck("periodPattern", PERIOD_PATTERN);
+		acronymPattern = compilePatternCheck("acronymPattern", ACRONYM_PATTERN);
 		// vng change end
 	}
 
@@ -254,15 +262,14 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 			Matcher m = paragraphPattern.matcher(text);
 			while (m.find()) {
 				if (m.end() > b && m.end() < e) {
-					sentenceCount = annotateRange(jcas, text, lastEnd,
-							m.end(), sentenceCount);
+					sentenceCount = annotateRange(jcas, text, lastEnd, m.end(),
+							sentenceCount);
 					lastEnd = m.end();
 				} else if (m.end() >= e) {
 					break;
 				}
 			}
-			sentenceCount = annotateRange(jcas, text, lastEnd, e,
-					sentenceCount);
+			sentenceCount = annotateRange(jcas, text, lastEnd, e, sentenceCount);
 			return sentenceCount;
 		}
 	}
@@ -358,8 +365,8 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 				sentenceSpans1.size());
 		for (SentenceSpan span : sentenceSpans1) {
 			if (span != null) {
-				sentenceSpans.addAll(span.splitAtPeriodAndTrim(periodPattern,
-						splitPattern));
+				sentenceSpans.addAll(span.splitAtPeriodAndTrim(acronymPattern,
+						periodPattern, splitPattern));
 			}
 		}
 		// vng change end
@@ -430,16 +437,17 @@ public class SentenceDetector extends JCasAnnotator_ImplBase {
 
 		logger.info("Training new model from " + inFile.getAbsolutePath());
 		logger.info("Using " + numEosc + " end of sentence characters.");
-		
-		logger.error("----------------------------------------------------------------------------------"); 
-		logger.error("Need to update yet for OpenNLP changes "); // TODO 
-		logger.error("Commented out code that no longer compiles due to OpenNLP API incompatible changes"); // TODO 
-		logger.error("----------------------------------------------------------------------------------"); 
-		//GISModel mod = SentenceDetectorME.train(inFile, iters, cut, scanner);
-		//SuffixSensitiveGISModelWriter ssgmw = new SuffixSensitiveGISModelWriter(
-		//		mod, outFile);
-		//logger.info("Saving the model as: " + outFile.getAbsolutePath());
-		//ssgmw.persist();
+
+		logger.error("----------------------------------------------------------------------------------");
+		logger.error("Need to update yet for OpenNLP changes "); // TODO
+		logger.error("Commented out code that no longer compiles due to OpenNLP API incompatible changes"); // TODO
+		logger.error("----------------------------------------------------------------------------------");
+		// GISModel mod = SentenceDetectorME.train(inFile, iters, cut, scanner);
+		// SuffixSensitiveGISModelWriter ssgmw = new
+		// SuffixSensitiveGISModelWriter(
+		// mod, outFile);
+		// logger.info("Saving the model as: " + outFile.getAbsolutePath());
+		// ssgmw.persist();
 	}
 
 	public static void usage(Logger log) {
