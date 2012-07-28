@@ -11,12 +11,16 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.FSIterator;
+import org.apache.uima.cas.Type;
 import org.apache.uima.cas.text.AnnotationIndex;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import com.google.common.base.Strings;
+
+import edu.mayo.bmi.uima.core.type.textsem.EntityMention;
 import edu.mayo.bmi.uima.core.type.textsem.IdentifiedAnnotation;
 import edu.mayo.bmi.uima.core.type.textspan.Segment;
 
@@ -63,6 +67,7 @@ public class NamedEntityRegexAnnotator extends JCasAnnotator_ImplBase {
 			Pattern pat = Pattern.compile(regex.getRegex());
 			regexMap.put(regex, pat);
 		}
+		String configTarget = (String)aContext.getConfigParameterValue("targetAnnotationClass");
 	}
 
 	@Override
@@ -114,7 +119,7 @@ public class NamedEntityRegexAnnotator extends JCasAnnotator_ImplBase {
 		int nOffset = anno != null ? anno.getBegin() : 0;
 		Matcher matcher = pattern.matcher(annoText);
 		while (matcher.find()) {
-			IdentifiedAnnotation ne = new IdentifiedAnnotation(aJCas);
+			EntityMention ne = new EntityMention(aJCas);
 			ne.setBegin(nOffset + matcher.start());
 			ne.setEnd(nOffset + matcher.end());
 			FSArray ocArr = new FSArray(aJCas, 1);
