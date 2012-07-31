@@ -304,7 +304,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 
 					@Override
 					public void processRow(ResultSet rs) throws SQLException {
-						int instanceId = rs.getInt(1);
+						long instanceId = rs.getLong(1);
 						String word = rs.getString(2);
 						String wordValue = rs.getString(3);
 						addNominalWordToInstance(sparseData, instanceId, word,
@@ -349,7 +349,7 @@ public class SparseDataExporterImpl implements SparseDataExporter {
 							@Override
 							public void processRow(ResultSet rs)
 									throws SQLException {
-								int instanceId = rs.getInt(1);
+								long instanceId = rs.getLong(1);
 								String word = rs.getString(2);
 								double wordValue = rs.getDouble(3);
 								addNumericWordToInstance(sparseData,
