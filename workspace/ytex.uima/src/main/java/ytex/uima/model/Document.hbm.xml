@@ -6,6 +6,7 @@
 			<generator class="org.hibernate.id.enhanced.TableGenerator">
 				<!-- <generator class="native"> -->
 				<param name="sequence">document_id_sequence</param>
+				<param name="increment_size">100</param>
 			</generator>
 		</id>
 		<property name="docText" column="doc_text" type="text" />
@@ -38,7 +39,9 @@
 	<class name="DocumentAnnotation" table="anno_base">
 		<id name="documentAnnotationID" column="anno_base_id">
 			<generator class="org.hibernate.id.enhanced.TableGenerator">
+				<param name="table_name">anno_base_sequence</param>
 				<param name="segment_value">anno_base_id_sequence</param>
+				<param name="increment_size">1000</param>
 			</generator>
 			<!-- <generator class="native"> <param name="sequence">anno_base_id_sequence</param> 
 				</generator> -->
