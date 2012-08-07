@@ -165,7 +165,13 @@ public abstract class BaseSparseDataFormatter implements SparseDataFormatter {
 			wData.write(Integer.toString(instanceValue.getKey()));
 			wData.write("\t");
 			// value = value
-			wData.write(Double.toString(instanceValue.getValue()));
+			// TODO fix me!
+			// instance id formatted as double
+			if (instanceValue.getKey() == 1) {
+				wData.write(Long.toString(instanceValue.getValue().longValue()));
+			} else {
+				wData.write(Double.toString(instanceValue.getValue()));
+			}
 			wData.write("\n");
 		}
 	}
