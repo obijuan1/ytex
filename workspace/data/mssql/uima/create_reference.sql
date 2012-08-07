@@ -2,6 +2,14 @@ create table $(db_schema).hibernate_sequences (
 	sequence_name varchar(100) not null primary key,
 	next_val int not null default 1
 );
+insert into $(db_schema).hibernate_sequences(sequence_name, next_val) values ('document_id_sequence', 1);
+
+create table $(db_schema).anno_base_sequence (
+	sequence_name varchar(100) not null primary key,
+	next_val int not null default 1
+);
+insert into $(db_schema).anno_base_sequence(sequence_name, next_val) values ('anno_base_id_sequence', 1);
+
 
 create table $(db_schema).ref_named_entity_regex (
 	named_entity_regex_id int IDENTITY(1,1) NOT NULL,

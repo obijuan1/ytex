@@ -423,7 +423,6 @@ ${sql.delimiter}
 		<antcall target="uima.ref.load" />
 		<antcall target="uima.examples.load" />
 		<antcall target="uima.stopword.load" />
-		<antcall target="uima.sequences.load" />
 	</target>
 	<target name="uima.create.trigger" if="orcl" description="create insert triggers for oracle">
 		<for list="create_reference_trg.sql,create_document_trg.sql" param="sqlcmd.script">
@@ -446,12 +445,6 @@ ${sql.delimiter}
 		<antcall target="jdl">
 			<param name="jdl.data" value="stopword.txt" />
 			<param name="jdl.format" value="stopword.xml" />
-		</antcall>
-	</target>
-	<target name="uima.sequences.load" depends="init,init.conn">
-		<antcall target="jdl">
-			<param name="jdl.data" value="hibernate_sequences.txt" />
-			<param name="jdl.format" value="hibernate_sequences.xml" />
 		</antcall>
 	</target>
 	<target name="uima.examples.load" depends="init,init.conn">
