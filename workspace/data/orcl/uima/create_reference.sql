@@ -7,6 +7,15 @@ create table hibernate_sequences (
 	next_val int default 1 not null,
 	primary key (sequence_name)
 );
+insert into hibernate_sequences(sequence_name, next_val) values ('document_id_sequence', 1);
+
+create table anno_base_sequence (
+	sequence_name varchar(100) not null,
+	next_val int not null default 1,
+	primary key (sequence_name)
+);
+insert into anno_base_sequence(sequence_name, next_val) values ('anno_base_id_sequence', 1);
+
 
 create table ref_named_entity_regex (
 	named_entity_regex_id int NOT NULL,

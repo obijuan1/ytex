@@ -12,3 +12,4 @@ drop table ref_named_entity_regex;
 drop table ref_segment_regex;
 drop table ref_stopword;
 drop table hibernate_sequences;
+drop table anno_base_sequence;
