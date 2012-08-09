@@ -5,7 +5,7 @@
 	</condition>
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<property name="dist.home" value="../dist" />
-	<property name="ytex.version" value="0.8" />
+	<property name="ytex.version" value="0.9" />
 	<property name="ytex.dist.home" value="${dist.home}/ytex-${ytex.version}" />
 	<property name="ytex.lib.home" value="../ytex.web/WebContent/WEB-INF/lib" />
 	<property name="nlp.home" value="c:/java" />
