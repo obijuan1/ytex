@@ -63,7 +63,7 @@ if [ -f ${MM_HOME}/src/uima/lib/metamap-api-uima.jar ]; then
 fi
 
 # YTEX classpath
-CLASSPATH=${YTEX_LIB_SYS_HOME}/ctakes-patches.jar:${YTEX_LIB_SYS_HOME}/ytex.jar:${MM_CLASSPATH}
+CLASSPATH=${YTEX_LIB_SYS_HOME}/ctakes-patches.jar:${YTEX_LIB_SYS_HOME}/ytex.jar:${CTAKES_HOME}/cTAKES.jar:${MM_CLASSPATH}
 export CLASSPATH
 
 JAVA_OPTS="-Xmx500m -Djava.util.logging.config.file=${YTEX_HOME}/config/desc/Logger.properties -Dlog4j.configuration=log4j.properties"
