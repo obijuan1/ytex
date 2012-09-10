@@ -2,7 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 	<entry key="ytex.freqQuery"><![CDATA[
-select c.cui, freq
+select c.conceptUMLSUI, freq
 from
 (
 	select code, sum(freq) freq
@@ -10,7 +10,7 @@ from
 	where code is not null
 	group by code
 ) f
-inner join mesh_concept c on c.code = f.code
+inner join mesh_concept c on c.descriptorUI = f.code
 	]]></entry>
 	<entry key="ytex.corpusName">mbr.nlm.nih.gov.all</entry>
 	<entry key="ytex.conceptGraphName">msh-umls</entry>
