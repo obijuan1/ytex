@@ -9,4 +9,5 @@
 	and rel in ('PAR', 'CHD')
 	order by cui1, cui2
 	]]></entry>
+	<entry key="ytex.checkCycle">false</entry>
 </properties>
