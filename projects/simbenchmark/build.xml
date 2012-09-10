@@ -94,7 +94,7 @@
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
-			<jvmarg value="-Dytex.ic.debug=${ytex.ic.debug}"/>
+			<jvmarg value="-Dytex.ic.debug=${ytex.ic.debug}" />
 			<jvmarg value="-Xms${maxMemory}" />
 			<jvmarg value="-Xmx${maxMemory}" />
 			<arg value="-prop" />
@@ -156,6 +156,13 @@
 		</antcall>
 	</target>
 	<target name="msh.eval.all">
+		<!-- msh-umls-all: evaluate msh-umls with frequencies duplicated for each descriptor -->
+		<antcall target="msh-umls.eval.sim">
+			<param name="ytex.corpusName" value="mbr.nlm.nih.gov.all" />
+		</antcall>
+		<mkdir dir="msh-umls-all" />
+		<copy todir="msh-umls-all" includes="msh-umls/*.txt" overwrite="yes" />
+		<!-- msh-umls: evaluate msh-umls with frequencies for each descriptor's preferred concept -->
 		<antcall target="msh-umls.eval.sim" />
 		<antcall target="msh.eval.sim" />
 	</target>
@@ -163,6 +170,7 @@
 		<echo>msh-umls.eval.sim</echo>
 		<property name="eval.metrics" value="LIN,LCH,INTRINSIC_LCH,INTRINSIC_LIN,PATH,INTRINSIC_PATH,WUPALMER" />
 		<property name="cg.suffix" value="" />
+		<property name="ytex.corpusName" value="mbr.nlm.nih.gov" />
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_mesh_umls_id.txt" />
 			<param name="cg.name" value="msh-umls${cg.suffix}" />
@@ -175,7 +183,7 @@
 				<antcall target="eval.sim">
 					<param name="eval.concepts" value="@{eval.concepts}" />
 					<param name="cg.name" value="msh-umls${cg.suffix}" />
-					<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
+					<param name="ytex.corpusName" value="${ytex.corpusName}" />
 					<param name="eval.metrics" value="${eval.metrics}" />
 				</antcall>
 			</sequential>
@@ -287,6 +295,13 @@
 		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
 			<arg value="-prop" />
 			<arg value="msh-umls-ic.properties.xml" />
+			<jvmarg value="-Xmx1g" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+			<arg value="-prop" />
+			<arg value="msh-umls-ic-all.properties.xml" />
 			<jvmarg value="-Xmx1g" />
 			<jvmarg value="${log4j.arg}" />
 			<jvmarg value="${java.log.arg}" />
