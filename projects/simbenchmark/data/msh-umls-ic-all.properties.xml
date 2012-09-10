@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.freqQuery"><![CDATA[
+select c.cui, freq
+from
+(
+	select code, sum(freq) freq
+	from mesh_freq
+	where code is not null
+	group by code
+) f
+inner join mesh_concept c on c.code = f.code
+	]]></entry>
+	<entry key="ytex.corpusName">mbr.nlm.nih.gov.all</entry>
+	<entry key="ytex.conceptGraphName">msh-umls</entry>
+</properties>
