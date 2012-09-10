@@ -8,6 +8,7 @@ CREATE TABLE `mesh_concept` (
 	conceptUI CHAR(8) NOT NULL,
 	conceptUMLSUI CHAR(8) NULL,
 	conceptString varchar(300) NOT NULL,
+	preferredConcept bit not null default 0,
 	PRIMARY KEY (`descriptorUI`,`conceptUI`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 

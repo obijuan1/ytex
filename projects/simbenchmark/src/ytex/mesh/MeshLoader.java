@@ -27,11 +27,11 @@ public class MeshLoader {
 	}
 
 	protected void insertConcept(String descriptorUI, String conceptUI,
-			String conceptUMLSUI, String conceptString) {
+			String conceptUMLSUI, String conceptString, boolean preferredConcept) {
 		try {
 		jdbcTemplate
-				.update("insert into mesh_concept (	descriptorUI, conceptUI, conceptUMLSUI, conceptString) values (?, ?,?,?)",
-						descriptorUI, conceptUI, conceptUMLSUI, conceptString);
+				.update("insert into mesh_concept (	descriptorUI, conceptUI, conceptUMLSUI, conceptString, preferredConcept) values (?, ?,?,?,?)",
+						descriptorUI, conceptUI, conceptUMLSUI, conceptString, preferredConcept);
 		} catch(Exception e) {
 			System.out.println("error adding mesh_concept: descriptorUI=" + descriptorUI + ", conceptString=" + conceptString);
 			throw new RuntimeException(e);
@@ -223,6 +223,7 @@ public class MeshLoader {
 		String cdata;
 		boolean bInConceptName = false;
 		boolean bFindFirstDescriptorUI = false;
+		boolean bPreferred = false;
 
 		public void startElement(String namespace, String localName,
 				String qName, Attributes atts) {
@@ -238,6 +239,7 @@ public class MeshLoader {
 				cdata = null;
 				bInConceptName = false;
 				bFindFirstDescriptorUI = false;
+				bPreferred = "Y".equals(atts.getValue("PreferredConceptYN"));
 			} else if ((qName.equals("DescriptorUI") || qName
 					.equals("SupplementalRecordUI")) && bFindFirstDescriptorUI) {
 				cdata = new String();
@@ -263,7 +265,7 @@ public class MeshLoader {
 					|| qName.equals("SupplementalRecord")) {
 			} else if (qName.equals("Concept")) {
 				insertConcept(descriptorUI, conceptUI, conceptUMLSUI,
-						conceptString);
+						conceptString, bPreferred);
 			} else if ((qName.equals("DescriptorUI") || qName
 					.equals("SupplementalRecordUI")) && bFindFirstDescriptorUI) {
 				descriptorUI = cdata;
@@ -295,15 +297,15 @@ public class MeshLoader {
 		SAXParser sp = spf.newSAXParser();
 		// parse desc2012.xml
 		ParserAdapter pa = new ParserAdapter(sp.getParser());
-		pa.setContentHandler(new ConceptAnnoHandler());
-		pa.parse(descXML);
-		pa = new ParserAdapter(sp.getParser());
-		pa.setContentHandler(new TreeNumberAnnoHandler());
-		pa.parse(descXML);
-		pa = new ParserAdapter(sp.getParser());
-		pa.setContentHandler(new PharmActionAnnoHandler());
-		pa.parse(descXML);	
-		// parse supp2012.xml
+//		pa.setContentHandler(new ConceptAnnoHandler());
+//		pa.parse(descXML);
+//		pa = new ParserAdapter(sp.getParser());
+//		pa.setContentHandler(new TreeNumberAnnoHandler());
+//		pa.parse(descXML);
+//		pa = new ParserAdapter(sp.getParser());
+//		pa.setContentHandler(new PharmActionAnnoHandler());
+//		pa.parse(descXML);	
+//		// parse supp2012.xml
 		pa.setContentHandler(new ConceptAnnoHandler());
 		pa.parse(suppXML);
 		pa = new ParserAdapter(sp.getParser());
