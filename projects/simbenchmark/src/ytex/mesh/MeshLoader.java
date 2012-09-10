@@ -297,15 +297,15 @@ public class MeshLoader {
 		SAXParser sp = spf.newSAXParser();
 		// parse desc2012.xml
 		ParserAdapter pa = new ParserAdapter(sp.getParser());
-//		pa.setContentHandler(new ConceptAnnoHandler());
-//		pa.parse(descXML);
-//		pa = new ParserAdapter(sp.getParser());
-//		pa.setContentHandler(new TreeNumberAnnoHandler());
-//		pa.parse(descXML);
-//		pa = new ParserAdapter(sp.getParser());
-//		pa.setContentHandler(new PharmActionAnnoHandler());
-//		pa.parse(descXML);	
-//		// parse supp2012.xml
+		pa.setContentHandler(new ConceptAnnoHandler());
+		pa.parse(descXML);
+		pa = new ParserAdapter(sp.getParser());
+		pa.setContentHandler(new TreeNumberAnnoHandler());
+		pa.parse(descXML);
+		pa = new ParserAdapter(sp.getParser());
+		pa.setContentHandler(new PharmActionAnnoHandler());
+		pa.parse(descXML);	
+		// parse supp2012.xml
 		pa.setContentHandler(new ConceptAnnoHandler());
 		pa.parse(suppXML);
 		pa = new ParserAdapter(sp.getParser());
