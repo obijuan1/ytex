@@ -1,7 +1,10 @@
 <!--
 -->
 <project name="simbenchmark">
-	<property name="ytex.home" value="../.." />
+	<property environment="env" />
+	<condition property="ytex.home" value="${env.YTEX_HOME}" else="..">
+		<isset property="env.YTEX_HOME" />
+	</condition>
 	<include file="${ytex.home}/libs.system/build-classpath.xml" />
 	<import file="${ytex.home}/data/build.xml" />
 	<!--
@@ -18,6 +21,7 @@
 	<property name="maxMemory" value="1500m" />
 	<property name="parallel.folds" value="no" />
 	<property name="kernel.threads" value="1" />
+	<property name="ytex.ic.debug" value="false" />
 
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
 	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier" description="load mesh into db" />
@@ -90,6 +94,7 @@
 			<syspropertyset>
 				<propertyset refid="ytex.jvm.props" />
 			</syspropertyset>
+			<jvmarg value="-Dytex.ic.debug=${ytex.ic.debug}"/>
 			<jvmarg value="-Xms${maxMemory}" />
 			<jvmarg value="-Xmx${maxMemory}" />
 			<arg value="-prop" />
