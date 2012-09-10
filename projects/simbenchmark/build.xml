@@ -160,8 +160,12 @@
 		<antcall target="msh-umls.eval.sim">
 			<param name="ytex.corpusName" value="mbr.nlm.nih.gov.all" />
 		</antcall>
-		<mkdir dir="msh-umls-all" />
-		<copy todir="msh-umls-all" includes="msh-umls/*.txt" overwrite="yes" />
+		<mkdir dir="data/msh-umls-all" />
+		<copy todir="data/msh-umls-all" overwrite="yes">
+			<fileset dir="data/msh-umls">
+				<include name="*.txt" />
+			</fileset>
+		</copy>
 		<!-- msh-umls: evaluate msh-umls with frequencies for each descriptor's preferred concept -->
 		<antcall target="msh-umls.eval.sim" />
 		<antcall target="msh.eval.sim" />
