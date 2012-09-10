@@ -157,18 +157,20 @@
 		</antcall>
 	</target>
 	<target name="msh.eval.all">
-		<!-- msh-umls-all: evaluate msh-umls with frequencies duplicated for each descriptor -->
+		<!-- msh-umls-pref: evaluate msh-umls with frequencies for each descriptor's preferred concept -->
 		<antcall target="msh-umls.eval.sim">
-			<param name="sim.corpusName" value="mbr.nlm.nih.gov.all" />
+			<param name="sim.corpusName" value="mbr.nlm.nih.gov" />
 		</antcall>
-		<mkdir dir="data/msh-umls-all" />
-		<copy todir="data/msh-umls-all" overwrite="yes">
+		<mkdir dir="data/msh-umls-pref" />
+		<copy todir="data/msh-umls-pref" overwrite="yes">
 			<fileset dir="data/msh-umls">
 				<include name="*.txt" />
 			</fileset>
 		</copy>
-		<!-- msh-umls: evaluate msh-umls with frequencies for each descriptor's preferred concept -->
-		<antcall target="msh-umls.eval.sim" />
+		<!-- msh-umls: evaluate msh-umls with frequencies duplicated for each concept for a descriptor -->
+		<antcall target="msh-umls.eval.sim">
+			<param name="sim.corpusName" value="mbr.nlm.nih.gov.all" />
+		</antcall>
 		<antcall target="msh.eval.sim" />
 	</target>
 	<target name="msh-umls.eval.sim" description="evaluate mesh benchmark">
