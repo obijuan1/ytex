@@ -26,7 +26,7 @@
 	<target name="all" depends="build,mesh.all,cg.all,eval.all" description="do it all: setup and evaluate benchmark" />
 	<target name="mesh.all" depends="mesh.create,mesh.load,mesh.hier" description="load mesh into db" />
 	<target name="cg.all" depends="cg.generateDesc,cg.setup.all,mesh.freq" description="setup concept graphs" />
-	<target name="eval.all" depends="msh.eval.sim,msh-umls.eval.sim,sct.eval.sim,umls.eval.sim,spearman.eval" description="evaluate semantic similarity measures for all benchmarks" />
+	<target name="eval.all" depends="msh.eval.all,sct.eval.sim,umls.eval.sim,spearman.eval" description="evaluate semantic similarity measures for all benchmarks" />
 	<target name="ppr.all" depends="ppr.cg.setup.all,ppr.eval.all" description="evaluate ppr for all concept graphs and benchmarks" />
 	<target name="ppr.eval.all">
 		<antcall target="eval.all">
@@ -154,6 +154,10 @@
 			<param name="eval.concepts" value="MiniMayoSRS_snomed_id.txt" />
 			<param name="cg.name" value="sct${cg.suffix}" />
 		</antcall>
+	</target>
+	<target name="msh.eval.all">
+		<antcall target="msh-umls.eval.sim" />
+		<antcall target="msh.eval.sim" />
 	</target>
 	<target name="msh-umls.eval.sim" description="evaluate mesh benchmark">
 		<echo>msh-umls.eval.sim</echo>
