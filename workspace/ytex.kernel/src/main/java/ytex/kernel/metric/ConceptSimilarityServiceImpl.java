@@ -780,11 +780,15 @@ public class ConceptSimilarityServiceImpl implements ConceptSimilarityService {
 		// }
 		// }
 		// fill corpusIC
-		log.info("loading corpus infocontent for concept graph: "
-				+ conceptGraphName);
+		log.info("loading corpus infocontent for corpusName=" + corpusName
+					+ ", conceptGraphName=" + conceptGraphName
+					+ ", conceptSetName=" + conceptSetName);
 		Map<String, Double> corpusICMap = classifierEvaluationDao
 				.getInfoContent(corpusName, conceptGraphName,
 						this.conceptSetName);
+		if (corpusICMap == null || corpusICMap.isEmpty()) {
+			log.warn("IC not found");
+		}
 		ImmutableMap.Builder<String, Double> mb = new ImmutableMap.Builder<String, Double>();
 		for (Map.Entry<String, Double> corpusICEntry : corpusICMap.entrySet()) {
 			ConcRel cr = cg.getConceptMap().get(corpusICEntry.getKey());
