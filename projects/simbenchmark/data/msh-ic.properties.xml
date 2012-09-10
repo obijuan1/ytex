@@ -2,9 +2,10 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 	<entry key="ytex.freqQuery"><![CDATA[
-select code, freq
+select code, sum(freq)
 from mesh_freq
 where code is not null
+group by code
 	]]></entry>
 	<entry key="ytex.corpusName">mbr.nlm.nih.gov</entry>
 	<entry key="ytex.conceptGraphName">msh</entry>

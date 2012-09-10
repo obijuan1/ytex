@@ -1,11 +1,13 @@
 create index ix_term on mesh_freq(term);
 
-drop table if exists tmp_msh;
-create temporary table tmp_msh as select cui, code, cast(str as char(300)) str from @umls.schema@.MRCONSO where sab = 'MSH';
-create index ix_str on tmp_msh(str);
+update mesh_freq set code = null where length(code) = 3;
 
-update mesh_freq f 
-inner join tmp_msh m on f.term = m.str 
-set f.cui = m.cui,
-f.code = m.code
+update mesh_freq f inner join mesh_concept c on c.conceptString = f.term and f.code is null
+set f.code = c.descriptorUI
 ;
+
+update mesh_freq f inner join @umls.schema@.MRCONSO c on f.code = c.code and c.sab = 'msh'
+set f.cui = c.cui
+;
+
+

@@ -5,5 +5,6 @@
 		<column name="freq" />
 		<column name="freq_star" skip="true"/>
 		<column name="term" />
+		<column name="code" />
 	</csv>
 </load>

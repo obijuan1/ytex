@@ -7,5 +7,6 @@
 		<column name="freq2" skip="true"/>
 		<column name="freq_star2" skip="true"/>
 		<column name="term" />
+		<column name="code" />
 	</csv>
 </load>
