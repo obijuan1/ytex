@@ -318,5 +318,12 @@
 		<antcall target="cg.setup">
 			<param name="cg.name" value="sct-umls-ppr-hier" />
 		</antcall>
+		<antcall target="eval.sim">
+			<param name="eval.concepts" value="MiniMayoSRS_snomed_id.txt" />
+			<param name="cg.name" value="sct-ppr-hier" />
+		</antcall>
+		<antcall target="umls.eval.sim.cg">
+			<param name="cg.name" value="sct-umls-ppr-hier" />
+		</antcall>
 	</target>
 </project>
