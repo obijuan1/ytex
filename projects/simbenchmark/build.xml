@@ -135,7 +135,7 @@
 			</syspropertyset>
 			<jvmarg value="-Xmx${ytex.mx}" />
 			<jvmarg value="-Dytex.conceptGraphName=${cg.name}" />
-			<jvmarg value="-Dytex.corpusName=${ytex.corpusName}" />
+			<jvmarg value="-Dytex.corpusName=${sim.corpusName}" />
 			<!--
 			<jvmarg value="-Dytex.conceptPreload=${ytex.conceptPreload}" />
 			-->
@@ -178,7 +178,7 @@
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_mesh_umls_id.txt" />
 			<param name="cg.name" value="msh-umls${cg.suffix}" />
-			<param name="ytex.corpusName" value="${ytex.corpusName}" />
+			<param name="sim.corpusName" value="${sim.corpusName}" />
 			<param name="eval.metrics" value="${eval.metrics}" />
 		</antcall>
 		<property name="input.files" value="UMNSRS_similarity_id.txt,UMNSRS_relatedness_id.txt,MayoSRS_id.txt" />
@@ -187,7 +187,7 @@
 				<antcall target="eval.sim">
 					<param name="eval.concepts" value="@{eval.concepts}" />
 					<param name="cg.name" value="msh-umls${cg.suffix}" />
-					<param name="ytex.corpusName" value="${ytex.corpusName}" />
+					<param name="sim.corpusName" value="${sim.corpusName}" />
 					<param name="eval.metrics" value="${eval.metrics}" />
 				</antcall>
 			</sequential>
@@ -200,7 +200,7 @@
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_mesh_id.txt" />
 			<param name="cg.name" value="msh${cg.suffix}" />
-			<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
+			<param name="sim.corpusName" value="mbr.nlm.nih.gov" />
 			<param name="eval.metrics" value="${eval.metrics}" />
 		</antcall>
 		<property name="input.files" value="UMNSRS_similarity_mesh_id.txt,UMNSRS_relatedness_mesh_id.txt,MayoSRS_mesh_id.txt" />
@@ -209,7 +209,7 @@
 				<antcall target="eval.sim">
 					<param name="eval.concepts" value="@{eval.concepts}" />
 					<param name="cg.name" value="msh${cg.suffix}" />
-					<param name="ytex.corpusName" value="mbr.nlm.nih.gov" />
+					<param name="sim.corpusName" value="mbr.nlm.nih.gov" />
 					<param name="eval.metrics" value="${eval.metrics}" />
 				</antcall>
 			</sequential>
