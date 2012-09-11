@@ -15,8 +15,8 @@
 	<property name="mesh.desc" value="${mesh.home}/desc2012.xml" />
 	<property name="mesh.supp" value="${mesh.home}/supp2012.xml" />
 	<property name="ytex.mx" value="1500m" />
-	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh,umls" />
-	<property name="cg.list" value="sct,msh,${cg.umls.list}" />
+	<property name="cg.umls.list" value="sct-umls,sct-msh,umls" />
+	<property name="cg.list" value="sct,msh,msh-umls,${cg.umls.list}" />
 	<property name="ytex.conceptPreload" value="false" />
 	<property name="maxMemory" value="1500m" />
 	<property name="parallel.folds" value="no" />
@@ -31,6 +31,10 @@
 	<target name="ppr.eval.all">
 		<antcall target="eval.all">
 			<param name="cg.suffix" value="-ppr" />
+			<param name="eval.metrics" value="PAGERANK" />
+		</antcall>
+		<antcall target="msh-umls.eval.sim">
+			<param name="cg.suffix" value="-ppr-hier" />
 			<param name="eval.metrics" value="PAGERANK" />
 		</antcall>
 		<antcall target="sct.eval.sim">
@@ -84,7 +88,7 @@
 		<!-- no msh-ppr-hier -->
 		<antcall target="cg.setup.all">
 			<param name="cg.suffix" value="-ppr-hier" />
-			<param name="cg.list" value="sct,${cg.umls.list}" />
+			<param name="cg.list" value="sct,msh-umls,${cg.umls.list}" />
 		</antcall>
 	</target>
 	<target name="cg.setup.all" description="generate all concept graphs">
