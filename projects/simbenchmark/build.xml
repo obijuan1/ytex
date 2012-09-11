@@ -15,7 +15,7 @@
 	<property name="mesh.desc" value="${mesh.home}/desc2012.xml" />
 	<property name="mesh.supp" value="${mesh.home}/supp2012.xml" />
 	<property name="ytex.mx" value="1500m" />
-	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh,sct-msh-csp-aod,umls" />
+	<property name="cg.umls.list" value="sct-umls,msh-umls,sct-msh,umls" />
 	<property name="cg.list" value="sct,msh,${cg.umls.list}" />
 	<property name="ytex.conceptPreload" value="false" />
 	<property name="maxMemory" value="1500m" />
@@ -31,6 +31,15 @@
 	<target name="ppr.eval.all">
 		<antcall target="eval.all">
 			<param name="cg.suffix" value="-ppr" />
+			<param name="eval.metrics" value="PAGERANK" />
+		</antcall>
+		<antcall target="sct.eval.sim">
+			<param name="cg.suffix" value="-ppr-hier" />
+			<param name="eval.metrics" value="PAGERANK" />
+		</antcall>
+		<antcall target="umls.eval.sim">
+			<param name="cg.suffix" value="-ppr-hier" />
+			<param name="eval.metrics" value="PAGERANK" />
 		</antcall>
 	</target>
 
@@ -71,6 +80,11 @@
 	<target name="ppr.cg.setup.all" description="generate ppr concept graphs">
 		<antcall target="cg.setup.all">
 			<param name="cg.suffix" value="-ppr" />
+		</antcall>
+		<!-- no msh-ppr-hier -->
+		<antcall target="cg.setup.all">
+			<param name="cg.suffix" value="-ppr-hier" />
+			<param name="cg.list" value="sct,${cg.umls.list}" />
 		</antcall>
 	</target>
 	<target name="cg.setup.all" description="generate all concept graphs">
@@ -311,7 +325,7 @@
 			<jvmarg value="${java.log.arg}" />
 		</java>
 	</target>
-	<target name="ppr.hier.test">
+	<target name="ppr.hier.eval">
 		<antcall target="cg.setup">
 			<param name="cg.name" value="sct-ppr-hier" />
 		</antcall>
@@ -321,9 +335,11 @@
 		<antcall target="eval.sim">
 			<param name="eval.concepts" value="MiniMayoSRS_snomed_id.txt" />
 			<param name="cg.name" value="sct-ppr-hier" />
+			<param name="eval.metrics" value="PAGERANK" />
 		</antcall>
 		<antcall target="umls.eval.sim.cg">
 			<param name="cg.name" value="sct-umls-ppr-hier" />
+			<param name="eval.metrics" value="PAGERANK" />
 		</antcall>
 	</target>
 </project>
