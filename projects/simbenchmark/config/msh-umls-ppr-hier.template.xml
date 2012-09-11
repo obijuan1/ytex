@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="ytex.conceptGraphName">msh-umls-ppr</entry>
+	<entry key="ytex.conceptGraphQuery"><![CDATA[
+	select distinct cui1, cui2 
+	from @umls.schema@.MRREL 
+	where sab in ('MSH')
+	]]></entry>
+	<entry key="ytex.checkCycle">false</entry>
+</properties>
