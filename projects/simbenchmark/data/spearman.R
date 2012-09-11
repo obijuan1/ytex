@@ -80,9 +80,9 @@ eval.reduced = function(cg) {
   return(res.m)
 }
 
-eval.reduced.ppr = function(cg) {
+eval.reduced.ppr = function(cg, cgSuffix="-ppr") {
   gold = read.delim("UMNSRS_relatedness.csv", header=T, stringsAsFactors=F, sep=",")
-  sim = read.delim(paste(cg, "-ppr/", "UMNSRS_relatedness_id_sim.txt", sep=""), sep="\t", header=T, stringsAsFactors=F)
+  sim = read.delim(paste(cg, cgSuffix, "/", "UMNSRS_relatedness_id_sim.txt", sep=""), sep="\t", header=T, stringsAsFactors=F)
   all = cbind(gold, sim)
   reduced = read.csv("UMNSRS_reduced_rel.csv", header=F)
   colnames(reduced) = c("Mean", "CUI1", "CUI2")
@@ -90,15 +90,15 @@ eval.reduced.ppr = function(cg) {
   all.reduced = merge(reduced, all)
   res.m = data.frame(
     cg = cg,
-    metric = "PAGERANK",
+    metric = paste("PAGERANK", cgSuffix, sep=""),
     con = "UMNSRS_reduced_rel",
     spearman=cor.test(all.reduced$Mean, all.reduced$PAGERANK, method="spearman")$estimate, 
     p.value=cor.test(all.reduced$Mean, all.reduced$PAGERANK, method="spearman")$p.value)
   return(res.m)
 }
 # personalized pagerank evaluation
-eval.con.ppr = function(cg, con) {
-  ppr = paste(cg, "-ppr/", con, "_id_sim.txt", sep="")
+eval.con.ppr = function(cg, con, cgSuffix="-ppr") {
+  ppr = paste(cg, cgSuffix, "/", con, "_id_sim.txt", sep="")
   if(!file.exists(ppr))
     return(data.frame(cg = cg, metric="PAGERANK", con = con, spearman=0, p.value=0))
   gold = read.delim(paste(con, ".csv", sep=""), header=T, stringsAsFactors=F, sep=",")
@@ -106,7 +106,7 @@ eval.con.ppr = function(cg, con) {
   cor = cor.test(gold$Mean, sim[,"PAGERANK"], method="spearman")
   spearman = cor$estimate
   p.value = cor$p.value
-  res.m = data.frame(cg = cg, metric="PAGERANK", con = con, spearman=spearman, p.value=p.value)
+  res.m = data.frame(cg = cg, metric=paste("PAGERANK", cgSuffix, sep=""), con = con, spearman=spearman, p.value=p.value)
   return(res.m)
 }
 
@@ -138,41 +138,45 @@ eval.mini = function(cg, prefix="MiniMayoSRS") {
 	return(res.m)
 }
 
-eval.mini.ppr = function(cg, prefix="MiniMayoSRS") {
-  ppr = paste(cg, "-ppr/", prefix, "_id_sim.txt", sep="")
+eval.mini.ppr = function(cg, prefix="MiniMayoSRS", cgSuffix="-ppr") {
+  ppr = paste(cg, cgSuffix, "/", prefix, "_id_sim.txt", sep="")
   if(!file.exists(ppr))
     return(data.frame(cg = rep(cg, 3),
-                      metric = rep("ppr", 3),
+                      metric = rep(paste("PAGERANK", cgSuffix, sep=""), 3),
                       con = c("MiniMayoSRS_Physicians", "MiniMayoSRS_Coders", "MiniMayoSRS_Combined"),
                       spearman = rep(0, 3),
                       p.value = rep(0, 3)))
   gold = read.delim("MiniMayoSRS.csv", header=T, stringsAsFactors=F, sep=",")
   sim = read.delim(ppr, sep="\t", header=T, stringsAsFactors=F)
   res = data.frame(cg = cg, 
-                   metric="PAGERANK", 
+                   metric=paste("PAGERANK", cgSuffix, sep=""), 
                    con = "MiniMayoSRS_Physicians",
                    spearman=cor.test(gold$Physicians, sim[,"PAGERANK"], method="spearman")$estimate, 
                    p.value=cor.test(gold$Physicians, sim[,"PAGERANK"], method="spearman")$p.value)
   res = rbind(res, 
-              data.frame(cg = cg, metric="PAGERANK", con = "MiniMayoSRS_Coders", 
+              data.frame(cg = cg, 
+                         metric=paste("PAGERANK", cgSuffix, sep=""), 
+                         con = "MiniMayoSRS_Coders", 
                          spearman=cor.test(gold$Coders, sim[,"PAGERANK"], method="spearman")$estimate, 
                          p.value=cor.test(gold$Coders, sim[,"PAGERANK"], method="spearman")$p.value))
   comb = apply(gold[,c("Coders","Physicians"), ], 1, mean)
   res = rbind(res, 
-              data.frame(cg = cg, metric="PAGERANK", con = "MiniMayoSRS_Combined", 
+              data.frame(cg = cg, 
+                         metric=paste("PAGERANK", cgSuffix, sep=""), 
+                         con = "MiniMayoSRS_Combined", 
                          spearman=cor.test(comb, sim[,"PAGERANK"], method="spearman")$estimate, 
                          p.value=cor.test(comb, sim[,3], method="spearman")$p.value))
   return(res)
 }
 
 # concatenate all similarity results
-concat.results = function(cgs, cons, ppr=F) {
+concat.results = function(cgs, cons, ppr=F, cgSuffix="-ppr") {
   sim = data.frame()
   for(cg in cgs) {
     for(con in cons) {
       cgPrefix = cg
       if(ppr)
-        cgPrefix = paste(cg, "-ppr", sep="")
+        cgPrefix = paste(cg, cgSuffix, sep="")
       f = paste(cgPrefix, "/", con, "_id_sim.txt", sep="")
       if(file.exists(f)) {
         sim1 = read.delim(f, sep="\t", header=T, stringsAsFactors=F)
@@ -191,31 +195,40 @@ concat.results = function(cgs, cons, ppr=F) {
 # main
 res = data.frame()
 
-cgs = c("sct-umls", "sct-msh", "sct-msh-csp-aod", "umls") 
+cgs = c("sct-umls", "sct-msh", "umls") 
 cons = c("UMNSRS_similarity", "UMNSRS_relatedness", "MayoSRS")
 
 # concatenate and save results
-sim.sum = concat.results(cgs = c(cgs, "MiniMayoSRS"), cons=cons)
-sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed")))
-write.csv(sim.sum, file="sim.csv", row.names=F)
-sim.sum = concat.results(cgs = c(cgs, "MiniMayoSRS"), cons=cons, ppr=T)
-sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed"), ppr=T))
-write.csv(sim.sum, file="sim-ppr.csv", row.names=F)
+# sim.sum = concat.results(cgs =cgs, cons=c(cons, "MiniMayoSRS"))
+# sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed")))
+# write.csv(sim.sum, file="sim.csv", row.names=F)
+# sim.sum = concat.results(cgs = cgs, cons=c(cons, "MiniMayoSRS"), ppr=T)
+# sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed"), ppr=T))
+# sim.sum = sim.sum[, 1:5]
+# write.csv(sim.sum, file="sim-ppr.csv", row.names=F)
+# sim.sum = rbind(concat.results(cgs = c("sct-umls"), cons=cons, ppr=T, cgPrefix="sct-umls-ppr-hier"))
+# sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed"), ppr=T, cgPrefix="sct-ppr-hier"))
+# sim.sum = sim.sum[, 1:5]
+# write.csv(sim.sum, file="sim-ppr-hier.csv", row.names=F)
 
-
+res = data.frame()
 for(cg in cgs) {
 	for(con in cons) {
 		res = rbind(res, eval.con(cg, con))
 		res = rbind(res, eval.con.ppr(cg, con))
+		res = rbind(res, eval.con.ppr(cg, con, cgSuffix="-ppr-hier"))
 	}
 	res = rbind(res, eval.mini(cg))
 	res = rbind(res, eval.mini.ppr(cg))
+	res = rbind(res, eval.mini.ppr(cg, cgSuffix="-ppr-hier"))
 	res = rbind(res, eval.reduced(cg))
 	res = rbind(res, eval.reduced.ppr(cg))
+	res = rbind(res, eval.reduced.ppr(cg, cgSuffix="-ppr-hier"))
 }
 
 res = rbind(res, eval.mini("sct", prefix="MiniMayoSRS_snomed"))
 res = rbind(res, eval.mini.ppr("sct", prefix="MiniMayoSRS_snomed"))
+res = rbind(res, eval.mini.ppr("sct", prefix="MiniMayoSRS_snomed", "-ppr-hier"))
 
 write.csv(res, file="simbenchmark-spearman.csv", row.names=F)
 
@@ -228,8 +241,9 @@ res.sum = ddply(res, .(con, cg), function(x) {
 		INTRINSIC_LIN=x[x$metric=="INTRINSIC_LIN","spearman"], 
 		INTRINSIC_PATH=x[x$metric=="INTRINSIC_PATH","spearman"], 
 		INTRINSIC_LCH=x[x$metric=="INTRINSIC_LCH","spearman"], 
-		PAGERANK=x[x$metric=="PAGERANK","spearman"]
-  )
+		PAGERANK_ppr=x[x$metric=="PAGERANK-ppr","spearman"],
+		PAGERANK_ppr_hier=x[x$metric=="PAGERANK-ppr-hier","spearman"]
+		)
 	})
 names.n = unique(res.sum$con)
 con.n = sapply(names.n, nbenchmark)
@@ -293,11 +307,11 @@ write.csv(res.cg, file="simbenchmark-cg-significance.csv", row.names=F)
 
 
 # mesh subset evaluation
-eval.con.msh.umls = function(cg, con, ppr=F) {
+eval.con.msh.umls = function(cg, con, ppr=F, cgSuffix="-ppr") {
   gold = read.delim(paste(con, ".csv", sep=""), header=T, stringsAsFactors=F, sep=",")
   dir = cg
   if(ppr) {
-    dir = paste(dir, "-ppr", sep="")
+    dir = paste(dir, cgSuffix, sep="")
   }
   file = paste(dir, "/", con, "_id_sim.txt", sep="")
   if(!file.exists(file))
@@ -311,7 +325,7 @@ eval.con.msh.umls = function(cg, con, ppr=F) {
   if(ppr) {
     res.m = data.frame(
       cg = cg,
-      metric = "PAGERANK",
+      metric = paste("PAGERANK", cgSuffix, sep=""),
       con = con,
       spearman=cor.test(all$Mean, all$PAGERANK, method="spearman")$estimate,
       p.value=cor.test(all$Mean, all$PAGERANK, method="spearman")$p.value)  
@@ -352,7 +366,7 @@ eval.con.msh = function(cg, con, ppr=F) {
   if(ppr) {
     res.m = data.frame(
       cg = cg,
-      metric = "PAGERANK",
+      metric = "PAGERANK-ppr",
       con = con,
       spearman=cor.test(all$Mean, all$PAGERANK, method="spearman")$estimate,
       p.value=cor.test(all$Mean, all$PAGERANK, method="spearman")$p.value)  
@@ -389,8 +403,12 @@ write.csv(sim.sum, file="sim-mesh-ppr.csv", row.names=F)
 # get minimayo results
 res.msh = eval.mini("msh", prefix="MiniMayoSRS_mesh")
 res.msh = rbind(res.msh, eval.mini.ppr("msh", prefix="MiniMayoSRS_mesh"))
+ptemp = eval.mini.ppr("msh", prefix="MiniMayoSRS_mesh")
+ptemp$metric = rep("PAGERANK-ppr-hier", nrow(ptemp))
+res.msh = rbind(res.msh, ptemp)
 res.msh = rbind(res.msh, eval.mini("msh-umls", prefix="MiniMayoSRS_mesh_umls"))
 res.msh = rbind(res.msh, eval.mini.ppr("msh-umls", prefix="MiniMayoSRS_mesh_umls"))
+res.msh = rbind(res.msh, eval.mini.ppr("msh-umls", prefix="MiniMayoSRS_mesh_umls", cgSuffix="-ppr-hier"))
 res.msh = cbind(res.msh, N=rep(29, nrow(res.msh)))
 
 # get results for other benchmarks
@@ -400,6 +418,9 @@ res.msh = rbind(res.msh, eval.con.msh.umls("msh-umls", con="UMNSRS_similarity"))
 res.msh = rbind(res.msh, eval.con.msh.umls("msh-umls", con="MayoSRS", ppr=T))
 res.msh = rbind(res.msh, eval.con.msh.umls("msh-umls", con="UMNSRS_relatedness", ppr=T))
 res.msh = rbind(res.msh, eval.con.msh.umls("msh-umls", con="UMNSRS_similarity", ppr=T))
+res.msh = rbind(res.msh, eval.con.msh.umls("msh-umls", con="MayoSRS", ppr=T, cgSuffix="-ppr-hier"))
+res.msh = rbind(res.msh, eval.con.msh.umls("msh-umls", con="UMNSRS_relatedness", ppr=T, cgSuffix="-ppr-hier"))
+res.msh = rbind(res.msh, eval.con.msh.umls("msh-umls", con="UMNSRS_similarity", ppr=T, cgSuffix="-ppr-hier"))
 
 res.msh = rbind(res.msh, eval.con.msh("msh", con="MayoSRS"))
 res.msh = rbind(res.msh, eval.con.msh("msh", con="UMNSRS_relatedness"))
@@ -407,6 +428,12 @@ res.msh = rbind(res.msh, eval.con.msh("msh", con="UMNSRS_similarity"))
 res.msh = rbind(res.msh, eval.con.msh("msh", con="MayoSRS", ppr=T))
 res.msh = rbind(res.msh, eval.con.msh("msh", con="UMNSRS_relatedness", ppr=T))
 res.msh = rbind(res.msh, eval.con.msh("msh", con="UMNSRS_similarity", ppr=T))
+# duplicate PAGERANK-ppr to PAGERANK-ppr-hier
+ptemp = rbind(eval.con.msh("msh", con="MayoSRS", ppr=T))
+ptemp = rbind(ptemp, eval.con.msh("msh", con="UMNSRS_relatedness", ppr=T))
+ptemp = rbind(ptemp, eval.con.msh("msh", con="UMNSRS_similarity", ppr=T))
+ptemp$metric = rep("PAGERANK-ppr-hier", nrow(ptemp))
+res.msh = rbind(res.msh, ptemp)
 
 res.msh.sum = ddply(res.msh, .(con, cg), function(x) {
   data.frame(
@@ -416,7 +443,8 @@ res.msh.sum = ddply(res.msh, .(con, cg), function(x) {
     INTRINSIC_PATH=x[x$metric=="INTRINSIC_PATH","spearman"], 
     INTRINSIC_LCH=x[x$metric=="INTRINSIC_LCH","spearman"], 
     LIN=x[x$metric=="LIN","spearman"],
-    PAGERANK=x[x$metric=="PAGERANK","spearman"],
+    PAGERANK_ppr=x[x$metric=="PAGERANK-ppr","spearman"],
+    PAGERANK_ppr_hier=x[x$metric=="PAGERANK-ppr-hier","spearman"],
     N=x[1, "N"])
 })
 
