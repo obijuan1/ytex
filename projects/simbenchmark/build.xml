@@ -29,18 +29,20 @@
 	<target name="eval.all" depends="msh.eval.all,sct.eval.sim,umls.eval.sim,spearman.eval" description="evaluate semantic similarity measures for all benchmarks" />
 	<target name="ppr.all" depends="ppr.cg.setup.all,ppr.eval.all" description="evaluate ppr for all concept graphs and benchmarks" />
 	<target name="ppr.eval.all">
-		<antcall target="eval.all">
-			<param name="cg.suffix" value="-ppr" />
-			<param name="eval.metrics" value="PAGERANK" />
-		</antcall>
-		<antcall target="sct.eval.sim">
-			<param name="cg.suffix" value="-ppr-hier" />
-			<param name="eval.metrics" value="PAGERANK" />
-		</antcall>
-		<antcall target="umls.eval.sim">
-			<param name="cg.suffix" value="-ppr-hier" />
-			<param name="eval.metrics" value="PAGERANK" />
-		</antcall>
+		<parallel threadCount="${kernel.threads}">
+			<antcall target="eval.all">
+				<param name="cg.suffix" value="-ppr" />
+				<param name="eval.metrics" value="PAGERANK" />
+			</antcall>
+			<antcall target="sct.eval.sim">
+				<param name="cg.suffix" value="-ppr-hier" />
+				<param name="eval.metrics" value="PAGERANK" />
+			</antcall>
+			<antcall target="umls.eval.sim">
+				<param name="cg.suffix" value="-ppr-hier" />
+				<param name="eval.metrics" value="PAGERANK" />
+			</antcall>
+		</parallel>
 	</target>
 
 	<target name="build">
