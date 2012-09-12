@@ -346,4 +346,12 @@
 			<param name="eval.metrics" value="PAGERANK" />
 		</antcall>
 	</target>
+	<target name="graphStats">
+		<java classname="ytex.kernel.InfoContentEvaluatorImpl" classpathref="${kernel.cp}" fork="yes" dir="${basedir}/data">
+			<arg value="sct,msh,msh-umls,sct-umls,sct-msh,umls,sct-ppr,msh-ppr,msh-umls-ppr,sct-umls-ppr,sct-msh-ppr,umls-ppr,sct-ppr-hier,msh-umls-ppr-hier,sct-umls-ppr-hier,sct-msh-ppr-hier,umls-ppr-hier" />
+			<jvmarg value="${ytex.mx}" />
+			<jvmarg value="${log4j.arg}" />
+			<jvmarg value="${java.log.arg}" />
+		</java>
+	</target>
 </project>
