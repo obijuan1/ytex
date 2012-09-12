@@ -170,22 +170,31 @@ eval.mini.ppr = function(cg, prefix="MiniMayoSRS", cgSuffix="-ppr") {
 }
 
 # concatenate all similarity results
-concat.results = function(cgs, cons, ppr=F, cgSuffix="-ppr") {
+concat.results = function(cgs, cons) {
   sim = data.frame()
   for(cg in cgs) {
     for(con in cons) {
-      cgPrefix = cg
-      if(ppr)
-        cgPrefix = paste(cg, cgSuffix, sep="")
-      f = paste(cgPrefix, "/", con, "_id_sim.txt", sep="")
+      f = paste(cg, "/", con, "_id_sim.txt", sep="")
       if(file.exists(f)) {
         sim1 = read.delim(f, sep="\t", header=T, stringsAsFactors=F)
         sim1 = cbind(
           cg = rep(cg, nrow(sim1)),
           con = rep(con, nrow(sim1)),
-          sim1)
-        sim = rbind(sim, sim1)
+          sim1,
+          PAGERANK_ppr = rep(NA, nrow(sim1)),
+          PAGERANK_ppr_hier = rep(NA, nrow(sim1)))
       }
+      f = paste(cg, "-ppr/", con, "_id_sim.txt", sep="")
+      if(file.exists(f)) {
+        ppr = read.delim(f, sep="\t", header=T, stringsAsFactors=F)
+        sim1$PAGERANK_ppr = ppr[,3]
+      }
+      f = paste(cg, "-ppr-hier/", con, "_id_sim.txt", sep="")
+      if(file.exists(f)) {
+        ppr = read.delim(f, sep="\t", header=T, stringsAsFactors=F)
+        sim1$PAGERANK_ppr_hier = ppr[,3]
+      }
+      sim = rbind(sim, sim1)
     }
   }
   return(sim)
@@ -199,17 +208,9 @@ cgs = c("sct-umls", "sct-msh", "umls")
 cons = c("UMNSRS_similarity", "UMNSRS_relatedness", "MayoSRS")
 
 # concatenate and save results
-# sim.sum = concat.results(cgs =cgs, cons=c(cons, "MiniMayoSRS"))
-# sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed")))
-# write.csv(sim.sum, file="sim.csv", row.names=F)
-# sim.sum = concat.results(cgs = cgs, cons=c(cons, "MiniMayoSRS"), ppr=T)
-# sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed"), ppr=T))
-# sim.sum = sim.sum[, 1:5]
-# write.csv(sim.sum, file="sim-ppr.csv", row.names=F)
-# sim.sum = rbind(concat.results(cgs = c("sct-umls"), cons=cons, ppr=T, cgPrefix="sct-umls-ppr-hier"))
-# sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed"), ppr=T, cgPrefix="sct-ppr-hier"))
-# sim.sum = sim.sum[, 1:5]
-# write.csv(sim.sum, file="sim-ppr-hier.csv", row.names=F)
+sim.sum = concat.results(cgs =cgs, cons=c(cons, "MiniMayoSRS"))
+sim.sum = rbind(sim.sum, concat.results(cgs = c("sct"), cons=c("MiniMayoSRS_snomed")))
+write.csv(sim.sum, file="sim.csv", row.names=F,na="")
 
 res = data.frame()
 for(cg in cgs) {
@@ -391,13 +392,7 @@ eval.con.msh = function(cg, con, ppr=F) {
 # concatenate and save results
 sim.sum = concat.results(cgs = "msh", cons=c("MiniMayoSRS_mesh", "MayoSRS_mesh", "UMNSRS_similarity_mesh", "UMNSRS_relatedness_mesh"))
 sim.sum = rbind(sim.sum, concat.results("msh-umls", cons=c("MiniMayoSRS_mesh_umls", "MayoSRS", "UMNSRS_similarity", "UMNSRS_relatedness")))
-write.csv(sim.sum, file="sim-mesh.csv", row.names=F)
-
-sim.sum = concat.results(cgs = "msh", cons=c("MiniMayoSRS_mesh", "MayoSRS_mesh", "UMNSRS_similarity_mesh", "UMNSRS_relatedness_mesh"), ppr=T)
-sim.sum = rbind(sim.sum, concat.results("msh-umls", cons=c("MiniMayoSRS_mesh_umls", "MayoSRS", "UMNSRS_similarity", "UMNSRS_relatedness"), ppr=T))
-write.csv(sim.sum, file="sim-mesh-ppr.csv", row.names=F)
-
-
+write.csv(sim.sum, file="sim-mesh.csv", row.names=F, na="")
 
 # mesh
 # get minimayo results
