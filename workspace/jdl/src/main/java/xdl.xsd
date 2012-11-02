@@ -18,7 +18,7 @@
   </xs:simpleType>
   <xs:simpleType name="sqlNameType">
     <xs:restriction base="xs:token">
-      <xs:maxLength value="30" />
+      <xs:maxLength value="200" />
       <xs:pattern value="[a-zA-Z\[\]]{1}([\[\]\.a-zA-Z0-9_#$])*" />
     </xs:restriction>
   </xs:simpleType>
