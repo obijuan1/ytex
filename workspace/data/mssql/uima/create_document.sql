@@ -155,7 +155,7 @@ create index IX_coveredText on $(db_schema).anno_token (coveredText);
 
 create table $(db_schema).anno_date (
 	anno_base_id int not null,
-	tstamp datetime,
+	tstamp datetime2,
 	primary key (anno_base_id),
 	foreign key (anno_base_id) references $(db_schema).anno_base(anno_base_id) ON DELETE CASCADE
 );
