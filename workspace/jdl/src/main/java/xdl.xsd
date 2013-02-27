@@ -56,10 +56,10 @@
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute default="&quot;" name="encapsulator">
+    <xs:attribute name="encapsulator">
       <xs:simpleType>
-        <xs:restriction base="xs:token">
-          <xs:length value="1" />
+        <xs:restriction base="xs:string">
+          <xs:maxLength value="1" />
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
