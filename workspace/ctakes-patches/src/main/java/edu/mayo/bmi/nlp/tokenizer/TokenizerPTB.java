@@ -1532,6 +1532,11 @@ public class TokenizerPTB {
 	}
 
 	private void setNumPosition(WordToken wta, String tokenText) {
+		// VNG patch - avoid errors when the token is empty
+		if(tokenText.length() == 0) {
+			wta.setNumPosition(TokenizerAnnotator.TOKEN_NUM_POS_NONE);
+			return;
+		}
 
 		if (isDigit(tokenText.charAt(0))) {
 
