@@ -1,6 +1,8 @@
 package ytex.uima.annotators;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,6 +57,7 @@ public class DateAnnotator extends JCasAnnotator_ImplBase {
 		if (t != null) {
 			AnnotationIndex<Annotation> annoIndex = jCas.getAnnotationIndex();
 			FSIterator<Annotation> iter = annoIndex.iterator();
+			List<Date> dtList = new ArrayList<Date>();
 			while (iter.hasNext()) {
 				Annotation anno = iter.next();
 				try {
@@ -65,7 +68,7 @@ public class DateAnnotator extends JCasAnnotator_ImplBase {
 						date.setEnd(anno.getEnd());
 						date.setDate(tlDateFormat.get().format(
 								span.getBeginCalendar().getTime()));
-						date.addToIndexes();
+						dtList.add(date);
 					}
 				} catch (Exception e) {
 					if (log.isDebugEnabled())
@@ -74,6 +77,8 @@ public class DateAnnotator extends JCasAnnotator_ImplBase {
 								e);
 				}
 			}
+			for(Date date : dtList)
+				date.addToIndexes();
 		}
 	}
 
