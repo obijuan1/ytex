@@ -56,6 +56,6 @@
 	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/log4j-1.2.15.jar"/>
 	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/jchronic-0.2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/trove4j-3.0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/weka-3.6.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="/ytex.web/WebContent/WEB-INF/lib/weka-3.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
