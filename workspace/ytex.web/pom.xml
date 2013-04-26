@@ -461,7 +461,7 @@
 		<dependency>
 			<groupId>weka</groupId>
 			<artifactId>weka</artifactId>
-			<version>3.6.7</version>
+			<version>3.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.rubiconproject.oss</groupId>
