@@ -2,6 +2,7 @@ package ytex.uima.annotators;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -31,6 +32,14 @@ import com.mdimension.jchronic.utils.Span;
 public class DateAnnotator extends JCasAnnotator_ImplBase {
 	private static final Log log = LogFactory.getLog(DateAnnotator.class);
 	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
+	/**
+	 * max date TODO make this configurable
+	 */
+	private Calendar dateMax;
+	/**
+	 * min date TODO make this configurable
+	 */
+	private Calendar dateMin;
 
 	String dateType;
 
@@ -49,20 +58,37 @@ public class DateAnnotator extends JCasAnnotator_ImplBase {
 		if (dateType == null) {
 			dateType = "edu.mayo.bmi.uima.core.type.textsem.DateAnnotation";
 		}
+		// TODO make this configurable
+		dateMin = Calendar.getInstance();
+		dateMin.set(Calendar.YEAR, 1753);
+		dateMin.set(Calendar.MONTH, 1);
+		dateMin.set(Calendar.DAY_OF_MONTH, 1);
+		dateMin.set(Calendar.HOUR_OF_DAY, 0);
+		dateMin.set(Calendar.MINUTE, 0);
+		dateMin.set(Calendar.SECOND, 0);
+		dateMax = Calendar.getInstance();
+		dateMax.set(Calendar.YEAR, 9999);
+		dateMax.set(Calendar.MONTH, 12);
+		dateMax.set(Calendar.DAY_OF_MONTH, 31);
+		dateMax.set(Calendar.HOUR_OF_DAY, 0);
+		dateMax.set(Calendar.MINUTE, 0);
+		dateMax.set(Calendar.SECOND, 0);
 	}
 
 	@Override
 	public void process(JCas jCas) throws AnalysisEngineProcessException {
 		Type t = jCas.getTypeSystem().getType(dateType);
 		if (t != null) {
-			AnnotationIndex<Annotation> annoIndex = jCas.getAnnotationIndex();
+			AnnotationIndex<Annotation> annoIndex = jCas.getAnnotationIndex(t);
 			FSIterator<Annotation> iter = annoIndex.iterator();
 			List<Date> dtList = new ArrayList<Date>();
 			while (iter.hasNext()) {
 				Annotation anno = iter.next();
 				try {
 					Span span = Chronic.parse(anno.getCoveredText());
-					if (span != null && span.getBeginCalendar() != null) {
+					if (span != null && span.getBeginCalendar() != null
+							&& !span.getBeginCalendar().before(dateMin)
+							&& !span.getEndCalendar().after(dateMax)) {
 						Date date = new Date(jCas);
 						date.setBegin(anno.getBegin());
 						date.setEnd(anno.getEnd());
@@ -77,9 +103,8 @@ public class DateAnnotator extends JCasAnnotator_ImplBase {
 								e);
 				}
 			}
-			for(Date date : dtList)
+			for (Date date : dtList)
 				date.addToIndexes();
 		}
 	}
-
 }
